@@ -1,0 +1,27 @@
+{
+  "name": "events-manager-client",
+  "description": "A webapp for managing Visit Seattle events.",
+  "version": "0.1.0",
+  "homepage": "http://www.visitseattle.org",
+  "private": true,
+  "author": {
+    "name": "Jay Billings",
+    "email": "jbillings@visitseattle.org"
+  },
+  "contributors": [],
+  "directories": {
+    "lib": "src",
+    "test": "test/"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "dependencies": {
+    "react": "^16.3.2",
+    "react-dom": "^16.3.2",
+    "react-scripts": "1.1.4"
+  }
+}
