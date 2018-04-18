@@ -1,13 +1,13 @@
 import React, {Component} from 'react';
-
 import Header from "../components/common/Header";
 
-export default class App extends Component {
+export default class ImportLayout extends Component {
   render() {
     return (
       <div>
-        <Header />
+        <Header/>
+        <h2>Import</h2>
       </div>
     );
   }
-}
+};

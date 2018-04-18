@@ -1,17 +1,18 @@
 import React, {Component} from 'react';
+import { NavLink } from 'react-router-dom';
+
+import "../../styles/Header.less";
 
 export default class Header extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     return(
       <div className="container">
         <header><h1>Visit Seattle Events Manager</h1></header>
         <nav>
           <ul>
-            <li>Imports</li>
+            <li><NavLink to={`/import/`} activeClassName="current" isActive={function(match, location) {
+              return location.pathname === '/' || location.pathname.search('import') > -1;
+            }} title="Import">Import</NavLink></li>
           </ul>
           <ul>
             <li>Events</li>
