@@ -15,15 +15,15 @@ export default class Header extends Component {
             }} title="Import">Import</NavLink></li>
           </ul>
           <ul>
-            <li><NavLink to={'/events/'} activeClassName="current">Events</NavLink></li>
-            <li>Venues</li>
-            <li>Organizers</li>
-            <li>Neighborhoods</li>
-            <li>Categories</li>
+            <li><NavLink to={`/events/`} activeClassName="current">Events</NavLink></li>
+            <li><NavLink to={`/venues`} activeClassName="current">Venues</NavLink></li>
+            <li><NavLink to={`/organizers/`} activeClassName={'current'}>Organizers</NavLink></li>
+            <li><NavLink to={`/neighborhoods/`} activeClassName={'current'}>Neighborhoods</NavLink></li>
+            <li><NavLink to={`/categories/`} activeClassName={'current'}>Categories</NavLink></li>
           </ul>
           <ul>
-            <li>My Account</li>
-            <li>Export</li>
+            <li><NavLink to={`/account`} activeClassName={'current'}>My Account</NavLink></li>
+            <li><NavLink to={`/admin/`} activeClassName={'current'}>Admin Tools</NavLink></li>
           </ul>
         </nav>
       </header>
