@@ -1,21 +1,21 @@
 import React, {Component} from 'react';
-import { NavLink } from 'react-router-dom';
+import {NavLink} from 'react-router-dom';
 
-import "../../styles/Header.less";
+import "../../styles/Header.css";
 
 export default class Header extends Component {
   render() {
-    return(
-      <div className="container">
-        <header><h1>Visit Seattle Events Manager</h1></header>
+    return (
+      <header>
+        <h1>Visit Seattle Events Manager</h1>
         <nav>
           <ul>
-            <li><NavLink to={`/import/`} activeClassName="current" isActive={function(match, location) {
-              return location.pathname === '/' || location.pathname.search('import') > -1;
+            <li><NavLink to={`/import/`} activeClassName="current" isActive={function (match, location) {
+              return location.pathname === '/' || location.pathname.search('import') !== -1;
             }} title="Import">Import</NavLink></li>
           </ul>
           <ul>
-            <li>Events</li>
+            <li><NavLink to={'/events/'} activeClassName="current">Events</NavLink></li>
             <li>Venues</li>
             <li>Organizers</li>
             <li>Neighborhoods</li>
@@ -26,7 +26,7 @@ export default class Header extends Component {
             <li>Export</li>
           </ul>
         </nav>
-      </div>
+      </header>
     );
   }
 }

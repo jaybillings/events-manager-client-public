@@ -1,12 +1,13 @@
 import React, {Component} from 'react';
+
 import Header from "../components/common/Header";
 
-export default class ImportLayout extends Component {
+export default class EventsLayout extends Component {
   render() {
     return (
       <div className="container">
-        <Header location/>
-        <h2>Import</h2>
+        <Header />
+        <h2>Events</h2>
       </div>
     );
   }
