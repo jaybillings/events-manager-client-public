@@ -2,6 +2,8 @@ import React, {Component} from 'react';
 import app from '../services/socketio';
 
 import Header from '../components/common/Header';
+import EventsTable from "../components/events/EventsTable";
+import EventAddForm from "../components/events/EventAddForm";
 
 export default class EventsLayout extends Component {
   constructor(props) {
@@ -28,9 +30,10 @@ export default class EventsLayout extends Component {
       <div className="container">
         <Header/>
         <h2>Events</h2>
-        <p>{JSON.stringify(this.state.eventsData)}</p>
         <h3>View/Modify</h3>
+        <EventsTable events={this.state.eventsData}/>
         <h3>Add New Event</h3>
+        <EventAddForm/>
       </div>
     );
   }
