@@ -1,17 +1,45 @@
 import React, {Component} from 'react';
+import app from '../../services/socketio';
+
 import '../../styles/data-tables.css';
 
 export default class EventsTable extends Component {
   constructor(props) {
     super(props);
 
+    this.state = {};
+
     this.renderRows = this.renderRows.bind(this);
   }
 
-  renderRows() {
-    let eventsData = this.props.events !== undefined ? this.props.events.data : [];
+  componentDidMount() {
+    const eventsService = app.service('events');
 
-    return eventsData.map((event) => {
+    // Query data
+    eventsService.find({
+      query: {
+        $sort: {updated_at: -1},
+        $limit: 25
+      }
+    }).then((response) => {
+      console.log(response.data);
+      this.setState({'events': response.data});
+    });
+
+    // Register listeners
+    eventsService.on('created', (message) => {
+      console.log(this.state);
+      this.setState((prevState) => ({
+        events: prevState.events.concat(message)
+      }));
+      console.log(this.state);
+    });
+  }
+
+  renderRows() {
+    let events = this.state.events || [];
+    console.log('events', events);
+    return events.map((event) => {
       return (
         <tr key={event.id}>
           <td>{event.name}</td>
