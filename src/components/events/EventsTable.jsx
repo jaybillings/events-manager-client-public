@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import {Link} from 'react-router-dom';
 import app from '../../services/socketio';
 
 import '../../styles/data-tables.css';
@@ -22,7 +23,6 @@ export default class EventsTable extends Component {
         $limit: 25
       }
     }).then((response) => {
-      console.log(response.data);
       this.setState({'events': response.data});
     });
 
@@ -41,7 +41,7 @@ export default class EventsTable extends Component {
     return events.map((event) => {
       return (
         <tr key={event.id}>
-          <td>{event.name}</td>
+          <td><Link to={`/events/${event.id}`}>{event.name}</Link></td>
           <td>{event.description}</td>
           <td>{event.start_date}</td>
           <td>{event.end_date}</td>
