@@ -30,7 +30,7 @@ export default class EventAddForm extends Component {
         console.log('Event successfully saved');
       },
       function (reason) {
-        console.log('Event not saved: ', reason);
+        console.log('Event not saved: ', Object.values(reason).join(''));
       });
 
     // Clear form
@@ -43,21 +43,21 @@ export default class EventAddForm extends Component {
   render() {
     return (
       <form id={'event-add-form'} onSubmit={this.handleSubmit}>
-        <label>
+        <label className={'required'}>
           Name
-          <input type={'text'} name={'nameInput'} ref={'nameInput'}/>
+          <input type={'text'} id={'nameInput'} ref={'nameInput'} required maxLength="100"/>
         </label>
-        <label>
+        <label className={'required'}>
           Start Date
-          <input type={'date'} name={'startDateInput'} ref={'startDateInput'}/>
+          <input type={'date'} id={'startDateInput'} ref={'startDateInput'} required />
         </label>
-        <label>
+        <label className={'required'}>
           End Date
-          <input type={'date'} name={'endDateInput'} ref={'endDateInput'}/>
+          <input type={'date'} name={'endDateInput'} ref={'endDateInput'} required />
         </label>
-        <label>
+        <label className={'required'}>
           Description
-          <textarea name={'descInput'} ref={'descInput'}/>
+          <textarea name={'descInput'} ref={'descInput'} required maxLength="500" />
         </label>
         <button type={'button'}>Start Over</button>
         <button type={'submit'} className={'button-primary'}>Add Event</button>

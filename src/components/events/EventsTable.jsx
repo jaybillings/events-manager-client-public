@@ -28,10 +28,9 @@ export default class EventsTable extends Component {
 
     // Register listeners
     eventsService.on('created', (message) => {
-      console.log(this.state);
-      this.setState((prevState) => ({
-        events: prevState.events.concat(message)
-      }));
+      const prevEvents = this.state.events;
+      prevEvents.unshift(message);
+      this.setState({events: prevEvents});
       console.log(this.state);
     });
   }

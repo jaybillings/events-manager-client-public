@@ -6,3 +6,18 @@ label input, label textarea {
 button + button {
   margin-left: 2rem;
 }
+
+input:invalid {
+  box-shadow: 0 0 5px 1px red;
+}
+
+input:focus:invalid {
+  outline: none;
+}
+
+label.required:before {
+  content: '*';
+  color: red;
+  margin-right: .5rem;
+}
+
