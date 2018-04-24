@@ -1,0 +1,4 @@
+#root input[disabled], #root button[disabled] {
+  color: #777;
+  cursor: not-allowed;
+}

@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+
 import Header from '../components/common/Header';
 import EventRecord from '../components/events/EventRecord';
 

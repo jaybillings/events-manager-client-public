@@ -6,8 +6,8 @@ export default class EventRow extends Component {
   constructor(props) {
     super(props);
 
-    this.eventsSerivce = app.service('events');
     this.state = { editable: false };
+    this.eventsSerivce = app.service('events');
 
     this.startEdit = this.startEdit.bind(this);
     this.cancelEdit = this.cancelEdit.bind(this);
@@ -25,12 +25,10 @@ export default class EventRow extends Component {
 
   deleteEvent() {
     // TODO: Only admins should be able to do this
-    const eventId = this.props.event.id;
-    this.eventsSerivce.remove(eventId).then((message) => console.log(message));
+    this.eventsSerivce.remove(this.props.event.id).then((message) => console.log(message));
   }
 
   saveEvent() {
-    const eventId = this.props.event.id;
     const newData = {
       name: this.refs.nameInput.value.trim() || this.props.event.name,
       start_date: this.refs.startInput.value || this.props.event.start_date,
@@ -38,7 +36,7 @@ export default class EventRow extends Component {
       description: this.refs.descInput.value.trim() || this.props.event.description
     };
 
-    this.eventsSerivce.patch(eventId, newData).then((message) => console.log(message));
+    this.eventsSerivce.patch(this.props.event.id, newData).then((message) => console.log(message));
     this.setState({editable: false});
   }
 
@@ -47,7 +45,7 @@ export default class EventRow extends Component {
       year: "numeric", month: "numeric", day: "numeric",
       hour: "numeric", minute: "numeric", second: "numeric"
     };
-    const updatedDateReadable = new Date(this.props.event.updated_at).toLocaleString('en-US', dateFormatOptions);
+    const updatedReadable = new Date(this.props.event.updated_at).toLocaleString('en-US', dateFormatOptions);
 
     if (this.state.editable) {
       return (
@@ -68,7 +66,7 @@ export default class EventRow extends Component {
           <td>
             <input type={'text'} ref={'descInput'} defaultValue={this.props.event.description} />
           </td>
-          <td>{updatedDateReadable}</td>
+          <td>{updatedReadable}</td>
         </tr>
       )
     }
@@ -83,7 +81,7 @@ export default class EventRow extends Component {
         <td>{this.props.event.start_date}</td>
         <td>{this.props.event.end_date}</td>
         <td>{this.props.event.description}</td>
-        <td>{updatedDateReadable}</td>
+        <td>{updatedReadable}</td>
       </tr>
     );
   }

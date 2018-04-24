@@ -10,15 +10,14 @@ export default class EventsTable extends Component {
     super(props);
 
     this.state = {};
+    this.eventsService = app.service('events');
 
     this.fetchEvents = this.fetchEvents.bind(this);
   }
 
   componentDidMount() {
-    const eventsService = app.service('events');
-
     // Query data
-    eventsService.find({
+    this.eventsService.find({
       query: {
         $sort: {updated_at: -1},
         $limit: 25
@@ -28,7 +27,7 @@ export default class EventsTable extends Component {
     });
 
     // Register listeners
-    eventsService
+    this.eventsService
       .on('created', (message) => {
         console.log('added', message);
         this.fetchEvents();
@@ -44,6 +43,7 @@ export default class EventsTable extends Component {
   }
 
   fetchEvents() {
+    // TODO: Is there a better way to update?
     app.service('events').find({
       query: {
         $sort: {updated_at: -1},
