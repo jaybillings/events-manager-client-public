@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
-import {Link} from 'react-router-dom';
 import app from '../../services/socketio';
+
+import EventRow from './EventRow';
 
 import '../../styles/data-tables.css';
 
@@ -10,7 +11,7 @@ export default class EventsTable extends Component {
 
     this.state = {};
 
-    this.renderRows = this.renderRows.bind(this);
+    this.fetchEvents = this.fetchEvents.bind(this);
   }
 
   componentDidMount() {
@@ -27,44 +28,47 @@ export default class EventsTable extends Component {
     });
 
     // Register listeners
-    eventsService.on('created', (message) => {
-      const prevEvents = this.state.events;
-      prevEvents.unshift(message);
-      this.setState({events: prevEvents});
-      console.log(this.state);
-    });
+    eventsService
+      .on('created', (message) => {
+        console.log('added', message);
+        this.fetchEvents();
+      })
+      .on('patched', (message) => {
+        console.log('patched', message);
+        this.fetchEvents();
+      })
+      .on('removed', (message) => {
+        console.log('deleted', message);
+        this.fetchEvents();
+      });
   }
 
-  renderRows() {
-    let events = this.state.events || [];
-    console.log('events', events);
-    return events.map((event) => {
-      return (
-        <tr key={event.id}>
-          <td><Link to={`/events/${event.id}`}>{event.name}</Link></td>
-          <td>{event.description}</td>
-          <td>{event.start_date}</td>
-          <td>{event.end_date}</td>
-          <td>{event.updated_at}</td>
-        </tr>
-      )
-    });
+  fetchEvents() {
+    app.service('events').find({
+      query: {
+        $sort: {updated_at: -1},
+        $limit: 25
+      }
+    }).then(response => this.setState({'events': response.data}));
   }
 
   render() {
+    let events = this.state.events || [];
+
     return (
       <table>
         <thead>
         <tr>
+          <th>Actions</th>
           <th>Name</th>
-          <th>Description</th>
           <th>Start Date</th>
           <th>End Date</th>
-          <th>Modified</th>
+          <th>Description</th>
+          <th>Last Modified</th>
         </tr>
         </thead>
         <tbody>
-        {this.renderRows()}
+        {events.map(event => <EventRow key={event.id} event={event}/>)}
         </tbody>
       </table>
     );

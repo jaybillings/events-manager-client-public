@@ -13,7 +13,6 @@ export default class EventRecord extends Component {
     const id = parseInt(this.props.eventId, 10);
 
     eventsService.get(id).then((response) => {
-      console.log(response);
       this.setState({'event': response})
     });
   }

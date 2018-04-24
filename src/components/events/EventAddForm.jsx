@@ -11,6 +11,10 @@ export default class EventAddForm extends Component {
   }
 
   componentDidMount() {
+    // Set date picker's default
+    this.refs.startInput.valueAsDate = new Date();
+    this.refs.endInput.valueAsDate = new Date();
+
     app.service('events').on('created', (message) => console.log('created', message));
   }
 
@@ -20,8 +24,8 @@ export default class EventAddForm extends Component {
     const eventObj = {
       name: this.refs.nameInput.value.trim(),
       description: this.refs.descInput.value.trim(),
-      start_date: this.refs.startDateInput.value.trim(),
-      end_date: this.refs.endDateInput.value.trim()
+      start_date: this.refs.startInput.value.trim(),
+      end_date: this.refs.endInput.value.trim()
     };
 
     // Submit data
@@ -36,8 +40,8 @@ export default class EventAddForm extends Component {
     // Clear form
     this.refs.nameInput.value = '';
     this.refs.descInput.value = '';
-    this.refs.startDateInput.value = '';
-    this.refs.endDateInput.value = '';
+    this.refs.startInput.value = '';
+    this.refs.endInput.value = '';
   }
 
   render() {
@@ -45,19 +49,19 @@ export default class EventAddForm extends Component {
       <form id={'event-add-form'} onSubmit={this.handleSubmit}>
         <label className={'required'}>
           Name
-          <input type={'text'} id={'nameInput'} ref={'nameInput'} required maxLength="100"/>
+          <input type={'text'} ref={'nameInput'} required maxLength="100"/>
         </label>
         <label className={'required'}>
           Start Date
-          <input type={'date'} id={'startDateInput'} ref={'startDateInput'} required />
+          <input type={'date'} ref={'startInput'} required />
         </label>
         <label className={'required'}>
           End Date
-          <input type={'date'} name={'endDateInput'} ref={'endDateInput'} required />
+          <input type={'date'} ref={'endInput'} required />
         </label>
         <label className={'required'}>
           Description
-          <textarea name={'descInput'} ref={'descInput'} required maxLength="500" />
+          <textarea ref={'descInput'} required maxLength="500" />
         </label>
         <button type={'button'}>Start Over</button>
         <button type={'submit'} className={'button-primary'}>Add Event</button>
