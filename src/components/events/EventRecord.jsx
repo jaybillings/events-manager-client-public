@@ -11,6 +11,7 @@ export default class EventRecord extends Component {
 
   handleChange() {
     this.refs.submitButton.disabled = false;
+    this.refs.submitButton.className = 'button-primary';
   }
 
   render() {

@@ -9,22 +9,18 @@ export default class EventsTable extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {};
+    this.state = {events: [], venues: [], organizers: []};
     this.eventsService = app.service('events');
+    this.venuesService = app.service('venues');
+    this.orgsSerivce = app.service('organizers');
 
     this.fetchEvents = this.fetchEvents.bind(this);
+    this.fetchOtherSchema = this.fetchOtherSchema.bind(this);
   }
 
   componentDidMount() {
     // Query data
-    this.eventsService.find({
-      query: {
-        $sort: {updated_at: -1},
-        $limit: 25
-      }
-    }).then((response) => {
-      this.setState({'events': response.data});
-    });
+    this.fetchEvents();
 
     // Register listeners
     this.eventsService
@@ -44,16 +40,26 @@ export default class EventsTable extends Component {
 
   fetchEvents() {
     // TODO: Is there a better way to update?
-    app.service('events').find({
+    this.eventsService.find({
       query: {
         $sort: {updated_at: -1},
         $limit: 25
       }
-    }).then(response => this.setState({'events': response.data}));
+    }).then(response => {
+      this.setState({'events': response.data});
+      this.fetchOtherSchema();
+    });
+  }
+
+  fetchOtherSchema() {
+    this.venuesService.find().then(message => {this.setState({'venues': message.data})});
+    this.orgsSerivce.find().then(message => this.setState({'organizers': message.data}));
   }
 
   render() {
-    let events = this.state.events || [];
+    let events = this.state.events;
+    let venues = this.state.venues;
+    let organizers = this.state.organizers;
 
     return (
       <table>
@@ -63,12 +69,21 @@ export default class EventsTable extends Component {
           <th>Name</th>
           <th>Start Date</th>
           <th>End Date</th>
-          <th>Description</th>
+          <th>Venue</th>
+          <th>Organizer</th>
           <th>Last Modified</th>
         </tr>
         </thead>
         <tbody>
-        {events.map(event => <EventRow key={event.id} event={event}/>)}
+        {
+          events.map(event =>
+            <EventRow key={event.id}
+                      event={event}
+                      venue={venues.find(v => { return v.id === event.venue_id })}
+                      organizer={organizers.find(o => {return o.id === event.org_id })}
+            />
+          )
+        }
         </tbody>
       </table>
     );

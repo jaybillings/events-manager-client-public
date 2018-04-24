@@ -46,6 +46,8 @@ export default class EventRow extends Component {
       hour: "numeric", minute: "numeric", second: "numeric"
     };
     const updatedReadable = new Date(this.props.event.updated_at).toLocaleString('en-US', dateFormatOptions);
+    const venueName = this.props.venue ? this.props.venue.name : 'NO VENUE';
+    const orgName = this.props.organizer ? this.props.organizer.name : 'NO ORGANIZER';
 
     if (this.state.editable) {
       return (
@@ -80,7 +82,8 @@ export default class EventRow extends Component {
         <td><Link to={`/events/${this.props.event.id}`}>{this.props.event.name}</Link></td>
         <td>{this.props.event.start_date}</td>
         <td>{this.props.event.end_date}</td>
-        <td>{this.props.event.description}</td>
+        <td>{venueName}</td>
+        <td>{orgName}</td>
         <td>{updatedReadable}</td>
       </tr>
     );
