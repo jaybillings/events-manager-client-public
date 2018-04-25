@@ -1,4 +1,6 @@
 import React, {Component} from 'react';
+import app from '../../services/socketio';
+import {renderOptionList} from '../../utilities';
 
 import '../../styles/schema-record.css';
 
@@ -6,17 +8,36 @@ export default class EventRecord extends Component {
   constructor(props) {
     super(props);
 
-    this.renderOptionList = this.renderOptionList.bind(this);
+    this.eventsService = app.service('events');
+
+    this.deleteEvent = this.deleteEvent.bind(this);
+    this.saveEvent = this.saveEvent.bind(this);
   }
 
-  renderOptionList(schema) {
-    let optionsList = [];
+  deleteEvent() {
+    // TODO: Only administrators should be able to delete
+    const id = this.props.event.id;
+    this.eventsService.remove(id).then(this.setState({hasDeleted: true}));
+  }
 
-    schema.forEach(record => {
-      optionsList.push(<option key={record.id} value={record.id}>{record.name}</option>);
+  saveEvent(e) {
+    e.preventDefault();
+
+    const id = this.props.event.id;
+    const newData = {
+      name: this.refs.nameInput.value.trim(),
+      start_date: this.refs.startInput.value,
+      end_date: this.refs.endInput.value,
+      venue_id: this.refs.venueList.value,
+      org_id: this.refs.orgList.value,
+      description: this.refs.descInput.value.trim()
+    };
+
+    this.eventsService.patch(id, newData).then(message => {
+      console.log('patch', message);
+    }, message => {
+      console.log('error', message);
     });
-
-    return optionsList;
   }
 
   render() {
@@ -32,9 +53,9 @@ export default class EventRecord extends Component {
     const createdReadable = event.created_at ? new Date(event.created_at).toLocaleString('en-US', dateFormatOptions) : '';
 
     return (
-      <form id="event-listing-form" className={'schema-record'} onSubmit={this.props.handleSubmit}>
+      <form id="event-listing-form" className={'schema-record'} onSubmit={this.saveEvent}>
         <div>
-          <button type="button" ref="deleteButton" onClick={this.props.deleteEvent}>Delete Event</button>
+          <button type="button" ref="deleteButton" onClick={this.deleteEvent}>Delete Event</button>
           <button type="submit" ref="submitButton" className="button-primary">Save Changes</button>
         </div>
         <label>
@@ -63,11 +84,11 @@ export default class EventRecord extends Component {
         </label>
         <label>
           Venue
-          <select ref="venueList" defaultValue={event.venue_id || ''}>{this.renderOptionList(venues)}</select>
+          <select ref="venueList" defaultValue={event.venue_id || ''}>{renderOptionList(venues)}</select>
         </label>
         <label>
           Organizer
-          <select ref="orgList" defaultValue={event.org_id || ''}>{this.renderOptionList(organizers)}</select>
+          <select ref="orgList" defaultValue={event.org_id || ''}>{renderOptionList(organizers)}</select>
         </label>
         <label>
           Description

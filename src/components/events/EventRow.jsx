@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {Link} from 'react-router-dom';
+import {renderOptionList} from '../../utilities';
 import app from '../../services/socketio';
 
 export default class EventRow extends Component {
@@ -7,13 +8,12 @@ export default class EventRow extends Component {
     super(props);
 
     this.state = {editable: false};
-    this.eventsSerivce = app.service('events');
+    this.eventsService = app.service('events');
 
     this.startEdit = this.startEdit.bind(this);
     this.cancelEdit = this.cancelEdit.bind(this);
     this.deleteEvent = this.deleteEvent.bind(this);
     this.saveEvent = this.saveEvent.bind(this);
-    this.renderOptionList = this.renderOptionList.bind(this);
   }
 
   startEdit() {
@@ -26,7 +26,7 @@ export default class EventRow extends Component {
 
   deleteEvent() {
     // TODO: Only admins should be able to do this
-    this.eventsSerivce.remove(this.props.event.id).then((message) => console.log(message));
+    this.eventsService.remove(this.props.event.id).then(message => console.log('remove', message));
   }
 
   saveEvent() {
@@ -39,21 +39,8 @@ export default class EventRow extends Component {
       org_id: this.refs.orgList.value
     };
 
-    console.log('newData', newData);
-    console.log('id', this.props.event.id);
-
-    this.eventsSerivce.patch(this.props.event.id, newData).then((message) => console.log(message));
+    this.eventsService.patch(this.props.event.id, newData).then((message) => console.log(message));
     this.setState({editable: false});
-  }
-
-  renderOptionList(schema) {
-    let optionsList = [];
-
-    schema.forEach(record => {
-      optionsList.push(<option key={record.id} value={record.id}>{record.name}</option>);
-    });
-
-    return optionsList;
   }
 
   render() {
@@ -85,10 +72,10 @@ export default class EventRow extends Component {
             <input type={'date'} ref={'endInput'} defaultValue={event.end_date}/>
           </td>
           <td>
-            <select ref={'venueList'} defaultValue={event.venue_id || ''}>{this.renderOptionList(venues)}</select>
+            <select ref={'venueList'} defaultValue={event.venue_id || ''}>{renderOptionList(venues)}</select>
           </td>
           <td>
-            <select ref={'orgList'} defaultValue={event.org_id || ''}>{this.renderOptionList(organizers)}</select>
+            <select ref={'orgList'} defaultValue={event.org_id || ''}>{renderOptionList(organizers)}</select>
           </td>
           <td>{updatedReadable}</td>
         </tr>
@@ -101,9 +88,9 @@ export default class EventRow extends Component {
           <button type={'button'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} onClick={this.deleteEvent}>Delete</button>
         </td>
-        <td><Link to={`/events/${this.props.event.id}`}>{this.props.event.name}</Link></td>
-        <td>{this.props.event.start_date}</td>
-        <td>{this.props.event.end_date}</td>
+        <td><Link to={`/events/${event.id}`}>{event.name}</Link></td>
+        <td>{event.start_date}</td>
+        <td>{event.end_date}</td>
         <td>{venueName}</td>
         <td>{orgName}</td>
         <td>{updatedReadable}</td>

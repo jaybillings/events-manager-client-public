@@ -12,3 +12,7 @@
   color: red;
   margin-right: .5rem;
 }
+
+.add-form button + button {
+  margin-left: 1rem;
+}

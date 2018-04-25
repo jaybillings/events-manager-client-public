@@ -10,81 +10,62 @@ export default class SingleEventLayout extends Component {
     super(props);
 
     this.state = {
-      event: {},
-      eventLoaded: false,
-      venueLoaded: false,
-      orgLoaded: false,
-      hasDeleted: false,
-      notFound: false
+      event: {}, venues: [], organizers: [],
+      eventLoaded: false, venuesLoaded: false, orgsLoaded: false,
+      hasDeleted: false, notFound: false
     };
+
     this.eventsService = app.service('events');
     this.venuesService = app.service('venues');
     this.orgsService = app.service('organizers');
 
-    this.deleteEvent = this.deleteEvent.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
+    this.fetchAllData = this.fetchAllData.bind(this);
     this.renderRecord = this.renderRecord.bind(this);
   }
 
   componentDidMount() {
+    this.fetchAllData();
+
+    // Register listeners
+    this.eventsService
+      .on('patched', (message) => {
+        console.log('patched', message);
+        this.fetchAllData();
+      })
+      .on('removed', (message) => {
+        console.log('deleted', message);
+        this.setState({hasDeleted: true});
+      });
+  }
+
+  fetchAllData() {
     const id = this.props.match.params.id;
+
+    this.setState({ eventLoaded: false, venuesLoaded: false, orgsLoaded: false});
 
     this.eventsService.get(id).then(message => {
       this.setState({event: message, eventLoaded: true});
-      this.venuesService.find({query: {$sort: {name: 1}}}).then(message => {
-        this.setState({venues: message.data, venueLoaded: true})
-      });
-      this.orgsService.find({query: {$sort: {name: 1}}}).then(message => {
-        this.setState({organizers: message.data, orgLoaded: true})
-      });
-    }, (message) => {
+    }, message => {
       console.log('error', JSON.stringify(message));
       this.setState({notFound: true});
     });
-  }
 
-  deleteEvent() {
-    const id = this.state.event.id;
+    this.venuesService.find({query: {$sort: {name: 1}}}).then(message => {
+      this.setState({venues: message.data, venuesLoaded: true})
+    });
 
-    // TODO: Only administrators should be able to delete
-    this.eventsService.remove(id).then(this.setState({hasDeleted: true}));
-  }
-
-  handleSubmit(e) {
-    const id = this.state.event.id;
-    const newData = {
-      name: this.refs.record.refs.nameInput.value.trim(),
-      start_date: this.refs.record.refs.startInput.value,
-      end_date: this.refs.record.refs.endInput.value,
-      venue_id: this.refs.record.refs.venueList.value,
-      org_id: this.refs.record.refs.orgList.value,
-      description: this.refs.record.refs.descInput.value.trim()
-    };
-
-    e.preventDefault();
-
-    this.eventsService.patch(id, newData).then((message) => {
-      console.log('patch', message);
-      this.setState({event: message});
-    }, (message) => {
-      console.log('error', message);
+    this.orgsService.find({query: {$sort: {name: 1}}}).then(message => {
+      this.setState({organizers: message.data, orgsLoaded: true})
     });
   }
 
   renderRecord() {
-    if (!(this.state.eventLoaded && this.state.venueLoaded && this.state.orgLoaded)) {
+    if (!(this.state.eventLoaded && this.state.venuesLoaded && this.state.orgsLoaded)) {
       return <p>Data is loading... Please be patient...</p>;
     }
 
-    return (
-      <EventRecord ref="record"
-                   event={this.state.event}
-                   venues={this.state.venues}
-                   organizers={this.state.organizers}
-                   handleSubmit={this.handleSubmit}
-                   deleteEvent={this.deleteEvent}
-      />
-    );
+    return (<EventRecord ref="record" event={this.state.event} venues={this.state.venues}
+                         organizers={this.state.organizers}/>);
   }
 
   render() {
