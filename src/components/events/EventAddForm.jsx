@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import app from '../../services/socketio';
 
-import '../../styles/add-forms.css';
+import '../../styles/add-form.css';
 
 export default class EventAddForm extends Component {
   constructor(props) {
@@ -46,7 +46,7 @@ export default class EventAddForm extends Component {
 
   render() {
     return (
-      <form id={'event-add-form'} onSubmit={this.handleSubmit}>
+      <form id={'event-add-form'} className={'add-form'} onSubmit={this.handleSubmit}>
         <label className={'required'}>
           Name
           <input type={'text'} ref={'nameInput'} required maxLength="100"/>

@@ -9,8 +9,17 @@ export default class SingleEventLayout extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {event: {}, isLoaded: false, hasDeleted: false, notFound: false};
+    this.state = {
+      event: {},
+      eventLoaded: false,
+      venueLoaded: false,
+      orgLoaded: false,
+      hasDeleted: false,
+      notFound: false
+    };
     this.eventsService = app.service('events');
+    this.venuesService = app.service('venues');
+    this.orgsService = app.service('organizers');
 
     this.deleteEvent = this.deleteEvent.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -21,9 +30,15 @@ export default class SingleEventLayout extends Component {
     const id = this.props.match.params.id;
 
     this.eventsService.get(id).then(message => {
-      this.setState({event: message, isLoaded: true});
+      this.setState({event: message, eventLoaded: true});
+      this.venuesService.find({query: {$sort: {name: 1}}}).then(message => {
+        this.setState({venues: message.data, venueLoaded: true})
+      });
+      this.orgsService.find({query: {$sort: {name: 1}}}).then(message => {
+        this.setState({organizers: message.data, orgLoaded: true})
+      });
     }, (message) => {
-      console.log('error', message);
+      console.log('error', JSON.stringify(message));
       this.setState({notFound: true});
     });
   }
@@ -41,6 +56,8 @@ export default class SingleEventLayout extends Component {
       name: this.refs.record.refs.nameInput.value.trim(),
       start_date: this.refs.record.refs.startInput.value,
       end_date: this.refs.record.refs.endInput.value,
+      venue_id: this.refs.record.refs.venueList.value,
+      org_id: this.refs.record.refs.orgList.value,
       description: this.refs.record.refs.descInput.value.trim()
     };
 
@@ -55,15 +72,25 @@ export default class SingleEventLayout extends Component {
   }
 
   renderRecord() {
-    if (!this.state.isLoaded) return <p>Data is loading... Please be patient...</p>;
+    if (!(this.state.eventLoaded && this.state.venueLoaded && this.state.orgLoaded)) {
+      return <p>Data is loading... Please be patient...</p>;
+    }
 
-    return <EventRecord ref="record" event={this.state.event} handleSubmit={this.handleSubmit} deleteEvent={this.deleteEvent} />;
+    return (
+      <EventRecord ref="record"
+                   event={this.state.event}
+                   venues={this.state.venues}
+                   organizers={this.state.organizers}
+                   handleSubmit={this.handleSubmit}
+                   deleteEvent={this.deleteEvent}
+      />
+    );
   }
 
   render() {
-    if (this.state.notFound) return <Redirect to={'/404'} />;
+    if (this.state.notFound) return <Redirect to={'/404'}/>;
 
-    if (this.state.hasDeleted) return <Redirect to={'/events'} />;
+    if (this.state.hasDeleted) return <Redirect to={'/events'}/>;
 
     return (
       <div className={'container'}>

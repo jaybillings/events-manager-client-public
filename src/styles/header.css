@@ -3,11 +3,11 @@ header {
   margin-bottom: 3rem;
 }
 
-nav ul {
+header nav ul {
   display: inline-block;
 }
 
-nav ul li {
+header nav ul li {
   display: inline-block;
   margin: 0 1rem;
 }

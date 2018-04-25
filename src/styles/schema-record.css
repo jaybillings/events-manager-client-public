@@ -1,0 +1,13 @@
+.schema-record input[disabled], .schema-record button[disabled] {
+  color: #777;
+  cursor: not-allowed;
+}
+
+.schema-record button + button {
+  margin-left: 1rem;
+}
+
+.schema-record input, .schema-record textarea, .schema-record select {
+  display:block;
+  width: 50%;
+}

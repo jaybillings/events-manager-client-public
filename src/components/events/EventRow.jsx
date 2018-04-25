@@ -6,7 +6,7 @@ export default class EventRow extends Component {
   constructor(props) {
     super(props);
 
-    this.state = { editable: false };
+    this.state = {editable: false};
     this.eventsSerivce = app.service('events');
 
     this.startEdit = this.startEdit.bind(this);
@@ -32,11 +32,11 @@ export default class EventRow extends Component {
   saveEvent() {
     console.log('in saveEvent()');
     const newData = {
-      name: this.refs.nameInput.value.trim() || this.props.event.name,
-      start_date: this.refs.startInput.value || this.props.event.start_date,
-      end_date: this.refs.endInput.value || this.props.event.end_date,
-      venue_id: this.refs.venueList.value || this.props.event.venue_id,
-      org_id: this.refs.orgList.value || this.props.event.org_id
+      name: this.refs.nameInput.value.trim(),
+      start_date: this.refs.startInput.value,
+      end_date: this.refs.endInput.value,
+      venue_id: this.refs.venueList.value,
+      org_id: this.refs.orgList.value
     };
 
     console.log('newData', newData);
@@ -76,19 +76,19 @@ export default class EventRow extends Component {
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
           <td>
-            <input type={'text'} ref={'nameInput'} defaultValue={event.name} />
+            <input type={'text'} ref={'nameInput'} defaultValue={event.name}/>
           </td>
           <td>
-            <input type={'date'} ref={'startInput'} defaultValue={event.start_date} />
+            <input type={'date'} ref={'startInput'} defaultValue={event.start_date}/>
           </td>
           <td>
-            <input type={'date'} ref={'endInput'} defaultValue={event.end_date} />
+            <input type={'date'} ref={'endInput'} defaultValue={event.end_date}/>
           </td>
           <td>
-            <select ref={'venueList'} defaultValue={event.venue_id || ''}>{ this.renderOptionList(venues) }</select>
+            <select ref={'venueList'} defaultValue={event.venue_id || ''}>{this.renderOptionList(venues)}</select>
           </td>
           <td>
-            <select ref={'orgList'} defaultValue={event.org_id || ''}>{this.renderOptionList(organizers) }</select>
+            <select ref={'orgList'} defaultValue={event.org_id || ''}>{this.renderOptionList(organizers)}</select>
           </td>
           <td>{updatedReadable}</td>
         </tr>

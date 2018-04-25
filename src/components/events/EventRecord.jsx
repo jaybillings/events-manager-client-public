@@ -1,38 +1,45 @@
 import React, {Component} from 'react';
 
-import '../../styles/listing-forms.css';
+import '../../styles/schema-record.css';
 
 export default class EventRecord extends Component {
   constructor(props) {
     super(props);
 
-    this.handleChange = this.handleChange.bind(this);
+    this.renderOptionList = this.renderOptionList.bind(this);
   }
 
-  handleChange() {
-    this.refs.submitButton.disabled = false;
-    this.refs.submitButton.className = 'button-primary';
+  renderOptionList(schema) {
+    let optionsList = [];
+
+    schema.forEach(record => {
+      optionsList.push(<option key={record.id} value={record.id}>{record.name}</option>);
+    });
+
+    return optionsList;
   }
 
   render() {
-    const listing = this.props.event;
+    const event = this.props.event;
+    const venues = this.props.venues;
+    const organizers = this.props.organizers;
     const dateFormatOptions = {
       year: "numeric", month: "numeric", day: "numeric",
       hour: "numeric", minute: "numeric", second: "numeric"
     };
 
-    const updatedReadable = listing.updated_at ? new Date(listing.updated_at).toLocaleString('en-US', dateFormatOptions) : '';
-    const createdReadable = listing.created_at ? new Date(listing.created_at).toLocaleString('en-US', dateFormatOptions) : '';
+    const updatedReadable = event.updated_at ? new Date(event.updated_at).toLocaleString('en-US', dateFormatOptions) : '';
+    const createdReadable = event.created_at ? new Date(event.created_at).toLocaleString('en-US', dateFormatOptions) : '';
 
     return (
-      <form id="event-listing-form" onSubmit={this.props.handleSubmit} onChange={this.handleChange}>
+      <form id="event-listing-form" className={'schema-record'} onSubmit={this.props.handleSubmit}>
         <div>
-          <button type="submit" ref="submitButton" disabled>Save Changes</button>
           <button type="button" ref="deleteButton" onClick={this.props.deleteEvent}>Delete Event</button>
+          <button type="submit" ref="submitButton" className="button-primary">Save Changes</button>
         </div>
         <label>
           ID
-          <input type="text" defaultValue={listing.id} disabled/>
+          <input type="text" defaultValue={event.id} disabled/>
         </label>
         <label>
           Created at
@@ -44,19 +51,27 @@ export default class EventRecord extends Component {
         </label>
         <label>
           Name
-          <input type="text" ref="nameInput" defaultValue={listing.name}/>
+          <input type="text" ref="nameInput" defaultValue={event.name}/>
         </label>
         <label>
           Start Date
-          <input type="date" ref="startInput" defaultValue={listing.start_date}/>
+          <input type="date" ref="startInput" defaultValue={event.start_date}/>
         </label>
         <label>
           End Date
-          <input type="date" ref="endInput" defaultValue={listing.end_date}/>
+          <input type="date" ref="endInput" defaultValue={event.end_date}/>
+        </label>
+        <label>
+          Venue
+          <select ref="venueList" defaultValue={event.venue_id || ''}>{this.renderOptionList(venues)}</select>
+        </label>
+        <label>
+          Organizer
+          <select ref="orgList" defaultValue={event.org_id || ''}>{this.renderOptionList(organizers)}</select>
         </label>
         <label>
           Description
-          <textarea ref="descInput" defaultValue={listing.description}/>
+          <textarea ref="descInput" defaultValue={event.description}/>
         </label>
       </form>
     );

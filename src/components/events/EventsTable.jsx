@@ -3,7 +3,7 @@ import app from '../../services/socketio';
 
 import EventRow from './EventRow';
 
-import '../../styles/data-tables.css';
+import '../../styles/schema-table.css';
 
 export default class EventsTable extends Component {
   constructor(props) {
@@ -14,31 +14,30 @@ export default class EventsTable extends Component {
     this.venuesService = app.service('venues');
     this.orgsSerivce = app.service('organizers');
 
-    this.fetchEvents = this.fetchEvents.bind(this);
-    this.fetchOtherSchema = this.fetchOtherSchema.bind(this);
+    this.fetchAllData = this.fetchAllData.bind(this);
   }
 
   componentDidMount() {
     // Query data
-    this.fetchEvents();
+    this.fetchAllData();
 
     // Register listeners
     this.eventsService
       .on('created', (message) => {
         console.log('added', message);
-        this.fetchEvents();
+        this.fetchAllData();
       })
       .on('patched', (message) => {
         console.log('patched', message);
-        this.fetchEvents();
+        this.fetchAllData();
       })
       .on('removed', (message) => {
         console.log('deleted', message);
-        this.fetchEvents();
+        this.fetchAllData();
       });
   }
 
-  fetchEvents() {
+  fetchAllData() {
     // TODO: Is there a better way to update?
     this.eventsService.find({
       query: {
@@ -47,13 +46,13 @@ export default class EventsTable extends Component {
       }
     }).then(response => {
       this.setState({'events': response.data});
-      this.fetchOtherSchema();
+      this.venuesService.find({query: {$sort: {name: 1}}}).then(message => {
+        this.setState({'venues': message.data})
+      });
+      this.orgsSerivce.find({query: {$sort: {name: 1}}}).then(message => {
+        this.setState({'organizers': message.data})
+      });
     });
-  }
-
-  fetchOtherSchema() {
-    this.venuesService.find({query: { $sort: { name: 1}}}).then(message => {this.setState({'venues': message.data})});
-    this.orgsSerivce.find({query: { $sort: { name: 1}}}).then(message => this.setState({'organizers': message.data}));
   }
 
   render() {
@@ -62,7 +61,7 @@ export default class EventsTable extends Component {
     let organizers = this.state.organizers;
 
     return (
-      <table>
+      <table className={'schema-table'}>
         <thead>
         <tr>
           <th>Actions</th>
@@ -79,8 +78,12 @@ export default class EventsTable extends Component {
           events.map(event =>
             <EventRow key={event.id}
                       event={event}
-                      venue={venues.find(v => { return v.id === event.venue_id })}
-                      organizer={organizers.find(o => {return o.id === event.org_id })}
+                      venue={venues.find(v => {
+                        return v.id === event.venue_id
+                      })}
+                      organizer={organizers.find(o => {
+                        return o.id === event.org_id
+                      })}
                       venues={venues}
                       organizers={organizers}
             />
