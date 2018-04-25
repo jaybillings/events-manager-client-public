@@ -52,8 +52,8 @@ export default class EventsTable extends Component {
   }
 
   fetchOtherSchema() {
-    this.venuesService.find().then(message => {this.setState({'venues': message.data})});
-    this.orgsSerivce.find().then(message => this.setState({'organizers': message.data}));
+    this.venuesService.find({query: { $sort: { name: 1}}}).then(message => {this.setState({'venues': message.data})});
+    this.orgsSerivce.find({query: { $sort: { name: 1}}}).then(message => this.setState({'organizers': message.data}));
   }
 
   render() {
@@ -81,6 +81,8 @@ export default class EventsTable extends Component {
                       event={event}
                       venue={venues.find(v => { return v.id === event.venue_id })}
                       organizer={organizers.find(o => {return o.id === event.org_id })}
+                      venues={venues}
+                      organizers={organizers}
             />
           )
         }

@@ -13,6 +13,7 @@ export default class EventRow extends Component {
     this.cancelEdit = this.cancelEdit.bind(this);
     this.deleteEvent = this.deleteEvent.bind(this);
     this.saveEvent = this.saveEvent.bind(this);
+    this.renderOptionList = this.renderOptionList.bind(this);
   }
 
   startEdit() {
@@ -29,25 +30,43 @@ export default class EventRow extends Component {
   }
 
   saveEvent() {
+    console.log('in saveEvent()');
     const newData = {
       name: this.refs.nameInput.value.trim() || this.props.event.name,
       start_date: this.refs.startInput.value || this.props.event.start_date,
       end_date: this.refs.endInput.value || this.props.event.end_date,
-      description: this.refs.descInput.value.trim() || this.props.event.description
+      venue_id: this.refs.venueList.value || this.props.event.venue_id,
+      org_id: this.refs.orgList.value || this.props.event.org_id
     };
+
+    console.log('newData', newData);
+    console.log('id', this.props.event.id);
 
     this.eventsSerivce.patch(this.props.event.id, newData).then((message) => console.log(message));
     this.setState({editable: false});
   }
 
+  renderOptionList(schema) {
+    let optionsList = [];
+
+    schema.forEach(record => {
+      optionsList.push(<option key={record.id} value={record.id}>{record.name}</option>);
+    });
+
+    return optionsList;
+  }
+
   render() {
+    const event = this.props.event;
+    const venues = this.props.venues;
+    const organizers = this.props.organizers;
+    const venueName = this.props.venue ? this.props.venue.name : 'NO VENUE';
+    const orgName = this.props.organizer ? this.props.organizer.name : 'NO ORGANIZER';
     const dateFormatOptions = {
       year: "numeric", month: "numeric", day: "numeric",
       hour: "numeric", minute: "numeric", second: "numeric"
     };
-    const updatedReadable = new Date(this.props.event.updated_at).toLocaleString('en-US', dateFormatOptions);
-    const venueName = this.props.venue ? this.props.venue.name : 'NO VENUE';
-    const orgName = this.props.organizer ? this.props.organizer.name : 'NO ORGANIZER';
+    const updatedReadable = new Date(event.updated_at).toLocaleString('en-US', dateFormatOptions);
 
     if (this.state.editable) {
       return (
@@ -57,16 +76,19 @@ export default class EventRow extends Component {
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
           <td>
-            <input type={'text'} ref={'nameInput'} defaultValue={this.props.event.name} />
+            <input type={'text'} ref={'nameInput'} defaultValue={event.name} />
           </td>
           <td>
-            <input type={'date'} ref={'startInput'} defaultValue={this.props.event.start_date} />
+            <input type={'date'} ref={'startInput'} defaultValue={event.start_date} />
           </td>
           <td>
-            <input type={'date'} ref={'endInput'} defaultValue={this.props.event.end_date} />
+            <input type={'date'} ref={'endInput'} defaultValue={event.end_date} />
           </td>
           <td>
-            <input type={'text'} ref={'descInput'} defaultValue={this.props.event.description} />
+            <select ref={'venueList'} defaultValue={event.venue_id || ''}>{ this.renderOptionList(venues) }</select>
+          </td>
+          <td>
+            <select ref={'orgList'} defaultValue={event.org_id || ''}>{this.renderOptionList(organizers) }</select>
           </td>
           <td>{updatedReadable}</td>
         </tr>
