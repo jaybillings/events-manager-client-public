@@ -40,8 +40,8 @@ export default class EventAddForm extends Component {
     // Clear form
     this.refs.nameInput.value = '';
     this.refs.descInput.value = '';
-    this.refs.startInput.value = '';
-    this.refs.endInput.value = '';
+    this.refs.startInput.valueAsDate = new Date();
+    this.refs.endInput.valueAsDate = new Date();
     this.refs.venueList.value = '';
     this.refs.orgList.value = '';
   }
