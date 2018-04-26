@@ -36,6 +36,12 @@ export default class SingleVenueLayout extends Component {
       });
   }
 
+  componentWillUnmount() {
+    this.venuesService
+      .removeListener('patched')
+      .removeListener('removed');
+  }
+
   fetchAllData() {
     const id = this.props.match.params.id;
 

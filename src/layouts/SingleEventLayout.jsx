@@ -33,9 +33,15 @@ export default class SingleEventLayout extends Component {
         this.fetchAllData();
       })
       .on('removed', (message) => {
-        console.log('deleted', message);
+        console.log('removed', message);
         this.setState({hasDeleted: true});
       });
+  }
+
+  componentWillUnmount() {
+    this.eventsService
+      .removeListener('patched')
+      .removeListener('removed');
   }
 
   fetchAllData() {

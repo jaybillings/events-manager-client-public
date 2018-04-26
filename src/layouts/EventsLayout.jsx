@@ -29,7 +29,7 @@ export default class EventsLayout extends Component {
     // Register listeners
     this.eventsService
       .on('created', (message) => {
-        console.log('added', message);
+        console.log('created', message);
         this.fetchAllData();
       })
       .on('patched', (message) => {
@@ -37,9 +37,16 @@ export default class EventsLayout extends Component {
         this.fetchAllData();
       })
       .on('removed', (message) => {
-        console.log('deleted', message);
+        console.log('removed', message);
         this.fetchAllData();
       });
+  }
+
+  componentWillUnmount() {
+    this.eventsService
+      .removeListener('created')
+      .removeListener('patched')
+      .removeListener('removed');
   }
 
   fetchAllData() {
