@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {Link} from 'react-router-dom';
-import {renderOptionList} from '../../utilities';
+import {renderOptionList, friendlyDate} from '../../utilities';
 import app from '../../services/socketio';
 
 export default class EventRow extends Component {
@@ -30,7 +30,6 @@ export default class EventRow extends Component {
   }
 
   saveEvent() {
-    console.log('in saveEvent()');
     const newData = {
       name: this.refs.nameInput.value.trim(),
       start_date: this.refs.startInput.value,
@@ -39,7 +38,7 @@ export default class EventRow extends Component {
       org_id: this.refs.orgList.value
     };
 
-    this.eventsService.patch(this.props.event.id, newData).then((message) => console.log(message));
+    this.eventsService.patch(this.props.event.id, newData).then((message) => console.log('patch', message));
     this.setState({editable: false});
   }
 
@@ -49,11 +48,7 @@ export default class EventRow extends Component {
     const organizers = this.props.organizers;
     const venueName = this.props.venue ? this.props.venue.name : 'NO VENUE';
     const orgName = this.props.organizer ? this.props.organizer.name : 'NO ORGANIZER';
-    const dateFormatOptions = {
-      year: "numeric", month: "numeric", day: "numeric",
-      hour: "numeric", minute: "numeric", second: "numeric"
-    };
-    const updatedReadable = new Date(event.updated_at).toLocaleString('en-US', dateFormatOptions);
+    const updatedAt = friendlyDate(event.updated_at);
 
     if (this.state.editable) {
       return (
@@ -77,7 +72,7 @@ export default class EventRow extends Component {
           <td>
             <select ref={'orgList'} defaultValue={event.org_id || ''}>{renderOptionList(organizers)}</select>
           </td>
-          <td>{updatedReadable}</td>
+          <td>{updatedAt}</td>
         </tr>
       );
     }
@@ -93,7 +88,7 @@ export default class EventRow extends Component {
         <td>{event.end_date}</td>
         <td>{venueName}</td>
         <td>{orgName}</td>
-        <td>{updatedReadable}</td>
+        <td>{updatedAt}</td>
       </tr>
     );
   }

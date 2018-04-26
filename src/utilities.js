@@ -11,4 +11,13 @@ const renderOptionList = function (schema) {
 
 };
 
-export {renderOptionList};
+const friendlyDate = function (timestamp) {
+  const dateFormatOptions = {
+    year: "numeric", month: "numeric", day: "numeric",
+    hour: "numeric", minute: "numeric", second: "numeric"
+  };
+
+  return new Date(timestamp).toLocaleString('en-US', dateFormatOptions);
+};
+
+export {renderOptionList, friendlyDate};

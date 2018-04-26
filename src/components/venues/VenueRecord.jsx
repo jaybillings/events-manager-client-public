@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import app from '../../services/socketio';
-import {renderOptionList} from "../../utilities";
+import {renderOptionList, friendlyDate} from "../../utilities";
 
 import '../../styles/schema-record.css';
 
@@ -39,12 +39,8 @@ export default class VenueRecord extends Component {
   render() {
     const venue = this.props.venue;
     const neighborhoods = this.props.neighborhoods;
-    const dateFormatOptions = {
-      year: "numeric", month: "numeric", day: "numeric",
-      hour: "numeric", minute: "numeric", second: "numeric"
-    };
-    const updatedReadable = venue.updated_at ? new Date(venue.updated_at).toLocaleString('en-US', dateFormatOptions) : '';
-    const createdReadable = venue.created_at ? new Date(venue.created_at).toLocaleString('en-US', dateFormatOptions) : '';
+    const createdAt = friendlyDate(venue.created_at);
+    const updatedAt = friendlyDate(venue.updated_at);
 
     return (
       <form id={'venue-listing-form'} className={'schema-record'} onSubmit={this.saveVenue}>
@@ -58,11 +54,11 @@ export default class VenueRecord extends Component {
         </label>
         <label>
           Created at
-          <input type={'text'} defaultValue={createdReadable} disabled />
+          <input type={'text'} defaultValue={createdAt} disabled />
         </label>
         <label>
           Updated at
-          <input type={'text'} defaultValue={updatedReadable} disabled />
+          <input type={'text'} defaultValue={updatedAt} disabled />
         </label>
         <label>
           Name

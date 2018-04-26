@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import app from '../../services/socketio';
-import {renderOptionList} from '../../utilities';
+import {renderOptionList, friendlyDate} from '../../utilities';
 
 import '../../styles/schema-record.css';
 
@@ -44,12 +44,8 @@ export default class EventRecord extends Component {
     const event = this.props.event;
     const venues = this.props.venues;
     const organizers = this.props.organizers;
-    const dateFormatOptions = {
-      year: "numeric", month: "numeric", day: "numeric",
-      hour: "numeric", minute: "numeric", second: "numeric"
-    };
-    const updatedReadable = event.updated_at ? new Date(event.updated_at).toLocaleString('en-US', dateFormatOptions) : '';
-    const createdReadable = event.created_at ? new Date(event.created_at).toLocaleString('en-US', dateFormatOptions) : '';
+    const createdAt = friendlyDate(event.created_at);
+    const updatedAt = friendlyDate(event.updated_at);
 
     return (
       <form id="event-listing-form" className={'schema-record'} onSubmit={this.saveEvent}>
@@ -63,11 +59,11 @@ export default class EventRecord extends Component {
         </label>
         <label>
           Created at
-          <input type="text" defaultValue={createdReadable} disabled/>
+          <input type="text" defaultValue={createdAt} disabled/>
         </label>
         <label>
           Last Updated
-          <input type="text" defaultValue={updatedReadable} disabled/>
+          <input type="text" defaultValue={updatedAt} disabled/>
         </label>
         <label>
           Name

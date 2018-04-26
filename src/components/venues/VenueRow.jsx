@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {Link} from 'react-router-dom';
-import {renderOptionList} from "../../utilities";
+import {renderOptionList, friendlyDate} from "../../utilities";
 import app from '../../services/socketio';
 
 export default class VenueRow extends Component {
@@ -43,11 +43,7 @@ export default class VenueRow extends Component {
     const venue = this.props.venue;
     const neighborhoods = this.props.neighborhoods;
     const hoodName = this.props.neighborhood ? this.props.neighborhood.name : 'NO NEIGHBORHOOD';
-    const dateFormatOptions = {
-      year: "numeric", month: "numeric", day: "numeric",
-      hour: "numeric", minute: "numeric", second: "numeric"
-    };
-    const updatedReadable = new Date(venue.updated_at).toLocaleString('en-US', dateFormatOptions);
+    const updatedAt = friendlyDate(venue.updated_at);
 
     if (this.state.editable) {
       return (
@@ -62,7 +58,7 @@ export default class VenueRow extends Component {
           <td>
             <select ref={'hoodList'} defaultValue={venue.hood_id || ''}>{renderOptionList(neighborhoods)}</select>
           </td>
-          <td>{updatedReadable}</td>
+          <td>{updatedAt}</td>
         </tr>
       );
     }
@@ -75,7 +71,7 @@ export default class VenueRow extends Component {
         </td>
         <td><Link to={`/venues/${venue.id}`}>{venue.name}</Link></td>
         <td>{hoodName}</td>
-        <td>{updatedReadable}</td>
+        <td>{updatedAt}</td>
       </tr>
     );
   }
