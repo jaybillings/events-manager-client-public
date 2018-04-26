@@ -8,6 +8,7 @@ export default class VenueRecord extends Component {
   constructor(props) {
     super(props);
 
+    this.state = {hasDeleted: false};
     this.venuesService = app.service('venues');
 
     this.deleteVenue = this.deleteVenue.bind(this);

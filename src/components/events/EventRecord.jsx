@@ -8,6 +8,7 @@ export default class EventRecord extends Component {
   constructor(props) {
     super(props);
 
+    this.state = {hasDeleted: false};
     this.eventsService = app.service('events');
 
     this.deleteEvent = this.deleteEvent.bind(this);
