@@ -79,7 +79,7 @@ export default class EventRow extends Component {
           </td>
           <td>{updatedReadable}</td>
         </tr>
-      )
+      );
     }
 
     return (

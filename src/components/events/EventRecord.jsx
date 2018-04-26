@@ -48,7 +48,6 @@ export default class EventRecord extends Component {
       year: "numeric", month: "numeric", day: "numeric",
       hour: "numeric", minute: "numeric", second: "numeric"
     };
-
     const updatedReadable = event.updated_at ? new Date(event.updated_at).toLocaleString('en-US', dateFormatOptions) : '';
     const createdReadable = event.created_at ? new Date(event.created_at).toLocaleString('en-US', dateFormatOptions) : '';
 

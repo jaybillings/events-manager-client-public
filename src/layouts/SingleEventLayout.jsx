@@ -41,7 +41,7 @@ export default class SingleEventLayout extends Component {
   fetchAllData() {
     const id = this.props.match.params.id;
 
-    this.setState({ eventLoaded: false, venuesLoaded: false, orgsLoaded: false});
+    this.setState({eventLoaded: false, venuesLoaded: false, orgsLoaded: false});
 
     this.eventsService.get(id).then(message => {
       this.setState({event: message, eventLoaded: true});
