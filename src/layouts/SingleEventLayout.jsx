@@ -70,7 +70,7 @@ export default class SingleEventLayout extends Component {
       return <p>Data is loading... Please be patient...</p>;
     }
 
-    return (<EventRecord ref="record" event={this.state.event} venues={this.state.venues}
+    return (<EventRecord event={this.state.event} venues={this.state.venues}
                          organizers={this.state.organizers}/>);
   }
 

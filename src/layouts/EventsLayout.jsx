@@ -28,15 +28,15 @@ export default class EventsLayout extends Component {
 
     // Register listeners
     this.eventsService
-      .on('created', (message) => {
+      .on('created', message => {
         console.log('created', message);
         this.fetchAllData();
       })
-      .on('patched', (message) => {
+      .on('patched', message => {
         console.log('patched', message);
         this.fetchAllData();
       })
-      .on('removed', (message) => {
+      .on('removed', message => {
         console.log('removed', message);
         this.fetchAllData();
       });

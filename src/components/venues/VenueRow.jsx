@@ -12,8 +12,8 @@ export default class VenueRow extends Component {
 
     this.startEdit = this.startEdit.bind(this);
     this.cancelEdit = this.cancelEdit.bind(this);
-    this.deleteEvent = this.deleteEvent.bind(this);
-    this.saveEvent = this.saveEvent.bind(this);
+    this.deleteVenue = this.deleteVenue.bind(this);
+    this.saveVenue = this.saveVenue.bind(this);
   }
 
   startEdit() {
@@ -24,12 +24,12 @@ export default class VenueRow extends Component {
     this.setState({editable: false});
   }
 
-  deleteEvent() {
+  deleteVenue() {
     // TODO : Lock to admins
     this.venuesService.remove(this.props.venue.id).then(message => console.log('remove', message));
   }
 
-  saveEvent() {
+  saveVenue() {
     const newData = {
       name: this.refs.nameInput.value.trim(),
       hood_id: this.refs.hoodList.value
@@ -49,7 +49,7 @@ export default class VenueRow extends Component {
       return (
         <tr>
           <td>
-            <button type={'button'} onClick={this.saveEvent}>Save</button>
+            <button type={'button'} onClick={this.saveVenue}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
           <td>
@@ -67,7 +67,7 @@ export default class VenueRow extends Component {
       <tr>
         <td>
           <button type={'button'} onClick={this.startEdit}>Edit</button>
-          <button type={'button'} onClick={this.deleteEvent}>Delete</button>
+          <button type={'button'} onClick={this.deleteVenue}>Delete</button>
         </td>
         <td><Link to={`/venues/${venue.id}`}>{venue.name}</Link></td>
         <td>{hoodName}</td>

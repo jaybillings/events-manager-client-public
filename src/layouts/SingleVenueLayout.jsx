@@ -64,7 +64,7 @@ export default class SingleVenueLayout extends Component {
       return <p>Data is loading... Pleased be patient...</p>;
     }
 
-    return (<VenueRecord ref="record" venue={this.state.venue} neighborhoods={this.state.neighborhoods} />);
+    return (<VenueRecord venue={this.state.venue} neighborhoods={this.state.neighborhoods} />);
   }
 
   render() {

@@ -11,6 +11,7 @@ export default class VenueAddForm extends Component {
     this.venuesService = app.service('venues');
 
     this.createVenue = this.createVenue.bind(this);
+    this.clearForm = this.clearForm.bind(this);
   }
 
   createVenue(e) {
@@ -28,9 +29,12 @@ export default class VenueAddForm extends Component {
       console.log('error', Object.values(reason).join(''));
     });
 
-    // Clear form
+    this.clearForm();
+  }
+
+  clearForm() {
     this.refs.nameInput.value = '';
-    this.refs.hoodList.value = '';
+    this.refs.hoodList.value = this.refs.hoodList.firstChild.value;
     this.refs.descInput.value = '';
   }
 
@@ -51,8 +55,8 @@ export default class VenueAddForm extends Component {
           Description
           <textarea ref={'descInput'} required maxLength={500} />
         </label>
-        <button type={'button'}>Start Over</button>
-        <button type={'submit'} className={'button-primary'}>Add Event</button>
+        <button type={'button'} onClick={this.clearForm}>Start Over</button>
+        <button type={'submit'} className={'button-primary'}>Add Venue</button>
       </form>
     );
   }

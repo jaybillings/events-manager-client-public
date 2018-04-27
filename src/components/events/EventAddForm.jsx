@@ -11,6 +11,7 @@ export default class EventAddForm extends Component {
     this.eventsService = app.service('events');
 
     this.createEvent = this.createEvent.bind(this);
+    this.clearForm = this.clearForm.bind(this);
   }
 
   componentDidMount() {
@@ -37,13 +38,16 @@ export default class EventAddForm extends Component {
       console.log('error', Object.values(reason).join(''));
     });
 
-    // Clear form
+    this.clearForm();
+  }
+
+  clearForm() {
     this.refs.nameInput.value = '';
     this.refs.descInput.value = '';
     this.refs.startInput.valueAsDate = new Date();
     this.refs.endInput.valueAsDate = new Date();
-    this.refs.venueList.value = '';
-    this.refs.orgList.value = '';
+    this.refs.venueList.value = this.refs.venueList.firstChild.value;
+    this.refs.orgList.value = this.refs.orgList.firstChild.value;
   }
 
   render() {
@@ -76,7 +80,7 @@ export default class EventAddForm extends Component {
           Description
           <textarea ref={'descInput'} required maxLength="500"/>
         </label>
-        <button type={'button'}>Start Over</button>
+        <button type={'button'} onClick={this.clearForm}>Start Over</button>
         <button type={'submit'} className={'button-primary'}>Add Event</button>
       </form>
     );
