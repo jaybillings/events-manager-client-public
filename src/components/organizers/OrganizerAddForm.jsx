@@ -46,8 +46,10 @@ export default class OrganizerAddForm extends Component {
           Description
           <textarea ref={'descInput'} required maxLength={500} />
         </label>
-        <button type={'button'} onClick={this.clearForm}>Start Over</button>
-        <button type={'submit'} className={'button-primary'}>Add Organizer</button>
+        <div>
+          <button type={'button'} onClick={this.clearForm}>Start Over</button>
+          <button type={'submit'} className={'button-primary'}>Add Organizer</button>
+        </div>
       </form>
     );
   }

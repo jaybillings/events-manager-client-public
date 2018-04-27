@@ -1,9 +1,9 @@
 import React, {Component} from 'react';
 import {Redirect} from 'react-router';
-import app from '../services/socketio';
+import app from '../../services/socketio';
 
-import Header from '../components/common/Header';
-import EventRecord from '../components/events/EventRecord';
+import Header from '../../components/common/Header';
+import EventRecord from '../../components/events/EventRecord';
 
 export default class SingleEventLayout extends Component {
   constructor(props) {

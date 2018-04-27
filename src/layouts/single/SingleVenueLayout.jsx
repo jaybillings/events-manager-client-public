@@ -1,9 +1,9 @@
 import React, {Component} from 'react';
 import {Redirect} from 'react-router';
-import app from '../services/socketio';
+import app from '../../services/socketio';
 
-import Header from "../components/common/Header";
-import VenueRecord from '../components/venues/VenueRecord';
+import Header from "../../components/common/Header";
+import VenueRecord from '../../components/venues/VenueRecord';
 
 export default class SingleVenueLayout extends Component {
   constructor(props) {

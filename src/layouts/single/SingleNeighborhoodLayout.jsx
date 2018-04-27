@@ -1,17 +1,16 @@
 import React, {Component} from 'react';
 import {Redirect} from 'react-router';
-import app from '../services/socketio';
+import app from '../../services/socketio';
 
-import Header from "../components/common/Header";
-import OrganizerRecord from '../components/organizers/OrganizerRecord';
+import Header from '../../components/common/Header';
+import NeighborhoodRecord from '../../components/neighborhoods/NeighborhoodRecord';
 
-export default class SingleOrganizerLayout extends Component {
+export default class SingleNeighborhoodLayout extends Component {
   constructor(props) {
     super(props);
 
-    this.state = { organizer: {}, orgLoaded: false, hasDeleted: false, notFound: false};
-
-    this.orgsService = app.service('organizers');
+    this.state = {neighborhood: {}, hoodLoaded: false, hasDeleted: false, notFound: false};
+    this.hoodsService = app.service('neighborhoods');
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.renderRecord = this.renderRecord.bind(this);
@@ -21,7 +20,7 @@ export default class SingleOrganizerLayout extends Component {
     this.fetchAllData();
 
     // Register listeners
-    this.orgsService
+    this.hoodsService
       .on('patched', message => {
         console.log('patched', message);
         this.fetchAllData();
@@ -33,7 +32,7 @@ export default class SingleOrganizerLayout extends Component {
   }
 
   componentWillUnmount() {
-    this.orgsService
+    this.hoodsService
       .removeListener('patched')
       .removeListener('removed');
   }
@@ -41,10 +40,10 @@ export default class SingleOrganizerLayout extends Component {
   fetchAllData() {
     const id = this.props.match.params.id;
 
-    this.setState({orgLoaded: false});
+    this.setState({hoodLoaded: false});
 
-    this.orgsService.get(id).then(message => {
-      this.setState({organizer: message, orgLoaded: true});
+    this.hoodsService.get(id).then(message => {
+      this.setState({neighborhood: message, hoodLoaded: true});
     }, message => {
       console.log('error', JSON.stringify(message));
       this.setState({notFound: true});
@@ -52,22 +51,20 @@ export default class SingleOrganizerLayout extends Component {
   }
 
   renderRecord() {
-    if (!this.state.orgLoaded) {
-      return <p>Data is loading... Please be patient...</p>;
-    }
+    if (!this.state.hoodLoaded) return <p>Data is loading... Please be patient...</p>;
 
-    return <OrganizerRecord organizer={this.state.organizer} />;
+    return <NeighborhoodRecord neighborhood={this.state.neighborhood}/>
   }
 
   render() {
-    if (this.state.notFound) return <Redirect to={'/404'} />;
+    if (this.state.notFound) return <Redirect to={'/404'}/>;
 
-    if (this.state.hasDeleted) return <Redirect to={'/organizers/'} />;
+    if (this.state.hasDeleted) return <Redirect to={'/neighborhoods/'}/>;
 
     return (
       <div className={'container'}>
         <Header/>
-        <h2>{this.state.organizer.name}</h2>
+        <h2>{this.state.neighborhood.name}</h2>
         {this.renderRecord()}
       </div>
     );

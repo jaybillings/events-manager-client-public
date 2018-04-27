@@ -52,7 +52,7 @@ export default class OrganizerRow extends Component {
           </td>
           <td>{updatedAt}</td>
         </tr>
-      )
+      );
     }
 
     return (

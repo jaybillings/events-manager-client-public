@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 
-import Header from "../components/common/Header";
+import Header from "../../components/common/Header";
 
 export default class CategoriesLayout extends Component {
   render() {

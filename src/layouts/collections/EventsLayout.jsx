@@ -1,9 +1,9 @@
 import React, {Component} from 'react';
-import app from '../services/socketio';
+import app from '../../services/socketio';
 
-import Header from '../components/common/Header';
-import EventsTable from '../components/events/EventsTable';
-import EventAddForm from '../components/events/EventAddForm';
+import Header from '../../components/common/Header';
+import EventsTable from '../../components/events/EventsTable';
+import EventAddForm from '../../components/events/EventAddForm';
 
 export default class EventsLayout extends Component {
   constructor(props) {

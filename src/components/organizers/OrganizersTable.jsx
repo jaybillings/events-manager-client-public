@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 
 import OrganizerRow from './OrganizerRow';
-
 import '../../styles/schema-table.css';
 
 export default class OrganizersTable extends Component {

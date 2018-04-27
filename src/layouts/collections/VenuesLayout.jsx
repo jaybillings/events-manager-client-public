@@ -1,9 +1,9 @@
 import React, {Component} from 'react';
-import app from '../services/socketio';
+import app from '../../services/socketio';
 
-import Header from '../components/common/Header';
-import VenuesTable from '../components/venues/VenuesTable';
-import VenueAddForm from '../components/venues/VenueAddForm';
+import Header from '../../components/common/Header';
+import VenuesTable from '../../components/venues/VenuesTable';
+import VenueAddForm from '../../components/venues/VenueAddForm';
 
 export default class VenuesLayout extends Component {
   constructor(props) {

@@ -1,9 +1,9 @@
 import React, {Component} from 'react';
-import app from '../services/socketio';
+import app from '../../services/socketio';
 
-import Header from '../components/common/Header';
-import OrganizersTable from '../components/organizers/OrganizersTable';
-import OrganizerAddForm from '../components/organizers/OrganizerAddForm';
+import Header from '../../components/common/Header';
+import OrganizersTable from '../../components/organizers/OrganizersTable';
+import OrganizerAddForm from '../../components/organizers/OrganizerAddForm';
 
 export default class OrganizersLayout extends Component {
   constructor(props) {

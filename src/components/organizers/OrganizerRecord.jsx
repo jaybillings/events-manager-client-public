@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import app from '../../services/socketio';
-import {friendlyDate} from "../../utilities";
+import {friendlyDate} from '../../utilities';
 
 import '../../styles/schema-record.css';
 
@@ -9,6 +9,7 @@ export default class OrganizerRecord extends Component {
     super(props);
 
     this.orgsService = app.service('organizers');
+    this.state = {hasDeleted: false};
 
     this.deleteOrganizer = this.deleteOrganizer.bind(this);
     this.saveOrganizer = this.saveOrganizer.bind(this);
