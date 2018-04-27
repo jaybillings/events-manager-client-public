@@ -59,7 +59,7 @@ export default class OrganizerRow extends Component {
       <tr>
         <td>
           <button type={'button'} onClick={this.startEdit}>Edit</button>
-          <button type={'button'} onClick={this.deleteEvent}>Delete</button>
+          <button type={'button'} onClick={this.deleteOrganizer}>Delete</button>
         </td>
         <td><Link to={`/organizers/${organizer.id}`}>{organizer.name}</Link></td>
         <td>{updatedAt}</td>

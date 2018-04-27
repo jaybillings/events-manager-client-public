@@ -65,7 +65,7 @@ export default class OrganizerRecord extends Component {
         </label>
         <label>
           Description
-          <input ref={'descInput'} defaultValue={organizer.description}/>
+          <textarea ref={'descInput'} defaultValue={organizer.description}/>
         </label>
       </form>
     );
