@@ -42,7 +42,7 @@ export default class VenueRow extends Component {
   render() {
     const venue = this.props.venue;
     const neighborhoods = this.props.neighborhoods;
-    const hoodName = this.props.neighborhood ? this.props.neighborhood.name : 'NO NEIGHBORHOOD';
+    const hoodNameLink = this.props.neighborhood ? <Link to={`/neighborhoods/${venue.hood_id}`}>{ this.props.neighborhood.name }</Link> : 'NO NEIGHBORHOOD';
     const updatedAt = friendlyDate(venue.updated_at);
 
     if (this.state.editable) {
@@ -70,7 +70,7 @@ export default class VenueRow extends Component {
           <button type={'button'} onClick={this.deleteVenue}>Delete</button>
         </td>
         <td><Link to={`/venues/${venue.id}`}>{venue.name}</Link></td>
-        <td>{hoodName}</td>
+        <td>{hoodNameLink}</td>
         <td>{updatedAt}</td>
       </tr>
     );
