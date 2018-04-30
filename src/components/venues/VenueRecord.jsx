@@ -39,8 +39,6 @@ export default class VenueRecord extends Component {
     this.refs.stateInput.value && (newData['address_state'] = this.refs.stateInput.value);
     this.refs.zipInput.value && (newData['address_zip'] = this.refs.zipInput.value);
 
-    console.log(this.refs.emailInput.value);
-
     this.venuesService.patch(id, newData).then(message => {
       console.log('patch', message);
     }, message => {
@@ -74,15 +72,15 @@ export default class VenueRecord extends Component {
         </label>
         <label>
           Name
-          <input type={'text'} ref={'nameInput'} defaultValue={venue.name}/>
+          <input type={'text'} ref={'nameInput'} defaultValue={venue.name} required/>
         </label>
         <label>
           Neighborhood
-          <select ref={'hoodList'} defaultValue={venue.hood_id || ''}>{renderOptionList(neighborhoods)}</select>
+          <select ref={'hoodList'} defaultValue={venue.hood_id || ''} required>{renderOptionList(neighborhoods)}</select>
         </label>
         <label>
           Description
-          <textarea ref={'descInput'} defaultValue={venue.description}/>
+          <textarea ref={'descInput'} defaultValue={venue.description} required />
         </label>
         <label>
           Email

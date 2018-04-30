@@ -30,6 +30,10 @@ export default class OrganizerRecord extends Component {
       description: this.refs.descInput.value.trim()
     };
 
+    // Only add non-required if they have a value
+    this.refs.urlInput.value && (newData['url'] = this.refs.urlInput.value);
+    this.refs.phoneInput.value && (newData['phone'] = this.refs.phoneInput.value);
+
     this.orgsService.patch(id, newData).then(message => {
       console.log('patch', message);
     }, message => {
@@ -67,6 +71,14 @@ export default class OrganizerRecord extends Component {
         <label>
           Description
           <textarea ref={'descInput'} defaultValue={organizer.description}/>
+        </label>
+        <label>
+          Url
+          <input type={'url'} ref={'urlInput'} defaultValue={organizer.url} />
+        </label>
+        <label>
+          Phone #
+          <input type={'tel'} ref={'phoneInput'} defaultValue={organizer.phone} />
         </label>
       </form>
     );
