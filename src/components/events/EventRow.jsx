@@ -46,8 +46,8 @@ export default class EventRow extends Component {
     const event = this.props.event;
     const venues = this.props.venues;
     const organizers = this.props.organizers;
-    const venueLinkName = this.props.venue ? <Link to={`/venues/${event.venue_id}`}>{this.props.venue.name}</Link> : 'NO VENUE';
-    const orgLinkName = this.props.organizer ? <Link to={`/organizers/${event.org_id}`}>{this.props.organizer.name}</Link> : 'NO ORGANIZER';
+    const venueLink = this.props.venue ? <Link to={`/venues/${event.venue_id}`}>{this.props.venue.name}</Link> : 'NO VENUE';
+    const orgLink = this.props.organizer ? <Link to={`/organizers/${event.org_id}`}>{this.props.organizer.name}</Link> : 'NO ORGANIZER';
     const updatedAt = friendlyDate(event.updated_at);
 
     if (this.state.editable) {
@@ -86,8 +86,8 @@ export default class EventRow extends Component {
         <td><Link to={`/events/${event.id}`}>{event.name}</Link></td>
         <td>{event.start_date}</td>
         <td>{event.end_date}</td>
-        <td>{venueLinkName}</td>
-        <td>{orgLinkName}</td>
+        <td>{venueLink}</td>
+        <td>{orgLink}</td>
         <td>{updatedAt}</td>
       </tr>
     );

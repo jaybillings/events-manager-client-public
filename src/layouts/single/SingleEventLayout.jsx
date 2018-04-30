@@ -18,6 +18,8 @@ export default class SingleEventLayout extends Component {
     this.eventsService = app.service('events');
     this.venuesService = app.service('venues');
     this.orgsService = app.service('organizers');
+    this.tagsService = app.service('tags');
+    this.tagsLookupService = app.service('events-tags-lookup');
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.renderRecord = this.renderRecord.bind(this);
@@ -47,7 +49,7 @@ export default class SingleEventLayout extends Component {
   fetchAllData() {
     const id = this.props.match.params.id;
 
-    this.setState({eventLoaded: false, venuesLoaded: false, orgsLoaded: false});
+    this.setState({eventLoaded: false, venuesLoaded: false, orgsLoaded: false, tagsLoaded: false});
 
     this.eventsService.get(id).then(message => {
       this.setState({event: message, eventLoaded: true});
@@ -63,15 +65,23 @@ export default class SingleEventLayout extends Component {
     this.orgsService.find({query: {$sort: {name: 1}}}).then(message => {
       this.setState({organizers: message.data, orgsLoaded: true})
     });
+
+    this.tagsService.find({query: {$sort: {name: 1}}}).then(message => {
+      this.setState({tags: message.data});
+      this.tagsLookupService.find({query: {event_id: id}}).then(message => {
+        let tagsForEvent = message.data.map(row => row.tag_id);
+        this.setState({eventTags: tagsForEvent, tagsLoaded: true});
+      });
+    });
   }
 
   renderRecord() {
-    if (!(this.state.eventLoaded && this.state.venuesLoaded && this.state.orgsLoaded)) {
+    if (!(this.state.eventLoaded && this.state.venuesLoaded && this.state.orgsLoaded && this.state.tagsLoaded)) {
       return <p>Data is loading... Please be patient...</p>;
     }
 
-    return (<EventRecord event={this.state.event} venues={this.state.venues}
-                         organizers={this.state.organizers}/>);
+    return (<EventRecord event={this.state.event} venues={this.state.venues} organizers={this.state.organizers}
+                         tags={this.state.tags} eventTags={this.state.eventTags}/>);
   }
 
   render() {

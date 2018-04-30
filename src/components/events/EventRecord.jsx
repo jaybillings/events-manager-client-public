@@ -10,9 +10,12 @@ export default class EventRecord extends Component {
 
     this.state = {hasDeleted: false};
     this.eventsService = app.service('events');
+    this.tagsLookupService = app.service('events-tags-lookup');
 
     this.deleteEvent = this.deleteEvent.bind(this);
     this.saveEvent = this.saveEvent.bind(this);
+    this.saveTags = this.saveTags.bind(this);
+    this.renderTagsInput = this.renderTagsInput.bind(this);
   }
 
   deleteEvent() {
@@ -39,6 +42,43 @@ export default class EventRecord extends Component {
     }, message => {
       console.log('error', message);
     });
+
+    this.saveTags();
+  }
+
+  saveTags() {
+    const id = this.props.event.id;
+    let tagsToSave = [], tagsToDelete = [];
+    let checkedBoxes = document.querySelectorAll('.js-tag-checkbox:checked');
+    let uncheckedBoxes = document.querySelectorAll('.js-tag-checkbox:not(:checked)');
+
+    checkedBoxes.forEach(input => {
+      if (!this.props.eventTags.includes(parseInt(input.value, 10))) tagsToSave.push({'event_id': id, 'tag_id': input.value})
+    });
+    uncheckedBoxes.forEach(input => tagsToDelete.push(input.value));
+
+    this.tagsLookupService.remove(null, {query: {event_id: id, tag_id: {$in: tagsToDelete}}}).then(message =>{
+      console.log('removed', message.data);
+    }, reason => console.log('error', reason));
+
+    this.tagsLookupService.create(tagsToSave).then(message => {
+      console.log('created', message.data);
+    }, reason => console.log('error', reason));
+  }
+
+  renderTagsInput() {
+    let tagsList = [];
+
+    this.props.tags.forEach(tag => {
+      tagsList.push(
+        <label key={tag.id}>
+          <input type={'checkbox'} id={`tag-${tag.id}`} className={'js-tag-checkbox'} value={tag.id}
+                 defaultChecked={this.props.eventTags.includes(tag.id)} />
+          {tag.name}
+        </label>);
+    });
+
+    return tagsList;
   }
 
   render() {
@@ -85,6 +125,10 @@ export default class EventRecord extends Component {
         <label>
           Organizer
           <select ref="orgList" defaultValue={event.org_id || ''}>{renderOptionList(organizers)}</select>
+        </label>
+        <label>
+          Tags
+          {this.renderTagsInput()}
         </label>
         <label>
           Description
