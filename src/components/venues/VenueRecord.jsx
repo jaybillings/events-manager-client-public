@@ -30,10 +30,21 @@ export default class VenueRecord extends Component {
       description: this.refs.descInput.value.trim()
     };
 
+    // Only add non-required if they have a value
+    this.refs.emailInput.value && (newData['email'] = this.refs.emailInput.value);
+    this.refs.urlInput.value && (newData['url'] = this.refs.urlInput.value);
+    this.refs.phoneInput.value && (newData['phone'] = this.refs.phoneInput.value);
+    this.refs.streetInput.value && (newData['address_street'] = this.refs.streetInput.value);
+    this.refs.cityInput.value && (newData['address_city'] = this.refs.cityInput.value);
+    this.refs.stateInput.value && (newData['address_state'] = this.refs.stateInput.value);
+    this.refs.zipInput.value && (newData['address_zip'] = this.refs.zipInput.value);
+
+    console.log(this.refs.emailInput.value);
+
     this.venuesService.patch(id, newData).then(message => {
       console.log('patch', message);
     }, message => {
-      console.log('error', message);
+      console.log('error', JSON.stringify(message));
     });
   }
 
@@ -72,6 +83,34 @@ export default class VenueRecord extends Component {
         <label>
           Description
           <textarea ref={'descInput'} defaultValue={venue.description}/>
+        </label>
+        <label>
+          Email
+          <input type={'email'} ref={'emailInput'} defaultValue={venue.email} />
+        </label>
+        <label>
+          Url
+          <input type={'url'} ref={'urlInput'} defaultValue={venue.url} />
+        </label>
+        <label>
+          Phone #
+          <input type={'tel'} ref={'phoneInput'} defaultValue={venue.phone} />
+        </label>
+        <label>
+          Street Address
+          <input type={'text'} ref={'streetInput'} defaultValue={venue.address_street} />
+        </label>
+        <label>
+          City
+          <input type={'text'} ref={'cityInput'} defaultValue={venue.address_city} />
+        </label>
+        <label>
+          State
+          <input type={'text'} ref={'stateInput'} defaultValue={venue.address_state} />
+        </label>
+        <label>
+          Zip Code
+          <input type={'text'} ref={'zipInput'} defaultValue={venue.address_zip} />
         </label>
       </form>
     );
