@@ -25,7 +25,7 @@ export default class NeighborhoodRecord extends Component {
     e.preventDefault();
 
     const id = this.props.neighborhood.id;
-    const newData = {name: this.refs.nameInput.value.trim()};
+    const newData = {name: this.refs['nameInput'].value.trim()};
 
     this.hoodsService.patch(id, newData).then(message => {
       console.log('patch', message);

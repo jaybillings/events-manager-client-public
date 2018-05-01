@@ -30,7 +30,7 @@ export default class NeighborhoodRow extends Component {
   }
 
   saveNeighborhood() {
-    const newData = {name: this.refs.nameInput.value.trim()};
+    const newData = {name: this.refs['nameInput'].value.trim()};
 
     this.hoodsService.patch(this.props.neighborhood.id, newData).then(message => console.log('patch', message));
     this.setState({editable: false});

@@ -31,11 +31,11 @@ export default class EventRow extends Component {
 
   saveEvent() {
     const newData = {
-      name: this.refs.nameInput.value.trim(),
-      start_date: this.refs.startInput.value,
-      end_date: this.refs.endInput.value,
-      venue_id: this.refs.venueList.value,
-      org_id: this.refs.orgList.value
+      name: this.refs['nameInput'].value.trim(),
+      start_date: this.refs['startInput'].value,
+      end_date: this.refs['endInput'].value,
+      venue_id: this.refs['venueList'].value,
+      org_id: this.refs['orgList'].value
     };
 
     this.eventsService.patch(this.props.event.id, newData).then((message) => console.log('patch', message));

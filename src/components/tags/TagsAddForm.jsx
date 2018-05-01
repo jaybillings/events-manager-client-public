@@ -10,25 +10,19 @@ export default class TagsAddForm extends Component {
     this.tagsService = app.service('tags');
 
     this.createHood = this.createHood.bind(this);
-    this.clearForm = this.clearForm.bind(this);
   }
 
   createHood(e) {
     e.preventDefault();
 
-    const tagObj = {name: this.refs.nameInput.value.trim()};
+    const tagObj = {name: this.refs['nameInput'].value.trim()};
 
     this.tagsService.create(tagObj).then(message => {
-      console.log('crete', message);
+      console.log('create', message);
+      document.querySelector('#tag-add-form').reset();
     }, reason => {
       console.log('error', Object.values(reason).join(''));
     });
-
-    this.clearForm();
-  }
-
-  clearForm() {
-    this.refs.nameInput.value = '';
   }
 
   render() {
@@ -36,12 +30,9 @@ export default class TagsAddForm extends Component {
       <form id={'tag-add-form'} className={'add-form'} onSubmit={this.createHood}>
         <label>
           Name
-          <input type={'text'} ref={'nameInput'} required maxLength={100}/>
+          <input type={'text'} ref={'nameInput'} required maxLength={100} />
         </label>
-        <div>
-          <button type={'button'} onClick={this.clearForm}>Start Over</button>
-          <button type={'submit'} className={'button-primary'}>Add Tag</button>
-        </div>
+        <button type={'submit'} className={'button-primary'}>Add Tag</button>
       </form>
     );
   }

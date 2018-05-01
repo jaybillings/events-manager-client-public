@@ -30,7 +30,7 @@ export default class OrganizerRow extends Component {
   }
 
   saveOrganizer() {
-    const newData = {name: this.refs.nameInput.value.trim()};
+    const newData = {name: this.refs['nameInput'].value.trim()};
 
     this.orgsService.patch(this.props.organizer.id, newData).then(message => console.log('patch', message));
     this.setState({editable: false});

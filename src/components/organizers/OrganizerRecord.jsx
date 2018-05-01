@@ -26,13 +26,13 @@ export default class OrganizerRecord extends Component {
 
     const id = this.props.organizer.id;
     const newData = {
-      name: this.refs.nameInput.value.trim(),
-      description: this.refs.descInput.value.trim()
+      name: this.refs['nameInput'].value.trim(),
+      description: this.refs['descInput'].value.trim()
     };
 
     // Only add non-required if they have a value
-    this.refs.urlInput.value && (newData['url'] = this.refs.urlInput.value);
-    this.refs.phoneInput.value && (newData['phone'] = this.refs.phoneInput.value);
+    this.refs['urlInput'].value && (newData['url'] = this.refs['urlInput'].value);
+    this.refs['phoneInput'].value && (newData['phone'] = this.refs['phoneInput'].value);
 
     this.orgsService.patch(id, newData).then(message => {
       console.log('patch', message);
@@ -43,8 +43,8 @@ export default class OrganizerRecord extends Component {
 
   render() {
     const organizer = this.props.organizer;
-    const createdAt = friendlyDate(organizer.created_at);
-    const updatedAt = friendlyDate(organizer.updated_at);
+    const createdAt = friendlyDate(organizer['created_at']);
+    const updatedAt = friendlyDate(organizer['updated_at']);
 
     return (
       <form id={'organizer-listing-form'} className={'schema-record'} onSubmit={this.saveOrganizer}>

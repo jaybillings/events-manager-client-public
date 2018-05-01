@@ -30,7 +30,7 @@ export default class TagsRow extends Component {
   }
 
   saveTag() {
-    const newData = {name: this.refs.nameInput.value.trim()};
+    const newData = {name: this.refs['nameInput'].value.trim()};
 
     this.tagsService.patch(this.props.tag.id, newData).then(message => console.log('patch', message));
     this.setState({editable: false});

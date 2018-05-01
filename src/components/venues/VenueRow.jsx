@@ -31,8 +31,8 @@ export default class VenueRow extends Component {
 
   saveVenue() {
     const newData = {
-      name: this.refs.nameInput.value.trim(),
-      hood_id: this.refs.hoodList.value
+      name: this.refs['nameInput'].value.trim(),
+      hood_id: this.refs['hoodList'].value
     };
 
     this.venuesService.patch(this.props.venue.id, newData).then(message => console.log(message));

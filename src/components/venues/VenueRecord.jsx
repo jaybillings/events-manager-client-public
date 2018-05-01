@@ -25,19 +25,19 @@ export default class VenueRecord extends Component {
 
     const id = this.props.venue.id;
     const newData = {
-      name: this.refs.nameInput.value.trim(),
-      hood_id: this.refs.hoodList.value,
-      description: this.refs.descInput.value.trim()
+      name: this.refs['nameInput'].value.trim(),
+      hood_id: this.refs['hoodList'].value,
+      description: this.refs['descInput'].value.trim()
     };
 
     // Only add non-required if they have a value
-    this.refs.emailInput.value && (newData['email'] = this.refs.emailInput.value);
-    this.refs.urlInput.value && (newData['url'] = this.refs.urlInput.value);
-    this.refs.phoneInput.value && (newData['phone'] = this.refs.phoneInput.value);
-    this.refs.streetInput.value && (newData['address_street'] = this.refs.streetInput.value);
-    this.refs.cityInput.value && (newData['address_city'] = this.refs.cityInput.value);
-    this.refs.stateInput.value && (newData['address_state'] = this.refs.stateInput.value);
-    this.refs.zipInput.value && (newData['address_zip'] = this.refs.zipInput.value);
+    this.refs['emailInput'].value && (newData['email'] = this.refs['emailInput'].value);
+    this.refs['urlInput'].value && (newData['url'] = this.refs['urlInput'].value);
+    this.refs['phoneInput'].value && (newData['phone'] = this.refs['phoneInput'].value);
+    this.refs['streetInput'].value && (newData['address_street'] = this.refs['streetInput'].value);
+    this.refs['cityInput'].value && (newData['address_city'] = this.refs['cityInput'].value);
+    this.refs['stateInput'].value && (newData['address_state'] = this.refs['stateInput'].value);
+    this.refs['zipInput'].value && (newData['address_zip'] = this.refs['zipInput'].value);
 
     this.venuesService.patch(id, newData).then(message => {
       console.log('patch', message);

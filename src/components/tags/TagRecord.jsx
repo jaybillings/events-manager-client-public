@@ -25,7 +25,7 @@ export default class TagRecord extends Component {
     e.preventDefault();
 
     const id = this.props.tag.id;
-    const newData = {name: this.refs.nameInput.value.trim()};
+    const newData = {name: this.refs['nameInput'].value.trim()};
 
     this.tagsService.patch(id, newData).then(message => {
       console.log('patch', message);
