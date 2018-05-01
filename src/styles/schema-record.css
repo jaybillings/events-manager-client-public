@@ -12,12 +12,12 @@
   width: 50%;
 }
 
-.schema-record input[type=checkbox] {
-  margin-right: 3rem;
-}
-
 .schema-record input:invalid {
   box-shadow: 0 0 5px 1px red;
+}
+
+.schema-record input[type=checkbox] {
+  margin-right: 3rem;
 }
 
 .schema-record ul li {

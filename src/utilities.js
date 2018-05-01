@@ -11,6 +11,21 @@ const renderOptionList = function (schema) {
 
 };
 
+const renderCheckboxList = function(schema, selectedIds) {
+  let chkbxList = [];
+
+  schema.forEach(record => {
+    chkbxList.push(
+      <label key={record.id}>
+        <input type={'checkbox'} className={'js-checkbox'} value={record.id} defaultChecked={selectedIds.includes(record.id)} />
+        {record.name}
+      </label>
+    );
+  });
+
+  return chkbxList;
+};
+
 const friendlyDate = function (timestamp) {
   const dateFormatOptions = {
     year: "numeric", month: "numeric", day: "numeric",
@@ -20,4 +35,4 @@ const friendlyDate = function (timestamp) {
   return new Date(timestamp).toLocaleString('en-US', dateFormatOptions);
 };
 
-export {renderOptionList, friendlyDate};
+export {renderOptionList, renderCheckboxList, friendlyDate};

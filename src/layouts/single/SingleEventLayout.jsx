@@ -32,7 +32,7 @@ export default class SingleEventLayout extends Component {
     this.eventsService
       .on('patched', (message) => {
         console.log('patched', message);
-        this.fetchAllData();
+        this.setState = {event: message};
       })
       .on('removed', (message) => {
         console.log('removed', message);

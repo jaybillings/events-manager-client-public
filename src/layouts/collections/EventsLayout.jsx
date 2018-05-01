@@ -10,17 +10,18 @@ export default class EventsLayout extends Component {
     super(props);
 
     this.state = {
-      events: [], venues: [], organizers: [],
-      eventsLoaded: false, venuesLoaded: false, orgsLoaded: false
+      events: [], venues: [], organizers: [], tags: [],
+      eventsLoaded: false, venuesLoaded: false, orgsLoaded: false, tagsLoaded: false
     };
 
     this.eventsService = app.service('events');
     this.venuesService = app.service('venues');
     this.orgsSerivce = app.service('organizers');
+    this.tagsService = app.service('tags');
 
     this.fetchAllData = this.fetchAllData.bind(this);
-    this.renderTable = this.renderTable.bind(this);
-    this.renderForm = this.renderForm.bind(this);
+    this.renderEventsTable = this.renderEventsTable.bind(this);
+    this.renderEventAddForm = this.renderEventAddForm.bind(this);
   }
 
   componentDidMount() {
@@ -61,15 +62,19 @@ export default class EventsLayout extends Component {
     });
 
     this.venuesService.find({query: {$sort: {name: 1}}}).then(message => {
-      this.setState({venues: message.data, venuesLoaded: true})
+      this.setState({venues: message.data, venuesLoaded: true});
     });
 
     this.orgsSerivce.find({query: {$sort: {name: 1}}}).then(message => {
-      this.setState({organizers: message.data, orgsLoaded: true})
+      this.setState({organizers: message.data, orgsLoaded: true});
     });
+
+    this.tagsService.find({query: {$sort: {name: 1}}}).then(message => {
+      this.setState({tags: message.data, tagsLoaded: true});
+    })
   }
 
-  renderTable() {
+  renderEventsTable() {
     if (!(this.state.eventsLoaded && this.state.venuesLoaded && this.state.orgsLoaded)) {
       return <p>Data is loading... Please be patient...</p>;
     }
@@ -77,12 +82,12 @@ export default class EventsLayout extends Component {
     return <EventsTable events={this.state.events} venues={this.state.venues} organizers={this.state.organizers}/>;
   }
 
-  renderForm() {
-    if (!(this.state.venuesLoaded && this.state.orgsLoaded)) {
+  renderEventAddForm() {
+    if (!(this.state.venuesLoaded && this.state.orgsLoaded && this.state.tagsLoaded)) {
       return <p>Data is loading... Please be patient...</p>;
     }
 
-    return <EventAddForm venues={this.state.venues} organizers={this.state.organizers}/>;
+    return <EventAddForm venues={this.state.venues} organizers={this.state.organizers} tags={this.state.tags}/>;
   }
 
   render() {
@@ -91,9 +96,9 @@ export default class EventsLayout extends Component {
         <Header/>
         <h2>Events</h2>
         <h3>View/Modify</h3>
-        {this.renderTable()}
+        {this.renderEventsTable()}
         <h3>Add New Event</h3>
-        {this.renderForm()}
+        {this.renderEventAddForm()}
       </div>
     );
   }
