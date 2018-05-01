@@ -41,8 +41,8 @@ export default class VenueRecord extends Component {
 
     this.venuesService.patch(id, newData).then(message => {
       console.log('patch', message);
-    }, message => {
-      console.log('error', JSON.stringify(message));
+    }, reason => {
+      console.log('error', JSON.stringify(reason));
     });
   }
 
@@ -54,10 +54,6 @@ export default class VenueRecord extends Component {
 
     return (
       <form id={'venue-listing-form'} className={'schema-record'} onSubmit={this.saveVenue}>
-        <div>
-          <button type={'button'} ref={'deleteButton'} onClick={this.deleteVenue}>Delete Venue</button>
-          <button type={'submit'} ref={'submitBUtton'} className={'button-primary'}>Save Changes</button>
-        </div>
         <label>
           ID
           <input type={'text'} defaultValue={venue.id} disabled />
@@ -110,6 +106,10 @@ export default class VenueRecord extends Component {
           Zip Code
           <input type={'text'} ref={'zipInput'} defaultValue={venue.address_zip} />
         </label>
+        <div>
+          <button type={'button'} ref={'deleteButton'} onClick={this.deleteVenue}>Delete Venue</button>
+          <button type={'submit'} ref={'submitBUtton'} className={'button-primary'}>Save Changes</button>
+        </div>
       </form>
     );
   }

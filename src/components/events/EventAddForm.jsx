@@ -40,23 +40,22 @@ export default class EventAddForm extends Component {
     }, reason => {
       console.log('error', Object.values(reason).join(''));
     });
-
-    this.clearForm();
   }
 
   saveTags(recordId) {
-      let tagData = [];
-      let checkedBoxes = document.querySelectorAll('.js-checkbox:checked');
+    let tagData = [];
+    let checkedBoxes = document.querySelectorAll('.js-checkbox:checked');
 
-      checkedBoxes.forEach(input => {
-        tagData.push({'event_id': recordId, 'tag_id': input.value});
-      });
+    checkedBoxes.forEach(input => {
+      tagData.push({'event_id': recordId, 'tag_id': input.value});
+    });
 
-      console.log(tagData);
+    console.log(tagData);
 
-      this.tagsLookupService.create(tagData).then(message => {
-        console.log('created', message);
-      }, reason => console.log('error', reason));
+    this.tagsLookupService.create(tagData).then(message => {
+      console.log('created', message);
+      this.clearForm();
+    }, reason => console.log('error', reason));
   }
 
   clearForm() {
@@ -78,15 +77,15 @@ export default class EventAddForm extends Component {
       <form id={'event-add-form'} className={'add-form'} onSubmit={this.createEvent}>
         <label className={'required'}>
           Name
-          <input type={'text'} ref={'nameInput'} required maxLength="100"/>
+          <input type={'text'} ref={'nameInput'} required maxLength="100" />
         </label>
         <label className={'required'}>
           Start Date
-          <input type={'date'} ref={'startInput'} required/>
+          <input type={'date'} ref={'startInput'} required />
         </label>
         <label className={'required'}>
           End Date
-          <input type={'date'} ref={'endInput'} required/>
+          <input type={'date'} ref={'endInput'} required />
         </label>
         <label className={'required'}>
           Venue
@@ -98,7 +97,7 @@ export default class EventAddForm extends Component {
         </label>
         <label className={'required'}>
           Description
-          <textarea ref={'descInput'} required maxLength="500"/>
+          <textarea ref={'descInput'} required maxLength="500" />
         </label>
         <label>
           Tags
@@ -130,16 +129,13 @@ export default class EventAddForm extends Component {
         </label>
         <label>
           Ticket Prices
-          <input type={'text'} ref={'ticketPricesInput'}/>
+          <input type={'text'} ref={'ticketPricesInput'} />
         </label>
         <label>
           <input type={'checkbox'} ref={'ongoingInput'} />
           Ongoing Event
         </label>
-        <div>
-          <button type={'button'} onClick={this.clearForm}>Start Over</button>
-          <button type={'submit'} className={'button-primary'}>Add Event</button>
-        </div>
+        <button type={'submit'} className={'button-primary'}>Add Event</button>
       </form>
     );
   }
