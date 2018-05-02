@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
+import Moment from 'moment';
 import {Link} from 'react-router-dom';
-import {renderOptionList, friendlyDate} from '../../utilities';
+import {renderOptionList} from '../../utilities';
 import app from '../../services/socketio';
 
 import '../../styles/schema-row.css';
@@ -35,8 +36,8 @@ export default class EventRow extends Component {
   saveEvent() {
     const newData = {
       name: this.refs['nameInput'].value.trim(),
-      start_date: this.refs['startInput'].value,
-      end_date: this.refs['endInput'].value,
+      start_date: Moment(this.refs['startInput'].value).valueOf(),
+      end_date: Moment(this.refs['endInput'].value).valueOf(),
       venue_id: this.refs['venueList'].value,
       org_id: this.refs['orgList'].value,
       is_published: this.refs['statusInput'].checked
@@ -56,7 +57,7 @@ export default class EventRow extends Component {
       <Link to={`/organizers/${event.org_id}`}>{this.props.organizer.name}</Link> : 'NO ORGANIZER';
     const eventStatus = this.props.event['is_published'] ? <span className="bolded">Published</span> :
       <span className="muted">Dropped</span>;
-    const updatedAt = friendlyDate(event.updated_at);
+    const updatedAt = Moment(event.updated_at).calendar();
 
     if (this.state.editable) {
       return (
@@ -69,10 +70,10 @@ export default class EventRow extends Component {
             <input type={'text'} ref={'nameInput'} defaultValue={event.name} />
           </td>
           <td>
-            <input type={'date'} ref={'startInput'} defaultValue={event.start_date} />
+            <input type={'date'} ref={'startInput'} defaultValue={Moment(event.start_date).format('YYYY-MM-DD')} />
           </td>
           <td>
-            <input type={'date'} ref={'endInput'} defaultValue={event.end_date} />
+            <input type={'date'} ref={'endInput'} defaultValue={Moment(event.end_date).format('YYYY-MM-DD')} />
           </td>
           <td>
             <select ref={'venueList'} defaultValue={event.venue_id || ''}>{renderOptionList(venues)}</select>
@@ -97,8 +98,8 @@ export default class EventRow extends Component {
           <button type={'button'} onClick={this.deleteEvent}>Delete</button>
         </td>
         <td><Link to={`/events/${event.id}`}>{event.name}</Link></td>
-        <td>{event['start_date']}</td>
-        <td>{event['end_date']}</td>
+        <td>{Moment(event.start_date).format('MM/DD/YYYY')}</td>
+        <td>{Moment(event.end_date).format('MM/DD/YYYY')}</td>
         <td>{venueLink}</td>
         <td>{orgLink}</td>
         <td>{eventStatus}</td>

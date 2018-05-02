@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import Moment from 'moment';
 import app from '../../services/socketio';
 import {renderCheckboxList, renderOptionList} from '../../utilities';
 
@@ -16,18 +17,13 @@ export default class EventAddForm extends Component {
     this.clearForm = this.clearForm.bind(this);
   }
 
-  componentDidMount() {
-    this.refs['startInput'].valueAsDate = new Date();
-    this.refs['endInput'].valueAsDate = new Date();
-  }
-
   createEvent(e) {
     e.preventDefault();
 
     const eventObj = {
       name: this.refs['nameInput'].value.trim(),
-      start_date: this.refs['startInput'].value,
-      end_date: this.refs['endInput'].value,
+      start_date: Moment(this.refs['startInput'].value).valueOf(),
+      end_date: Moment(this.refs['endInput'].value).valueOf(),
       venue_id: this.refs['venueList'].value,
       org_id: this.refs['orgList'].value,
       description: this.refs['descInput'].value.trim(),
@@ -49,8 +45,6 @@ export default class EventAddForm extends Component {
     checkedBoxes.forEach(input => {
       tagData.push({'event_id': recordId, 'tag_id': input.value});
     });
-
-    console.log(tagData);
 
     this.tagsLookupService.create(tagData).then(message => {
       console.log('created', message);
@@ -81,11 +75,11 @@ export default class EventAddForm extends Component {
         </label>
         <label className={'required'}>
           Start Date
-          <input type={'date'} ref={'startInput'} required />
+          <input type={'date'} ref={'startInput'} defaultValue={Moment().format('YYYY-MM-DD')} required />
         </label>
         <label className={'required'}>
           End Date
-          <input type={'date'} ref={'endInput'} required />
+          <input type={'date'} ref={'endInput'} defaultValue={Moment().format('YYYY-MM-DD')} required />
         </label>
         <label className={'required'}>
           Venue

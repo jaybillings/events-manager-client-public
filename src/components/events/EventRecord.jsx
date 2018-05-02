@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
+import Moment from 'moment';
 import app from '../../services/socketio';
-import {renderOptionList, renderCheckboxList, friendlyDate} from '../../utilities';
+import {renderOptionList, renderCheckboxList} from '../../utilities';
 
 import '../../styles/schema-record.css';
 import '../../styles/toggle.css';
@@ -31,8 +32,8 @@ export default class EventRecord extends Component {
     const id = this.props.event.id;
     const newData = {
       name: this.refs['nameInput'].value.trim(),
-      start_date: this.refs['startInput'].value,
-      end_date: this.refs['endInput'].value,
+      start_date: Moment(this.refs['startInput'].value).valueOf(),
+      end_date: Moment(this.refs['endInput'].value).valueOf(),
       venue_id: this.refs['venueList'].value,
       org_id: this.refs['orgList'].value,
       description: this.refs['descInput'].value.trim(),
@@ -81,7 +82,7 @@ export default class EventRecord extends Component {
   }
 
   toggleStatus() {
-    this.setState({ tmpStatus: this.refs.statusInput.checked});
+    this.setState({ tmpStatus: this.refs['statusInput'].checked});
   }
 
   render() {
@@ -89,8 +90,10 @@ export default class EventRecord extends Component {
     const venues = this.props.venues;
     const organizers = this.props.organizers;
     const tags = this.props.tags;
-    const createdAt = friendlyDate(event['created_at']);
-    const updatedAt = friendlyDate(event['updated_at']);
+    const startDate = Moment(event['start_date']).format('YYYY-MM-DD');
+    const endDate = Moment(event['end_date']).format('YYYY-MM-DD');
+    const createdAt = Moment(event['created_at']).calendar();
+    const updatedAt = Moment(event['updated_at']).calendar();
 
     return (
       <form id="event-listing-form" className={'schema-record'} onSubmit={this.saveEvent}>
@@ -106,7 +109,7 @@ export default class EventRecord extends Component {
           <input type="text" defaultValue={event.id} disabled />
         </label>
         <label>
-          Created at
+          Created
           <input type="text" defaultValue={createdAt} disabled />
         </label>
         <label>
@@ -119,11 +122,11 @@ export default class EventRecord extends Component {
         </label>
         <label className={'required'}>
           Start Date
-          <input type="date" ref="startInput" defaultValue={event.start_date} required />
+          <input type="date" ref="startInput" defaultValue={startDate} required />
         </label>
         <label className={'required'}>
           End Date
-          <input type="date" ref="endInput" defaultValue={event.end_date} required />
+          <input type="date" ref="endInput" defaultValue={endDate} required />
         </label>
         <label className={'required'}>
           Venue
