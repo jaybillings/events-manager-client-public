@@ -3,18 +3,20 @@ import app from '../../services/socketio';
 import {renderOptionList, renderCheckboxList, friendlyDate} from '../../utilities';
 
 import '../../styles/schema-record.css';
+import '../../styles/toggle.css';
 
 export default class EventRecord extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {hasDeleted: false};
+    this.state = {hasDeleted: false, tmpStatus: this.props.event.is_published};
     this.eventsService = app.service('events');
     this.tagsLookupService = app.service('events-tags-lookup');
 
     this.deleteEvent = this.deleteEvent.bind(this);
     this.saveEvent = this.saveEvent.bind(this);
     this.saveTags = this.saveTags.bind(this);
+    this.toggleStatus = this.toggleStatus.bind(this);
   }
 
   deleteEvent() {
@@ -34,7 +36,8 @@ export default class EventRecord extends Component {
       venue_id: this.refs['venueList'].value,
       org_id: this.refs['orgList'].value,
       description: this.refs['descInput'].value.trim(),
-      flag_ongoing: this.refs['ongoingInput'].checked
+      flag_ongoing: this.refs['ongoingInput'].checked,
+      is_published: this.refs['statusInput'].checked
     };
 
     // Only add non-required if they have a value
@@ -61,17 +64,24 @@ export default class EventRecord extends Component {
     let uncheckedBoxes = document.querySelectorAll('.js-checkbox:not(:checked)');
 
     checkedBoxes.forEach(input => {
-      if (!this.props.eventTags.includes(parseInt(input.value, 10))) tagsToSave.push({'event_id': id, 'tag_id': input.value});
+      if (!this.props.eventTags.includes(parseInt(input.value, 10))) tagsToSave.push({
+        'event_id': id,
+        'tag_id': input.value
+      });
     });
     uncheckedBoxes.forEach(input => tagsToDelete.push(input.value));
 
-    this.tagsLookupService.remove(null, {query: {event_id: id, tag_id: {$in: tagsToDelete}}}).then(message =>{
+    this.tagsLookupService.remove(null, {query: {event_id: id, tag_id: {$in: tagsToDelete}}}).then(message => {
       console.log('removed', message);
     }, reason => console.log('error', reason));
 
     this.tagsLookupService.create(tagsToSave).then(message => {
       console.log('created', message);
     }, reason => console.log('error', reason));
+  }
+
+  toggleStatus() {
+    this.setState({ tmpStatus: this.refs.statusInput.checked});
   }
 
   render() {
@@ -84,17 +94,24 @@ export default class EventRecord extends Component {
 
     return (
       <form id="event-listing-form" className={'schema-record'} onSubmit={this.saveEvent}>
+        <div>
+          <p className={'label'}>Status</p>
+          <input id={'toggle-' + event.id} ref={'statusInput'} className={'toggle'} type={'checkbox'}
+                 defaultChecked={event.is_published} onClick={this.toggleStatus} />
+          <label className={'toggle-switch'} htmlFor={'toggle-' + event.id} />
+          <span ref={'statusLabel'}>{this.state.tmpStatus ? 'Published' : 'Dropped'}</span>
+        </div>
         <label>
           ID
-          <input type="text" defaultValue={event.id} disabled/>
+          <input type="text" defaultValue={event.id} disabled />
         </label>
         <label>
           Created at
-          <input type="text" defaultValue={createdAt} disabled/>
+          <input type="text" defaultValue={createdAt} disabled />
         </label>
         <label>
           Last Updated
-          <input type="text" defaultValue={updatedAt} disabled/>
+          <input type="text" defaultValue={updatedAt} disabled />
         </label>
         <label className={'required'}>
           Name

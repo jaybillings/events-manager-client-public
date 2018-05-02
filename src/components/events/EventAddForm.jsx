@@ -135,7 +135,7 @@ export default class EventAddForm extends Component {
           <input type={'checkbox'} ref={'ongoingInput'} />
           Ongoing Event
         </label>
-        <button type={'submit'} className={'button-primary'}>Add Event</button>
+        <button type={'submit'} className={'button-primary'}>Publish Event</button>
       </form>
     );
   }

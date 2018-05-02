@@ -3,6 +3,9 @@ import {Link} from 'react-router-dom';
 import {renderOptionList, friendlyDate} from '../../utilities';
 import app from '../../services/socketio';
 
+import '../../styles/schema-row.css';
+import '../../styles/toggle.css';
+
 export default class EventRow extends Component {
   constructor(props) {
     super(props);
@@ -35,7 +38,8 @@ export default class EventRow extends Component {
       start_date: this.refs['startInput'].value,
       end_date: this.refs['endInput'].value,
       venue_id: this.refs['venueList'].value,
-      org_id: this.refs['orgList'].value
+      org_id: this.refs['orgList'].value,
+      is_published: this.refs['statusInput'].checked
     };
 
     this.eventsService.patch(this.props.event.id, newData).then((message) => console.log('patch', message));
@@ -46,25 +50,29 @@ export default class EventRow extends Component {
     const event = this.props.event;
     const venues = this.props.venues;
     const organizers = this.props.organizers;
-    const venueLink = this.props.venue ? <Link to={`/venues/${event.venue_id}`}>{this.props.venue.name}</Link> : 'NO VENUE';
-    const orgLink = this.props.organizer ? <Link to={`/organizers/${event.org_id}`}>{this.props.organizer.name}</Link> : 'NO ORGANIZER';
+    const venueLink = this.props.venue ?
+      <Link to={`/venues/${event.venue_id}`}>{this.props.venue.name}</Link> : 'NO VENUE';
+    const orgLink = this.props.organizer ?
+      <Link to={`/organizers/${event.org_id}`}>{this.props.organizer.name}</Link> : 'NO ORGANIZER';
+    const eventStatus = this.props.event['is_published'] ? <span className="bolded">Published</span> :
+      <span className="muted">Dropped</span>;
     const updatedAt = friendlyDate(event.updated_at);
 
     if (this.state.editable) {
       return (
-        <tr>
+        <tr className={'schema-row'}>
           <td>
             <button type={'button'} onClick={this.saveEvent}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
           <td>
-            <input type={'text'} ref={'nameInput'} defaultValue={event.name}/>
+            <input type={'text'} ref={'nameInput'} defaultValue={event.name} />
           </td>
           <td>
-            <input type={'date'} ref={'startInput'} defaultValue={event.start_date}/>
+            <input type={'date'} ref={'startInput'} defaultValue={event.start_date} />
           </td>
           <td>
-            <input type={'date'} ref={'endInput'} defaultValue={event.end_date}/>
+            <input type={'date'} ref={'endInput'} defaultValue={event.end_date} />
           </td>
           <td>
             <select ref={'venueList'} defaultValue={event.venue_id || ''}>{renderOptionList(venues)}</select>
@@ -72,22 +80,28 @@ export default class EventRow extends Component {
           <td>
             <select ref={'orgList'} defaultValue={event.org_id || ''}>{renderOptionList(organizers)}</select>
           </td>
+          <td>
+            <input id={'toggle-' + event.id} ref={'statusInput'} className={'toggle'} type={'checkbox'}
+                   defaultChecked={event.is_published} />
+            <label className={'toggle-switch'} htmlFor={'toggle-' + event.id} />
+          </td>
           <td>{updatedAt}</td>
         </tr>
       );
     }
 
     return (
-      <tr>
+      <tr className={'schema-row'}>
         <td>
           <button type={'button'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} onClick={this.deleteEvent}>Delete</button>
         </td>
         <td><Link to={`/events/${event.id}`}>{event.name}</Link></td>
-        <td>{event.start_date}</td>
-        <td>{event.end_date}</td>
+        <td>{event['start_date']}</td>
+        <td>{event['end_date']}</td>
         <td>{venueLink}</td>
         <td>{orgLink}</td>
+        <td>{eventStatus}</td>
         <td>{updatedAt}</td>
       </tr>
     );

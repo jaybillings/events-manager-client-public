@@ -20,6 +20,7 @@ export default class EventsTable extends Component {
           <th>End Date</th>
           <th>Venue</th>
           <th>Organizer</th>
+          <th>Status</th>
           <th>Last Modified</th>
         </tr>
         </thead>

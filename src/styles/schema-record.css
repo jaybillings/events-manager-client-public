@@ -1,3 +1,7 @@
+.schema-record > div {
+  margin-bottom: 1rem;
+}
+
 .schema-record input[disabled], .schema-record button[disabled] {
   color: #777;
   cursor: not-allowed;
@@ -32,4 +36,15 @@
   content: '*';
   color: red;
   margin-right: .5rem;
+}
+
+.schema-record p.label {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.schema-record .toggle + .toggle-switch {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 2rem;
 }

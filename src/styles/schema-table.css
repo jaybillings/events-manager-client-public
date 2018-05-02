@@ -1,3 +1,7 @@
 .schema-table td {
   min-width: min-content;
 }
+
+.schema-table select {
+  max-width: 20rem;
+}
