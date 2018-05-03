@@ -3,6 +3,7 @@ import React, {Component} from 'react';
 import EventRow from './EventRow';
 
 import '../../styles/schema-table.css';
+import '../../styles/pagination.css';
 
 export default class EventsTable extends Component {
   render() {
