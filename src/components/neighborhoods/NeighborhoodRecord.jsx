@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
+import Moment from 'moment';
 import app from '../../services/socketio';
-import {friendlyDate} from '../../utilities';
 
 import '../../styles/schema-record.css';
 
@@ -36,8 +36,8 @@ export default class NeighborhoodRecord extends Component {
 
   render() {
     const neighborhood = this.props.neighborhood;
-    const createdAt = friendlyDate(neighborhood.created_at);
-    const updatedAt = friendlyDate(neighborhood.updated_at);
+    const createdAt = Moment(neighborhood['created_at']).calendar();
+    const updatedAt = Moment(neighborhood['updated_at']).calendar();
 
     return (
       <form id={'neighborhood-listing-form'} className={'schema-record'} onSubmit={this.saveNeighborhood}>

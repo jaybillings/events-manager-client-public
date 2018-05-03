@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
+import Moment from 'moment';
 import app from '../../services/socketio';
-import {renderOptionList, friendlyDate} from "../../utilities";
+import {renderOptionList} from "../../utilities";
 
 import '../../styles/schema-record.css';
 
@@ -49,8 +50,8 @@ export default class VenueRecord extends Component {
   render() {
     const venue = this.props.venue;
     const neighborhoods = this.props.neighborhoods;
-    const createdAt = friendlyDate(venue.created_at);
-    const updatedAt = friendlyDate(venue.updated_at);
+    const createdAt = Moment(venue['created_at']).calendar();
+    const updatedAt = Moment(venue['updated_at']).calendar();
 
     return (
       <form id={'venue-listing-form'} className={'schema-record'} onSubmit={this.saveVenue}>

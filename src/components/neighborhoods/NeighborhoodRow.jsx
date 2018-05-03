@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
+import Moment from 'moment';
 import {Link} from 'react-router-dom';
-import {friendlyDate} from '../../utilities';
 import app from '../../services/socketio';
 
 export default class NeighborhoodRow extends Component {
@@ -38,7 +38,7 @@ export default class NeighborhoodRow extends Component {
 
   render() {
     const neighborhood = this.props.neighborhood;
-    const updatedAt = friendlyDate(neighborhood.updated_at);
+    const updatedAt = Moment(neighborhood['updated_at']).calendar();
 
     if (this.state.editable) {
       return (

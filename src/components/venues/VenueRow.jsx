@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
+import Moment from 'moment';
 import {Link} from 'react-router-dom';
-import {renderOptionList, friendlyDate} from "../../utilities";
+import {renderOptionList,} from "../../utilities";
 import app from '../../services/socketio';
 
 export default class VenueRow extends Component {
@@ -43,7 +44,7 @@ export default class VenueRow extends Component {
     const venue = this.props.venue;
     const neighborhoods = this.props.neighborhoods;
     const hoodNameLink = this.props.neighborhood ? <Link to={`/neighborhoods/${venue.hood_id}`}>{ this.props.neighborhood.name }</Link> : 'NO NEIGHBORHOOD';
-    const updatedAt = friendlyDate(venue.updated_at);
+    const updatedAt = Moment(venue['updated_at']).calendar();
 
     if (this.state.editable) {
       return (

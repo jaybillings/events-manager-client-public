@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
+import Moment from 'moment';
 import app from '../../services/socketio';
-import {friendlyDate} from '../../utilities';
 
 import '../../styles/schema-record.css';
 
@@ -43,8 +43,8 @@ export default class OrganizerRecord extends Component {
 
   render() {
     const organizer = this.props.organizer;
-    const createdAt = friendlyDate(organizer['created_at']);
-    const updatedAt = friendlyDate(organizer['updated_at']);
+    const createdAt = Moment(organizer['created_at']).calendar();
+    const updatedAt = Moment(organizer['updated_at']).calendar();
 
     return (
       <form id={'organizer-listing-form'} className={'schema-record'} onSubmit={this.saveOrganizer}>

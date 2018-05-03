@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
+import Moment from 'moment';
 import {Link} from 'react-router-dom';
-import {friendlyDate} from '../../utilities';
 import app from '../../services/socketio';
 
 export default class TagsRow extends Component {
@@ -38,7 +38,7 @@ export default class TagsRow extends Component {
 
   render() {
     const tag = this.props.tag;
-    const updatedAt = friendlyDate(tag.updated_at);
+    const updatedAt = Moment(tag['updated_at']).calendar();
 
     if (this.state.editable) {
       return (

@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
+import Moment from 'moment';
 import app from '../../services/socketio';
-import {friendlyDate} from '../../utilities';
 
 import '../../styles/schema-record.css';
 
@@ -36,8 +36,8 @@ export default class TagRecord extends Component {
 
   render() {
     const tag = this.props.tag;
-    const createdAt = friendlyDate(tag.created_at);
-    const updatedAt = friendlyDate(tag.updated_at);
+    const createdAt = Moment(tag['created_at']).calendar();
+    const updatedAt = Moment(tag['updated_at']).calendar();
 
     return (
       <form id={'tag-listing-form'} className={'schema-record'} onSubmit={this.saveTag}>
