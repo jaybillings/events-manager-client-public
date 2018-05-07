@@ -1,4 +1,24 @@
-.pagination ul {}
+.pagination-container {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-rows: auto;
+}
+
+.pagination-container > label, ul.pagination {
+    display: inline-block;
+}
+
+.pagination-container > label select {
+  margin-left: 1rem;
+}
+
+.pagination-container span {
+  text-align: right;
+}
+
+ul.pagination {
+  text-align: center;
+}
 
 .pagination li {
   display: inline-block;
@@ -23,4 +43,24 @@
 
 .pagination li a {
   text-decoration: none;
+}
+
+.pagination .disabled {
+  cursor: not-allowed;
+  background-color: #efefef;
+}
+
+.pagination .disabled a {
+  cursor: inherit;
+  color: #bbb;
+}
+
+.pagination .active {
+  background-color: #1EAEDB;
+  border-color: #1EAEDB;
+}
+
+.pagination .active a {
+  font-weight: 600;
+  color: white;
 }

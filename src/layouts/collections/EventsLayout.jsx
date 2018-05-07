@@ -1,8 +1,9 @@
 import React, {Component} from 'react';
-import Pagination from 'react-js-pagination';
 import app from '../../services/socketio';
 
 import Header from '../../components/common/Header';
+import PaginationLayout from '../../components/common/PaginationLayout';
+import Filters from '../../components/common/Filters';
 import EventsTable from '../../components/events/EventsTable';
 import EventAddForm from '../../components/events/EventAddForm';
 
@@ -24,11 +25,13 @@ export default class EventsLayout extends Component {
     this.fetchAllData = this.fetchAllData.bind(this);
     this.updatePageSize = this.updatePageSize.bind(this);
     this.updateCurrentPage = this.updateCurrentPage.bind(this);
+    this.updateFilters = this.updateFilters.bind(this);
     this.renderEventsTable = this.renderEventsTable.bind(this);
     this.renderEventAddForm = this.renderEventAddForm.bind(this);
   }
 
   componentDidMount() {
+    console.log('in componentdidmount');
     this.fetchAllData();
 
     // Register listeners
@@ -55,14 +58,17 @@ export default class EventsLayout extends Component {
   }
 
   fetchAllData() {
+    let query = {
+      $sort: this.state.sort,
+      $limit: this.state.pageSize,
+      $skip: this.state.pageSize * (this.state.currentPage - 1)
+    };
+    Object.assign(query, this.state.filter);
+
+    console.log('query', query);
+
     // TODO: Is there a better way to update?
-    this.eventsService.find({
-      query: {
-        $sort: this.state.sort,
-        $limit: this.state.pageSize,
-        $skip: this.state.pageSize * (this.state.currentPage - 1)
-      }
-    }).then(message => {
+    this.eventsService.find({query: query}).then(message => {
       this.setState({events: message.data, eventsTotal: message.total, eventsLoaded: true});
     });
 
@@ -80,13 +86,32 @@ export default class EventsLayout extends Component {
   }
 
   updatePageSize(e) {
-    console.log('target value', e.target.value);
     this.setState({pageSize: parseInt(e.target.value, 10)}, () => this.fetchAllData());
   }
 
   updateCurrentPage(page) {
     console.log(`active page is ${page}`);
-    this.setState({currentPage: parseInt(page, 10)});
+    this.setState({currentPage: parseInt(page, 10)}, () => this.fetchAllData());
+  }
+
+  updateFilters(filterType) {
+    let filter;
+
+    switch (filterType) {
+      case 'dropped':
+        filter = {'is_published': 0};
+        break;
+      case 'stale':
+        filter = {'is_published': 1, 'end_date': { $lt: new Date().valueOf()}};
+        break;
+      case 'published':
+        filter = {'is_published': 1};
+        break;
+      default:
+        filter = {};
+    }
+
+    this.setState({'filter': filter}, () => this.fetchAllData());
   }
 
   renderEventsTable() {
@@ -111,21 +136,9 @@ export default class EventsLayout extends Component {
         <Header />
         <h2>Events</h2>
         <h3>View/Modify</h3>
-        <div className={'pagination-container'}>
-          <label>
-            Listings per page
-            <select ref={'pageSizeSelect'} defaultValue={this.state.pageSize} onChange={this.updatePageSize}>
-              <option value={5}>5</option>
-              <option value={25}>25</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
-          </label>
-          <Pagination activePage={this.state.activePage}
-                      itemsCountPerPage={this.state.pageSize}
-                      totalItemsCount={this.state.eventsTotal}
-                      onChange={this.updateCurrentPage} />
-        </div>
+        <Filters updateFilters={this.updateFilters}/>
+        <PaginationLayout pageSize={this.state.pageSize} activePage={this.state.currentPage} total={this.state.eventsTotal}
+                          updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage} />
         {this.renderEventsTable()}
         <h3>Add New Event</h3>
         {this.renderEventAddForm()}
