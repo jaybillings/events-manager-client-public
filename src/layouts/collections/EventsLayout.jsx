@@ -31,14 +31,13 @@ export default class EventsLayout extends Component {
   }
 
   componentDidMount() {
-    console.log('in componentdidmount');
     this.fetchAllData();
 
     // Register listeners
     this.eventsService
       .on('created', message => {
         console.log('created', message);
-        this.fetchAllData();
+        this.setState({currentPage: 1, pageSize: 5}, () => this.fetchAllData());
       })
       .on('patched', message => {
         console.log('patched', message);
@@ -46,7 +45,7 @@ export default class EventsLayout extends Component {
       })
       .on('removed', message => {
         console.log('removed', message);
-        this.fetchAllData();
+        this.setState({currentPage: 1, pageSize: 5}, () => this.fetchAllData());
       });
   }
 
@@ -86,7 +85,7 @@ export default class EventsLayout extends Component {
   }
 
   updatePageSize(e) {
-    this.setState({pageSize: parseInt(e.target.value, 10)}, () => this.fetchAllData());
+    this.setState({pageSize: parseInt(e.target.value, 10), currentPage: 1}, () => this.fetchAllData());
   }
 
   updateCurrentPage(page) {
@@ -95,14 +94,14 @@ export default class EventsLayout extends Component {
   }
 
   updateFilters(filterType) {
-    let filter;
+    let filter = {};
 
     switch (filterType) {
       case 'dropped':
         filter = {'is_published': 0};
         break;
       case 'stale':
-        filter = {'is_published': 1, 'end_date': { $lt: new Date().valueOf()}};
+        filter = {'is_published': 1, 'end_date': {$lt: new Date().valueOf()}};
         break;
       case 'published':
         filter = {'is_published': 1};
@@ -111,7 +110,7 @@ export default class EventsLayout extends Component {
         filter = {};
     }
 
-    this.setState({'filter': filter}, () => this.fetchAllData());
+    this.setState({'pageSize': 5, 'currentPage': 1, 'filter': filter}, () => this.fetchAllData());
   }
 
   renderEventsTable() {
@@ -136,8 +135,9 @@ export default class EventsLayout extends Component {
         <Header />
         <h2>Events</h2>
         <h3>View/Modify</h3>
-        <Filters updateFilters={this.updateFilters}/>
-        <PaginationLayout pageSize={this.state.pageSize} activePage={this.state.currentPage} total={this.state.eventsTotal}
+        <Filters updateFilters={this.updateFilters} />
+        <PaginationLayout pageSize={this.state.pageSize} activePage={this.state.currentPage}
+                          total={this.state.eventsTotal}
                           updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage} />
         {this.renderEventsTable()}
         <h3>Add New Event</h3>

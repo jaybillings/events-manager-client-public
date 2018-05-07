@@ -11,8 +11,8 @@ export default class PaginationLayout extends Component {
   }
 
   renderPageOptions() {
-    const pageSizes = [25, 50, 100];
-    let pageOptions = [<option key={'option-5'} value={5}>5</option>];
+    const pageSizes = [5, 25, 50, 100];
+    let pageOptions = [];
 
     pageSizes.forEach(size => {
       if (this.props.total >= size) {
@@ -20,7 +20,7 @@ export default class PaginationLayout extends Component {
       }
     });
 
-    pageOptions.push(<option key={`option-${this.props.total}`} value={this.props.total}>{this.props.total}</option>);
+    pageOptions.push(<option key={`option-${this.props.total}`} value={this.props.total}>All</option>);
 
     return pageOptions;
   }
@@ -28,7 +28,11 @@ export default class PaginationLayout extends Component {
   render() {
     const tmpEnd = this.props.activePage * this.props.pageSize;
     const end = tmpEnd > this.props.total ? this.props.total : tmpEnd;
-    const start = end - (this.props.pageSize - 1);
+    const start = (this.props.pageSize * (this.props.activePage - 1)) + 1;
+    let pageInfo;
+
+    if (end === start) pageInfo = `Showing ${end} of ${this.props.total}`;
+    else pageInfo = `Showing ${start} - ${end} of ${this.props.total}`;
 
     return (
       <div className={'pagination-container'}>
@@ -42,7 +46,7 @@ export default class PaginationLayout extends Component {
                     itemsCountPerPage={this.props.pageSize}
                     totalItemsCount={this.props.total}
                     onChange={this.props.updateCurrentPage} />
-        <span>Showing {start} - {end} of {this.props.total}</span>
+        <span>{pageInfo}</span>
       </div>
     );
   }
