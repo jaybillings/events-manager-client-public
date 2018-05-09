@@ -4,16 +4,29 @@ export default class SortIndicator extends Component {
   render() {
     if (this.props.direction === -1) {
       return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="28"><path d="M16 17a.99.99 0 0 1-.297.703l-7 7C8.516 24.89 8.265 25 8 25s-.516-.109-.703-.297l-7-7A.996.996 0 0 1 0 17c0-.547.453-1 1-1h14c.547 0 1 .453 1 1z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="20" height="20"
+             style={{verticalAlign: '-.125em', transform: 'rotate(360deg)'}} viewBox="0 0 320 512">
+          <path d="M41 288h238c21.4 0 32.1 25.9 17 41L177 448c-9.4 9.4-24.6 9.4-33.9 0L24 329c-15.1-15.1-4.4-41 17-41z"
+                fill="#33c3f0" />
+        </svg>
       )
     } else if (this.props.direction === 1) {
       return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="28"><path d="M16 11c0 .547-.453 1-1 1H1c-.547 0-1-.453-1-1a.99.99 0 0 1 .297-.703l7-7C7.484 3.11 7.735 3 8 3s.516.109.703.297l7 7A.996.996 0 0 1 16 11z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="20" height="20"
+             style={{verticalAlign: '-.125em', transform: 'rotate(360deg)'}} viewBox="0 0 320 512">
+          <path d="M279 224H41c-21.4 0-32.1-25.9-17-41L143 64c9.4-9.4 24.6-9.4 33.9 0l119 119c15.2 15.1 4.5 41-16.9 41z"
+                fill="#33c3f0" />
+        </svg>
       )
     }
 
     return (
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="28"><path d="M16 17a.99.99 0 0 1-.297.703l-7 7C8.516 24.89 8.265 25 8 25s-.516-.109-.703-.297l-7-7A.996.996 0 0 1 0 17c0-.547.453-1 1-1h14c.547 0 1 .453 1 1zm0-6c0 .547-.453 1-1 1H1c-.547 0-1-.453-1-1a.99.99 0 0 1 .297-.703l7-7C7.484 3.11 7.735 3 8 3s.516.109.703.297l7 7A.996.996 0 0 1 16 11z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="20" height="20"
+           style={{verticalAlign: '-.125em', transform: 'rotate(360deg)'}} viewBox="0 0 320 512">
+        <path
+          d="M41 288h238c21.4 0 32.1 25.9 17 41L177 448c-9.4 9.4-24.6 9.4-33.9 0L24 329c-15.1-15.1-4.4-41 17-41zm255-105L177 64c-9.4-9.4-24.6-9.4-33.9 0L24 183c-15.1 15.1-4.4 41 17 41h238c21.4 0 32.1-25.9 17-41z"
+          fill="#33c3f0" />
+      </svg>
     )
   }
 };

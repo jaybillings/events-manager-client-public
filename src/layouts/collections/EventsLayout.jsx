@@ -88,7 +88,12 @@ export default class EventsLayout extends Component {
 
   buildSortQuery() {
     switch (this.state.sort[0]) {
-      // Add special cases like org and venue
+      case 'fk_org_id':
+        // TODO: Build query
+            break;
+      case 'fk_venue_id':
+        // TODO: Build query
+            break;
       default:
         return {[this.state.sort[0]]: this.state.sort[1]};
     }
@@ -127,13 +132,6 @@ export default class EventsLayout extends Component {
     let target = (e.target.nodeName === 'TH') ? e.target : e.target.closest('th');
     const column = target.dataset.sortType;
     const direction = (column === this.state.sort[0]) ? -(parseInt(this.state.sort[1], 10)) : -1;
-
-    console.log('e.target', e.target.nodeName);
-    console.log('parent', e.target.parentNode);
-    console.log('target', target);
-    console.log('column', column);
-    console.log('tablecol', this.state.sort[0]);
-    console.log('direction', direction);
 
     this.setState({sort: [column, direction]}, () => this.fetchAllData());
   }
