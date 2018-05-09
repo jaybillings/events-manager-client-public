@@ -14,7 +14,7 @@ export default class EventsLayout extends Component {
     this.state = {
       events: [], venues: [], organizers: [], tags: [], eventsTotal: 0,
       eventsLoaded: false, venuesLoaded: false, orgsLoaded: false, tagsLoaded: false,
-      pageSize: 5, currentPage: 1, sort: {updated_at: -1}, filter: {}
+      pageSize: 5, currentPage: 1, sort: ['updated_at', -1], filter: {}
     };
 
     this.eventsService = app.service('events');
@@ -23,9 +23,11 @@ export default class EventsLayout extends Component {
     this.tagsService = app.service('tags');
 
     this.fetchAllData = this.fetchAllData.bind(this);
+    this.buildSortQuery = this.buildSortQuery.bind(this);
     this.updatePageSize = this.updatePageSize.bind(this);
     this.updateCurrentPage = this.updateCurrentPage.bind(this);
     this.updateFilters = this.updateFilters.bind(this);
+    this.updateColumnSort = this.updateColumnSort.bind(this);
     this.renderEventsTable = this.renderEventsTable.bind(this);
     this.renderEventAddForm = this.renderEventAddForm.bind(this);
   }
@@ -58,7 +60,7 @@ export default class EventsLayout extends Component {
 
   fetchAllData() {
     let query = {
-      $sort: this.state.sort,
+      $sort: this.buildSortQuery(),
       $limit: this.state.pageSize,
       $skip: this.state.pageSize * (this.state.currentPage - 1)
     };
@@ -82,6 +84,14 @@ export default class EventsLayout extends Component {
     this.tagsService.find({query: {$sort: {name: 1}}}).then(message => {
       this.setState({tags: message.data, tagsLoaded: true});
     })
+  }
+
+  buildSortQuery() {
+    switch (this.state.sort[0]) {
+      // Add special cases like org and venue
+      default:
+        return {[this.state.sort[0]]: this.state.sort[1]};
+    }
   }
 
   updatePageSize(e) {
@@ -113,12 +123,28 @@ export default class EventsLayout extends Component {
     this.setState({'pageSize': 5, 'currentPage': 1, 'filter': filter}, () => this.fetchAllData());
   }
 
+  updateColumnSort(e) {
+    let target = (e.target.nodeName === 'TH') ? e.target : e.target.closest('th');
+    const column = target.dataset.sortType;
+    const direction = (column === this.state.sort[0]) ? -(parseInt(this.state.sort[1], 10)) : -1;
+
+    console.log('e.target', e.target.nodeName);
+    console.log('parent', e.target.parentNode);
+    console.log('target', target);
+    console.log('column', column);
+    console.log('tablecol', this.state.sort[0]);
+    console.log('direction', direction);
+
+    this.setState({sort: [column, direction]}, () => this.fetchAllData());
+  }
+
   renderEventsTable() {
     if (!(this.state.eventsLoaded && this.state.venuesLoaded && this.state.orgsLoaded)) {
       return <p>Data is loading... Please be patient...</p>;
     }
 
-    return <EventsTable events={this.state.events} venues={this.state.venues} organizers={this.state.organizers} />;
+    return <EventsTable events={this.state.events} venues={this.state.venues} organizers={this.state.organizers}
+                        sort={this.state.sort} handleColumnClick={this.updateColumnSort}/>;
   }
 
   renderEventAddForm() {
