@@ -88,14 +88,10 @@ export default class EventsLayout extends Component {
 
   buildSortQuery() {
     switch (this.state.sort[0]) {
-      case 'fk_org_id':
-        // TODO: Build query
-            break;
-      case 'fk_venue_id':
-        // TODO: Build query
-            break;
+      case 'name':
+        return {'name': this.state.sort[1]};
       default:
-        return {[this.state.sort[0]]: this.state.sort[1]};
+        return {[this.state.sort[0]]: this.state.sort[1], 'name': 1};
     }
   }
 

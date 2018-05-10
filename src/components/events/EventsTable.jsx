@@ -17,8 +17,8 @@ export default class EventsTable extends Component {
       ['name', 'Name'],
       ['start_date', 'Start Date'],
       ['end_date', 'End Date'],
-      ['fk_venue_id', 'Venue'],
-      ['fk_org_id', 'Organizer'],
+      ['fk_venue', 'Venue'],
+      ['fk_org', 'Organizer'],
       ['is_published', 'Status'],
       ['updated_at', 'Last Modified']
     ]);
