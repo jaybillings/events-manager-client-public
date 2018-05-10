@@ -27,6 +27,7 @@ export default class EventsTable extends Component {
     titleMap.forEach((title, dataKey) => {
       let classNames = 'sort-label', direction = 0;
 
+      // TODO: Is 'active' being used?
       if (this.props.sort[0] === dataKey) {
         classNames += ' active';
         direction = this.props.sort[1];
@@ -39,9 +40,7 @@ export default class EventsTable extends Component {
       );
     });
 
-    return (
-      <tr>{headersList}</tr>
-    );
+    return <tr>{headersList}</tr>;
   }
 
   render() {

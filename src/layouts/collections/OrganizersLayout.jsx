@@ -12,14 +12,16 @@ export default class OrganizersLayout extends Component {
 
     this.state = {
       organizers: [], orgsLoaded: false, orgsTotal: 0,
-      pageSize: 5, currentPage: 1, sort: {updated_at: -1}
+      pageSize: 5, currentPage: 1, sort: ['updated_at', -1]
     };
 
     this.orgsService = app.service('organizers');
 
     this.fetchAllData = this.fetchAllData.bind(this);
+    this.buildSortQuery = this.buildSortQuery.bind(this);
     this.updatePageSize = this.updatePageSize.bind(this);
     this.updateCurrentPage = this.updateCurrentPage.bind(this);
+    this.updateColumnSort = this.updateColumnSort.bind(this);
     this.renderTable = this.renderTable.bind(this);
   }
 
@@ -52,13 +54,20 @@ export default class OrganizersLayout extends Component {
   fetchAllData() {
     this.orgsService.find({
       query: {
-        $sort: this.state.sort,
+        $sort: this.buildSortQuery(),
         $limit: this.state.pageSize,
         $skip: this.state.pageSize * (this.state.currentPage - 1)
       }
     }).then(message => {
       this.setState({organizers: message.data, orgsTotal: message.total, orgsLoaded: true});
     });
+  }
+
+  buildSortQuery() {
+    if (this.state.sort[0] === 'name') {
+      return {'name': this.state.sort[1]};
+    }
+    return {[this.state.sort[0]]: this.state.sort[1], 'name': 1};
   }
 
   updatePageSize(e) {
@@ -70,10 +79,19 @@ export default class OrganizersLayout extends Component {
     this.setState({currentPage: parseInt(page, 10)}, () => this.fetchAllData());
   }
 
+  updateColumnSort(e) {
+    let target = (e.target.nodeName === 'TH') ? e.target : e.target.closest('th');
+    const column = target.dataset.sortType;
+    const direction = (column === this.state.sort[0]) ? -(parseInt(this.state.sort[1], 10)) : -1;
+
+    this.setState({sort: [column, direction]}, () => this.fetchAllData());
+  }
+
   renderTable() {
     if (!this.state.orgsLoaded) return <p>Data is being loaded... Please be patient...</p>;
 
-    return <OrganizersTable organizers={this.state.organizers} />
+    return <OrganizersTable organizers={this.state.organizers} sort={this.state.sort}
+                            handleColumnClick={this.updateColumnSort} />
   }
 
   render() {
@@ -82,7 +100,8 @@ export default class OrganizersLayout extends Component {
         <Header />
         <h2>Organizers</h2>
         <h3>View/Modify</h3>
-        <PaginationLayout pageSize={this.state.pageSize} activePage={this.state.currentPage} total={this.state.orgsTotal}
+        <PaginationLayout pageSize={this.state.pageSize} activePage={this.state.currentPage}
+                          total={this.state.orgsTotal}
                           updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage} />
         {this.renderTable()}
         <h3>Add New Organizer</h3>

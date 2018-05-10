@@ -28,8 +28,8 @@ export default class EventsLayout extends Component {
     this.updateCurrentPage = this.updateCurrentPage.bind(this);
     this.updateFilters = this.updateFilters.bind(this);
     this.updateColumnSort = this.updateColumnSort.bind(this);
-    this.renderEventsTable = this.renderEventsTable.bind(this);
-    this.renderEventAddForm = this.renderEventAddForm.bind(this);
+    this.renderTable = this.renderTable.bind(this);
+    this.renderAddForm = this.renderAddForm.bind(this);
   }
 
   componentDidMount() {
@@ -66,8 +66,6 @@ export default class EventsLayout extends Component {
     };
     Object.assign(query, this.state.filter);
 
-    console.log('query', query);
-
     // TODO: Is there a better way to update?
     this.eventsService.find({query: query}).then(message => {
       this.setState({events: message.data, eventsTotal: message.total, eventsLoaded: true});
@@ -87,12 +85,10 @@ export default class EventsLayout extends Component {
   }
 
   buildSortQuery() {
-    switch (this.state.sort[0]) {
-      case 'name':
-        return {'name': this.state.sort[1]};
-      default:
-        return {[this.state.sort[0]]: this.state.sort[1], 'name': 1};
+    if (this.state.sort[0] === 'name') {
+      return {'name': this.state.sort[1]};
     }
+    return {[this.state.sort[0]]: this.state.sort[1], 'name': 1};
   }
 
   updatePageSize(e) {
@@ -132,16 +128,16 @@ export default class EventsLayout extends Component {
     this.setState({sort: [column, direction]}, () => this.fetchAllData());
   }
 
-  renderEventsTable() {
+  renderTable() {
     if (!(this.state.eventsLoaded && this.state.venuesLoaded && this.state.orgsLoaded)) {
       return <p>Data is loading... Please be patient...</p>;
     }
 
     return <EventsTable events={this.state.events} venues={this.state.venues} organizers={this.state.organizers}
-                        sort={this.state.sort} handleColumnClick={this.updateColumnSort}/>;
+                        sort={this.state.sort} handleColumnClick={this.updateColumnSort} />;
   }
 
-  renderEventAddForm() {
+  renderAddForm() {
     if (!(this.state.venuesLoaded && this.state.orgsLoaded && this.state.tagsLoaded)) {
       return <p>Data is loading... Please be patient...</p>;
     }
@@ -159,9 +155,9 @@ export default class EventsLayout extends Component {
         <PaginationLayout pageSize={this.state.pageSize} activePage={this.state.currentPage}
                           total={this.state.eventsTotal}
                           updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage} />
-        {this.renderEventsTable()}
+        {this.renderTable()}
         <h3>Add New Event</h3>
-        {this.renderEventAddForm()}
+        {this.renderAddForm()}
       </div>
     );
   }
