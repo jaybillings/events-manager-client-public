@@ -48,7 +48,7 @@ input[type=checkbox].toggle {
 }
 
 .toggle:checked + .toggle-switch {
-  background: #35f033;
+  background: #70de6f;
 }
 
 .toggle:checked + .toggle-switch:after {
