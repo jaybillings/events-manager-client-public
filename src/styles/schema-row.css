@@ -1,0 +1,14 @@
+.schema-row span {
+  padding: 1rem;
+  border-radius: 4px;
+}
+
+.schema-row span.muted {
+  color: #fff;
+  background-color: #bbb;
+}
+
+.schema-row span.bolded {
+  color: #fff;
+  background-color: #33c3f0;
+}

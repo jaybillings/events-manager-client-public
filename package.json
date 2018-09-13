@@ -20,9 +20,14 @@
     "eject": "react-scripts eject"
   },
   "dependencies": {
+    "@feathersjs/client": "^3.4.5",
+    "moment": "^2.22.1",
     "react": "^16.3.2",
     "react-dom": "^16.3.2",
+    "react-js-pagination": "^3.0.2",
+    "react-router": "latest",
     "react-router-dom": "^4.2.2",
-    "react-scripts": "1.1.4"
+    "react-scripts": "1.1.4",
+    "socket.io-client": "^2.1.0"
   }
 }

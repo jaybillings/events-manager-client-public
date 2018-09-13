@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import App from './App';
-import registerServiceWorker from './registerServiceWorker';
+import registerServiceWorker from './services/registerServiceWorker';
 
 import './styles/external/normalize.css';
 import './styles/external/skeleton.css';

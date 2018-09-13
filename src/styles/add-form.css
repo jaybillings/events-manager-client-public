@@ -1,0 +1,22 @@
+.add-form label input:not([type='checkbox']), .add-form label textarea, .add-form label select {
+  display: block;
+  width: 50%;
+}
+
+.add-form input:invalid {
+  box-shadow: 0 0 5px 1px red;
+}
+
+.add-form input[type=checkbox] {
+    margin-right: 3rem;
+}
+
+.add-form label.required:before {
+  content: '*';
+  color: red;
+  margin-right: .5rem;
+}
+
+.add-form button + button {
+  margin-left: 1rem;
+}

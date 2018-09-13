@@ -1,0 +1,56 @@
+input[type=checkbox].toggle {
+  display: none;
+}
+
+.toggle, .toggle:after, .toggle:before, .toggle *, .toggle *:after, .toggle *:before, .toggle + .toggle-switch {
+  box-sizing: border-box;
+}
+
+.toggle::-moz-selection, .toggle:after::-moz-selection, .toggle:before::-moz-selection, .toggle *::-moz-selection, .toggle *:after::-moz-selection, .toggle *:before::-moz-selection, .toggle + .toggle-btn::-moz-selection {
+  background: none;
+}
+
+.toggle::selection, .toggle:after::selection, .toggle:before::selection, .toggle *::selection, .toggle *:after::selection, .toggle *:before::selection, .toggle + .toggle-btn::selection {
+  background: none;
+}
+
+.toggle + .toggle-switch {
+  outline: 0;
+  display: block;
+  width: 7rem;
+  height: 3.5rem;
+  position: relative;
+  background: #f0f0f0;
+  border-radius: 2rem;
+  padding: 2px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.4s ease;
+}
+
+.toggle + .toggle-switch:after, .toggle + .toggle-switch:before {
+  position: relative;
+  display: block;
+  content: "";
+  width: 50%;
+  height: 100%;
+}
+
+.toggle + .toggle-switch:after {
+  left: 0;
+  border-radius: 50%;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+.toggle + .toggle-switch:before {
+  display: none;
+}
+
+.toggle:checked + .toggle-switch {
+  background: #70de6f;
+}
+
+.toggle:checked + .toggle-switch:after {
+  left: 50%;
+}

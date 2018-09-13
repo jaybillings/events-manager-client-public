@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {NavLink} from 'react-router-dom';
 
-import "../../styles/Header.css";
+import "../../styles/header.css";
 
 export default class Header extends Component {
   render() {
@@ -19,7 +19,7 @@ export default class Header extends Component {
             <li><NavLink to={`/venues`} activeClassName="current">Venues</NavLink></li>
             <li><NavLink to={`/organizers/`} activeClassName={'current'}>Organizers</NavLink></li>
             <li><NavLink to={`/neighborhoods/`} activeClassName={'current'}>Neighborhoods</NavLink></li>
-            <li><NavLink to={`/categories/`} activeClassName={'current'}>Categories</NavLink></li>
+            <li><NavLink to={`/tags/`} activeClassName={'current'}>Tags</NavLink></li>
           </ul>
           <ul>
             <li><NavLink to={`/account`} activeClassName={'current'}>My Account</NavLink></li>
