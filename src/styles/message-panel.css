@@ -1,0 +1,57 @@
+div.messageContainer {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid gray;
+  position: relative;
+}
+
+div.success {
+  border: 1px solid green;
+}
+
+div.warning {
+  border: 1px solid goldenrod;
+}
+
+div.error {
+  border: 1px solid red;
+}
+
+span {
+  font-weight: 600;
+  font-size: 1.1em;
+}
+
+span.success {
+  color: green;
+}
+
+span.warning {
+  color: goldenrod;
+}
+
+span.error {
+  color: red;
+}
+
+button.dismiss {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 1em;
+  height: 2em;
+  line-height: 1em;
+  padding: 0 0.5em;
+  border: none;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none;
+}
+
+.visible {
+  display: initial;
+}
+
+
