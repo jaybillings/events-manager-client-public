@@ -23,36 +23,31 @@ export default class ImportLayout extends Component {
   }
 
   componentDidMount() {
-    const me = this;
-
     // Register listeners
-    this.pendingEventsService
-      .on('created', message => {
-        console.log('pending-events created ', message);
-        let messageList = me.state.messages;
-        me.setState({
-          messages: messageList.concat([{status: 'success', details: message}]),
+    this.importerService
+      .on('status', message => {
+        console.log('importer status ', message);
+        let messageList = this.state.messages;
+        this.setState({
+          messages: messageList.concat([message]),
           messagePanelVisible: true
         });
       })
-      .on('updated', message => {
-        console.log('pending-events updated ', message);
-        let messageList = me.state.messages;
-        me.setState({
-          messages: messageList.concat([{status: 'success', details: message}]),
+      .on('error', error => {
+        console.log('importer error ', error);
+        let messageList = this.state.messages;
+        this.setState({
+          messages: messageList.concat([{status: 'error', details: error.message}]),
           messagePanelVisible: true
         });
       });
 
-    this.importerService
-      .on('error', message => {
-        console.log('error', message);
-      })
-      .on('status', message => {
-        console.log('status update', message);
-        let messageList = me.state.messages;
-        me.setState({
-          messages: messageList.concat([{status: 'success', details: message}]),
+    this.pendingEventsService
+      .on('error', error => {
+        console.log('pending-events created ', error);
+        let messageList = this.state.messages;
+        this.setState({
+          messages: messageList.concat([{status: 'error', details: error.message}]),
           messagePanelVisible: true
         });
       });
@@ -60,10 +55,10 @@ export default class ImportLayout extends Component {
 
   componentWillUnmount() {
     this.importerService
-      .removeListener('created')
-      .removeListener('updated')
       .removeListener('status')
       .removeListener('error');
+
+    this.pendingEventsService.removeListener('error');
   }
 
   importData(e) {
