@@ -7,11 +7,12 @@
 
 .messageContainer h3 {
   margin: 0;
-  padding: 0.5rem 0;
-  font-size: 1em;
+  padding: 0 0 1rem;
+  font-size: 0.75em;
   font-weight: 300;
-  line-height: 1rem;
-  letter-spacing: inherit;
+  line-height: normal;
+  letter-spacing: normal;
+  text-transform: uppercase;
 }
 
 .messageContainer button.dismiss {
@@ -33,6 +34,7 @@
 .messageContainer li {
   list-style-type: none;
   border: none;
+  padding: 1rem;
 }
 
 .messageContainer span {

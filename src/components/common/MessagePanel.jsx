@@ -15,7 +15,7 @@ export default class MessagePanel extends Component {
     return messages.map((message, index) =>
       <li className={`message ${message.status}`} key={index}>
         <span className={message.status}>{message.status}</span>
-        {JSON.stringify(message.details.message) || JSON.stringify(message.details)}
+        {message.details.message || message.details}
       </li>
     );
   }
@@ -25,6 +25,7 @@ export default class MessagePanel extends Component {
 
     return (
       <div className={`messageContainer ${visibleClass}`}>
+        <h3>Messages</h3>
         <button className={'dismiss'} onClick={this.props.dismissPanel}>X</button>
         <ul>
           {this.renderMessages()}

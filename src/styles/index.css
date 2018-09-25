@@ -10,14 +10,14 @@
   --dull-orange: #dd6e42;
   --bright-red-orange: #ff4f2e;
   --bright-yellow: #ffc22e;
-  --true-green: #4AF701;
+  --true-green: #4af701;
 
   --error-color: var(--bright-red-orange);
   --disabled-color: var(--medium-gray);
   --success-color: var(--true-green);
   --warning-color: var(--bright-yellow);
 
-  --dark-bg-text-color: var(--white);
+  --dark-bg-text-color: var(--true-white);
   --light-bg-text-color: var(--dark-gray);
   --muted-bg-color: var(--medium-gray);
   --bolded-bg-color: var(--true-blue);
