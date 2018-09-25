@@ -1,57 +1,57 @@
-div.messageContainer {
-  margin: 1rem 0;
-  padding: 1rem;
-  border: 1px solid gray;
+.messageContainer {
   position: relative;
+  margin: 2.5rem 0;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
 }
 
-div.success {
-  border: 1px solid green;
+.messageContainer h3 {
+  margin: 0;
+  padding: 0.5rem 0;
+  font-size: 1em;
+  font-weight: 300;
+  line-height: 1rem;
+  letter-spacing: inherit;
 }
 
-div.warning {
-  border: 1px solid goldenrod;
-}
-
-div.error {
-  border: 1px solid red;
-}
-
-span {
-  font-weight: 600;
-  font-size: 1.1em;
-}
-
-span.success {
-  color: green;
-}
-
-span.warning {
-  color: goldenrod;
-}
-
-span.error {
-  color: red;
-}
-
-button.dismiss {
+.messageContainer button.dismiss {
   position: absolute;
   top: 0;
   right: 0;
-  font-size: 1em;
   height: 2em;
-  line-height: 1em;
-  padding: 0 0.5em;
+  margin: 0;
+  padding: 0 1rem;
+  font-size: 1em;
+  line-height: 1rem;
   border: none;
   cursor: pointer;
 }
-
-.hidden {
-  display: none;
+.messageContainer ul {
+  margin-bottom: 0;
 }
 
-.visible {
-  display: initial;
+.messageContainer li {
+  list-style-type: none;
+  border: none;
 }
 
+.messageContainer span {
+  font-size: 1.1em;
+  font-weight: 600;
+  padding-right: 1rem;
+}
 
+.messageContainer li.success {
+  background-color: var(--success-color);
+  color: var(--light-bg-text-color);
+}
+
+.messageContainer li.error {
+  background-color: var(--error-color);
+  color: var(--dark-bg-text-color);
+}
+
+.messageContainer li.warning {
+  background-color: var(--warning-color);
+  color: var(--light-bg-text-color);
+}

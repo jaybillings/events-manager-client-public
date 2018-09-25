@@ -24,7 +24,7 @@ ul.pagination {
   display: inline-block;
   list-style-type: none;
   padding: 0.5rem 1.5rem;
-  border: 1px solid #bbb;
+  border: 1px solid var(--pagination-default-color);
 }
 
 .pagination li + li {
@@ -47,20 +47,20 @@ ul.pagination {
 
 .pagination .disabled {
   cursor: not-allowed;
-  background-color: #efefef;
+  background-color: var(--pagination-disabled-color);
 }
 
 .pagination .disabled a {
   cursor: inherit;
-  color: #bbb;
+  color: var(--pagination-default-color);
 }
 
 .pagination .active {
-  background-color: #1EAEDB;
-  border-color: #1EAEDB;
+  background-color: var(--pagination-active-color);
+  border-color: var(--pagination-active-color);
 }
 
 .pagination .active a {
   font-weight: 600;
-  color: white;
+  color: var(--pagination-active-link-color);
 }

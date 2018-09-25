@@ -1,3 +1,43 @@
+/* Declare color variables */
+:root {
+  --black: #222;
+  --dark-gray: #3e3e3e;
+  --medium-gray: #777;
+  --light-gray: #bbb;
+  --white: #efefef;
+  --true-white: #fff;
+  --true-blue: #33c3f0;
+  --dull-orange: #dd6e42;
+  --bright-red-orange: #ff4f2e;
+  --bright-yellow: #ffc22e;
+  --true-green: #4AF701;
+
+  --error-color: var(--bright-red-orange);
+  --disabled-color: var(--medium-gray);
+  --success-color: var(--true-green);
+  --warning-color: var(--bright-yellow);
+
+  --dark-bg-text-color: var(--white);
+  --light-bg-text-color: var(--dark-gray);
+  --muted-bg-color: var(--medium-gray);
+  --bolded-bg-color: var(--true-blue);
+  --border-color: var(--dark-gray);
+
+  --current-link-color: var(--dull-orange);
+  --pagination-default-color: var(--light-gray);
+  --pagination-disabled-color: var(--white);
+  --pagination-active-color: var(--true-blue);
+  --pagination-active-link-color: var(--true-white);
+}
+
 a.current {
-  color: #dd6e42;
+  color: var(--current-link-color);
+}
+
+.hidden {
+  display: none;
+}
+
+.visible {
+  display: block;
 }

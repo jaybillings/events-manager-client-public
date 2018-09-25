@@ -39,7 +39,7 @@ input[type=checkbox].toggle {
 .toggle + .toggle-switch:after {
   left: 0;
   border-radius: 50%;
-  background: #fff;
+  background: var(--true-white);
   transition: all 0.2s ease;
 }
 
@@ -48,7 +48,7 @@ input[type=checkbox].toggle {
 }
 
 .toggle:checked + .toggle-switch {
-  background: #70de6f;
+  background: var(--success-color);
 }
 
 .toggle:checked + .toggle-switch:after {

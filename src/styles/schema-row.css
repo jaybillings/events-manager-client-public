@@ -4,11 +4,11 @@
 }
 
 .schema-row span.muted {
-  color: #fff;
-  background-color: #bbb;
+  color: var(--dark-bg-text-color);
+  background-color: var(--muted-bg-color);
 }
 
 .schema-row span.bolded {
-  color: #fff;
-  background-color: #33c3f0;
+  color: var(--dark-bg-text-color);
+  background-color: var(--bolded-bg-color);
 }

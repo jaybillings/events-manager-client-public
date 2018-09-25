@@ -3,7 +3,7 @@
 }
 
 .schema-record input[disabled], .schema-record button[disabled] {
-  color: #777;
+  color: var(--disabled-color);
   cursor: not-allowed;
 }
 
@@ -17,7 +17,7 @@
 }
 
 .schema-record input:invalid {
-  box-shadow: 0 0 5px 1px red;
+  box-shadow: 0 0 5px 1px var(--error-color);
 }
 
 .schema-record input[type=checkbox] {
@@ -34,7 +34,7 @@
 
 .schema-record label.required:before {
   content: '*';
-  color: red;
+  color: var(--error-color);
   margin-right: .5rem;
 }
 
