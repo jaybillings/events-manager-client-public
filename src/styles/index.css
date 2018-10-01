@@ -8,11 +8,11 @@
   --true-white: #fff;
   --true-blue: #33c3f0;
   --dull-orange: #dd6e42;
-  --bright-red-orange: #ff4f2e;
+  --bright-pink: #FC2E53;
   --bright-yellow: #ffc22e;
-  --true-green: #4af701;
+  --true-green: #6AF92D;
 
-  --error-color: var(--bright-red-orange);
+  --error-color: var(--bright-pink);
   --disabled-color: var(--medium-gray);
   --success-color: var(--true-green);
   --warning-color: var(--bright-yellow);

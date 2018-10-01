@@ -121,7 +121,7 @@ export default class EventsLayout extends Component {
   }
 
   updateColumnSort(e) {
-    let target = (e.target.nodeName === 'TH') ? e.target : e.target.closest('th');
+    const target = (e.target.nodeName === 'TH') ? e.target : e.target.closest('th');
     const column = target.dataset.sortType;
     const direction = (column === this.state.sort[0]) ? -(parseInt(this.state.sort[1], 10)) : -1;
 

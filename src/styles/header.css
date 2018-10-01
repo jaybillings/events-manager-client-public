@@ -7,7 +7,12 @@ header nav ul {
   display: inline-block;
 }
 
-header nav ul li {
+header nav li {
   display: inline-block;
   margin: 0 1rem;
+
+}
+
+header nav li:first-child {
+  margin-left: 0;
 }
