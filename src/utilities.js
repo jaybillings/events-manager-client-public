@@ -11,13 +11,14 @@ const renderOptionList = function (schema) {
 
 };
 
-const renderCheckboxList = function(schema, selectedIds) {
+const renderCheckboxList = function (schema, selectedIds) {
   let chkbxList = [];
 
   schema.forEach(record => {
     chkbxList.push(
       <label key={record.id}>
-        <input type={'checkbox'} className={'js-checkbox'} value={record.id} defaultChecked={selectedIds.includes(record.id)} />
+        <input type={'checkbox'} className={'js-checkbox'} value={record.id}
+               defaultChecked={selectedIds.includes(record.id)} />
         {record.name}
       </label>
     );
@@ -26,4 +27,18 @@ const renderCheckboxList = function(schema, selectedIds) {
   return chkbxList;
 };
 
-export {renderOptionList, renderCheckboxList};
+const buildSortQuery = function (sortState) {
+  if (sortState[0] === 'name') return {'name': sortState[1]};
+
+  return {[sortState[0]]: sortState[1], 'name': 1};
+};
+
+const buildColumnSort = function(clickTarget, sortState) {
+  const target = clickTarget.nodeName === 'TH' ? clickTarget : clickTarget.closest('th');
+  const column = target.dataset.sortType;
+  const direction = column === sortState[0] ? -(parseInt(sortState[1], 10)) : -1;
+
+  return {sort: [column, direction]};
+};
+
+export {renderOptionList, renderCheckboxList, buildSortQuery, buildColumnSort};
