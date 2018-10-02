@@ -48,3 +48,11 @@
   vertical-align: middle;
   margin-right: 2rem;
 }
+
+.schema-record .block-warning {
+  margin-bottom: 2em;
+}
+
+.schema-record .block-warning button {
+  margin-bottom: 0;
+}

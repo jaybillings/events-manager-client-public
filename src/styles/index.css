@@ -17,6 +17,7 @@
   --success-color: var(--true-green);
   --warning-color: var(--bright-yellow);
 
+  --text-color: var(--black);
   --dark-bg-text-color: var(--true-white);
   --light-bg-text-color: var(--dark-gray);
   --muted-bg-color: var(--medium-gray);
@@ -30,6 +31,10 @@
   --pagination-active-link-color: var(--true-white);
 }
 
+button {
+  background-color: white;
+}
+
 a.current {
   color: var(--current-link-color);
 }
@@ -40,4 +45,18 @@ a.current {
 
 .visible {
   display: block;
+}
+
+.block-warning {
+  color: white;
+  width: fit-content;
+  padding: 1rem;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--bright-yellow),
+    var(--bright-yellow) 10px,
+    var(--bright-pink) 10px,
+    var(--bright-pink) 20px
+  );
+  cursor: help;
 }

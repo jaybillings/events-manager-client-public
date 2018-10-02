@@ -15,25 +15,35 @@ import SingleNeighborhoodLayout from './layouts/single/SingleNeighborhoodLayout'
 import TagsLayout from './layouts/collections/TagsLayout';
 import SingleTagLayout from './layouts/single/SingleTagLayout';
 import NotFound from './pages/NotFound';
+import SinglePendingEventLayout from './layouts/single/SinglePendingEventLayout';
 
 class App extends Component {
   render() {
     return (
       <BrowserRouter>
         <Switch>
-          <Route exact path="/(import)?" component={ImportLayout}/>
-          <Route exact path="/events" component={EventsLayout}/>
+          <Route exact path={'/(import)?'} component={ImportLayout}/>
+
+          <Route exact path={'/events'} component={EventsLayout}/>
           <Route exact path={'/events/:id'} component={SingleEventLayout}/>
+
           <Route exact path={'/venues'} component={VenuesLayout}/>
           <Route exact path={'/venues/:id'} component={SingleVenueLayout}/>
+
           <Route exact path={'/organizers'} component={OrganizersLayout}/>
           <Route exact path={'/organizers/:id'} component={SingleOrganizerLayout}/>
+
           <Route exact path={'/neighborhoods'} component={NeighborhoodsLayout}/>
           <Route exact path={'/neighborhoods/:id'} component={SingleNeighborhoodLayout}/>
+
           <Route exact path={'/tags'} component={TagsLayout}/>
           <Route exact path={'/tags/:id'} component={SingleTagLayout}/>
-          <Route exact path="/account" component={MyAccountLayout}/>
-          <Route exact path="/admin" component={AdminToolsLayout}/>
+
+          <Route exact path={'/pendingEvents/:id'} component={SinglePendingEventLayout} />
+
+          <Route exact path={'/account'} component={MyAccountLayout}/>
+          <Route exact path={'/admin'} component={AdminToolsLayout}/>
+
           <Route component={NotFound} />
         </Switch>
       </BrowserRouter>

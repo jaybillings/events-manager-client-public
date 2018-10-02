@@ -12,7 +12,10 @@ export default class PendingEventRow extends Component {
 
     return (
       <tr className={'schema-row'}>
-        <td></td>
+        <td>
+          <button type={'button'}>Edit</button>
+          <button type={'button'}>Discard</button>
+        </td>
         <td><Link to={`/pendingEvents/${event.id}`}>{event.name}</Link></td>
         <td>{Moment(event.start_date).format('MM/DD/YYYY')}</td>
         <td>{Moment(event.end_date).format('MM/DD/YYYY')}</td>

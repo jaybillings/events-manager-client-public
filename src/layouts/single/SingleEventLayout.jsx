@@ -32,7 +32,7 @@ export default class SingleEventLayout extends Component {
     this.eventsService
       .on('patched', (message) => {
         console.log('patched', message);
-        this.setState = {event: message};
+        this.setState({event: message});
       })
       .on('removed', (message) => {
         console.log('removed', message);
@@ -80,8 +80,8 @@ export default class SingleEventLayout extends Component {
       return <p>Data is loading... Please be patient...</p>;
     }
 
-    return (<EventRecord event={this.state.event} venues={this.state.venues} organizers={this.state.organizers}
-                         tags={this.state.tags} eventTags={this.state.eventTags}/>);
+    return <EventRecord event={this.state.event} venues={this.state.venues} organizers={this.state.organizers}
+                        tags={this.state.tags} eventTags={this.state.eventTags} />;
   }
 
   render() {
