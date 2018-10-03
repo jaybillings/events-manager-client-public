@@ -1,4 +1,5 @@
 import React from 'react';
+import SortIndicator from "./components/common/SortIndicator";
 
 const renderOptionList = function (schema) {
   let optionsList = [];
@@ -27,6 +28,28 @@ const renderCheckboxList = function (schema, selectedIds) {
   return chkbxList;
 };
 
+const renderTableHeader = function(headerMap, sortState, clickHandler) {
+  let headersList = [<th key={'none'}>Actions</th>];
+
+  headerMap.forEach((title, dataKey) => {
+    let classNames = 'sort-label', direction = 0;
+
+    // TODO: Is active used?
+    if (sortState[0] === dataKey) {
+      classNames += ' active';
+      direction = sortState[1];
+    }
+
+    headersList.push(
+      <th className={classNames} key={dataKey} data-sort-type={dataKey} onClick={clickHandler}>
+        {title} <SortIndicator direction={direction} />
+      </th>
+    );
+  });
+
+  return <tr>{headersList}</tr>;
+};
+
 const buildSortQuery = function (sortState) {
   if (sortState[0] === 'name') return {'name': sortState[1]};
 
@@ -41,4 +64,4 @@ const buildColumnSort = function(clickTarget, sortState) {
   return {sort: [column, direction]};
 };
 
-export {renderOptionList, renderCheckboxList, buildSortQuery, buildColumnSort};
+export {renderOptionList, renderCheckboxList, renderTableHeader, buildSortQuery, buildColumnSort};

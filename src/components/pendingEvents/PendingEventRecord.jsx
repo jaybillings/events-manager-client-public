@@ -121,7 +121,7 @@ export default class PendingEventRecord extends Component {
           <input type="checkbox" ref="ongoingInput" defaultChecked={pendingEvent.flag_ongoing} />
           Ongoing Event
         </label>
-        <div className={'block-warning'} title={'Caution: Pending events are not published to or removed from live listings on save.'}>
+        <div className={'block-warning'} title={'Caution: This event is pending. It must be pushed live before it is visible on the site.'}>
           <button type="button" ref="deleteButton" onClick={this.deleteEvent}>Discard Event</button>
           <button type="submit" ref="submitButton" className="button-primary">Save Changes</button>
         </div>

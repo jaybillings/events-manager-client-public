@@ -50,7 +50,8 @@ a.current {
 .block-warning {
   color: white;
   width: fit-content;
-  padding: 1rem;
+  padding: 1em;
+  margin-bottom: 2em;
   background: repeating-linear-gradient(
     45deg,
     var(--bright-yellow),
@@ -59,4 +60,11 @@ a.current {
     var(--bright-pink) 20px
   );
   cursor: help;
+}
+
+.block-warning h2 {
+  background-color: var(--true-white);
+  color: var(--text-color);
+  padding: 0 0.5em;
+  margin-bottom: 0;
 }

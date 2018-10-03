@@ -65,7 +65,8 @@ export default class SinglePendingEventLayout extends Component {
     return (
       <div className={'container'}>
         <Header />
-        <div>
+        <div className={'block-warning'}
+             title={'Caution: This event is pending. It must be pushed live before it is visible on the site.'}>
           <h2>{this.state.pendingEvent.name}</h2>
         </div>
         {this.renderRecord()}
