@@ -15,6 +15,7 @@ export default class ImportLayout extends Component {
     };
 
     this.fileInput = React.createRef();
+    this.schemaSelect = React.createRef();
     this.API_URI = 'http://localhost:3030/importer';
     this.importerService = app.service('importer');
 
@@ -50,13 +51,14 @@ export default class ImportLayout extends Component {
   importData(e) {
     // TODO: Handle multiple files
     e.preventDefault();
-    console.log('in importdata');
 
+    const importUrl = `${this.API_URI}?schema=${this.schemaSelect.current.value}`;
     let importData = new FormData();
+
     importData.append('file', this.fileInput.current.files[0]);
     importData.append('filename', this.fileInput.current.files[0].name);
 
-    fetch(this.API_URI, {
+    fetch(importUrl, {
       method: 'POST',
       body: importData
     }).then((response) => {
@@ -92,8 +94,8 @@ export default class ImportLayout extends Component {
       <div className="container">
         <Header />
         <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagesPanel} />
-        <h2>Import Data From File</h2>
-        <ImportForm fileInputRef={this.fileInput} handleSubmit={this.importData} />
+        <h2>Import Data From CSV File</h2>
+        <ImportForm fileInputRef={this.fileInput} schemaSelectRef={this.schemaSelect} handleSubmit={this.importData} />
         <h2>Review Unpublished Data</h2>
         <h3>Events</h3>
         <PendingEventsModule updateMessageList={this.updateMessageList} />
