@@ -24,8 +24,6 @@ export default class PendingTagRow extends Component {
       <tr className={'schema-row'}>
         <td><button type={'button'} onClick={this.discardPendingTag}>Discard</button></td>
         <td><Link to={`/pendingTags/${pendingTag.id}`}>{pendingTag.name}</Link></td>
-        <td>{Moment(pendingTag.start_date).format('MM/DD/YYYY')}</td>
-        <td>{Moment(pendingTag.end_date).format('MM/DD/YYYY')}</td>
         <td>{createdAt}</td>
       </tr>
     );
