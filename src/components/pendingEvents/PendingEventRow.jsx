@@ -4,7 +4,6 @@ import Moment from 'moment';
 import app from '../../services/socketio';
 
 import '../../styles/schema-row.css';
-import '../../styles/toggle.css';
 
 export default class PendingEventRow extends Component {
   constructor(props) {
