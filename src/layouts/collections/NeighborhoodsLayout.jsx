@@ -82,7 +82,7 @@ export default class NeighborhoodsLayout extends Component {
         <h2>Neighborhoods</h2>
         <h3>View/Modify</h3>
         <PaginationLayout pageSize={this.state.pageSize} activePage={this.state.currentPage}
-                          total={this.state.hoodsTotal}
+                          total={this.state.hoodsTotal} schema={'hoods'}
                           updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage} />
         {this.renderTable()}
         <h3>Add New Neighborhood</h3>

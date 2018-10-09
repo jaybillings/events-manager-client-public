@@ -153,7 +153,7 @@ export default class EventsLayout extends Component {
         <h3>View/Modify</h3>
         <Filters updateFilters={this.updateFilters} />
         <PaginationLayout pageSize={this.state.pageSize} activePage={this.state.currentPage}
-                          total={this.state.eventsTotal}
+                          total={this.state.eventsTotal} schema={'events'}
                           updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage} />
         {this.renderTable()}
         <h3>Add New Event</h3>

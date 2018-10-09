@@ -5,6 +5,7 @@ import Header from '../components/common/Header';
 import ImportForm from '../components/importer/ImportForm';
 import MessagePanel from '../components/common/MessagePanel';
 import PendingEventsModule from '../components/pendingEvents/PendingEventsModule';
+import PendingTagsModule from '../components/pendingTags/PendingTagsModule';
 
 export default class ImportLayout extends Component {
   constructor(props) {
@@ -99,6 +100,11 @@ export default class ImportLayout extends Component {
         <h2>Review Unpublished Data</h2>
         <h3>Events</h3>
         <PendingEventsModule updateMessageList={this.updateMessageList} />
+        {/*<PendingVenuesModule updateMessageList={this.updateMessageList} />
+        <PendingOrganizersModule updateMessageList={this.updateMessageList} />
+        <PendingNeighborhoodsModule updateMessageList={this.updateMessageList} />*/}
+        <h3>Tags</h3>
+        <PendingTagsModule updateMessageList={this.updateMessageList} />
         <h2>Publish</h2>
       </div>
     );

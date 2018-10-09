@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 
-import TagsRow from './TagsRow';
+import TagRow from './TagRow';
 import '../../styles/schema-table.css';
 
 export default class TagsTable extends Component {
@@ -17,7 +17,7 @@ export default class TagsTable extends Component {
         </tr>
         </thead>
         <tbody>
-        {tags.map(tag => <TagsRow key={tag.id} tag={tag}/>)}
+        {tags.map(tag => <TagRow key={tag.id} tag={tag}/>)}
         </tbody>
       </table>
     );

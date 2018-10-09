@@ -4,7 +4,7 @@ import app from '../../services/socketio';
 import Header from '../../components/common/Header';
 import PaginationLayout from '../../components/common/PaginationLayout';
 import TagsTable from '../../components/tags/TagsTable';
-import TagsAddForm from '../../components/tags/TagsAddForm';
+import TagAddForm from '../../components/tags/TagAddForm';
 
 export default class TagsLayout extends Component {
   constructor(props) {
@@ -81,11 +81,12 @@ export default class TagsLayout extends Component {
         <Header />
         <h2>Tags</h2>
         <h3>View/Modify</h3>
-        <PaginationLayout pageSize={this.state.pageSize} activePage={this.state.currentPage} total={this.state.tagsTotal}
+        <PaginationLayout pageSize={this.state.pageSize} activePage={this.state.currentPage}
+                          total={this.state.tagsTotal} schema={'tags'}
                           updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage} />
         {this.renderTable()}
         <h3>Add New Tag</h3>
-        <TagsAddForm />
+        <TagAddForm />
       </div>
     );
   }

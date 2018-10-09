@@ -1,25 +1,20 @@
 import React, {Component} from 'react';
 import {buildSortQuery, buildColumnSort} from '../../utilities';
-import app from "../../services/socketio";
+import app from '../../services/socketio';
 
 import PaginationLayout from '../common/PaginationLayout';
-import PendingEventsTable from './PendingEventsTable';
+import PendingTagsTable from './PendingTagsTable';
 
-export default class PendingEventsModule extends Component {
+export default class PendingTagsModule extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      pendingEvents: [], pendingEventsLoaded: false, pendingEventsTotal: 0,
-      venues: [], organizers: [], tags: [],
-      venuesLoaded: false, orgsLoaded: false, tagsLoaded: false,
+      pendingTags: [], pendingTagsLoaded: false, pendingTagsTotal: 0,
       pageSize: 5, currentPage: 1, sort: ['created_at', -1]
     };
 
-    this.pendingEventsService = app.service('pending-events');
-    this.venuesService = app.service('venues');
-    this.orgsService = app.service('organizers');
-    //this.tagsService = app.service('tags');
+    this.pendingTagsService = app.service('pending-tags');
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.renderTable = this.renderTable.bind(this);
@@ -31,27 +26,23 @@ export default class PendingEventsModule extends Component {
   componentDidMount() {
     this.fetchAllData();
 
-    this.pendingEventsService
+    this.pendingTagsService
       .on('created', message => {
-        console.log('created', message);
         this.setState({currentPage: 1, pageSize: 5}, () => this.fetchAllData());
       })
       .on('updated', message => {
-        console.log('updated', message);
         this.fetchAllData();
       })
       .on('removed', message => {
-        console.log('removed', message);
         this.setState({currentPage: 1, pageSize: 5}, () => this.fetchAllData());
       })
       .on('error', error => {
-        console.log('pending-events created ', error);
         this.props.updateMessageList({status: 'error', details: error.message});
       });
   }
 
   componentWillUnmount() {
-    this.pendingEventsService
+    this.pendingTagsService
       .removeListener('created')
       .removeListener('updated')
       .removeListener('removed')
@@ -59,23 +50,15 @@ export default class PendingEventsModule extends Component {
   }
 
   fetchAllData() {
-    const eventQuery = {
-      $sort: buildSortQuery(this.state.sort),
-      $limit: this.state.pageSize,
-      $skip: this.state.pageSize * (this.state.currentPage - 1)
-    };
-    const defaultQuery = {$sort: {name: 1}};
-
-    this.pendingEventsService.find({query: eventQuery}).then(message => {
-      this.setState({pendingEvents: message.data, pendingEventsTotal: message.total, pendingEventsLoaded: true});
-    });
-
-    this.venuesService.find({query: defaultQuery}).then(message => {
-      this.setState({venues: message.data, venuesLoaded: true});
-    });
-
-    this.orgsService.find({query: defaultQuery}).then(message => {
-      this.setState({organizers: message.data, orgsLoaded: true});
+    this.pendingTagsService.find({
+      query: {
+        $sort: buildSortQuery(this.state.sort),
+        $limit: this.state.pageSize,
+        $skip: this.state.pageSize * (this.state.currentPage - 1)
+      }
+    }).then(message => {
+      console.log('find', message);
+      this.setState({pendingTags: message.data, pendingTagsTotal: message.total, pendingTagsLoaded: true});
     });
   }
 
@@ -93,25 +76,26 @@ export default class PendingEventsModule extends Component {
   }
 
   renderTable() {
-    if (!(this.state.pendingEventsLoaded)) {
+    if (!this.state.pendingTagsLoaded) {
       return <p>Data is loading... Please be patient...</p>;
+    } else if (this.state.pendingTagsTotal === 0) {
+      return <p>No pending tags to list.</p>
+    } else {
+      return <PendingTagsTable pendingTags={this.state.pendingTags} sort={this.state.sort}
+                               handleColumnClick={this.updateColumnSort} />
     }
-
-    return <PendingEventsTable pendingEvents={this.state.pendingEvents} venues={this.state.venues}
-                               organizers={this.state.organizers} sort={this.state.sort}
-                               handleColumnClick={this.updateColumnSort} />;
   }
 
   render() {
     const currentPage = this.state.currentPage;
     const pageSize = this.state.pageSize;
-    const pendingEventsTotal = this.state.pendingEventsTotal;
+    const pendingTagsTotal = this.state.pendingTagsTotal;
 
     return (
       <div className={'schema-module'}>
         <PaginationLayout pageSize={pageSize} activePage={currentPage}
-                          total={pendingEventsTotal} updatePageSize={this.updatePageSize}
-                          updateCurrentPage={this.updateCurrentPage} schema={'pending-events'} />
+                          total={pendingTagsTotal} updatePageSize={this.updatePageSize}
+                          updateCurrentPage={this.updateCurrentPage} schema={'pending-tags'} />
         {this.renderTable()}
       </div>
     );

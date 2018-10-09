@@ -3,7 +3,7 @@ import Moment from 'moment';
 import {Link} from 'react-router-dom';
 import app from '../../services/socketio';
 
-export default class TagsRow extends Component {
+export default class TagRow extends Component {
   constructor(props) {
     super(props);
 

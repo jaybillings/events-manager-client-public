@@ -101,7 +101,7 @@ export default class OrganizersLayout extends Component {
         <h2>Organizers</h2>
         <h3>View/Modify</h3>
         <PaginationLayout pageSize={this.state.pageSize} activePage={this.state.currentPage}
-                          total={this.state.orgsTotal}
+                          total={this.state.orgsTotal} schema={'orgs'}
                           updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage} />
         {this.renderTable()}
         <h3>Add New Organizer</h3>

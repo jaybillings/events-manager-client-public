@@ -3,7 +3,7 @@ import app from '../../services/socketio';
 
 import '../../styles/add-form.css';
 
-export default class TagsAddForm extends Component {
+export default class TagAddForm extends Component {
   constructor(props) {
     super(props);
 

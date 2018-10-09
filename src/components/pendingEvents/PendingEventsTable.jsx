@@ -27,7 +27,7 @@ export default class PendingEventsTable extends Component {
         <tbody>
         {
           pendingEvents.map(event =>
-            <PendingEventRow key={event.id} pendingEvent={event}
+            <PendingEventRow key={`event-${event.id}`} pendingEvent={event}
                              venue={venues.find(v => {
                                return v.id === event.venue_id
                              })}

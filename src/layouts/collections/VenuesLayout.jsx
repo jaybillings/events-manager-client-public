@@ -117,7 +117,7 @@ export default class VenuesLayout extends Component {
         <h2>Venues</h2>
         <h3>View/Modify</h3>
         <PaginationLayout pageSize={this.state.pageSize} activePage={this.state.currentPage}
-                          total={this.state.venuesTotal}
+                          total={this.state.venuesTotal} schema={'venues'}
                           updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage} />
         {this.renderTable()}
         <h3>Add New Venue</h3>
