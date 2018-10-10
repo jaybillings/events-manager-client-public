@@ -1,0 +1,15 @@
+.schema-module {
+  border: 1px solid var(--light-gray);
+  margin: 2rem 0;
+  padding: 1rem 2rem;
+}
+
+.schema-module h3 {
+  width: min-content;
+  font-size: 2rem;
+  font-weight: bold;
+  background-color: white;
+  margin: 0;
+  padding: 0 1rem;
+  transform: translate(0,-90%);
+}

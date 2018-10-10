@@ -1,27 +1,27 @@
 import React, {Component} from 'react';
-import {buildSortQuery, buildColumnSort} from "../../utilities";
+import {buildSortQuery, renderTableHeader} from "../../utilities";
 import app from '../../services/socketio';
 
 import PaginationLayout from '../common/PaginationLayout';
-import PendingVenuesTable from './PendingVenuesTable';
+import PendingVenueRow from './PendingVenueRow';
+
+import '../../styles/schema-table.css';
 
 export default class PendingVenuesModule extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      pendingVenues: [], pendingVenuesLoaded: false, pendingVenuesTotal: 0,
-      neighborhoods: [], hoodsLoaded: false, pageSize: 5, currentPage: 1, sort: ['created_at', -1]
+      pendingVenues: [], pendingVenuesCount: 0,
+      pageSize: this.props.defaultPageSize, currentPage: 1, sort: this.props.defaultSortOrder
     };
 
     this.pendingVenuesService = app.service('pending-venues');
-    this.hoodsService = app.service('neighborhoods');
 
     this.fetchAllData = this.fetchAllData.bind(this);
-    this.renderTable = this.renderTable.bind(this);
-    this.updateColumnSort = this.updateColumnSort.bind(this);
-    this.updatePageSize = this.updatePageSize.bind(this);
-    this.updateCurrentPage = this.updateCurrentPage.bind(this);
+    this.updateColumnSortSelf = this.props.updateColumnSort.bind(this);
+    this.updatePageSizeSelf = this.props.updatePageSize.bind(this);
+    this.updateCurrentPageSelf = this.props.updateCurrentPage.bind(this);
   }
 
   componentDidMount() {
@@ -30,7 +30,7 @@ export default class PendingVenuesModule extends Component {
     this.pendingVenuesService
       .on('created', message => {
         console.log('created', message);
-        this.setState({currentPage: 1, pageSize: 5}, () => this.fetchAllData());
+        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('updated', message => {
         console.log('updated', message);
@@ -38,10 +38,10 @@ export default class PendingVenuesModule extends Component {
       })
       .on('removed', message => {
         console.log('removed', message);
-        this.setState({currentPage: 1, pageSize: 5}, () => this.fetchAllData());
+        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('error', error => {
-        console.log('pending-events created ', error);
+        console.log('pending-venues created ', error);
         this.props.updateMessageList({status: 'error', details: error.message});
       });
   }
@@ -62,48 +62,54 @@ export default class PendingVenuesModule extends Component {
         $skip: this.state.pageSize * (this.state.currentPage - 1)
       }
     }).then(message => {
-      this.setState({pendingVenues: message.data, pendingVenuesTotal: message.total, pendingVenuesLoaded: true});
+      this.setState({pendingVenues: message.data, pendingVenuesCount: message.total});
     });
-
-    this.hoodsService.find({query: {$sort: {name: 1}}}).then(message => {
-      this.setState({neighborhoods: message.data, hoodsLoaded: true});
-    });
-  }
-
-  updateColumnSort(e) {
-    const columnSortState = buildColumnSort(e.target, this.state.sort);
-    this.setState(columnSortState, () => this.fetchAllData());
-  }
-
-  updatePageSize(e) {
-    this.setState({pageSize: parseInt(e.target.value, 10), currentPage: 1}, () => this.fetchAllData());
-  }
-
-  updateCurrentPage(page) {
-    this.setState({currentPage: parseInt(page, 10)}, () => this.fetchAllData());
-  }
-
-  renderTable() {
-    if (!(this.state.pendingVenuesLoaded && this.state.hoodsLoaded)) {
-      return <p>Data is loading... Please be patient...</p>
-    }
-
-    return <PendingVenuesTable pendingVenues={this.state.pendingVenues} neighborhoods={this.state.neighborhoods}
-                               sort={this.state.sort} handleColumnClick={this.updateColumnSort} />
   }
 
   render() {
+    const pendingVenues = this.state.pendingVenues;
+    const pendingVenuesCount = this.state.pendingVenuesCount;
+
+    if (!(pendingVenues && this.props.neighborhoods)) {
+      return <p>Data is loading... Please be patient...</p>;
+    } else if (pendingVenuesCount === 0) {
+      return <p>No pending venues to list.</p>;
+    }
+
+    const titleMap = new Map([
+      ['name', 'Name'],
+      ['hood_id', 'Neighborhood'],
+      ['created_at', 'Imported On']
+    ]);
+    const hoods = this.props.neighborhoods;
+    const columnSort = this.state.sort;
+    const clickHandler = this.updateColumnSortSelf;
     const currentPage = this.state.currentPage;
     const pageSize = this.state.pageSize;
-    const pendingVenuesTotal = this.state.pendingVenuesTotal;
 
     return (
-      <div className={'schema-module'}>
-        <PaginationLayout pageSize={pageSize} activePage={currentPage} total={pendingVenuesTotal}
-                          updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
-                          schema={'pending-venues'} />
-        {this.renderTable()}
-      </div>
+      [
+        <PaginationLayout key={'pending-venues-pagination'}
+          pageSize={pageSize} activePage={currentPage} total={pendingVenuesCount}
+          updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
+          schema={'pending-venues'}
+        />,
+        <table className={'schema-table'} key={'pending-venues-table'}>
+          <thead>{renderTableHeader(titleMap, columnSort, clickHandler)}</thead>
+          <tbody>
+          {
+            pendingVenues.map(venue =>
+              <PendingVenueRow
+                key={`venue-${venue.id}`} pendingVenue={venue}
+                neighborhood={hoods.find(h => {
+                  return h.id === venue.hood_id
+                })}
+                neighborhoods={hoods}
+              />)
+          }
+          </tbody>
+        </table>
+      ]
     );
   }
 }

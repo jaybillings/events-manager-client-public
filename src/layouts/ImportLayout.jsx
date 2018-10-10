@@ -11,6 +11,8 @@ import PendingVenuesModule from '../components/pendingVenues/PendingVenuesModule
 import PendingOrganizersModule from '../components/pendingOrganizers/PendingOrganizersModule';
 import PendingNeighborhoodsModule from '../components/pendingNeighborhoods/PendingNeighborhoodsModule';
 
+import '../styles/schema-module.css';
+
 export default class ImportLayout extends Component {
   constructor(props) {
     super(props);
@@ -142,20 +144,49 @@ export default class ImportLayout extends Component {
         <h2>Import Data From CSV File</h2>
         <ImportForm fileInputRef={this.fileInput} schemaSelectRef={this.schemaSelect} handleSubmit={this.importData} />
         <h2>Review Unpublished Data</h2>
-        <h3>Events</h3>
-        <PendingEventsModule updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
-                             updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
-                             venues={this.state.venues} organizers={this.state.organizers} tags={this.state.tags}
-                             defaultPageSize={this.state.defaultPageSize} defaultSort={this.state.defaultSortOrder} />
-        <h3>Venues</h3>
-        <PendingVenuesModule updateMessageList={this.updateMessageList} />
-        <h3>Organizers</h3>
-        <PendingOrganizersModule updateMessageList={this.updateMessageList} />
-        <h3>Neighborhoods</h3>
-        <PendingNeighborhoodsModule updateMessageList={this.updateMessageList} />
-        <h3>Tags</h3>
-        <PendingTagsModule updateMessageList={this.updateMessageList} />
-        <h2>Publish</h2>
+        <div className={'schema-module'}>
+          <h3>Events</h3>
+          <PendingEventsModule
+            venues={this.state.venues} organizers={this.state.organizers} tags={this.state.tags}
+            defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
+            updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
+            updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+          />
+        </div>
+        <div className={'schema-module'}>
+          <h3>Venues</h3>
+          <PendingVenuesModule
+            neighborhoods={this.state.neighborhoods}
+            defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
+            updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
+            updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+          />
+        </div>
+        <div className={'schema-module'}>
+          <h3>Organizers</h3>
+          <PendingOrganizersModule
+            defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
+            updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
+            updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+          />
+        </div>
+        <div className={'schema-module'}>
+          <h3>Neighborhoods</h3>
+          <PendingNeighborhoodsModule
+            defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
+            updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
+            updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+          />
+        </div>
+        <div className={'schema-module'}>
+          <h3>Tags</h3>
+          <PendingTagsModule
+            defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
+            updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
+            updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+          />
+        </div>
+        <button type={'submit'}>Publish All Pending Listings</button>
       </div>
     );
   }

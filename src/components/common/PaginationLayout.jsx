@@ -37,12 +37,9 @@ export default class PaginationLayout extends Component {
 
     return (
       <div className={'pagination-container'}>
-        <label>
-          Listings per page
-          <select ref={'pageSizeSelect'} defaultValue={this.props.pageSize} onChange={this.props.updatePageSize}>
-            {this.renderPageOptions()}
-          </select>
-        </label>
+        <select ref={'pageSizeSelect'} defaultValue={this.props.pageSize} onChange={this.props.updatePageSize}>
+          {this.renderPageOptions()}
+        </select>
         <Pagination activePage={this.props.activePage}
                     itemsCountPerPage={this.props.pageSize}
                     totalItemsCount={this.props.total}

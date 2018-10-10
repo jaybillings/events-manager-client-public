@@ -1,7 +1,16 @@
+.schema-table {
+  width: 100%;
+}
+
 .schema-table td {
   min-width: min-content;
 }
 
 .schema-table select {
   max-width: 20rem;
+}
+
+.schema-table button {
+  color: var(--error-color);
+  border-color: var(--error-color);
 }
