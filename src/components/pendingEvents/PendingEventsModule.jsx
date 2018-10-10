@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {buildSortQuery, renderTableHeader} from '../../utilities';
+import app from '../../services/socketio';
 
 import PaginationLayout from '../common/PaginationLayout';
 import PendingEventRow from './PendingEventRow';
@@ -11,30 +12,34 @@ export default class PendingEventsModule extends Component {
     super(props);
 
     this.state = {
-      pendingEvents: this.props.pendingEvents, pendingEventsTotal: this.props.pendingEventsTotal,
-      pageSize: this.props.pageSize, sort: this.props.sort, currentPage: 1
+      pendingEvents: [], pendingEventCount: 0,
+      pageSize: this.props.defaultPageSize, currentPage: 1, sort: this.props.defaultSort
     };
 
-    this.fetchPendingEvents = this.fetchPendingEvents.bind(this);
+    this.pendingEventsService = app.service('pending-events');
+
+    this.fetchAllData = this.fetchAllData.bind(this);
     this.renderTable = this.renderTable.bind(this);
-    this.updateColumnSort = this.props.updateColumnSort.bind(this);
-    this.updatePageSize = this.props.updatePageSize.bind(this);
-    this.updateCurrentPage = this.props.updateCurrentPage.bind(this);
+    this.updateColumnSortSelf = this.props.updateColumnSort.bind(this);
+    this.updatePageSizeSelf = this.props.updatePageSize.bind(this);
+    this.updateCurrentPageSelf = this.props.updateCurrentPage.bind(this);
   }
 
   componentDidMount() {
-    this.props.pendingEventsService
+    this.fetchAllData();
+
+    this.pendingEventsService
       .on('created', message => {
         console.log('created', message);
-        this.setState({currentPage: 1, pageSize: 5}, () => this.fetchPendingEvents());
+        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('updated', message => {
         console.log('updated', message);
-        this.fetchPendingEvents();
+        this.fetchAllData();
       })
       .on('removed', message => {
         console.log('removed', message);
-        this.setState({currentPage: 1, pageSize: 5}, () => this.fetchPendingEvents());
+        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('error', error => {
         console.log('pending-events created ', error);
@@ -43,33 +48,36 @@ export default class PendingEventsModule extends Component {
   }
 
   componentWillUnmount() {
-    this.props.pendingEventsService
+    this.pendingEventsService
       .removeListener('created')
       .removeListener('updated')
       .removeListener('removed')
       .removeListener('error');
   }
 
-  fetchPendingEvents() {
-    this.pendingEventsService.find({
-      $sort: buildSortQuery(this.state.sort),
-      $limit: this.state.pageSize,
-      $skip: this.state.pageSize * (this.state.currentPage - 1)
-    }).then(message => {
-      this.setState({pendingEvents: message.data, pendingEventsTotal: message.total});
+  fetchAllData() {
+    this.pendingEventsService.find({query: {
+        $sort: buildSortQuery(this.state.sort),
+        $limit: this.state.pageSize,
+        $skip: this.state.pageSize * (this.state.currentPage - 1)
+      }}).then(message => {
+      console.log('find pending-events', message);
+      this.setState({pendingEvents: message.data, pendingEventCount: message.total});
     });
   }
 
   renderTable() {
     if (!(this.state.pendingEvents && this.props.venues && this.props.organizers && this.props.tags)) {
       return <p>Data is loading... Please be patient...</p>;
+    } else if (this.state.pendingEventCount === 0) {
+      return <p>No pending events to list.</p>
     }
 
-    const pendingEvents = this.props.pendingEvents;
+    const pendingEvents = this.state.pendingEvents;
     const venues = this.props.venues;
     const organizers = this.props.organizers;
-    const columnSort = this.props.sort;
-    const clickHandler = this.props.updateColumnSort;
+    const columnSort = this.state.sort;
+    const clickHandler = this.updateColumnSortSelf;
     const titleMap = new Map([
       ['name', 'Name'],
       ['start_date', 'Start Date'],
@@ -103,13 +111,13 @@ export default class PendingEventsModule extends Component {
   render() {
     const currentPage = this.state.currentPage;
     const pageSize = this.state.pageSize;
-    const pendingEventsTotal = this.state.pendingEventsTotal;
+    const pendingEventsTotal = this.state.pendingEventCount;
 
     return (
       <div className={'schema-module'}>
         <PaginationLayout pageSize={pageSize} activePage={currentPage}
-                          total={pendingEventsTotal} updatePageSize={this.props.updatePageSize}
-                          updateCurrentPage={this.props.updateCurrentPage} schema={'pending-events'} />
+                          total={pendingEventsTotal} updatePageSize={this.updatePageSizeSelf}
+                          updateCurrentPage={this.updateCurrentPageSelf} schema={'pending-events'} />
         {this.renderTable()}
       </div>
     );

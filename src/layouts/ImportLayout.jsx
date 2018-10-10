@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import app from '../services/socketio';
-import {buildColumnSort, buildSortQuery} from "../utilities";
+import {buildColumnSort} from "../utilities";
 
 import Header from '../components/common/Header';
 import ImportForm from '../components/importer/ImportForm';
@@ -28,7 +28,6 @@ export default class ImportLayout extends Component {
     this.schemaSelect = React.createRef();
 
     this.importerService = app.service('importer');
-    this.pendingEventsService = app.service('pending-events');
     this.venuesService = app.service('venues');
     this.orgsService = app.service('organizers');
     this.tagsService = app.service('tags');
@@ -66,15 +65,7 @@ export default class ImportLayout extends Component {
   }
 
   fetchInitialData() {
-    const moduleSchemaQuery = {
-      $sort: buildSortQuery(this.state.defaultSortOrder),
-      $limit: this.state.defaultPageSize
-    };
     const otherSchemaQuery = {$sort: {name: 1}};
-
-    this.pendingEventsService.find({query: moduleSchemaQuery}).then(message => {
-      this.setState({pendingEvents: message.data, pendingEventsTotal: message.total});
-    });
 
     this.venuesService.find({query: otherSchemaQuery}).then(message => {
       this.setState({venues: message.data});
@@ -154,10 +145,8 @@ export default class ImportLayout extends Component {
         <h3>Events</h3>
         <PendingEventsModule updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
                              updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
-                             pendingEvents={this.state.pendingEvents} pendingEventCount={this.state.pendingEventCount}
-                             pendingEventsService={this.pendingEventsService}
                              venues={this.state.venues} organizers={this.state.organizers} tags={this.state.tags}
-                             pageSize={this.state.defaultPageSize} sort={this.state.defaultSortOrder} />
+                             defaultPageSize={this.state.defaultPageSize} defaultSort={this.state.defaultSortOrder} />
         <h3>Venues</h3>
         <PendingVenuesModule updateMessageList={this.updateMessageList} />
         <h3>Organizers</h3>
