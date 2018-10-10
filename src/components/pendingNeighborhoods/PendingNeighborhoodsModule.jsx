@@ -14,7 +14,7 @@ export default class PendingNeighborhoodsModule extends Component {
       pageSize: 5, currentPage: 1, sort: ['created_at', -1]
     };
 
-    this.pendingNeighborhoodsService = app.service('pending-hoods');
+    this.pendingNeighborhoodsService = app.service('pending-neighborhoods');
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.renderTable = this.renderTable.bind(this);
@@ -82,7 +82,7 @@ export default class PendingNeighborhoodsModule extends Component {
       return <p>No pending hoods to list.</p>
     } else {
       return <PendingNeighborhoodsTable pendingNeighborhoods={this.state.pendingNeighborhoods} sort={this.state.sort}
-                               handleColumnClick={this.updateColumnSort} />
+                                        handleColumnClick={this.updateColumnSort} />
     }
   }
 

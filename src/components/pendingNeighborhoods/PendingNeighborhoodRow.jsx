@@ -15,7 +15,7 @@ export default class PendingNeighborhoodRow extends Component {
   }
 
   discardPendingHood() {
-    this.pendingHoodService.remove(this.props.pendingHood.id).then(message => console.log('remove', message));
+    this.pendingHoodService.remove(this.props.pendingNeighborhood.id).then(message => console.log('remove', message));
   }
 
   render() {

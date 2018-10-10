@@ -5,9 +5,9 @@ import PendingNeighborhoodRow from './PendingNeighborhoodRow';
 
 import '../../styles/schema-table.css';
 
-export default class pendingNeighborhoodsTable extends Component {
+export default class PendingNeighborhoodsTable extends Component {
   render() {
-    const pendingHoods = this.props.pendingHoods;
+    const pendingHoods = this.props.pendingNeighborhoods;
     const columnSort = this.props.sort;
     const clickHandler = this.props.handleColumnClick;
     const titleMap = new Map([
@@ -20,7 +20,7 @@ export default class pendingNeighborhoodsTable extends Component {
         <thead>{renderTableHeader(titleMap, columnSort, clickHandler)}</thead>
         <tbody>
         {
-          pendingHoods.map(hood => <PendingNeighborhoodRow key={`hood-${hood.id}`} pendingHood={hood} />)
+          pendingHoods.map(hood => <PendingNeighborhoodRow key={`hood-${hood.id}`} pendingNeighborhood={hood} />)
         }
         </tbody>
       </table>
