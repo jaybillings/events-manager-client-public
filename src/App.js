@@ -4,18 +4,26 @@ import {BrowserRouter, Switch, Route} from 'react-router-dom';
 import ImportLayout from './layouts/ImportLayout';
 import AdminToolsLayout from './layouts/AdminToolsLayout';
 import MyAccountLayout from './layouts/MyAccountLayout';
+
 import EventsLayout from './layouts/collections/EventsLayout';
-import SingleEventLayout from './layouts/single/SingleEventLayout';
 import VenuesLayout from './layouts/collections/VenuesLayout';
-import SingleVenueLayout from './layouts/single/SingleVenueLayout';
 import OrganizersLayout from './layouts/collections/OrganizersLayout';
-import SingleOrganizerLayout from './layouts/single/SingleOrganizerLayout';
 import NeighborhoodsLayout from './layouts/collections/NeighborhoodsLayout';
-import SingleNeighborhoodLayout from './layouts/single/SingleNeighborhoodLayout';
 import TagsLayout from './layouts/collections/TagsLayout';
+
+import SingleEventLayout from './layouts/single/SingleEventLayout';
+import SingleVenueLayout from './layouts/single/SingleVenueLayout';
+import SingleOrganizerLayout from './layouts/single/SingleOrganizerLayout';
+import SingleNeighborhoodLayout from './layouts/single/SingleNeighborhoodLayout';
 import SingleTagLayout from './layouts/single/SingleTagLayout';
-import NotFound from './pages/NotFound';
+
 import SinglePendingEventLayout from './layouts/single/SinglePendingEventLayout';
+import SinglePendingVenueLayout from "./layouts/single/SinglePendingVenueLayout";
+import SinglePendingOrganizerLayout from './layouts/single/SinglePendingOrganizerLayout';
+import SinglePendingNeighborhoodLayout from './layouts/single/SinglePendingNeighborhoodLayout';
+import SinglePendingTagLayout from './layouts/single/SinglePendingTagLayout';
+
+import NotFound from './pages/NotFound';
 
 class App extends Component {
   render() {
@@ -40,6 +48,10 @@ class App extends Component {
           <Route exact path={'/tags/:id'} component={SingleTagLayout}/>
 
           <Route exact path={'/pendingEvents/:id'} component={SinglePendingEventLayout} />
+          <Route exact path={'/pendingVenues/:id'} component={SinglePendingVenueLayout} />
+          <Route exact path={'/pendingOrganizers/:id'} component={SinglePendingOrganizerLayout} />
+          <Route exact path={'/pendingNeighborhoods/:id'} component={SinglePendingNeighborhoodLayout} />
+          <Route exact path={'/pendingTags/:id'} component={SinglePendingTagLayout} />
 
           <Route exact path={'/account'} component={MyAccountLayout}/>
           <Route exact path={'/admin'} component={AdminToolsLayout}/>
