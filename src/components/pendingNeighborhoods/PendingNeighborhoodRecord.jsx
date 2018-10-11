@@ -30,9 +30,9 @@ export default class PendingNeighborhoodRecord extends Component {
 
   render() {
     const pendingHood = this.props.pendingNeighborhood;
-    const hoodId = this.props.pendingNeighborhood['targetId'] || 'N/A';
-    const createdAt = Moment(pendingHood['created_at']).calendar();
-    const updatedAt = Moment(pendingHood['updated_at']).calendar();
+    const hoodId = pendingHood.target_id || 'N/A';
+    const createdAt = Moment(pendingHood.created_at).calendar();
+    const updatedAt = Moment(pendingHood.updated_at).calendar();
 
     return (
       <form id={'pending-hood-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
@@ -52,7 +52,7 @@ export default class PendingNeighborhoodRecord extends Component {
           Name
           <input type={'text'} ref={this.nameInput} defaultValue={pendingHood.name} required maxLength={100} />
         </label>
-        <div className={'block-warning'} title={'Caution: This event is pending. It must be pushed live before it is visible on the site.'}>
+        <div className={'block-warning'} title={'Caution: This neighborhood is pending. It must be pushed live before it is visible on the site.'}>
           <button type="submit" className="button-primary">Save Changes</button>
           <button type="button" onClick={this.handleClickDelete}>Discard Neighborhood</button>
         </div>

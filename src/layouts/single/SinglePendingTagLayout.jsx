@@ -34,6 +34,12 @@ export default class SinglePendingTagLayout extends Component {
       });
   }
 
+  componentWillUnmount() {
+    this.pendingTagsService
+      .removeListener('patched')
+      .removeListener('removed');
+  }
+
   fetchAllData() {
     const id = this.props.match.params.id;
 
@@ -45,17 +51,11 @@ export default class SinglePendingTagLayout extends Component {
     });
   }
 
-  deleteTag() {
-    const id = this.props.pendingTag.id;
+  deleteTag(id) {
     this.pendingTagsService.remove(id).then(this.setState({hasDeleted: true}));
   }
 
-  saveTag(e) {
-    e.preventDefault();
-
-    const id = this.props.pendingTag.id;
-    const newData = {name: this.nameInput.value.trim()};
-
+  saveTag(id, newData) {
     this.pendingTagsService.patch(id, newData).then(message => {
       console.log('patch', message);
     }, err => {
@@ -78,7 +78,7 @@ export default class SinglePendingTagLayout extends Component {
       <div className={'container'}>
         <Header />
         <div className={'block-warning'}
-             title={'Caution: This event is pending. It must be pushed live before it is visible on the site.'}>
+             title={'Caution: This tag is pending. It must be pushed live before it is visible on the site.'}>
           <h2>{this.state.pendingTag.name}</h2>
         </div>
         {this.renderRecord()}

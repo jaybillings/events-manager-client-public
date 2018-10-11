@@ -9,7 +9,7 @@ export default class SinglePendingNeighborhoodLayout extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {pendingHood: {}, hoodLoaded: false, hasDeleted: false, notFound: false};
+    this.state = {pendingNeighborhood: {}, hoodLoaded: false, hasDeleted: false, notFound: false};
 
     this.pendingHoodsService = app.service('pending-neighborhoods');
 
@@ -27,7 +27,7 @@ export default class SinglePendingNeighborhoodLayout extends Component {
     // Register listeners
     this.pendingHoodsService
       .on('patched', message => {
-        this.setState({pendingHood: message, hoodLoaded: true});
+        this.setState({pendingNeighborhood: message, hoodLoaded: true});
       })
       .on('removed', () => {
         this.setState({hasDeleted: true});
@@ -44,7 +44,7 @@ export default class SinglePendingNeighborhoodLayout extends Component {
     const id = this.props.match.params.id;
 
     this.pendingHoodsService.get(id).then(message => {
-      this.setState({pendingHood: message, hoodLoaded: true});
+      this.setState({pendingNeighborhood: message, hoodLoaded: true});
     }, message => {
       console.log('error', JSON.stringify(message));
       this.setState({notFound: true});
@@ -66,7 +66,7 @@ export default class SinglePendingNeighborhoodLayout extends Component {
   renderRecord() {
     if (!this.state.hoodLoaded) return <p>Data is loading... Please be patient...</p>;
 
-    return <PendingNeighborhoodRecord pendingNeighborhood={this.state.pendingHood}
+    return <PendingNeighborhoodRecord pendingNeighborhood={this.state.pendingNeighborhood}
                                       saveNeighborhood={this.saveNeighborhood}
                                       deleteNeighborhood={this.deleteNeighborhood} />;
   }
@@ -80,8 +80,8 @@ export default class SinglePendingNeighborhoodLayout extends Component {
       <div className={'container'}>
         <Header />
         <div className={'block-warning'}
-             title={'Caution: This event is pending. It must be pushed live before it is visible on the site.'}>
-          <h2>{this.state.pendingHood.name}</h2>
+             title={'Caution: This neighborhood is pending. It must be pushed live before it is visible on the site.'}>
+          <h2>{this.state.pendingNeighborhood.name}</h2>
         </div>
         {this.renderRecord()}
       </div>

@@ -8,21 +8,34 @@ export default class PendingTagRecord extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {hasDeleted: false};
-
     this.nameInput = React.createRef();
-    this.btnDelete = React.createRef();
-    this.btnSave = React.createRef();
+
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleClickDelete = this.handleClickDelete.bind(this);
+  }
+
+  handleSubmit(e) {
+    e.preventDefault();
+
+    const id = this.props.pendingTag.id;
+    const newData = {name: this.nameInput.current.value.trim()};
+
+    this.props.saveTag(id, newData);
+  }
+
+  handleClickDelete() {
+    const id = this.props.pendingTag.id;
+    this.props.deleteTag(id);
   }
 
   render() {
     const pendingTag = this.props.pendingTag;
-    const tagId = pendingTag['tagret_id'] || 'N/A';
-    const createdAt = Moment(pendingTag['created_at']).calendar();
-    const updatedAt = Moment(pendingTag['updated_at']).calendar();
+    const tagId = pendingTag.target_id || 'N/A';
+    const createdAt = Moment(pendingTag.created_at).calendar();
+    const updatedAt = Moment(pendingTag.updated_at).calendar();
 
     return (
-      <form id={'pending-tag-listing-form'} className={'schema-record'} onSubmit={this.props.saveTag}>
+      <form id={'pending-tag-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
         <label>
           Live Tag ID
           <input type={'text'} defaultValue={tagId} disabled />
@@ -39,9 +52,9 @@ export default class PendingTagRecord extends Component {
           Name
           <input type={'text'} ref={this.nameInput} defaultValue={pendingTag.name} required maxLength={100} />
         </label>
-        <div className={'block-warning'} title={'Caution: This event is pending. It must be pushed live before it is visible on the site.'}>
-          <button type={'button'} ref={this.btnDelete} onClick={this.props.deleteTag}>Discard Tag</button>
-          <button type={'submit'} ref={this.btnSave} className={'button-primary'}>Save Changes</button>
+        <div className={'block-warning'} title={'Caution: This tag is pending. It must be pushed live before it is visible on the site.'}>
+          <button type={'submit'} className={'button-primary'}>Save Changes</button>
+          <button type={'button'} onClick={this.handleClickDelete}>Discard Tag</button>
         </div>
       </form>
     );
