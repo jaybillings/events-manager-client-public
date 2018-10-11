@@ -89,7 +89,8 @@ export default class PendingVenuesModule extends Component {
 
     return (
       [
-        <PaginationLayout key={'pending-venues-pagination'}
+        <PaginationLayout
+          key={'pending-venues-pagination'}
           pageSize={pageSize} activePage={currentPage} total={pendingVenuesCount}
           updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
           schema={'pending-venues'}

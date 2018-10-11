@@ -32,6 +32,7 @@ export default class ImportLayout extends Component {
     this.importerService = app.service('importer');
     this.venuesService = app.service('venues');
     this.orgsService = app.service('organizers');
+    this.hoodsService = app.service('neighborhoods');
     this.tagsService = app.service('tags');
 
     this.fetchInitialData = this.fetchInitialData.bind(this);
@@ -75,6 +76,10 @@ export default class ImportLayout extends Component {
 
     this.orgsService.find({query: otherSchemaQuery}).then(message => {
       this.setState({organizers: message.data});
+    });
+
+    this.hoodsService.find({query: otherSchemaQuery}).then(message => {
+      this.setState({neighborhoods: message.data});
     });
 
     this.tagsService.find({query: otherSchemaQuery}).then(message => {

@@ -85,10 +85,11 @@ export default class PendingOrganizersModule extends Component {
     return (
       [
         <PaginationLayout
-          pageSize={pageSize} activePage={currentPage} total={pendingOrgsCount}
+          key={'pending-orgs-pagination'} pageSize={pageSize} activePage={currentPage} total={pendingOrgsCount}
           updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
-          schema={'pending-organizers'} />,
-        <table className={'schema-table'}>
+          schema={'pending-organizers'}
+        />,
+        <table className={'schema-table'} key={'org-table'}>
           <thead>{renderTableHeader(titleMap, columnSort, clickHandler)}</thead>
           <tbody>{pendingOrgs.map(org => <PendingOrganizerRow key={`org-${org.id}`} pendingOrganizer={org} />)}</tbody>
         </table>

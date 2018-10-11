@@ -85,11 +85,11 @@ export default class PendingNeighborhoodsModule extends Component {
     return (
       [
         <PaginationLayout
-          pageSize={pageSize} activePage={currentPage} total={pendingHoodsCount}
+          key={'pending-hoods-pagination'} pageSize={pageSize} activePage={currentPage} total={pendingHoodsCount}
           updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
           schema={'pending-neighborhoods'}
         />,
-        <table className={'schema-table'}>
+        <table className={'schema-table'} key={'pending-hoods-table'}>
           <thead>{renderTableHeader(titleMap, columnSort, clickHandler)}</thead>
           <tbody>
           {

@@ -19,7 +19,7 @@ export default class PendingNeighborhoodRow extends Component {
   }
 
   render() {
-    const pendingHood = this.props.pendingHood;
+    const pendingHood = this.props.pendingNeighborhood;
     const createdAt = Moment(pendingHood.created_at).calendar();
 
     return (

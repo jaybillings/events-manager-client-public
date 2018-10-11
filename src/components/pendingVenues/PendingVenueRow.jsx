@@ -20,8 +20,8 @@ export default class PendingVenueRow extends Component {
 
   render() {
     const pendingVenue = this.props.pendingVenue;
-    const hoodLink = this.props.hood ?
-      <Link to={`/pendingNeighborhoods/${pendingVenue.hood_id}`}>{this.props.venue.name}</Link> : 'NO VENUE';
+    const hoodLink = this.props.neighborhood ?
+      <Link to={`/pendingNeighborhoods/${this.props.neighborhood.id}`}>{this.props.neighborhood.name}</Link> : 'NO NEIGHBORHOOD';
     const createdAt = Moment(pendingVenue.created_at).calendar();
 
     return (

@@ -84,10 +84,11 @@ export default class PendingTagsModule extends Component {
 
     return (
       [
-        <PaginationLayout key={'pending-tags-pagination'}
-                          pageSize={pageSize} activePage={currentPage} total={pendingTagsCount}
-                          updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
-                          schema={'pending-tags'}
+        <PaginationLayout
+          key={'pending-tags-pagination'}
+          pageSize={pageSize} activePage={currentPage} total={pendingTagsCount}
+          updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
+          schema={'pending-tags'}
         />,
         <table className={'schema-table'} key={'pending-tags-table'}>
           <thead>{renderTableHeader(titleMap, columnSort, clickHandler)}</thead>

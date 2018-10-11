@@ -15,11 +15,11 @@ export default class PendingOrganizerRow extends Component {
   }
 
   discardPendingOrg() {
-    this.pendingOrgService.remove(this.props.pendingOrg.id).then(message => console.log('deleted', message));
+    this.pendingOrgService.remove(this.props.pendingOrganizer.id).then(message => console.log('deleted', message));
   }
 
   render() {
-    const pendingOrg = this.props.pendingOrg;
+    const pendingOrg = this.props.pendingOrganizer;
     const createdAt = Moment(pendingOrg.created_at).calendar();
 
     return (

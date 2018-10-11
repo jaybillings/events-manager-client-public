@@ -95,11 +95,11 @@ export default class PendingEventsModule extends Component {
     return (
       [
         <PaginationLayout
-          pageSize={pageSize} activePage={currentPage} total={pendingEventsCount}
+          key={'pending-events-pagination'} pageSize={pageSize} activePage={currentPage} total={pendingEventsCount}
           updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
           schema={'pending-events'}
         />,
-        <table className={'schema-table'}>
+        <table className={'schema-table'} key={'pending-events-table'}>
           <thead>{renderTableHeader(titleMap, columnSort, clickHandler)}</thead>
           <tbody>
           {
