@@ -35,6 +35,10 @@ button {
   background-color: white;
 }
 
+h2 {
+  margin-top: 1em;
+}
+
 a.current {
   color: var(--current-link-color);
 }
