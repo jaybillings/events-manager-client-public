@@ -53,7 +53,7 @@ export default class PendingNeighborhoodRecord extends Component {
           <input type={'text'} ref={this.nameInput} defaultValue={pendingHood.name} required maxLength={100} />
         </label>
         <div className={'block-warning'} title={'Caution: This neighborhood is pending. It must be pushed live before it is visible on the site.'}>
-          <button type="submit" className="button-primary">Save Changes</button>
+          <button type="submit" className={'button-primary'}>Save Changes</button>
           <button type="button" onClick={this.handleClickDelete}>Discard Neighborhood</button>
         </div>
       </form>

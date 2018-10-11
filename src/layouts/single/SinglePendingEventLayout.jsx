@@ -17,15 +17,19 @@ export default class SinglePendingEventLayout extends Component {
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.renderRecord = this.renderRecord.bind(this);
+    this.saveEvent = this.saveEvent.bind(this);
+    this.deleteEvent = this.deleteEvent.bind(this);
   }
 
   componentDidMount() {
     this.fetchAllData();
 
+    this.setState({eventLoaded: false});
+
     // Register listeners
     this.pendingEventsService
       .on('patched', message => {
-        this.setState({pendingEvent: message});
+        this.setState({pendingEvent: message, eventLoaded: true});
       })
       .on('removed', () => {
         this.setState({hasDeleted: true});
@@ -41,8 +45,6 @@ export default class SinglePendingEventLayout extends Component {
   fetchAllData() {
     const id = this.props.match.params.id;
 
-    this.setState({eventLoaded: false});
-
     this.pendingEventsService.get(id).then(message => {
       this.setState({pendingEvent: message, eventLoaded: true});
     }, message => {
@@ -51,10 +53,24 @@ export default class SinglePendingEventLayout extends Component {
     });
   }
 
+  deleteEvent(id) {
+    this.pendingEventsService.remove(id).then(this.setState({hasDeleted: true}));
+  }
+
+  saveEvent(id, newData) {
+    // TODO: Add message window
+    this.pendingEventsService.patch(id, newData).then(message => {
+      console.log('patch', message);
+    }, err => {
+      console.log('error', JSON.stringify(err));
+    });
+  }
+
   renderRecord() {
     if (!this.state.eventLoaded) return <p>Data is loading ... Please be patient...</p>;
 
-    return <PendingEventRecord pendingEvent={this.state.pendingEvent} />;
+    return <PendingEventRecord pendingEvent={this.state.pendingEvent} saveEvent={this.saveEvent}
+                               deleteEvent={this.deleteEvent} />;
   }
 
   render() {

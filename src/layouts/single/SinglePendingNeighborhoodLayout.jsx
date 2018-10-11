@@ -59,7 +59,7 @@ export default class SinglePendingNeighborhoodLayout extends Component {
     this.pendingHoodsService.patch(id, newData).then(message => {
       console.log('patch', message);
     }, err => {
-      console.log('error', err);
+      console.log('error', JSON.stringify(err));
     });
   }
 
