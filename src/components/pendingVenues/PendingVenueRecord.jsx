@@ -1,14 +1,23 @@
 import React, {Component} from 'react';
 import Moment from 'moment';
+import {renderOptionList} from "../../utilities";
 
 import '../../styles/schema-record.css';
-import '../../styles/toggle.css';
 
 export default class PendingVenueRecord extends Component {
   constructor(props) {
     super(props);
 
     this.nameInput = React.createRef();
+    this.hoodInput = React.createRef();
+    this.descInput = React.createRef();
+    this.emailInput = React.createRef();
+    this.urlInput = React.createRef();
+    this.phoneInput = React.createRef();
+    this.streetInput = React.createRef();
+    this.cityInput = React.createRef();
+    this.stateInput = React.createRef();
+    this.zipInput = React.createRef();
 
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleClickDelete = this.handleClickDelete.bind(this);
@@ -18,7 +27,20 @@ export default class PendingVenueRecord extends Component {
     e.preventDefault();
 
     const id = this.props.pendingVenue.id;
-    const newData = {name: this.nameInput.current.value.trim()};
+    const newData = {
+      name: this.nameInput.current.value.trim(),
+      hood_id: this.hoodInput.current.value,
+      description: this.descInput.current.value.trim()
+    };
+
+    // Only add non-required if they have value
+    this.emailInput.current.value && (newData.email = this.emailInput.current.value.trim());
+    this.urlInput.current.value && (newData.url = this.urlInput.current.value.trim());
+    this.phoneInput.current.value && (newData.phone = this.phoneInput.current.value.trim());
+    this.streetInput.current.value && (newData.address_street = this.streetInput.current.value.trim());
+    this.cityInput.current.value && (newData.address_city = this.cityInput.current.value.trim());
+    this.stateInput.current.value && (newData.address_state = this.stateInput.current.value.trim());
+    this.zipInput.current.value && (newData.address_zip = this.zipInput.current.value.trim());
 
     this.props.saveVenue(id, newData);
   }
@@ -31,6 +53,7 @@ export default class PendingVenueRecord extends Component {
   render() {
     const pendingVenue = this.props.pendingVenue;
     const venueId = pendingVenue.target_id || 'N/A';
+    const neighborhoods = this.props.neighborhoods;
     const createdAt = Moment(pendingVenue.created_at).calendar();
     const updatedAt = Moment(pendingVenue.updated_at).calendar();
 
@@ -52,7 +75,46 @@ export default class PendingVenueRecord extends Component {
           Name
           <input type={'text'} ref={this.nameInput} defaultValue={pendingVenue.name} required maxLength={100} />
         </label>
-        <div className={'block-warning'} title={'Caution: This venue is pending. It must be pushed live before it is visible on the site.'}>
+        <label>
+          Neighborhood
+          <select ref={this.hoodInput} defaultValue={pendingVenue.hood_id || ''} required>
+            {renderOptionList(neighborhoods)}
+          </select>
+        </label>
+        <label>
+          Description
+          <textarea ref={this.descInput} defaultValue={pendingVenue.description} required />
+        </label>
+        <label>
+          Email
+          <input type={'email'} ref={this.emailInput} defaultValue={pendingVenue.email} />
+        </label>
+        <label>
+          Url
+          <input type={'url'} ref={this.urlInput} defaultValue={pendingVenue.url} />
+        </label>
+        <label>
+          Phone #
+          <input type={'tel'} ref={this.phoneInput} defaultValue={pendingVenue.phone} />
+        </label>
+        <label>
+          Street Address
+          <input type={'text'} ref={this.streetInput} defaultValue={pendingVenue.address_street} />
+        </label>
+        <label>
+          City
+          <input type={'text'} ref={this.cityInput} defaultValue={pendingVenue.address_city} />
+        </label>
+        <label>
+          State
+          <input type={'text'} ref={this.stateInput} defaultValue={pendingVenue.address_state} />
+        </label>
+        <label>
+          Zip Code
+          <input type={'text'} ref={this.zipInput} defaultValue={pendingVenue.address_zip} />
+        </label>
+        <div className={'block-warning'}
+             title={'Caution: This venue is pending. It must be pushed live before it is visible on the site.'}>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
           <button type={'button'} onClick={this.handleClickDelete}>Discard Venue</button>
         </div>

@@ -9,9 +9,14 @@ export default class SinglePendingVenueLayout extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {pendingVenue: {}, venueLoaded: false, hasDeleted: false, notFound: false};
+    this.state = {
+      pendingVenue: {}, venueLoaded: false,
+      neighborhoods: [], hoodsLoaded: false,
+      hasDeleted: false, notFound: false
+    };
 
     this.pendingVenuesService = app.service('pending-venues');
+    this.neighborhoodsService = app.service('neighborhoods');
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.renderRecord = this.renderRecord.bind(this);
@@ -49,6 +54,10 @@ export default class SinglePendingVenueLayout extends Component {
       console.log('error', JSON.stringify(message));
       this.setState({notFound: true});
     });
+
+    this.neighborhoodsService.find({query: {$sort: {name: 1}}}).then(message => {
+      this.setState({neighborhoods: message.data, hoodsLoaded: true});
+    })
   }
 
   deleteVenue(id) {
@@ -64,10 +73,10 @@ export default class SinglePendingVenueLayout extends Component {
   }
 
   renderRecord() {
-    if (!this.state.venueLoaded) return <p>Data is loading... Please be patient...</p>;
+    if (!(this.state.venueLoaded && this.state.hoodsLoaded)) return <p>Data is loading... Please be patient...</p>;
 
-    return <PendingVenueRecord pendingVenue={this.state.pendingVenue} saveVenu={this.saveVenue}
-                               deleteVenue={this.deleteVenue} />;
+    return <PendingVenueRecord pendingVenue={this.state.pendingVenue} neighborhoods={this.state.neighborhoods}
+                               saveVenue={this.saveVenue} deleteVenue={this.deleteVenue} />;
   }
 
   render() {
