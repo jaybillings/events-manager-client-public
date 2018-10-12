@@ -10,8 +10,8 @@ export default class SingleEventLayout extends Component {
     super(props);
 
     this.state = {
-      event: {}, venues: [], organizers: [],
-      eventLoaded: false, venuesLoaded: false, orgsLoaded: false,
+      event: {}, venues: [], organizers: [], tags: [], eventTags: [],
+      eventLoaded: false, venuesLoaded: false, orgsLoaded: false, tagsLoaded: false,
       hasDeleted: false, notFound: false
     };
 

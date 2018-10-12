@@ -10,21 +10,28 @@ export default class SinglePendingEventLayout extends Component {
     super(props);
 
     this.state = {
-      pendingEvent: {}, eventLoaded: false, hasDeleted: false, notFound: false
+      pendingEvent: {}, venues: [], organizers: [], tags: [], eventTags: [],
+      eventLoaded: false, venuesLoaded: false, orgsLoaded: false, tagsLoaded: false,
+      hasDeleted: false, notFound: false
     };
 
     this.pendingEventsService = app.service('pending-events');
+    this.venuesService = app.service('venues');
+    this.orgsService = app.service('organizers');
+    this.tagsService = app.service('tags');
+    this.pendingTagsLookupService = app.service('pending-events-tags-lookup');
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.renderRecord = this.renderRecord.bind(this);
     this.saveEvent = this.saveEvent.bind(this);
     this.deleteEvent = this.deleteEvent.bind(this);
+    this.saveTags = this.saveTags.bind(this);
   }
 
   componentDidMount() {
     this.fetchAllData();
 
-    this.setState({eventLoaded: false});
+    this.setState({eventLoaded: false, venuesLoaded: false, orgsLoaded: false, tagsLoaded: false});
 
     // Register listeners
     this.pendingEventsService
@@ -44,6 +51,7 @@ export default class SinglePendingEventLayout extends Component {
 
   fetchAllData() {
     const id = this.props.match.params.id;
+    const defaultQuery = {$sort: {name: 1}};
 
     this.pendingEventsService.get(id).then(message => {
       this.setState({pendingEvent: message, eventLoaded: true});
@@ -51,26 +59,66 @@ export default class SinglePendingEventLayout extends Component {
       console.log('error', JSON.stringify(message));
       this.setState({notFound: true});
     });
+
+    this.venuesService.find({query: defaultQuery}).then(message => {
+      this.setState({venues: message.data, venuesLoaded: true});
+    });
+
+    this.orgsService.find({query: defaultQuery}).then(message => {
+      this.setState({organizers: message.data, orgsLoaded: true});
+    });
+
+    this.tagsService.find({query: defaultQuery}).then(message => {
+      this.setState({tags: message.data});
+      this.pendingTagsLookupService.find({query: {pending_event_id: id}}).then(message => {
+        let tagsForEvent = message.data.map(row => row.tag_id);
+        this.setState({eventTags: tagsForEvent, tagsLoaded: true});
+      });
+    });
   }
 
   deleteEvent(id) {
     this.pendingEventsService.remove(id).then(this.setState({hasDeleted: true}));
   }
 
-  saveEvent(id, newData) {
+  saveEvent(id, eventData, tagData) {
     // TODO: Add message window
-    this.pendingEventsService.patch(id, newData).then(message => {
+    this.pendingEventsService.patch(id, eventData).then(message => {
       console.log('patch', message);
+      this.saveTags(id, tagData);
     }, err => {
       console.log('error', JSON.stringify(err));
     });
   }
 
-  renderRecord() {
-    if (!this.state.eventLoaded) return <p>Data is loading ... Please be patient...</p>;
+  saveTags(id, tagData) {
+    this.pendingTagsLookupService.remove(null, {
+      query: {
+        pending_event_id: id,
+        tag_id: {$in: tagData.to_delete}
+      }
+    }).then(message => {
+      console.log('pending-tag-lookup removed', message);
+    }, err => console.log('error', JSON.stringify(err)));
 
-    return <PendingEventRecord pendingEvent={this.state.pendingEvent} saveEvent={this.saveEvent}
-                               deleteEvent={this.deleteEvent} />;
+    this.pendingTagsLookupService.create(tagData.to_save).then(message => {
+      console.log('pending-tag-lookup created', message);
+    }, err => console.log('error', JSON.stringify(err)));
+  }
+
+  renderRecord() {
+    if (!(this.state.eventLoaded && this.state.venuesLoaded && this.state.orgsLoaded && this.state.tagsLoaded)) {
+      return <p>Data is loading ... Please be patient...</p>;
+    }
+
+    return <PendingEventRecord
+      pendingEvent={this.state.pendingEvent} venues={this.state.venues}
+      organizers={this.state.organizers}
+      tags={this.state.tags} eventTags={this.state.eventTags}
+      eventLoaded={this.state.eventLoaded} venuesLoaded={this.state.venuesLoaded}
+      orgsLoaded={this.state.orgsLoaded} tagsLoaded={this.state.tagsLoaded}
+      saveEvent={this.saveEvent} deleteEvent={this.deleteEvent}
+    />;
   }
 
   render() {
