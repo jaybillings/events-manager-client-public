@@ -11,6 +11,20 @@
 }
 
 .schema-table button {
+  color: var(--notice-color);
+  border-color: var(--notice-color);
+}
+
+.schema-table button:first-of-type {
+  margin-right: 0.5rem;
+}
+
+.schema-table button.delete {
   color: var(--error-color);
-  border-color: var(--error-color);
+  border: none;
+  text-decoration: underline;
+}
+
+.schema-table button.delete:hover {
+  color: var(--text-color);
 }

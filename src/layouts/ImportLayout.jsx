@@ -37,6 +37,7 @@ export default class ImportLayout extends Component {
 
     this.fetchInitialData = this.fetchInitialData.bind(this);
     this.importData = this.importData.bind(this);
+    this.updateMessageList = this.updateMessageList.bind(this);
     this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
   }
 
@@ -115,7 +116,7 @@ export default class ImportLayout extends Component {
   updateMessageList(newMessage) {
     let messageList = this.state.messages;
     this.setState({
-      messages: messageList.concat([newMessage]),
+      messages: [newMessage].concat(messageList),
       messagePanelVisible: true
     });
   }

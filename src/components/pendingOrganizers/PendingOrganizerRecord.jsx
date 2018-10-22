@@ -2,7 +2,6 @@ import React, {Component} from 'react';
 import Moment from 'moment';
 
 import '../../styles/schema-record.css';
-import '../../styles/toggle.css';
 
 export default class PendingOrganizerRecord extends Component {
   constructor(props) {
@@ -81,5 +80,4 @@ export default class PendingOrganizerRecord extends Component {
       </form>
     )
   }
-
 }

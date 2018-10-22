@@ -15,6 +15,7 @@
   --error-color: var(--bright-pink);
   --disabled-color: var(--medium-gray);
   --success-color: var(--true-blue);
+  --notice-color: var(--true-blue);
   --warning-color: var(--bright-yellow);
 
   --text-color: var(--black);

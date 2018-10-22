@@ -16,9 +16,11 @@ export default class PendingTagsModule extends Component {
       pageSize: this.props.defaultPageSize, currentPage: 1, sort: this.props.defaultSortOrder
     };
 
-    this.pendingTagsService = app.service('pending-tags');
+    this.pendingTagService = app.service('pending-tags');
 
     this.fetchAllData = this.fetchAllData.bind(this);
+    this.saveChanges = this.saveChanges.bind(this);
+    this.discardListing = this.discardListing.bind(this);
     this.updateColumnSortSelf = this.props.updateColumnSort.bind(this);
     this.updatePageSizeSelf = this.props.updatePageSize.bind(this);
     this.updateCurrentPageSelf = this.props.updateCurrentPage.bind(this);
@@ -27,14 +29,21 @@ export default class PendingTagsModule extends Component {
   componentDidMount() {
     this.fetchAllData();
 
-    this.pendingTagsService
+    this.pendingTagService
       .on('created', message => {
+        this.props.updateMessageList(message);
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('updated', message => {
+        this.props.updateMessageList({status: 'success', details: `Updated ${message.name} successfully.`});
+        this.fetchAllData();
+      })
+      .on('patched', message => {
+        this.props.updateMessageList({status: 'success', details: `Updated ${message.name} successfully.`});
         this.fetchAllData();
       })
       .on('removed', message => {
+        this.props.updateMessageList(message);
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('error', error => {
@@ -43,7 +52,7 @@ export default class PendingTagsModule extends Component {
   }
 
   componentWillUnmount() {
-    this.pendingTagsService
+    this.pendingTagService
       .removeListener('created')
       .removeListener('updated')
       .removeListener('removed')
@@ -51,7 +60,7 @@ export default class PendingTagsModule extends Component {
   }
 
   fetchAllData() {
-    this.pendingTagsService.find({
+    this.pendingTagService.find({
       query: {
         $sort: buildSortQuery(this.state.sort),
         $limit: this.state.pageSize,
@@ -61,6 +70,14 @@ export default class PendingTagsModule extends Component {
       console.log('find pending-tags', message);
       this.setState({pendingTags: message.data, pendingTagsCount: message.total});
     });
+  }
+
+  discardListing(id) {
+    this.pendingTagService.remove(id).then(message => console.log('removed', message));
+  }
+
+  saveChanges(id, newData) {
+    this.pendingTagService.patch(id, newData).then(message => console.log('patched', message));
   }
 
   render() {
@@ -92,7 +109,14 @@ export default class PendingTagsModule extends Component {
         />,
         <table className={'schema-table'} key={'pending-tags-table'}>
           <thead>{renderTableHeader(titleMap, columnSort, clickHandler)}</thead>
-          <tbody>{pendingTags.map(tag => <PendingTagRow key={`tag-${tag.id}`} pendingTag={tag} />)}</tbody>
+          <tbody>
+          {
+            pendingTags.map(tag =>
+              <PendingTagRow key={`tag-${tag.id}`} pendingTag={tag}
+                             saveChanges={this.saveChanges}
+                             discardListing={this.discardListing} />)
+          }
+          </tbody>
         </table>
       ]
     );

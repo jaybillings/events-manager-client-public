@@ -48,7 +48,7 @@ export default class TagRow extends Component {
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
           <td>
-            <input type={'text'} ref={'nameInput'} defaultValue={tag.name}/>
+            <input type={'text'} ref={'nameInput'} defaultValue={tag.name} />
           </td>
           <td>{updatedAt}</td>
         </tr>
