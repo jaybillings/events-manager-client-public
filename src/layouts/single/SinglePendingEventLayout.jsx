@@ -4,12 +4,14 @@ import app from '../../services/socketio';
 
 import Header from '../../components/common/Header';
 import PendingEventRecord from '../../components/pendingEvents/PendingEventRecord';
+import MessagePanel from '../../components/common/MessagePanel';
 
 export default class SinglePendingEventLayout extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
+      messages: [], messagePanelVisible: false,
       pendingEvent: {}, venues: [], organizers: [], tags: [], eventTags: [],
       eventLoaded: false, venuesLoaded: false, orgsLoaded: false, tagsLoaded: false,
       hasDeleted: false, notFound: false
@@ -26,6 +28,8 @@ export default class SinglePendingEventLayout extends Component {
     this.saveEvent = this.saveEvent.bind(this);
     this.deleteEvent = this.deleteEvent.bind(this);
     this.saveTags = this.saveTags.bind(this);
+    this.updateMessagePanel = this.updateMessagePanel.bind(this);
+    this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
   }
 
   componentDidMount() {
@@ -36,11 +40,14 @@ export default class SinglePendingEventLayout extends Component {
     // Register listeners
     this.pendingEventsService
       .on('patched', message => {
+        const patchMsg = {'status': 'success', 'details': `Updated ${this.state.pendingEvent.name} successfully.`};
         this.setState({pendingEvent: message, eventLoaded: true});
+        this.updateMessagePanel(patchMsg);
       })
       .on('removed', () => {
         this.setState({hasDeleted: true});
-      });
+      })
+      .on('error', () => console.log("Error handler triggered. Should post to messagePanel."));
   }
 
   componentWillUnmount() {
@@ -56,7 +63,7 @@ export default class SinglePendingEventLayout extends Component {
     this.pendingEventsService.get(id).then(message => {
       this.setState({pendingEvent: message, eventLoaded: true});
     }, message => {
-      console.log('error', JSON.stringify(message));
+      console.log('error', message);
       this.setState({notFound: true});
     });
 
@@ -87,7 +94,8 @@ export default class SinglePendingEventLayout extends Component {
       console.log('patch', message);
       this.saveTags(id, tagData);
     }, err => {
-      console.log('error', JSON.stringify(err));
+      console.log('error', err);
+      this.updateMessagePanel(err);
     });
   }
 
@@ -99,11 +107,26 @@ export default class SinglePendingEventLayout extends Component {
       }
     }).then(message => {
       console.log('pending-tag-lookup removed', message);
-    }, err => console.log('error', JSON.stringify(err)));
+    }, err => {
+      console.log('error', err);
+      this.updateMessagePanel(err);
+    });
 
     this.pendingTagsLookupService.create(tagData.to_save).then(message => {
       console.log('pending-tag-lookup created', message);
-    }, err => console.log('error', JSON.stringify(err)));
+    }, err => {
+      console.log('error', err);
+      this.updateMessagePanel(err);
+    });
+  }
+
+  updateMessagePanel(msg) {
+    const messageList = this.state.messages;
+    this.setState({messages: messageList.concat([msg]), messagePanelVisible: true});
+  }
+
+  dismissMessagePanel() {
+    this.setState({messages: [], messagePanelVisible: false});
   }
 
   renderRecord() {
@@ -126,9 +149,13 @@ export default class SinglePendingEventLayout extends Component {
 
     if (this.state.hasDeleted) return <Redirect to={'/import'} />;
 
+    const showMessagePanel = this.state.messagePanelVisible;
+    const messages = this.state.messages;
+
     return (
       <div className={'container'}>
         <Header />
+        <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
         <div className={'block-warning'}
              title={'Caution: This event is pending. It must be pushed live before it is visible on the site.'}>
           <h2>{this.state.pendingEvent.name}</h2>

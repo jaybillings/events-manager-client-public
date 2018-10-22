@@ -4,14 +4,15 @@ import app from '../../services/socketio';
 
 import Header from '../../components/common/Header';
 import PendingVenueRecord from '../../components/pendingVenues/PendingVenueRecord';
+import MessagePanel from '../../components/common/MessagePanel';
 
 export default class SinglePendingVenueLayout extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      pendingVenue: {}, venueLoaded: false,
-      neighborhoods: [], hoodsLoaded: false,
+      messages: [], messagePanelVisible: false,
+      pendingVenue: {}, venueLoaded: false, neighborhoods: [], hoodsLoaded: false,
       hasDeleted: false, notFound: false
     };
 
@@ -22,6 +23,8 @@ export default class SinglePendingVenueLayout extends Component {
     this.renderRecord = this.renderRecord.bind(this);
     this.deleteVenue = this.deleteVenue.bind(this);
     this.saveVenue = this.saveVenue.bind(this);
+    this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
+    this.updateMessagePanel = this.updateMessagePanel.bind(this);
   }
 
   componentDidMount() {
@@ -32,11 +35,17 @@ export default class SinglePendingVenueLayout extends Component {
     // Register listeners
     this.pendingVenuesService
       .on('patched', message => {
-        this.setState({pendingVenue: message});
+        const patchMsg = {
+          'status': 'success',
+          'details': `Updated ${this.state.pendingVenue.name} successfully.`
+        };
+        this.setState({pendingVenue: message, venueLoaded: true});
+        this.updateMessagePanel(patchMsg);
       })
       .on('removed', () => {
         this.setState({hasDeleted: true});
-      });
+      })
+      .on('error', () => console.log("Error handler triggered. Should post to messagePanel."));
   }
 
   componentWillUnmount() {
@@ -51,7 +60,7 @@ export default class SinglePendingVenueLayout extends Component {
     this.pendingVenuesService.get(id).then(message => {
       this.setState({pendingVenue: message, venueLoaded: true});
     }, message => {
-      console.log('error', JSON.stringify(message));
+      console.log('error', message);
       this.setState({notFound: true});
     });
 
@@ -68,8 +77,18 @@ export default class SinglePendingVenueLayout extends Component {
     this.pendingVenuesService.patch(id, newData).then(message => {
       console.log('patch', message);
     }, err => {
-      console.log('error', JSON.stringify(err));
+      console.log('error', err);
+      this.updateMessagePanel(err);
     });
+  }
+
+  updateMessagePanel(msg) {
+    const messageList = this.state.messages;
+    this.setState({messages: messageList.concat([msg]), messagePanelVisible: true});
+  }
+
+  dismissMessagePanel() {
+    this.setState({messages: [], messagePanelVisible: false});
   }
 
   renderRecord() {
@@ -84,9 +103,13 @@ export default class SinglePendingVenueLayout extends Component {
 
     if (this.state.hasDeleted) return <Redirect to={`/import`} />;
 
+    const showMessagePanel = this.state.messagePanelVisible;
+    const messages = this.state.messages;
+
     return (
       <div className={'container'}>
         <Header />
+        <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
         <div className={'block-warning'}
              title={'Caution: This venue is pending. It must be pushed live before it is visible on the site.'}>
           <h2>{this.state.pendingVenue.name}</h2>

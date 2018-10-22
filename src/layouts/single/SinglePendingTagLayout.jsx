@@ -23,6 +23,7 @@ export default class SinglePendingTagLayout extends Component {
     this.saveTag = this.saveTag.bind(this);
     this.deleteTag = this.deleteTag.bind(this);
     this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
+    this.updateMessagePanel = this.updateMessagePanel.bind(this);
   }
 
   componentDidMount() {
@@ -34,11 +35,8 @@ export default class SinglePendingTagLayout extends Component {
     this.pendingTagsService
       .on('patched', message => {
         const patchMsg = {'status': 'success', 'details': `Updated ${this.state.pendingTag.name} successfully.`};
-        const messageList = this.state.messages;
-        this.setState({
-          pendingTag: message, tagLoaded: true,
-          messages: messageList.concat([patchMsg]), messagePanelVisible: true
-        });
+        this.setState({pendingTag: message, tagLoaded: true});
+        this.updateMessagePanel(patchMsg);
       })
       .on('removed', () => {
         this.setState({hasDeleted: true});
@@ -72,10 +70,14 @@ export default class SinglePendingTagLayout extends Component {
     this.pendingTagsService.patch(id, newData).then(message => {
       console.log('patch', message);
     }, err => {
-      let messageList = this.state.messages;
-      this.setState({messages: messageList.concat([err]), messagePanelVisible: true});
       console.log('error', err);
+      this.updateMessagePanel(err);
     });
+  }
+
+  updateMessagePanel(msg) {
+    const messageList = this.state.messages;
+    this.setState({messages: messageList.concat([msg]), messagePanelVisible: true});
   }
 
   dismissMessagePanel() {
@@ -96,8 +98,7 @@ export default class SinglePendingTagLayout extends Component {
     const showMessagePanel = this.state.messagePanelVisible;
     const messages = this.state.messages;
 
-    // TODO: Add 'return to import' button
-
+    // TODO: Add 'return to import screen' button
     return (
       <div className={'container'}>
         <Header />

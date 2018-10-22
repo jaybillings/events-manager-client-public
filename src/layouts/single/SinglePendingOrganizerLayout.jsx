@@ -4,12 +4,17 @@ import app from '../../services/socketio';
 
 import Header from '../../components/common/Header';
 import PendingOrganizerRecord from '../../components/pendingOrganizers/PendingOrganizerRecord';
+import MessagePanel from '../../components/common/MessagePanel';
 
 export default class SinglePendingOrganizerLayout extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {pendingOrganizer: {}, orgLoaded: false, hasDeleted: false, notFound: false};
+    this.state = {
+      messages: [], messagePanelVisible: false,
+      pendingOrganizer: {}, orgLoaded: false,
+      hasDeleted: false, notFound: false
+    };
 
     this.pendingOrganizersService = app.service('pending-organizers');
 
@@ -17,6 +22,8 @@ export default class SinglePendingOrganizerLayout extends Component {
     this.renderRecord = this.renderRecord.bind(this);
     this.saveOrganizer = this.saveOrganizer.bind(this);
     this.deleteOrganizer = this.deleteOrganizer.bind(this);
+    this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
+    this.updateMessagePanel = this.updateMessagePanel.bind(this);
   }
 
   componentDidMount() {
@@ -27,11 +34,14 @@ export default class SinglePendingOrganizerLayout extends Component {
     // Register listeners
     this.pendingOrganizersService
       .on('patched', message => {
+        const patchMsg = {'status': 'success', 'details': `Updated ${this.state.pendingOrganizer.name} successfully.`};
         this.setState({pendingOrganizer: message, orgLoaded: true});
+        this.updateMessagePanel(patchMsg);
       })
       .on('removed', () => {
         this.setState({hasDeleted: true});
-      });
+      })
+      .on('error', () => console.log("Error handler triggered. Should post to messagePanel."));
   }
 
   componentWillUnmount() {
@@ -46,7 +56,7 @@ export default class SinglePendingOrganizerLayout extends Component {
     this.pendingOrganizersService.get(id).then(message => {
       this.setState({pendingOrganizer: message, orgLoaded: true});
     }, message => {
-      console.log('error', JSON.stringify(message));
+      console.log('error', message);
       this.setState({notFound: true});
     });
   }
@@ -60,7 +70,17 @@ export default class SinglePendingOrganizerLayout extends Component {
       console.log('patch', message);
     }, err => {
       console.log('error', err);
+      this.updateMessagePanel(err);
     });
+  }
+
+  updateMessagePanel(msg) {
+    const messageList = this.state.messages;
+    this.setState({messages: messageList.concat([msg]), messagePanelVisible: true});
+  }
+
+  dismissMessagePanel() {
+    this.setState({messages: [], messagePanelVisible: false});
   }
 
   renderRecord() {
@@ -75,9 +95,13 @@ export default class SinglePendingOrganizerLayout extends Component {
 
     if (this.state.hasDeleted) return <Redirect to={`/import`} />;
 
+    const showMessagePanel = this.state.messagePanelVisible;
+    const messages = this.state.messages;
+
     return (
       <div className={'container'}>
         <Header />
+        <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
         <div className={'block-warning'}
              title={'Caution: This organizer is pending. It must be pushed live before it is visible on the site.'}>
           <h2>{this.state.pendingOrganizer.name}</h2>
