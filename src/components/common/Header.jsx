@@ -13,15 +13,11 @@ export default class Header extends Component {
             <li><NavLink to={`/import/`} activeClassName="current" isActive={function (match, location) {
               return location.pathname === '/' || location.pathname.search('import') !== -1;
             }} title="Import">Import</NavLink></li>
-          </ul>
-          <ul>
             <li><NavLink to={`/events/`} activeClassName="current">Events</NavLink></li>
             <li><NavLink to={`/venues`} activeClassName="current">Venues</NavLink></li>
             <li><NavLink to={`/organizers/`} activeClassName={'current'}>Organizers</NavLink></li>
             <li><NavLink to={`/neighborhoods/`} activeClassName={'current'}>Neighborhoods</NavLink></li>
             <li><NavLink to={`/tags/`} activeClassName={'current'}>Tags</NavLink></li>
-          </ul>
-          <ul>
             <li><NavLink to={`/account`} activeClassName={'current'}>My Account</NavLink></li>
             <li><NavLink to={`/admin/`} activeClassName={'current'}>Admin Tools</NavLink></li>
           </ul>

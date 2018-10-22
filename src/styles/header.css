@@ -4,15 +4,30 @@ header {
 }
 
 header nav ul {
-  display: inline-block;
+  display: grid;
+  grid-auto-flow: column;
+  margin-bottom: 0;
+  list-style-type: none;
 }
 
 header nav li {
-  display: inline-block;
-  margin: 0 1rem;
-
+  margin: 0 0.5rem 0 0;
+  text-align: center;
+  font-size: 1.1em;
 }
 
-header nav li:first-child {
-  margin-left: 0;
+header nav li:last-of-type {
+  margin-right: 0;
+}
+
+header nav a {
+  display: inline-block;
+  padding: 1rem 0;
+  color: var(--true-blue);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+header nav a.current {
+  color: var(--current-link-color);
 }
