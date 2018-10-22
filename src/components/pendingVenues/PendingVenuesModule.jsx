@@ -19,6 +19,8 @@ export default class PendingVenuesModule extends Component {
     this.pendingVenuesService = app.service('pending-venues');
 
     this.fetchAllData = this.fetchAllData.bind(this);
+    this.saveChanges = this.saveChanges.bind(this);
+    this.discardListing = this.discardListing.bind(this);
     this.updateColumnSortSelf = this.props.updateColumnSort.bind(this);
     this.updatePageSizeSelf = this.props.updatePageSize.bind(this);
     this.updateCurrentPageSelf = this.props.updateCurrentPage.bind(this);
@@ -29,19 +31,22 @@ export default class PendingVenuesModule extends Component {
 
     this.pendingVenuesService
       .on('created', message => {
-        console.log('created', message);
+        this.props.updateMessageList(message);
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('updated', message => {
-        console.log('updated', message);
+        this.props.updateMessageList(message);
+        this.fetchAllData();
+      })
+      .on('patched', message => {
+        this.props.updateMessageList({status: 'success', details: `Updated ${message.name} successfully.`});
         this.fetchAllData();
       })
       .on('removed', message => {
-        console.log('removed', message);
+        this.props.updateMessageList(message);
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('error', error => {
-        console.log('pending-venues created ', error);
         this.props.updateMessageList({status: 'error', details: error.message});
       });
   }
@@ -50,6 +55,7 @@ export default class PendingVenuesModule extends Component {
     this.pendingVenuesService
       .removeListener('created')
       .removeListener('updated')
+      .removeListener('patched')
       .removeListener('removed')
       .removeListener('error');
   }
@@ -62,8 +68,17 @@ export default class PendingVenuesModule extends Component {
         $skip: this.state.pageSize * (this.state.currentPage - 1)
       }
     }).then(message => {
+      console.log('find pending-venues', message);
       this.setState({pendingVenues: message.data, pendingVenuesCount: message.total});
     });
+  }
+
+  discardListing(id) {
+    this.pendingVenuesService.remove(id).then(message => console.log('removed', message));
+  }
+
+  saveChanges(id, newData) {
+    this.pendingVenuesService.patch(id, newData).then(message => console.log('patched', message));
   }
 
   render() {
@@ -105,7 +120,7 @@ export default class PendingVenuesModule extends Component {
                 neighborhood={hoods.find(h => {
                   return h.id === venue.hood_id
                 })}
-                neighborhoods={hoods}
+                neighborhoods={hoods} saveChanges={this.saveChanges} discardListing={this.discardListing}
               />)
           }
           </tbody>

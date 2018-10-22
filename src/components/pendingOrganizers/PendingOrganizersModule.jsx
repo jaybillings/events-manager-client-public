@@ -43,7 +43,7 @@ export default class PendingOrganizersModule extends Component {
         this.fetchAllData();
       })
       .on('removed', message => {
-        this.props.updateMessageList({status: 'success', details: `Updated ${message.name} successfully.`});
+        this.props.updateMessageList(message);
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('error', error => {
