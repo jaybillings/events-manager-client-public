@@ -37,7 +37,7 @@ export default class ImportLayout extends Component {
 
     this.fetchInitialData = this.fetchInitialData.bind(this);
     this.importData = this.importData.bind(this);
-    this.dismissMessagesPanel = this.dismissMessagesPanel.bind(this);
+    this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
   }
 
   componentDidMount() {
@@ -120,7 +120,7 @@ export default class ImportLayout extends Component {
     });
   }
 
-  dismissMessagesPanel() {
+  dismissMessagePanel() {
     console.log('clicked!');
     this.setState({messages: [], messagePanelVisible: false});
   }
@@ -145,7 +145,7 @@ export default class ImportLayout extends Component {
     return (
       <div className="container">
         <Header />
-        <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagesPanel} />
+        <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
         <h2>Import Data From CSV File</h2>
         <ImportForm fileInputRef={this.fileInput} schemaSelectRef={this.schemaSelect} handleSubmit={this.importData} />
         <h2>Review Unpublished Data</h2>
