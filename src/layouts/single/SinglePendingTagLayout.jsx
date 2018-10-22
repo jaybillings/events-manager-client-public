@@ -47,7 +47,8 @@ export default class SinglePendingTagLayout extends Component {
   componentWillUnmount() {
     this.pendingTagsService
       .removeListener('patched')
-      .removeListener('removed');
+      .removeListener('removed')
+      .removeListener('error');
   }
 
   fetchAllData() {

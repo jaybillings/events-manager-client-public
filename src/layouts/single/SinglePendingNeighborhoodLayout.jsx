@@ -48,9 +48,10 @@ export default class SinglePendingNeighborhoodLayout extends Component {
   }
 
   componentWillUnmount() {
-    this.pendingHoodService
+    this.pendingHoodsService
       .removeListener('patched')
-      .removeListener('removed');
+      .removeListener('removed')
+      .removeListener('error');
   }
 
   fetchAllData() {

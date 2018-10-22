@@ -19,6 +19,8 @@ export default class PendingNeighborhoodsModule extends Component {
     this.pendingHoodsService = app.service('pending-neighborhoods');
 
     this.fetchAllData = this.fetchAllData.bind(this);
+    this.saveChanges = this.saveChanges.bind(this);
+    this.discardListing = this.discardListing.bind(this);
     this.updateColumnSortSelf = this.props.updateColumnSort.bind(this);
     this.updatePageSizeSelf = this.props.updatePageSize.bind(this);
     this.updateCurrentPageSelf = this.props.updateCurrentPage.bind(this);
@@ -29,12 +31,19 @@ export default class PendingNeighborhoodsModule extends Component {
 
     this.pendingHoodsService
       .on('created', message => {
+        this.props.updateMessageList(message);
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('updated', message => {
+        this.props.updateMessageList(message);
+        this.fetchAllData();
+      })
+      .on('patched', message => {
+        this.props.updateMessageList({status: 'success', details: `Updated ${message.name} successfully.`});
         this.fetchAllData();
       })
       .on('removed', message => {
+        this.props.updateMessageList(message);
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('error', error => {
@@ -46,6 +55,7 @@ export default class PendingNeighborhoodsModule extends Component {
     this.pendingHoodsService
       .removeListener('created')
       .removeListener('updated')
+      .removeListener('patched')
       .removeListener('removed')
       .removeListener('error');
   }
@@ -61,6 +71,14 @@ export default class PendingNeighborhoodsModule extends Component {
       console.log('find pending-neighborhoods', message);
       this.setState({pendingHoods: message.data, pendingHoodsCount: message.total});
     });
+  }
+
+  discardListing(id) {
+    this.pendingHoodsService.remove(id).then(message => console.log('removed', message));
+  }
+
+  saveChanges(id, newData) {
+    this.pendingHoodsService.patch(id, newData).then(message => console.log('patched', message));
   }
 
   render() {
@@ -92,9 +110,9 @@ export default class PendingNeighborhoodsModule extends Component {
         <table className={'schema-table'} key={'pending-hoods-table'}>
           <thead>{renderTableHeader(titleMap, columnSort, clickHandler)}</thead>
           <tbody>
-          {
-            pendingHoods.map(hood => <PendingNeighborhoodRow key={`hood-${hood.id}`} pendingNeighborhood={hood} />)
-          }
+          {pendingHoods.map(hood =>
+            <PendingNeighborhoodRow key={`hood-${hood.id}`} pendingNeighborhood={hood}
+                                    saveChanges={this.saveChanges} discardListing={this.discardListing} />)}
           </tbody>
         </table>
       ]

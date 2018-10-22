@@ -34,7 +34,7 @@ export default class SinglePendingOrganizerLayout extends Component {
     // Register listeners
     this.pendingOrganizersService
       .on('patched', message => {
-        const patchMsg = {'status': 'success', 'details': `Updated ${this.state.pendingOrganizer.name} successfully.`};
+        const patchMsg = {status: 'success', details: `Updated ${this.state.pendingOrganizer.name} successfully.`};
         this.setState({pendingOrganizer: message, orgLoaded: true});
         this.updateMessagePanel(patchMsg);
       })
@@ -47,7 +47,8 @@ export default class SinglePendingOrganizerLayout extends Component {
   componentWillUnmount() {
     this.pendingOrganizersService
       .removeListener('patched')
-      .removeListener('removed');
+      .removeListener('removed')
+      .removeListener('error');
   }
 
   fetchAllData() {

@@ -41,7 +41,7 @@ export default class PendingTagRow extends Component {
 
     if (this.state.editable) {
       return (
-        <tr className={'schema=row'}>
+        <tr className={'schema-row'}>
           <td>
             <button type={'button'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
