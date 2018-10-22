@@ -35,7 +35,7 @@ export default class PendingTagsModule extends Component {
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('updated', message => {
-        this.props.updateMessageList({status: 'success', details: `Updated ${message.name} successfully.`});
+        this.props.updateMessageList(message);
         this.fetchAllData();
       })
       .on('patched', message => {
@@ -55,6 +55,7 @@ export default class PendingTagsModule extends Component {
     this.pendingTagService
       .removeListener('created')
       .removeListener('updated')
+      .removeListener('patched')
       .removeListener('removed')
       .removeListener('error');
   }
@@ -110,12 +111,9 @@ export default class PendingTagsModule extends Component {
         <table className={'schema-table'} key={'pending-tags-table'}>
           <thead>{renderTableHeader(titleMap, columnSort, clickHandler)}</thead>
           <tbody>
-          {
-            pendingTags.map(tag =>
-              <PendingTagRow key={`tag-${tag.id}`} pendingTag={tag}
-                             saveChanges={this.saveChanges}
-                             discardListing={this.discardListing} />)
-          }
+          {pendingTags.map(tag =>
+            <PendingTagRow key={`tag-${tag.id}`} pendingTag={tag}
+                           saveChanges={this.saveChanges} discardListing={this.discardListing} />)}
           </tbody>
         </table>
       ]

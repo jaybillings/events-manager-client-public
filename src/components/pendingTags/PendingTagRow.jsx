@@ -30,6 +30,7 @@ export default class PendingTagRow extends Component {
 
   handleSaveClick() {
     const newData = {name: this.nameInput.current.value.trim()};
+
     this.props.saveChanges(this.props.pendingTag.id, newData);
     this.setState({editable: false});
   }
