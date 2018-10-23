@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 
+/* From Typicon set -- https://simplesvg.com/icon-sets/typcn/ */
 export default class SortIndicator extends Component {
   render() {
     if (this.props.direction === -1) {
