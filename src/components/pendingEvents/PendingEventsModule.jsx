@@ -110,13 +110,14 @@ export default class PendingEventsModule extends Component {
     }
 
     const titleMap = new Map([
+      ['actions_NOSORT', 'Actions'],
       ['name', 'Name'],
       ['start_date', 'Start Date'],
       ['end_date', 'End Date'],
       ['venue_id', 'Venue'],
       ['org_id', 'Organizer'],
       ['created_at', 'Imported On'],
-      ['status', 'Status'] // TODO: Make sortable
+      ['status_NOSORT', 'Status'] // TODO: Make sortable
     ]);
     const venues = this.props.venues;
     const organizers = this.props.organizers;

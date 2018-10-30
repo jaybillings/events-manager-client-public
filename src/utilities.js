@@ -29,9 +29,14 @@ const renderCheckboxList = function (schema, selectedIds) {
 };
 
 const renderTableHeader = function(headerMap, sortState, clickHandler) {
-  let headersList = [<th key={'none'}>Actions</th>];
+  let headersList = [];
 
   headerMap.forEach((title, dataKey) => {
+    if (dataKey.indexOf('_NOSORT') !== -1) {
+      headersList.push(<th key={dataKey}>{title}</th>);
+      return;
+    }
+
     let classNames = 'sort-label', direction = 0;
 
     // TODO: Is active used?
@@ -42,7 +47,7 @@ const renderTableHeader = function(headerMap, sortState, clickHandler) {
 
     headersList.push(
       <th className={classNames} key={dataKey} data-sort-type={dataKey} onClick={clickHandler}>
-        {title} <SortIndicator direction={direction} />
+        <span>{title}</span> <SortIndicator direction={direction} />
       </th>
     );
   });
