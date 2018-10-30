@@ -120,6 +120,15 @@ export default class SinglePendingEventLayout extends Component {
     });
   }
 
+  checkForChanges() {
+    /*
+    1. Look for live schema that matches name
+    2. If found, emphasize to indicate change
+    3. Look for changes to main attributes
+    4. If found, emphasize to indicate change
+     */
+  }
+
   updateMessagePanel(msg) {
     const messageList = this.state.messages;
     this.setState({messages: messageList.concat([msg]), messagePanelVisible: true});

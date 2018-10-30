@@ -15,11 +15,9 @@
   border-color: var(--notice-color);
 }
 
-.schema-table button:first-of-type {
-  margin-right: 0.5rem;
-}
-
 .schema-table button.delete {
+  width: 100%;
+  padding: 0;
   color: var(--error-color);
   border: none;
   text-decoration: underline;

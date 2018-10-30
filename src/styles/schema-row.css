@@ -1,14 +1,23 @@
 .schema-row span {
   padding: 1rem;
   border-radius: 4px;
+  color: var(--dark-bg-text-color);
+  display: inline-block;
 }
 
 .schema-row span.muted {
-  color: var(--dark-bg-text-color);
   background-color: var(--muted-bg-color);
 }
 
 .schema-row span.bolded {
-  color: var(--dark-bg-text-color);
   background-color: var(--bolded-bg-color);
+}
+
+.schema-row span.alert-change {
+  background-color: var(--alert-color);
+}
+
+.schema-row span.alert-dup {
+  color: var(--light-bg-text-color);
+  background-color: var(--warning-color);
 }

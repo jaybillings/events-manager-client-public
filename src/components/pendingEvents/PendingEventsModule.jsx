@@ -17,10 +17,14 @@ export default class PendingEventsModule extends Component {
     };
 
     this.pendingEventsService = app.service('pending-events');
+    this.eventsService = app.service('events');
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.saveChanges = this.saveChanges.bind(this);
     this.discardListing = this.discardListing.bind(this);
+    this.queryForEvent = this.queryForEvent.bind(this);
+    this.queryForSimilar = this.queryForSimilar.bind(this);
+
     this.updateColumnSortSelf = this.props.updateColumnSort.bind(this);
     this.updatePageSizeSelf = this.props.updatePageSize.bind(this);
     this.updateCurrentPageSelf = this.props.updateCurrentPage.bind(this);
@@ -81,6 +85,20 @@ export default class PendingEventsModule extends Component {
     this.pendingEventsService.patch(id, newData).then(message => console.log('patched', message));
   }
 
+  queryForEvent(id) {
+    return this.eventsService.get(id);
+  }
+
+  async queryForSimilar(pendingEvent) {
+    return this.eventsService.find({
+      query: {
+        name: pendingEvent.name,
+        start_date: pendingEvent.start_date,
+        end_date: pendingEvent.end_date
+      }
+    });
+  }
+
   render() {
     const pendingEvents = this.state.pendingEvents;
     const pendingEventsCount = this.state.pendingEventsCount;
@@ -97,7 +115,8 @@ export default class PendingEventsModule extends Component {
       ['end_date', 'End Date'],
       ['venue_id', 'Venue'],
       ['org_id', 'Organizer'],
-      ['created_at', 'Imported On']
+      ['created_at', 'Imported On'],
+      ['status', 'Status'] // TODO: Make sortable
     ]);
     const venues = this.props.venues;
     const organizers = this.props.organizers;
@@ -127,7 +146,8 @@ export default class PendingEventsModule extends Component {
                   return o.id === event.org_id
                 })}
                 venues={venues} organizers={organizers}
-                saveChanges={this.saveChanges} discardListing={this.discardListing} />
+                saveChanges={this.saveChanges} discardListing={this.discardListing}
+                eventIsNew={this.queryForEvent} eventIsDup={this.queryForSimilar} />
             )
           }
           </tbody>

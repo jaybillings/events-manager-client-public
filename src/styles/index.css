@@ -8,15 +8,16 @@
   --true-white: #fff;
   --true-blue: #33c3f0;
   --dull-orange: #dd6e42;
-  --bright-pink: #FC2E53;
+  --bright-pink: #fc2e53;
   --bright-yellow: #ffc22e;
-  --true-green: #6AF92D;
+  --true-green: #6af92d;
 
-  --error-color: var(--bright-pink);
   --disabled-color: var(--medium-gray);
-  --success-color: var(--true-blue);
   --notice-color: var(--true-blue);
+  --success-color: var(--true-blue);
   --warning-color: var(--bright-yellow);
+  --alert-color: var(--dull-orange);
+  --error-color: var(--bright-pink);
 
   --text-color: var(--black);
   --dark-bg-text-color: var(--true-white);
