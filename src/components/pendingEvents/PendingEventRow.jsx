@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
-import {Link} from 'react-router-dom';
 import Moment from 'moment';
+import {Link} from 'react-router-dom';
 import {renderOptionList} from "../../utilities";
 
 export default class PendingEventRow extends Component {
@@ -38,7 +38,7 @@ export default class PendingEventRow extends Component {
   }
 
   handleDeleteClick() {
-    this.props.discardListing(this.props.pendingEvent.live_id);
+    this.props.discardListing(this.props.pendingEvent.id);
   }
 
   handleSaveClick() {

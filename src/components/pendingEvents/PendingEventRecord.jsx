@@ -9,8 +9,6 @@ export default class PendingEventRecord extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {tmpStatus: this.props.pendingEvent.is_published};
-
     this.nameInput = React.createRef();
     this.startInput = React.createRef();
     this.endInput = React.createRef();
@@ -78,7 +76,7 @@ export default class PendingEventRecord extends Component {
     const pendingEvent = this.props.pendingEvent;
     const eventId = this.props.pendingEvent.target_id || 'N/A';
     const venues = this.props.venues;
-    const organziers = this.props.organizers;
+    const organizers = this.props.organizers;
     const tags = this.props.tags;
     const eventTags = this.props.eventTags;
     const startDate = Moment(pendingEvent.start_date).format('YYYY-MM-DD');
@@ -121,7 +119,7 @@ export default class PendingEventRecord extends Component {
         <label>
           Organizer
           <select ref={this.orgInput} defaultValue={pendingEvent.org_id || ''} required>
-            {renderOptionList(organziers)}
+            {renderOptionList(organizers)}
           </select>
         </label>
         <label className={'required'}>
@@ -166,8 +164,8 @@ export default class PendingEventRecord extends Component {
         </label>
         <div className={'block-warning'}
              title={'Caution: This event is pending. It must be pushed live before it is visible on the site.'}>
-          <button type="submit" className="button-primary">Save Changes</button>
           <button type="button" onClick={this.handleClickDelete}>Discard Event</button>
+          <button type="submit" className="button-primary">Save Changes</button>
         </div>
       </form>
     );
