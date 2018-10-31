@@ -34,7 +34,7 @@ export default class EventRow extends Component {
   }
 
   handleDeleteClick() {
-    this.props.discardListing(this.props.event.id);
+    this.props.deleteListing(this.props.event.id);
   }
 
   handleSaveClick() {

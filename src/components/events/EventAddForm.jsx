@@ -24,14 +24,13 @@ export default class EventAddForm extends Component {
     this.venueInput = React.createRef();
     this.orgInput = React.createRef();
 
-    this.handleEventCreate = this.handleEventCreate.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
     this.clearForm = this.clearForm.bind(this);
   }
 
-  handleEventCreate(e) {
+  handleSubmit(e) {
     e.preventDefault();
 
-    const checkedBoxes = document.querySelectorAll('.js-checkbox:checked');
     const eventObj = {
       name: this.nameInput.current.value.trim(),
       start_date: Moment(this.startInput.current.value).valueOf(),
@@ -41,6 +40,7 @@ export default class EventAddForm extends Component {
       description: this.descInput.current.value.trim(),
       flag_ongoing: this.ongoingInput.current.checked
     };
+    const checkedBoxes = document.querySelectorAll('.js-checkbox:checked');
     let tagsToSave = [];
 
     // Only include non-required if they have a value
@@ -76,7 +76,7 @@ export default class EventAddForm extends Component {
     const tags = this.props.tags;
 
     return (
-      <form id={'event-add-form'} className={'add-form'} onSubmit={this.handleEventCreate}>
+      <form id={'event-add-form'} className={'add-form'} onSubmit={this.handleSubmit}>
         <label className={'required'}>
           Name
           <input type={'text'} ref={this.nameInput} required maxLength="100" />

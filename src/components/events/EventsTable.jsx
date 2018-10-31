@@ -1,7 +1,8 @@
 import React, {Component} from 'react';
+import {renderTableHeader} from '../../utilities';
 
-import SortIndicator from '../common/SortIndicator';
 import EventRow from './EventRow';
+import PaginationLayout from "../common/PaginationLayout";
 
 import '../../styles/schema-table.css';
 
@@ -9,68 +10,65 @@ export default class EventsTable extends Component {
   constructor(props) {
     super(props);
 
-    this.renderHeader = this.renderHeader.bind(this);
+    this.handleSaveChanges = this.handleSaveChanges.bind(this);
+    this.handleDeleteListing = this.handleDeleteListing.bind(this);
   }
 
-  renderHeader() {
+  handleDeleteListing(id) {
+    this.props.deleteEvent(id).then(message => console.log('deleted', message));
+  }
+
+  handleSaveChanges(id, newData) {
+    this.props.saveEvent(id, newData).then(message => console.log('patched', message));
+  }
+
+  render() {
     const titleMap = new Map([
+      ['actions_NOSORT', 'Actions'],
       ['name', 'Name'],
       ['start_date', 'Start Date'],
       ['end_date', 'End Date'],
       ['fk_venue', 'Venue'],
       ['fk_org', 'Organizer'],
-      ['is_published', 'Status'],
-      ['updated_at', 'Last Modified']
+      ['updated_at', 'Last Modified'],
+      ['is_published', 'Status']
     ]);
-    let headersList = [<th key={'none'}>Actions</th>];
 
-    titleMap.forEach((title, dataKey) => {
-      let classNames = 'sort-label', direction = 0;
-
-      // TODO: Is 'active' being used?
-      if (this.props.sort[0] === dataKey) {
-        classNames += ' active';
-        direction = this.props.sort[1];
-      }
-
-      headersList.push(
-        <th className={classNames} key={dataKey} data-sort-type={dataKey} onClick={this.props.handleColumnClick}>
-          {title} <SortIndicator direction={direction} />
-        </th>
-      );
-    });
-
-    return <tr>{headersList}</tr>;
-  }
-
-  render() {
     const events = this.props.events;
     const venues = this.props.venues;
     const organizers = this.props.organizers;
+    const pageSize = this.props.pageSize;
+    const currentPage = this.props.currentPage;
+    const eventsTotal = this.props.eventsTotal;
+    const columnSort = this.props.sort;
+    const handleColClick = this.props.handleColumnClick;
 
-    return (
-      <table className={'schema-table'}>
-        <thead>
-        {this.renderHeader()}
-        </thead>
+    return ([
+      <PaginationLayout
+        key={'events-pagination'} pageSize={pageSize} activePage={currentPage} total={eventsTotal}
+        schema={'events'}
+        updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
+      />,
+      <table key={'events-table'} className={'schema-table'}>
+        <thead>{renderTableHeader(titleMap, columnSort, handleColClick)}</thead>
         <tbody>
         {
           events.map(event =>
-            <EventRow key={event.id}
-                      event={event}
-                      venue={venues.find(v => {
-                        return v.id === event.venue_id
-                      })}
-                      organizer={organizers.find(o => {
-                        return o.id === event.org_id
-                      })}
-                      venues={venues}
-                      organizers={organizers}
+            <EventRow
+              key={event.id} event={event}
+              venue={venues.find(v => {
+                return v.id === event.venue_id
+              })}
+              organizer={organizers.find(o => {
+                return o.id === event.org_id
+              })}
+              venues={venues} organizers={organizers}
+              saveChanges={this.handleSaveChanges} deleteListing={this.handleDeleteListing}
             />
           )
         }
         </tbody>
       </table>
-    );
+    ]);
   }
 };
