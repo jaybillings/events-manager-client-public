@@ -89,12 +89,12 @@ export default class EventRow extends Component {
           <td>
             <select ref={this.orgList} defaultValue={event.org_id || ''}>{renderOptionList(organizers)}</select>
           </td>
+          <td>{updatedAt}</td>
           <td>
             <input id={'toggle-' + event.id} ref={this.liveToggle} className={'toggle'} type={'checkbox'}
                    defaultChecked={event.is_published} />
             <label className={'toggle-switch'} htmlFor={'toggle-' + event.id} />
           </td>
-          <td>{updatedAt}</td>
         </tr>
       );
     }
@@ -110,8 +110,8 @@ export default class EventRow extends Component {
         <td>{endDate}</td>
         <td>{venueLink}</td>
         <td>{orgLink}</td>
-        <td>{eventStatus}</td>
         <td>{updatedAt}</td>
+        <td>{eventStatus}</td>
       </tr>
     );
   }

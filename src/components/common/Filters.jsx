@@ -27,21 +27,24 @@ export default class Filters extends Component {
   }
 
   render() {
+    const currentFilter = this.state.currentFilter;
+    let filterType = currentFilter === 'none' ? 'All' : currentFilter;
     let buttons = [];
 
-    if (this.state['currentFilter'] === 'published') {
-      buttons.push(this.renderButton('published', 'Show All', true));
+
+    if (currentFilter === 'live') {
+      buttons.push(this.renderButton('live', 'Show All', true));
     } else {
-      buttons.push(this.renderButton('published', 'Show Published Only', false));
+      buttons.push(this.renderButton('live', 'Show Live Only', false));
     }
 
-    if (this.state['currentFilter'] === 'stale') {
+    if (currentFilter === 'stale') {
       buttons.push(this.renderButton('stale', 'Show All', true));
     } else {
       buttons.push(this.renderButton('stale', 'Show Stale Only', false));
     }
 
-    if (this.state['currentFilter'] === 'dropped') {
+    if (currentFilter === 'dropped') {
       buttons.push(this.renderButton('dropped', 'Show All', true));
     } else {
       buttons.push(this.renderButton('dropped', 'Show Dropped Only', false));
@@ -49,7 +52,7 @@ export default class Filters extends Component {
 
     return (
       <div className={'filter-container'}>
-        <h3>Filter Results</h3>
+        <h3>Filter Results - Showing {filterType}</h3>
         {buttons}
       </div>
     );

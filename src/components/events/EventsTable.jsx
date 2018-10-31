@@ -12,14 +12,24 @@ export default class EventsTable extends Component {
 
     this.handleSaveChanges = this.handleSaveChanges.bind(this);
     this.handleDeleteListing = this.handleDeleteListing.bind(this);
+    this.handlePageSizeUpdate = this.handlePageSizeUpdate.bind(this);
+    this.handlePageNumUpdate = this.handlePageNumUpdate.bind(this);
   }
 
   handleDeleteListing(id) {
-    this.props.deleteEvent(id).then(message => console.log('deleted', message));
+    this.props.deleteEvent(id);
   }
 
   handleSaveChanges(id, newData) {
-    this.props.saveEvent(id, newData).then(message => console.log('patched', message));
+    this.props.saveEvent(id, newData);
+  }
+
+  handlePageSizeUpdate(e) {
+    this.props.updatePageSize(e);
+  }
+
+  handlePageNumUpdate(page) {
+    this.props.updateCurrentPage(page);
   }
 
   render() {
@@ -41,16 +51,14 @@ export default class EventsTable extends Component {
     const currentPage = this.props.currentPage;
     const eventsTotal = this.props.eventsTotal;
     const columnSort = this.props.sort;
-    const handleColClick = this.props.handleColumnClick;
 
     return ([
       <PaginationLayout
-        key={'events-pagination'} pageSize={pageSize} activePage={currentPage} total={eventsTotal}
-        schema={'events'}
-        updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
+        key={'events-pagination'} pageSize={pageSize} activePage={currentPage} total={eventsTotal} schema={'events'}
+        updatePageSize={this.handlePageSizeUpdate} updateCurrentPage={this.handlePageNumUpdate}
       />,
       <table key={'events-table'} className={'schema-table'}>
-        <thead>{renderTableHeader(titleMap, columnSort, handleColClick)}</thead>
+        <thead>{renderTableHeader(titleMap, columnSort, this.props.handleColumnClick)}</thead>
         <tbody>
         {
           events.map(event =>

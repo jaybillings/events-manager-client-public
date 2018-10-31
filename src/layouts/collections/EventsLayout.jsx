@@ -58,26 +58,18 @@ export default class EventsLayout extends Component {
     this.eventsService
       .on('created', message => {
         console.log('event created', message);
-        this.updateMessagePanel(message);
-        this.setState({
-          currentPage: 1,
-          pageSize: this.defaultPageSize,
-          sort: this.defaultTableSort
-        }, () => this.fetchEvents());
+        this.updateMessagePanel({status: 'success', details: `Created event #${message.id} - ${message.name}`});
+        this.setState({currentPage: 1}, () => this.fetchEvents());
       })
       .on('patched', message => {
         console.log('event patched', message);
-        this.updateMessagePanel(message);
+        this.updateMessagePanel({status: 'success', details: `Updated event #${message.id} - ${message.name}`});
         this.fetchEvents();
       })
       .on('removed', message => {
         console.log('event removed', message);
-        this.updateMessagePanel(message);
-        this.setState({
-          currentPage: 1,
-          pageSize: this.defaultPageSize,
-          sort: this.defaultTableSort
-        }, () => this.fetchEvents());
+        this.updateMessagePanel({status: 'success', details: `Permanently deleted event #${message.id} - ${message.name}`});
+        this.setState({currentPage: 1}, () => this.fetchEvents());
       })
       .on('error', error => {
         console.log('event error', error);
@@ -148,7 +140,6 @@ export default class EventsLayout extends Component {
       .removeListener('created')
       .removeListener('patched')
       .removeListener('removed');
-
   }
 
   fetchAllData() {
@@ -207,19 +198,14 @@ export default class EventsLayout extends Component {
       case 'stale':
         filter = {'is_published': 1, 'end_date': {$lt: new Date().valueOf()}};
         break;
-      case 'published':
-        filter = {'is_published': 1};
+      case 'live':
+        filter = {'is_published': 1, 'end_date': {$gte: new Date().valueOf()}};
         break;
       default:
         filter = {};
     }
 
-    this.setState({
-      pageSize: this.defaultPageSize,
-      sort: this.defaultTableSort,
-      currentPage: 1,
-      filter: filter
-    }, () => this.fetchEvents());
+    this.setState({currentPage: 1, filter: filter}, () => this.fetchEvents());
   }
 
   updateColumnSort(e) {
@@ -279,11 +265,20 @@ export default class EventsLayout extends Component {
       return <p>No events to list.</p>;
     }
 
+    const events = this.state.events;
+    const venues = this.state.venues;
+    const orgs = this.state.organizers;
+    const pageSize = this.state.pageSize;
+    const currentPage = this.state.currentPage;
+    const total = this.state.eventsTotal;
+    const sort = this.state.sort;
+
     return <EventsTable
-      events={this.state.events} venues={this.state.venues} organizers={this.state.organizers}
-      pageSize={this.state.pageSize} currentPage={this.state.currentPage} eventsTotal={this.state.eventsTotal}
-      sort={this.state.sort} handleColumnClick={this.updateColumnSort}
-      deleteEvent={this.props.deleteEvent} saveEvent={this.props.saveEvent}
+      events={events} venues={venues} organizers={orgs}
+      pageSize={pageSize} currentPage={currentPage} eventsTotal={total}
+      sort={sort} handleColumnClick={this.updateColumnSort}
+      updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
+      deleteEvent={this.deleteEvent} saveEvent={this.saveEvent}
     />;
   }
 
@@ -292,10 +287,11 @@ export default class EventsLayout extends Component {
       return <p>Data is loading... Please be patient...</p>;
     }
 
-    return <EventAddForm
-      venues={this.state.venues} organizers={this.state.organizers} tags={this.state.tags}
-      createEvent={this.createEvent}
-    />;
+    const venues = this.state.venues;
+    const orgs = this.state.organizers;
+    const tags = this.state.tags;
+
+    return <EventAddForm venues={venues} organizers={orgs} tags={tags} createEvent={this.createEvent} />;
   }
 
   render() {

@@ -64,7 +64,7 @@ const buildSortQuery = function (sortState) {
 const buildColumnSort = function(clickTarget, sortState) {
   const target = clickTarget.nodeName === 'TH' ? clickTarget : clickTarget.closest('th');
   const column = target.dataset.sortType;
-  const direction = column === sortState[0] ? -(parseInt(sortState[1], 10)) : -1;
+  const direction = column === sortState[0] ? -(parseInt(sortState[1], 10)) : 1;
 
   return {sort: [column, direction]};
 };
