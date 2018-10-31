@@ -14,7 +14,7 @@ export default class EventsLayout extends Component {
 
     this.defaultPageSize = 5;
     this.defaultTableSort = ['updated_at', -1];
-    this.defaultQuery = {$sort: {name: 1}, $select: ['name']};
+    this.defaultQuery = {$sort: {name: 1}, $select: ['name'], $limit: 100};
 
     this.state = {
       events: [], venues: [], organizers: [], tags: [], eventsTotal: 0,

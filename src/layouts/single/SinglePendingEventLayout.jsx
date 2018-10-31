@@ -40,9 +40,8 @@ export default class SinglePendingEventLayout extends Component {
     // Register listeners
     this.pendingEventsService
       .on('patched', message => {
-        const patchMsg = {'status': 'success', 'details': `Updated ${this.state.pendingEvent.name} successfully.`};
         this.setState({pendingEvent: message, eventLoaded: true});
-        this.updateMessagePanel(patchMsg);
+        this.updateMessagePanel({'status': 'success', 'details': `Updated ${this.state.pendingEvent.name} successfully.`});
       })
       .on('removed', () => {
         this.setState({hasDeleted: true});
@@ -53,12 +52,13 @@ export default class SinglePendingEventLayout extends Component {
   componentWillUnmount() {
     this.pendingEventsService
       .removeListener('patched')
-      .removeListener('removed');
+      .removeListener('removed')
+      .removeListener('error');
   }
 
   fetchAllData() {
     const id = this.props.match.params.id;
-    const defaultQuery = {$sort: {name: 1}};
+    const defaultQuery = {$sort: {name: 1}, $limit: 100};
 
     this.pendingEventsService.get(id).then(message => {
       this.setState({pendingEvent: message, eventLoaded: true});
@@ -89,9 +89,8 @@ export default class SinglePendingEventLayout extends Component {
   }
 
   saveEvent(id, eventData, tagData) {
-    // TODO: Add message window
     this.pendingEventsService.patch(id, eventData).then(message => {
-      console.log('patch', message);
+      console.log('patching', message);
       this.saveTags(id, tagData);
     }, err => {
       console.log('error', err);
@@ -131,7 +130,7 @@ export default class SinglePendingEventLayout extends Component {
 
   updateMessagePanel(msg) {
     const messageList = this.state.messages;
-    this.setState({messages: messageList.concat([msg]), messagePanelVisible: true});
+    this.setState({messages: [msg].concat(messageList), messagePanelVisible: true});
   }
 
   dismissMessagePanel() {
@@ -144,12 +143,8 @@ export default class SinglePendingEventLayout extends Component {
     }
 
     return <PendingEventRecord
-      pendingEvent={this.state.pendingEvent} venues={this.state.venues}
-      organizers={this.state.organizers}
-      tags={this.state.tags} eventTags={this.state.eventTags}
-      eventLoaded={this.state.eventLoaded} venuesLoaded={this.state.venuesLoaded}
-      orgsLoaded={this.state.orgsLoaded} tagsLoaded={this.state.tagsLoaded}
-      saveEvent={this.saveEvent} deleteEvent={this.deleteEvent}
+      pendingEvent={this.state.pendingEvent} venues={this.state.venues} organizers={this.state.organizers}
+      tags={this.state.tags} eventTags={this.state.eventTags} saveEvent={this.saveEvent} deleteEvent={this.deleteEvent}
     />;
   }
 
@@ -160,6 +155,7 @@ export default class SinglePendingEventLayout extends Component {
 
     const showMessagePanel = this.state.messagePanelVisible;
     const messages = this.state.messages;
+    const pendingEventName = this.state.pendingEvent.name;
 
     return (
       <div className={'container'}>
@@ -167,7 +163,7 @@ export default class SinglePendingEventLayout extends Component {
         <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
         <div className={'block-warning'}
              title={'Caution: This event is pending. It must be pushed live before it is visible on the site.'}>
-          <h2>{this.state.pendingEvent.name}</h2>
+          <h2>{pendingEventName}</h2>
         </div>
         {this.renderRecord()}
       </div>

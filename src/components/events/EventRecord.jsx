@@ -103,15 +103,15 @@ export default class EventRecord extends Component {
         </div>
         <label>
           ID
-          <input type="text" defaultValue={event.id} disabled />
+          <input type="text" value={event.id} disabled />
         </label>
         <label>
           Created
-          <input type="text" defaultValue={createdAt} disabled />
+          <input type="text" value={createdAt} disabled />
         </label>
         <label>
           Last Updated
-          <input type="text" defaultValue={updatedAt} disabled />
+          <input type="text" value={updatedAt} disabled />
         </label>
         <label className={'required'}>
           Name
@@ -174,8 +174,8 @@ export default class EventRecord extends Component {
           Ongoing Event
         </label>
         <div>
-          <button type="button" onClick={this.handleClickDelete}>Delete Event</button>
           <button type="submit" className="button-primary">Save Changes</button>
+          <button type="button" onClick={this.handleClickDelete}>Delete Event</button>
         </div>
       </form>
     );
