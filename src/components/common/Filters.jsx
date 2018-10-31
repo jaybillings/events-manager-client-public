@@ -49,7 +49,7 @@ export default class Filters extends Component {
 
     return (
       <div className={'filter-container'}>
-        <h4>Filter Results</h4>
+        <h3>Filter Results</h3>
         {buttons}
       </div>
     );

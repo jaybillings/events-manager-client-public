@@ -48,7 +48,11 @@ h1 {
 
 h2 {
   font-size: 3rem;
-padding: 2rem 0 1rem;
+  padding: 2rem 0 1rem;
+}
+
+h3 {
+  font-size: 2rem;
 }
 
 h2:first-of-type {
