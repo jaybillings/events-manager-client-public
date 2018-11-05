@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import Moment from 'moment';
 import {Link} from 'react-router-dom';
-import {renderOptionList} from "../../utilities";
+import {renderOptionList, renderUpdateStatus} from "../../utilities";
 
 export default class PendingEventRow extends Component {
   constructor(props) {
@@ -21,7 +21,6 @@ export default class PendingEventRow extends Component {
     this.checkIfNew = this.checkIfNew.bind(this);
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
     this.handleSaveClick = this.handleSaveClick.bind(this);
-    this.renderStatus = this.renderStatus.bind(this);
   }
 
   componentDidMount() {
@@ -50,8 +49,6 @@ export default class PendingEventRow extends Component {
       org_id: this.orgList.current.value
     };
 
-    console.log('newData', newData);
-
     this.props.saveChanges(this.props.pendingEvent.id, newData);
     this.setState({editable: false});
   }
@@ -67,18 +64,8 @@ export default class PendingEventRow extends Component {
     if (targetID) {
       this.props.eventIsNew(targetID).then((msg) => {
         this.setState({is_new: false});
-      })
+      });
     }
-  }
-
-  renderStatus() {
-    if (this.state.is_dup) {
-      return <span className={'alert-dup'} key={'event-is-dup'}>Duplicate</span>;
-    } else if (this.state.is_new) {
-      return <span className={'muted'} key={'event-is-new'}>New</span>;
-    }
-
-    return <span className={'alert-change'} key={'event-is-updated'}>Update</span>;
   }
 
   render() {
@@ -94,6 +81,8 @@ export default class PendingEventRow extends Component {
     const startDateVal = Moment(pendingEvent.start_date).format('YYYY-MM-DD');
     const endDate = Moment(pendingEvent.end_date).format('MM/DD/YYYY');
     const endDateVal = Moment(pendingEvent.end_date).format('YYYY-MM-DD');
+    const isDup = this.state.is_dup;
+    const isNew = this.state.is_new;
 
     if (this.state.editable) {
       return (
@@ -118,7 +107,7 @@ export default class PendingEventRow extends Component {
             <select ref={this.orgList} defaultValue={pendingEvent.org_id || ''}>{renderOptionList(organizers)}</select>
           </td>
           <td>{createdAt}</td>
-          <td>{this.renderStatus()}</td>
+          <td>{renderUpdateStatus(isDup, isNew, 'event')}</td>
         </tr>
       );
     }
@@ -134,7 +123,7 @@ export default class PendingEventRow extends Component {
         <td>{venueLink}</td>
         <td>{orgLink}</td>
         <td>{createdAt}</td>
-        <td>{this.renderStatus()}</td>
+        <td>{renderUpdateStatus(isDup, isNew, 'event')}</td>
       </tr>
     );
   }

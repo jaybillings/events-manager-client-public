@@ -126,34 +126,32 @@ export default class PendingEventsModule extends Component {
     const currentPage = this.state.currentPage;
     const pageSize = this.state.pageSize;
 
-    return (
-      [
-        <PaginationLayout
-          key={'pending-events-pagination'} pageSize={pageSize} activePage={currentPage} total={pendingEventsCount}
-          updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
-          schema={'pending-events'}
-        />,
-        <table className={'schema-table'} key={'pending-events-table'}>
-          <thead>{renderTableHeader(titleMap, columnSort, clickHandler)}</thead>
-          <tbody>
-          {
-            pendingEvents.map(event =>
-              <PendingEventRow
-                key={`event-${event.id}`} pendingEvent={event}
-                venue={venues.find(v => {
-                  return v.id === event.venue_id
-                })}
-                organizer={organizers.find(o => {
-                  return o.id === event.org_id
-                })}
-                venues={venues} organizers={organizers}
-                saveChanges={this.saveChanges} discardListing={this.discardListing}
-                eventIsNew={this.queryForEvent} eventIsDup={this.queryForSimilar} />
-            )
-          }
-          </tbody>
-        </table>
-      ]
-    );
+    return ([
+      <PaginationLayout
+        key={'pending-events-pagination'} pageSize={pageSize} activePage={currentPage} total={pendingEventsCount}
+        updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
+        schema={'pending-events'}
+      />,
+      <table className={'schema-table'} key={'pending-events-table'}>
+        <thead>{renderTableHeader(titleMap, columnSort, clickHandler)}</thead>
+        <tbody>
+        {
+          pendingEvents.map(event =>
+            <PendingEventRow
+              key={`event-${event.id}`} pendingEvent={event}
+              venue={venues.find(v => {
+                return v.id === event.venue_id
+              })}
+              organizer={organizers.find(o => {
+                return o.id === event.org_id
+              })}
+              venues={venues} organizers={organizers}
+              saveChanges={this.saveChanges} discardListing={this.discardListing}
+              eventIsNew={this.queryForEvent} eventIsDup={this.queryForSimilar}
+            />)
+        }
+        </tbody>
+      </table>
+    ]);
   }
 };

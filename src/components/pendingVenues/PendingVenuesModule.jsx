@@ -17,10 +17,14 @@ export default class PendingVenuesModule extends Component {
     };
 
     this.pendingVenuesService = app.service('pending-venues');
+    this.venuesService = app.service('venues');
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.saveChanges = this.saveChanges.bind(this);
     this.discardListing = this.discardListing.bind(this);
+    this.queryForVenue = this.queryForVenue.bind(this);
+    this.queryForSimilar = this.queryForSimilar.bind(this);
+
     this.updateColumnSortSelf = this.props.updateColumnSort.bind(this);
     this.updatePageSizeSelf = this.props.updatePageSize.bind(this);
     this.updateCurrentPageSelf = this.props.updateCurrentPage.bind(this);
@@ -81,6 +85,14 @@ export default class PendingVenuesModule extends Component {
     this.pendingVenuesService.patch(id, newData).then(message => console.log('patched', message));
   }
 
+  queryForVenue(id) {
+    return this.venuesService.get(id);
+  }
+
+  async queryForSimilar(pendingVenue) {
+    return this.venuesService.find({query: {name: pendingVenue.name}});
+  }
+
   render() {
     const pendingVenues = this.state.pendingVenues;
     const pendingVenuesCount = this.state.pendingVenuesCount;
@@ -92,9 +104,11 @@ export default class PendingVenuesModule extends Component {
     }
 
     const titleMap = new Map([
+      ['actions_NOSORT', 'Actions'],
       ['name', 'Name'],
       ['hood_id', 'Neighborhood'],
-      ['created_at', 'Imported On']
+      ['created_at', 'Imported On'],
+      ['status_NOSORT', 'Status']
     ]);
     const hoods = this.props.neighborhoods;
     const columnSort = this.state.sort;
@@ -102,30 +116,30 @@ export default class PendingVenuesModule extends Component {
     const currentPage = this.state.currentPage;
     const pageSize = this.state.pageSize;
 
-    return (
-      [
-        <PaginationLayout
-          key={'pending-venues-pagination'}
-          pageSize={pageSize} activePage={currentPage} total={pendingVenuesCount}
-          updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
-          schema={'pending-venues'}
-        />,
-        <table className={'schema-table'} key={'pending-venues-table'}>
-          <thead>{renderTableHeader(titleMap, columnSort, clickHandler)}</thead>
-          <tbody>
-          {
-            pendingVenues.map(venue =>
-              <PendingVenueRow
-                key={`venue-${venue.id}`} pendingVenue={venue}
-                neighborhood={hoods.find(h => {
-                  return h.id === venue.hood_id
-                })}
-                neighborhoods={hoods} saveChanges={this.saveChanges} discardListing={this.discardListing}
-              />)
-          }
-          </tbody>
-        </table>
-      ]
-    );
+    return ([
+      <PaginationLayout
+        key={'pending-venues-pagination'}
+        pageSize={pageSize} activePage={currentPage} total={pendingVenuesCount}
+        updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
+        schema={'pending-venues'}
+      />,
+      <table className={'schema-table'} key={'pending-venues-table'}>
+        <thead>{renderTableHeader(titleMap, columnSort, clickHandler)}</thead>
+        <tbody>
+        {
+          pendingVenues.map(venue =>
+            <PendingVenueRow
+              key={`venue-${venue.id}`} pendingVenue={venue}
+              neighborhood={hoods.find(h => {
+                return h.id === venue.hood_id
+              })}
+              neighborhoods={hoods}
+              saveChanges={this.saveChanges} discardListing={this.discardListing}
+              venueIsNew={this.queryForVenue} venueIsDup={this.queryForSimilar}
+            />)
+        }
+        </tbody>
+      </table>
+    ]);
   }
 }

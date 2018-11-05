@@ -9,7 +9,6 @@ const renderOptionList = function (schema) {
   });
 
   return optionsList;
-
 };
 
 const renderCheckboxList = function (schema, selectedIds) {
@@ -24,7 +23,7 @@ const renderCheckboxList = function (schema, selectedIds) {
           {record.name}
         </label>
       </li>
-    );
+    )
   });
 
   return <ul className={'tags-container'}>{chkbxList}</ul>;
@@ -57,9 +56,19 @@ const renderTableHeader = function (headerMap, sortState, clickHandler) {
   return <tr>{headersList}</tr>;
 };
 
-const buildSortQuery = function (sortState) {
-  if (sortState[0] === 'name') return {'name': sortState[1]};
+const renderUpdateStatus = function (isDup, isNew, schema) {
+  if (isDup) {
+    return <span className={'alert-dup'} key={`${schema}-is-dup`}>Duplicate</span>;
+  } else if (isNew) {
+    return <span className={'muted'} key={`${schema}-is-new`}>New</span>;
+  }
+  return <span className={'alert-change'} key={`${schema}-is-updated`}>Update</span>;
+};
 
+const buildSortQuery = function (sortState) {
+  if (sortState[0] === 'name') {
+    return {'name': sortState[1]};
+  }
   return {[sortState[0]]: sortState[1], 'name': 1};
 };
 
@@ -71,4 +80,4 @@ const buildColumnSort = function (clickTarget, sortState) {
   return {sort: [column, direction]};
 };
 
-export {renderOptionList, renderCheckboxList, renderTableHeader, buildSortQuery, buildColumnSort};
+export {renderOptionList, renderCheckboxList, renderTableHeader, renderUpdateStatus, buildSortQuery, buildColumnSort};
