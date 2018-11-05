@@ -2,6 +2,11 @@
   margin-bottom: 1rem;
 }
 
+.schema-record input:not([type='checkbox']), .schema-record textarea, .schema-record select {
+  display:block;
+  width: 50%;
+}
+
 .schema-record input[disabled], .schema-record button[disabled] {
   color: var(--disabled-color);
   cursor: not-allowed;
@@ -9,11 +14,6 @@
 
 .schema-record button + button {
   margin-left: 1rem;
-}
-
-.schema-record input:not([type='checkbox']), .schema-record textarea, .schema-record select {
-  display:block;
-  width: 50%;
 }
 
 .schema-record input:invalid {
@@ -55,4 +55,12 @@
 
 .schema-record .block-warning button {
   margin-bottom: 0;
+}
+
+.schema-record .tags-container {
+  width: 50%;
+  margin-top: 1rem;
+  display: grid;
+  grid-template-rows: repeat(10, 1fr);
+  grid-auto-flow: column;
 }

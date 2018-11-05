@@ -17,10 +17,14 @@ export default class PendingOrganizersModule extends Component {
     };
 
     this.pendingOrgsService = app.service('pending-organizers');
+    this.orgsService = app.service('venues');
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.saveChanges = this.saveChanges.bind(this);
     this.discardListing = this.discardListing.bind(this);
+    this.queryForOrg = this.queryForOrg.bind(this);
+    this.queryForSimilar = this.queryForSimilar.bind(this);
+
     this.updateColumnSortSelf = this.props.updateColumnSort.bind(this);
     this.updatePageSizeSelf = this.props.updatePageSize.bind(this);
     this.updateCurrentPageSelf = this.props.updateCurrentPage.bind(this);
@@ -81,6 +85,14 @@ export default class PendingOrganizersModule extends Component {
     this.pendingOrgsService.patch(id, newData).then(message => console.log('patched', message));
   }
 
+  queryForOrg(id) {
+    return this.orgsService.get(id);
+  }
+
+  async queryForSimilar(pendingOrg) {
+    return this.orgsService.find({query: {name: pendingOrg.name}});
+  }
+
   render() {
     const pendingOrgs = this.state.pendingOrgs;
     const pendingOrgsCount = this.state.pendingOrgsCount;
@@ -92,30 +104,35 @@ export default class PendingOrganizersModule extends Component {
     }
 
     const titleMap = new Map([
+      ['actions_NOSORT', 'Actions'],
       ['name', 'Name'],
-      ['created_at', 'Imported On']
+      ['created_at', 'Imported On'],
+      ['status_NOSORT', 'Status']
     ]);
     const columnSort = this.state.sort;
     const clickHandler = this.updateColumnSortSelf;
     const currentPage = this.state.currentPage;
     const pageSize = this.state.pageSize;
 
-    return (
-      [
-        <PaginationLayout
-          key={'pending-orgs-pagination'} pageSize={pageSize} activePage={currentPage} total={pendingOrgsCount}
-          updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
-          schema={'pending-organizers'}
-        />,
-        <table className={'schema-table'} key={'pending-orgs-table'}>
-          <thead>{renderTableHeader(titleMap, columnSort, clickHandler)}</thead>
-          <tbody>
-          {pendingOrgs.map(org =>
-            <PendingOrganizerRow key={`org-${org.id}`} pendingOrganizer={org}
-                                 saveChanges={this.saveChanges} discsrdListing={this.discardListing} />)}
-          </tbody>
-        </table>
-      ]
-    );
+    return ([
+      <PaginationLayout
+        key={'pending-orgs-pagination'} pageSize={pageSize} activePage={currentPage} total={pendingOrgsCount}
+        updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
+        schema={'pending-organizers'}
+      />,
+      <table className={'schema-table'} key={'pending-orgs-table'}>
+        <thead>{renderTableHeader(titleMap, columnSort, clickHandler)}</thead>
+        <tbody>
+        {
+          pendingOrgs.map(org =>
+            <PendingOrganizerRow
+              key={`org-${org.id}`} pendingOrganizer={org}
+              saveChanges={this.saveChanges} discsrdListing={this.discardListing}
+              orgIsNew={this.queryForOrg} orgIsDup={this.queryForSimilar}
+            />)
+        }
+        </tbody>
+      </table>
+    ]);
   }
 };

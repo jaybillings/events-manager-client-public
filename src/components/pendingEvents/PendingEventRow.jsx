@@ -1,13 +1,13 @@
 import React, {Component} from 'react';
-import {Link} from 'react-router-dom';
 import Moment from 'moment';
-import {renderOptionList} from "../../utilities";
+import {Link} from 'react-router-dom';
+import {renderOptionList, renderUpdateStatus} from "../../utilities";
 
 export default class PendingEventRow extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {editable: false};
+    this.state = {editable: false, is_new: true, is_dup: false};
 
     this.nameInput = React.createRef();
     this.startInput = React.createRef();
@@ -17,8 +17,15 @@ export default class PendingEventRow extends Component {
 
     this.startEdit = this.startEdit.bind(this);
     this.cancelEdit = this.cancelEdit.bind(this);
+    this.checkIfDup = this.checkIfDup.bind(this);
+    this.checkIfNew = this.checkIfNew.bind(this);
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
     this.handleSaveClick = this.handleSaveClick.bind(this);
+  }
+
+  componentDidMount() {
+    this.checkIfDup();
+    this.checkIfNew();
   }
 
   startEdit() {
@@ -42,10 +49,23 @@ export default class PendingEventRow extends Component {
       org_id: this.orgList.current.value
     };
 
-    console.log('newData', newData);
-
     this.props.saveChanges(this.props.pendingEvent.id, newData);
     this.setState({editable: false});
+  }
+
+  checkIfDup() {
+    this.props.eventIsDup(this.props.pendingEvent).then(message => {
+      this.setState({is_dup: message.total && message.total > 0});
+    }, err => console.log('error in checkIfDup()', err));
+  }
+
+  checkIfNew() {
+    const targetID = this.props.pendingEvent.target_id;
+    if (targetID) {
+      this.props.eventIsNew(targetID).then((msg) => {
+        this.setState({is_new: false});
+      });
+    }
   }
 
   render() {
@@ -61,6 +81,8 @@ export default class PendingEventRow extends Component {
     const startDateVal = Moment(pendingEvent.start_date).format('YYYY-MM-DD');
     const endDate = Moment(pendingEvent.end_date).format('MM/DD/YYYY');
     const endDateVal = Moment(pendingEvent.end_date).format('YYYY-MM-DD');
+    const isDup = this.state.is_dup;
+    const isNew = this.state.is_new;
 
     if (this.state.editable) {
       return (
@@ -85,6 +107,7 @@ export default class PendingEventRow extends Component {
             <select ref={this.orgList} defaultValue={pendingEvent.org_id || ''}>{renderOptionList(organizers)}</select>
           </td>
           <td>{createdAt}</td>
+          <td>{renderUpdateStatus(isDup, isNew, 'event')}</td>
         </tr>
       );
     }
@@ -100,6 +123,7 @@ export default class PendingEventRow extends Component {
         <td>{venueLink}</td>
         <td>{orgLink}</td>
         <td>{createdAt}</td>
+        <td>{renderUpdateStatus(isDup, isNew, 'event')}</td>
       </tr>
     );
   }

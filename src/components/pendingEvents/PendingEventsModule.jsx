@@ -17,10 +17,14 @@ export default class PendingEventsModule extends Component {
     };
 
     this.pendingEventsService = app.service('pending-events');
+    this.eventsService = app.service('events');
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.saveChanges = this.saveChanges.bind(this);
     this.discardListing = this.discardListing.bind(this);
+    this.queryForEvent = this.queryForEvent.bind(this);
+    this.queryForSimilar = this.queryForSimilar.bind(this);
+
     this.updateColumnSortSelf = this.props.updateColumnSort.bind(this);
     this.updatePageSizeSelf = this.props.updatePageSize.bind(this);
     this.updateCurrentPageSelf = this.props.updateCurrentPage.bind(this);
@@ -81,6 +85,20 @@ export default class PendingEventsModule extends Component {
     this.pendingEventsService.patch(id, newData).then(message => console.log('patched', message));
   }
 
+  queryForEvent(id) {
+    return this.eventsService.get(id);
+  }
+
+  async queryForSimilar(pendingEvent) {
+    return this.eventsService.find({
+      query: {
+        name: pendingEvent.name,
+        start_date: pendingEvent.start_date,
+        end_date: pendingEvent.end_date
+      }
+    });
+  }
+
   render() {
     const pendingEvents = this.state.pendingEvents;
     const pendingEventsCount = this.state.pendingEventsCount;
@@ -92,12 +110,14 @@ export default class PendingEventsModule extends Component {
     }
 
     const titleMap = new Map([
+      ['actions_NOSORT', 'Actions'],
       ['name', 'Name'],
       ['start_date', 'Start Date'],
       ['end_date', 'End Date'],
       ['venue_id', 'Venue'],
       ['org_id', 'Organizer'],
-      ['created_at', 'Imported On']
+      ['created_at', 'Imported On'],
+      ['status_NOSORT', 'Status'] // TODO: Make sortable
     ]);
     const venues = this.props.venues;
     const organizers = this.props.organizers;
@@ -106,33 +126,32 @@ export default class PendingEventsModule extends Component {
     const currentPage = this.state.currentPage;
     const pageSize = this.state.pageSize;
 
-    return (
-      [
-        <PaginationLayout
-          key={'pending-events-pagination'} pageSize={pageSize} activePage={currentPage} total={pendingEventsCount}
-          updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
-          schema={'pending-events'}
-        />,
-        <table className={'schema-table'} key={'pending-events-table'}>
-          <thead>{renderTableHeader(titleMap, columnSort, clickHandler)}</thead>
-          <tbody>
-          {
-            pendingEvents.map(event =>
-              <PendingEventRow
-                key={`event-${event.id}`} pendingEvent={event}
-                venue={venues.find(v => {
-                  return v.id === event.venue_id
-                })}
-                organizer={organizers.find(o => {
-                  return o.id === event.org_id
-                })}
-                venues={venues} organizers={organizers}
-                saveChanges={this.saveChanges} discardListing={this.discardListing} />
-            )
-          }
-          </tbody>
-        </table>
-      ]
-    );
+    return ([
+      <PaginationLayout
+        key={'pending-events-pagination'} pageSize={pageSize} activePage={currentPage} total={pendingEventsCount}
+        updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
+        schema={'pending-events'}
+      />,
+      <table className={'schema-table'} key={'pending-events-table'}>
+        <thead>{renderTableHeader(titleMap, columnSort, clickHandler)}</thead>
+        <tbody>
+        {
+          pendingEvents.map(event =>
+            <PendingEventRow
+              key={`event-${event.id}`} pendingEvent={event}
+              venue={venues.find(v => {
+                return v.id === event.venue_id
+              })}
+              organizer={organizers.find(o => {
+                return o.id === event.org_id
+              })}
+              venues={venues} organizers={organizers}
+              saveChanges={this.saveChanges} discardListing={this.discardListing}
+              eventIsNew={this.queryForEvent} eventIsDup={this.queryForSimilar}
+            />)
+        }
+        </tbody>
+      </table>
+    ]);
   }
 };
