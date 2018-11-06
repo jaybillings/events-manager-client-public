@@ -54,18 +54,15 @@ export default class PendingEventRow extends Component {
   }
 
   checkIfDup() {
+    // TODO: Attach to event editing
+    // TODO: Attach to data for filtering/paging
     this.props.eventIsDup(this.props.pendingEvent).then(message => {
       this.setState({is_dup: message.total && message.total > 0});
     }, err => console.log('error in checkIfDup()', err));
   }
 
   checkIfNew() {
-    const targetID = this.props.pendingEvent.target_id;
-    if (targetID) {
-      this.props.eventIsNew(targetID).then((msg) => {
-        this.setState({is_new: false});
-      });
-    }
+    this.setState({is_new: !this.props.pendingEvent.target_id});
   }
 
   render() {

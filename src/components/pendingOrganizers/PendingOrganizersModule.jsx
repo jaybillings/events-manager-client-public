@@ -22,7 +22,6 @@ export default class PendingOrganizersModule extends Component {
     this.fetchAllData = this.fetchAllData.bind(this);
     this.saveChanges = this.saveChanges.bind(this);
     this.discardListing = this.discardListing.bind(this);
-    this.queryForOrg = this.queryForOrg.bind(this);
     this.queryForSimilar = this.queryForSimilar.bind(this);
 
     this.updateColumnSortSelf = this.props.updateColumnSort.bind(this);
@@ -35,7 +34,7 @@ export default class PendingOrganizersModule extends Component {
 
     this.pendingOrgsService
       .on('created', message => {
-        this.props.updateMessageList(message);
+        this.props.updateMessageList({status: 'success', details: `Added ${message.name} with ID #${message.id}`});
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('updated', message => {
@@ -43,11 +42,11 @@ export default class PendingOrganizersModule extends Component {
         this.fetchAllData();
       })
       .on('patched', message => {
-        this.props.updateMessageList({status: 'success', details: `Updated ${message.name} successfully.`});
+        this.props.updateMessageList({status: 'success', details: `Updated #${message.id} - ${message.name}`});
         this.fetchAllData();
       })
       .on('removed', message => {
-        this.props.updateMessageList(message);
+        this.props.updateMessageList({status: 'success', details: `Discarded pending organizer #${message.id} - ${message.name}`});
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('error', error => {
@@ -83,10 +82,6 @@ export default class PendingOrganizersModule extends Component {
 
   saveChanges(id, newData) {
     this.pendingOrgsService.patch(id, newData).then(message => console.log('patched', message));
-  }
-
-  queryForOrg(id) {
-    return this.orgsService.get(id);
   }
 
   async queryForSimilar(pendingOrg) {
@@ -128,7 +123,7 @@ export default class PendingOrganizersModule extends Component {
             <PendingOrganizerRow
               key={`org-${org.id}`} pendingOrganizer={org}
               saveChanges={this.saveChanges} discsrdListing={this.discardListing}
-              orgIsNew={this.queryForOrg} orgIsDup={this.queryForSimilar}
+              orgIsDup={this.queryForSimilar}
             />)
         }
         </tbody>

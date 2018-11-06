@@ -22,7 +22,6 @@ export default class PendingEventsModule extends Component {
     this.fetchAllData = this.fetchAllData.bind(this);
     this.saveChanges = this.saveChanges.bind(this);
     this.discardListing = this.discardListing.bind(this);
-    this.queryForEvent = this.queryForEvent.bind(this);
     this.queryForSimilar = this.queryForSimilar.bind(this);
 
     this.updateColumnSortSelf = this.props.updateColumnSort.bind(this);
@@ -85,10 +84,6 @@ export default class PendingEventsModule extends Component {
     this.pendingEventsService.patch(id, newData).then(message => console.log('patched', message));
   }
 
-  queryForEvent(id) {
-    return this.eventsService.get(id);
-  }
-
   async queryForSimilar(pendingEvent) {
     return this.eventsService.find({
       query: {
@@ -147,7 +142,7 @@ export default class PendingEventsModule extends Component {
               })}
               venues={venues} organizers={organizers}
               saveChanges={this.saveChanges} discardListing={this.discardListing}
-              eventIsNew={this.queryForEvent} eventIsDup={this.queryForSimilar}
+              eventIsDup={this.queryForSimilar}
             />)
         }
         </tbody>

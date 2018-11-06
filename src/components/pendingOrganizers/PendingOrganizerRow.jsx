@@ -50,12 +50,7 @@ export default class PendingOrganizerRow extends Component {
   }
 
   checkIfNew() {
-    const targetID = this.props.pendingOrganizer.target_id;
-    if (targetID) {
-      this.props.orgIsNew(targetID).then(() => {
-        this.setState({is_new: false});
-      });
-    }
+    this.setState({is_new: !this.props.pendingOrganizer.target_id});
   }
 
   render() {

@@ -54,12 +54,7 @@ export default class PendingVenueRow extends Component {
   }
 
   checkIfNew() {
-    const targetID = this.props.pendingVenue.target_id;
-    if (targetID) {
-      this.props.venueIsNew(targetID).then(() => {
-        this.setState({is_new: false});
-      });
-    }
+    this.setState({is_new: !this.props.pendingVenue.target_id});
   }
 
   render() {

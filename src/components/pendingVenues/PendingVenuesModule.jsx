@@ -22,7 +22,6 @@ export default class PendingVenuesModule extends Component {
     this.fetchAllData = this.fetchAllData.bind(this);
     this.saveChanges = this.saveChanges.bind(this);
     this.discardListing = this.discardListing.bind(this);
-    this.queryForVenue = this.queryForVenue.bind(this);
     this.queryForSimilar = this.queryForSimilar.bind(this);
 
     this.updateColumnSortSelf = this.props.updateColumnSort.bind(this);
@@ -35,7 +34,7 @@ export default class PendingVenuesModule extends Component {
 
     this.pendingVenuesService
       .on('created', message => {
-        this.props.updateMessageList(message);
+        this.props.updateMessageList({status: 'success', details: `Added ${message.name} with ID #${message.id}`});
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('updated', message => {
@@ -43,11 +42,11 @@ export default class PendingVenuesModule extends Component {
         this.fetchAllData();
       })
       .on('patched', message => {
-        this.props.updateMessageList({status: 'success', details: `Updated ${message.name} successfully.`});
+        this.props.updateMessageList({status: 'success', details: `Updated #${message.id} - ${message.name}`});
         this.fetchAllData();
       })
       .on('removed', message => {
-        this.props.updateMessageList(message);
+        this.props.updateMessageList({status: 'success', details: `Discarded pending venue #${message.id} - ${message.name}`});
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('error', error => {
@@ -83,10 +82,6 @@ export default class PendingVenuesModule extends Component {
 
   saveChanges(id, newData) {
     this.pendingVenuesService.patch(id, newData).then(message => console.log('patched', message));
-  }
-
-  queryForVenue(id) {
-    return this.venuesService.get(id);
   }
 
   async queryForSimilar(pendingVenue) {
@@ -135,7 +130,7 @@ export default class PendingVenuesModule extends Component {
               })}
               neighborhoods={hoods}
               saveChanges={this.saveChanges} discardListing={this.discardListing}
-              venueIsNew={this.queryForVenue} venueIsDup={this.queryForSimilar}
+              venueIsDup={this.queryForSimilar}
             />)
         }
         </tbody>
