@@ -104,25 +104,20 @@ export default class ImportLayout extends Component {
     }).then((response) => {
       response.json().then((body) => {
         if (body.code >= 400) {
-          this.setState(prevState => ({
-            messages: [...prevState.messages, {status: 'error', details: body.message}],
-            messagePanelVisible: true
-          }));
+          this.updateMessageList({status: 'error', details: body.message});
         }
       });
     });
   }
 
   updateMessageList(newMessage) {
-    let messageList = this.state.messages;
-    this.setState({
-      messages: [newMessage].concat(messageList),
+    this.setState(prevState => ({
+      messages: [newMessage, ...prevState.messages],
       messagePanelVisible: true
-    });
+    }));
   }
 
   dismissMessagePanel() {
-    console.log('clicked!');
     this.setState({messages: [], messagePanelVisible: false});
   }
 

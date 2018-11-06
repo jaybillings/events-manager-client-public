@@ -35,7 +35,7 @@ export default class PendingEventsModule extends Component {
 
     this.pendingEventsService
       .on('created', message => {
-        this.props.updateMessageList(message);
+        this.props.updateMessageList({status: 'success', details: `Added ${message.name} with ID #${message.id}`});
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('updated', message => {
@@ -43,11 +43,11 @@ export default class PendingEventsModule extends Component {
         this.fetchAllData();
       })
       .on('patched', message => {
-        this.props.updateMessageList({status: 'success', details: `Updated ${message.name} successfully.`});
+        this.props.updateMessageList({status: 'success', details: `Updated #${message.id} - ${message.name}`});
         this.fetchAllData();
       })
       .on('removed', message => {
-        this.props.updateMessageList(message);
+        this.props.updateMessageList({status: 'success', details: `Discarded pending event #${message.id} - ${message.name}`});
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('error', error => {
