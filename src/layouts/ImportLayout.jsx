@@ -11,8 +11,6 @@ import PendingVenuesModule from '../components/pendingVenues/PendingVenuesModule
 import PendingOrganizersModule from '../components/pendingOrganizers/PendingOrganizersModule';
 import PendingNeighborhoodsModule from '../components/pendingNeighborhoods/PendingNeighborhoodsModule';
 
-import '../styles/schema-module.css';
-
 export default class ImportLayout extends Component {
   constructor(props) {
     super(props);
@@ -145,15 +143,12 @@ export default class ImportLayout extends Component {
         <h2>Import Data From CSV File</h2>
         <ImportForm fileInputRef={this.fileInput} schemaSelectRef={this.schemaSelect} handleSubmit={this.importData} />
         <h2>Review Unpublished Data</h2>
-        <div className={'schema-module'}>
-          <h3>Events</h3>
           <PendingEventsModule
             venues={this.state.venues} organizers={this.state.organizers} tags={this.state.tags}
             defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
             updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
             updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
           />
-        </div>
         <div className={'schema-module'}>
           <h3>Venues</h3>
           <PendingVenuesModule
