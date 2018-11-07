@@ -3,7 +3,7 @@ import Moment from 'moment';
 import {Link} from 'react-router-dom';
 import {renderOptionList, renderUpdateStatus} from "../../utilities";
 
-import PendingListingRow from "../common/PendingListingRow";
+import PendingListingRow from "../generic/PendingListingRow";
 
 export default class PendingVenueRow extends PendingListingRow {
   constructor(props) {

@@ -2,12 +2,12 @@ import React, {Component} from "react";
 import {buildSortQuery, makeTitleCase, renderTableHeader} from "../../utilities";
 import app from '../../services/socketio';
 
-import PaginationLayout from "./PaginationLayout";
+import PaginationLayout from "../common/PaginationLayout";
 import PendingListingRow from "./PendingListingRow";
 
 import '../../styles/schema-module.css';
 import '../../styles/schema-table.css';
-import ShowHideToggle from "./ShowHideToggle";
+import ShowHideToggle from "../common/ShowHideToggle";
 
 export default class PendingListingsModule extends Component {
   constructor(props, schema) {

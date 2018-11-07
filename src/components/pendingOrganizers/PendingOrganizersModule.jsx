@@ -1,4 +1,4 @@
-import PendingListingsModule from "../common/PendingListingsModule";
+import PendingListingsModule from "../generic/PendingListingsModule";
 
 export default class PendingOrganizersModule extends PendingListingsModule {
   constructor(props) {

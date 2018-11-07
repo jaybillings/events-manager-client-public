@@ -1,7 +1,7 @@
 import React from "react";
 import {renderTableHeader} from "../../utilities";
 
-import PendingListingsModule from "../common/PendingListingsModule";
+import PendingListingsModule from "../generic/PendingListingsModule";
 import PaginationLayout from "../common/PaginationLayout";
 import PendingEventRow from "./PendingEventRow";
 import ShowHideToggle from "../common/ShowHideToggle";
