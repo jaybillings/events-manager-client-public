@@ -51,7 +51,7 @@ export default class VenuesTable extends Component {
         {
           venues.map(venue =>
             <VenueRow
-              key={venue.id} venue={venue}
+              key={venue.id} listing={venue}
               neighborhood={neighborhoods.find(n => { return n.id === venue.hood_id })}
               neighborhoods={neighborhoods}
             />

@@ -17,7 +17,7 @@ export default class TagsTable extends Component {
         </tr>
         </thead>
         <tbody>
-        {tags.map(tag => <TagRow key={tag.id} tag={tag}/>)}
+        {tags.map(tag => <TagRow key={tag.id} listing={tag}/>)}
         </tbody>
       </table>
     );

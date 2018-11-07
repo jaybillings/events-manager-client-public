@@ -47,7 +47,7 @@ export default class OrganizersTable extends Component {
         </thead>
         <tbody>
         {
-          organizers.map(org => <OrganizerRow key={org.id} organizer={org} />)
+          organizers.map(org => <OrganizerRow key={org.id} listing={org} />)
         }
         </tbody>
       </table>

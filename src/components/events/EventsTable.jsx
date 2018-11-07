@@ -63,7 +63,7 @@ export default class EventsTable extends Component {
         {
           events.map(event =>
             <EventRow
-              key={event.id} event={event}
+              key={event.id} listing={event}
               venue={venues.find(v => {
                 return v.id === event.venue_id
               })}
