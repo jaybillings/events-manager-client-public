@@ -1,9 +1,13 @@
-import React, {Component} from 'react';
-import {buildSortQuery} from '../../utilities';
+import React, {Component} from "react";
+import {buildSortQuery, makeTitleCase, renderTableHeader} from "../../utilities";
 import app from '../../services/socketio';
+
+import PaginationLayout from "./PaginationLayout";
+import PendingListingRow from "./PendingListingRow";
 
 import '../../styles/schema-module.css';
 import '../../styles/schema-table.css';
+import ShowHideToggle from "./ShowHideToggle";
 
 export default class PendingListingsModule extends Component {
   constructor(props, schema) {
@@ -103,6 +107,53 @@ export default class PendingListingsModule extends Component {
   }
 
   render() {
-    return <div></div>
+    const pendingListings = this.state.pendingListings;
+    const pendingListingsCount = this.state.pendingListingsCount;
+
+    if (!pendingListings) {
+      return <p>Data is loading... Please be patient...</p>;
+    } else if (pendingListingsCount === 0) {
+      return <p>No pending ${this.schema} to list.</p>
+    }
+
+    const titleMap = new Map([
+      ['actions_NOSORT', 'Actions'],
+      ['name', 'Name'],
+      ['created_at', 'Imported On'],
+      ['status_NOSORT', 'Status']
+    ]);
+    const schema = this.schema;
+    const isVisible = this.state.moduleVisible;
+    const pageSize = this.state.pageSize;
+    const currentPage = this.state.currentPage;
+    const sort = this.state.sort;
+    const visibility = isVisible ? 'visible' : 'hidden';
+
+    return (
+      <div className={'schema-module'} data-visibility={visibility}>
+        <h3>{makeTitleCase(schema)}</h3>
+        <ShowHideToggle isVisible={isVisible} changeVisibility={this.toggleModuleVisibility} />
+        <div>
+          <PaginationLayout
+            key={`pending-${schema}-pagination`} schema={`pending-${schema}`}
+            pageSize={pageSize} activePage={currentPage} total={pendingListingsCount}
+            updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
+          />
+          <table className={'schema-table'} key={`pending-${schema}-table`}>
+            <thead>{renderTableHeader(titleMap, sort, this.updateColumnSortSelf)}</thead>
+            <tbody>
+            {
+              pendingListings.map(listing =>
+                <PendingListingRow
+                  key={`${this.schema}-${listing.id}`} schema={schema} pendingListing={listing}
+                  saveChanges={this.saveChanges} discardListing={this.discardListing}
+                  listingIsDup={this.queryForSimilar}
+                />)
+            }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    )
   }
 };

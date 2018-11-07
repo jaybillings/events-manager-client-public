@@ -1,15 +1,15 @@
-import React, {Component} from 'react';
-import app from '../services/socketio';
+import React, {Component} from "react";
+import app from "../services/socketio";
 import {buildColumnSort} from "../utilities";
 
-import Header from '../components/common/Header';
-import ImportForm from '../components/importer/ImportForm';
-import MessagePanel from '../components/common/MessagePanel';
-import PendingEventsModule from '../components/pendingEvents/PendingEventsModule';
-import PendingTagsModule from '../components/pendingTags/PendingTagsModule';
-import PendingVenuesModule from '../components/pendingVenues/PendingVenuesModule';
-import PendingOrganizersModule from '../components/pendingOrganizers/PendingOrganizersModule';
-import PendingNeighborhoodsModule from '../components/pendingNeighborhoods/PendingNeighborhoodsModule';
+import Header from "../components/common/Header";
+import ImportForm from "../components/importer/ImportForm";
+import MessagePanel from "../components/common/MessagePanel";
+import PendingEventsModule from "../components/pendingEvents/PendingEventsModule";
+import PendingTagsModule from "../components/pendingTags/PendingTagsModule";
+import PendingVenuesModule from "../components/pendingVenues/PendingVenuesModule";
+import PendingOrganizersModule from "../components/pendingOrganizers/PendingOrganizersModule";
+import PendingNeighborhoodsModule from "../components/pendingNeighborhoods/PendingNeighborhoodsModule";
 
 export default class ImportLayout extends Component {
   constructor(props) {
@@ -155,30 +155,21 @@ export default class ImportLayout extends Component {
           updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
           updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
         />
-        <div className={'schema-module'}>
-          <h3>Organizers</h3>
-          <PendingOrganizersModule
-            defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
-            updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
-            updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
-          />
-        </div>
-        <div className={'schema-module'}>
-          <h3>Neighborhoods</h3>
-          <PendingNeighborhoodsModule
-            defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
-            updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
-            updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
-          />
-        </div>
-        <div className={'schema-module'}>
-          <h3>Tags</h3>
-          <PendingTagsModule
-            defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
-            updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
-            updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
-          />
-        </div>
+        <PendingOrganizersModule
+          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
+          updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
+          updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+        />
+        <PendingNeighborhoodsModule
+          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
+          updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
+          updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+        />
+        <PendingTagsModule
+          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
+          updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
+          updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+        />
         <button type={'submit'}>Publish All Pending Listings</button>
       </div>
     );
