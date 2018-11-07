@@ -149,15 +149,12 @@ export default class ImportLayout extends Component {
           updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
           updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
         />
-        <div className={'schema-module'}>
-          <h3>Venues</h3>
-          <PendingVenuesModule
-            neighborhoods={this.state.neighborhoods}
-            defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
-            updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
-            updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
-          />
-        </div>
+        <PendingVenuesModule
+          neighborhoods={this.state.neighborhoods}
+          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
+          updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
+          updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+        />
         <div className={'schema-module'}>
           <h3>Organizers</h3>
           <PendingOrganizersModule

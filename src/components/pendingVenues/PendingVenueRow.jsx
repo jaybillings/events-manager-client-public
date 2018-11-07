@@ -1,40 +1,15 @@
-import React, {Component} from 'react';
+import React from 'react';
 import Moment from 'moment';
 import {Link} from 'react-router-dom';
 import {renderOptionList, renderUpdateStatus} from "../../utilities";
 
-export default class PendingVenueRow extends Component {
+import PendingListingRow from "../common/PendingListingRow";
+
+export default class PendingVenueRow extends PendingListingRow {
   constructor(props) {
     super(props);
 
-    this.state = {editable: false, is_new: true, is_dup: false};
-
-    this.nameInput = React.createRef();
     this.hoodList = React.createRef();
-
-    this.startEdit = this.startEdit.bind(this);
-    this.cancelEdit = this.cancelEdit.bind(this);
-    this.checkIfDup = this.checkIfDup.bind(this);
-    this.checkIfNew = this.checkIfNew.bind(this);
-    this.handleDeleteClick = this.handleDeleteClick.bind(this);
-    this.handleSaveClick = this.handleSaveClick.bind(this);
-  }
-
-  componentDidMount() {
-    this.checkIfDup();
-    this.checkIfNew();
-  }
-
-  startEdit() {
-    this.setState({editable: true});
-  }
-
-  cancelEdit() {
-    this.setState({editable: false});
-  }
-
-  handleDeleteClick() {
-    this.props.discardListing(this.props.pendingVenue.id);
   }
 
   handleSaveClick() {
@@ -43,29 +18,20 @@ export default class PendingVenueRow extends Component {
       hood_id: this.hoodList.current.value
     };
 
-    this.props.saveChanges(this.props.pendingVenue.id, newData);
+    this.props.saveChanges(this.props.pendingListing.id, newData);
     this.setState({editable: false});
   }
 
-  checkIfDup() {
-    this.props.venueIsDup(this.props.pendingVenue).then(message => {
-      this.setState({is_dup: message.total && message.total > 0});
-    }, err => console.log('error in checkIfDup()', err));
-  }
-
-  checkIfNew() {
-    this.setState({is_new: !this.props.pendingVenue.target_id});
-  }
-
   render() {
-    const pendingVenue = this.props.pendingVenue;
+    const pendingListing = this.props.pendingListing;
     const neighborhoods = this.props.neighborhoods;
+    const isDup = this.state.is_dup;
+    const isNew = this.state.is_new;
+
     const hoodLink = this.props.neighborhood
       ? <Link to={`/pendingNeighborhoods/${this.props.neighborhood.id}`}>{this.props.neighborhood.name}</Link>
       : 'NO NEIGHBORHOOD';
-    const createdAt = Moment(pendingVenue.created_at).calendar();
-    const isDup = this.state.is_dup;
-    const isNew = this.state.is_new;
+    const createdAt = Moment(pendingListing.created_at).calendar();
 
     if (this.state.editable) {
       return (
@@ -75,10 +41,10 @@ export default class PendingVenueRow extends Component {
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
           <td>
-            <input type={'text'} ref={this.nameInput} defaultValue={pendingVenue.name} />
+            <input type={'text'} ref={this.nameInput} defaultValue={pendingListing.name} />
           </td>
           <td>
-            <select ref={this.hoodList} defaultValue={pendingVenue.hood_id || ''} required>
+            <select ref={this.hoodList} defaultValue={pendingListing.hood_id || ''} required>
               {renderOptionList(neighborhoods)}
             </select>
           </td>
@@ -94,7 +60,7 @@ export default class PendingVenueRow extends Component {
           <button type={'button'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Discard</button>
         </td>
-        <td><Link to={`/pendingVenues/${pendingVenue.id}`}>{pendingVenue.name}</Link></td>
+        <td><Link to={`/pendingVenues/${pendingListing.id}`}>{pendingListing.name}</Link></td>
         <td>{hoodLink}</td>
         <td>{createdAt}</td>
         <td>{renderUpdateStatus(isDup, isNew, 'venue')}</td>

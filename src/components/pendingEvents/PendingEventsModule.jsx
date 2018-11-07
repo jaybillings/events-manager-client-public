@@ -1,10 +1,10 @@
-import React from 'react';
-import {renderTableHeader} from '../../utilities';
+import React from "react";
+import {renderTableHeader} from "../../utilities";
 
-import PaginationLayout from '../common/PaginationLayout';
-import PendingEventRow from './PendingEventRow';
-import ShowHideToggle from '../common/ShowHideToggle';
-import PendingListingsModule from '../common/PendingListingsModule';
+import PendingListingsModule from "../common/PendingListingsModule";
+import PaginationLayout from "../common/PaginationLayout";
+import PendingEventRow from "./PendingEventRow";
+import ShowHideToggle from "../common/ShowHideToggle";
 
 export default class PendingEventsModule extends PendingListingsModule {
   constructor(props) {
@@ -32,7 +32,7 @@ export default class PendingEventsModule extends PendingListingsModule {
       ['venue_id', 'Venue'],
       ['org_id', 'Organizer'],
       ['created_at', 'Imported On'],
-      ['status_NOSORT', 'Status'] // TODO: Make sortable
+      ['status_NOSORT', 'Status']
     ]);
     const isVisible = this.state.moduleVisible;
     const pageSize = this.state.pageSize;

@@ -1,98 +1,22 @@
-import React, {Component} from 'react';
-import {buildSortQuery, renderTableHeader} from "../../utilities";
-import app from '../../services/socketio';
+import React from "react";
+import {renderTableHeader} from "../../utilities";
 
-import PaginationLayout from '../common/PaginationLayout';
-import PendingVenueRow from './PendingVenueRow';
+import PendingListingsModule from "../common/PendingListingsModule";
+import PaginationLayout from "../common/PaginationLayout";
+import PendingVenueRow from "./PendingVenueRow";
+import ShowHideToggle from "../common/ShowHideToggle";
 
-import '../../styles/schema-table.css';
-
-export default class PendingVenuesModule extends Component {
+export default class PendingVenuesModule extends PendingListingsModule {
   constructor(props) {
-    super(props);
-
-    this.state = {
-      pendingVenues: [], pendingVenuesCount: 0,
-      pageSize: this.props.defaultPageSize, currentPage: 1, sort: this.props.defaultSortOrder
-    };
-
-    this.pendingVenuesService = app.service('pending-venues');
-    this.venuesService = app.service('venues');
-
-    this.fetchAllData = this.fetchAllData.bind(this);
-    this.saveChanges = this.saveChanges.bind(this);
-    this.discardListing = this.discardListing.bind(this);
-    this.queryForSimilar = this.queryForSimilar.bind(this);
-
-    this.updateColumnSortSelf = this.props.updateColumnSort.bind(this);
-    this.updatePageSizeSelf = this.props.updatePageSize.bind(this);
-    this.updateCurrentPageSelf = this.props.updateCurrentPage.bind(this);
-  }
-
-  componentDidMount() {
-    this.fetchAllData();
-
-    this.pendingVenuesService
-      .on('created', message => {
-        this.props.updateMessageList({status: 'success', details: `Added ${message.name} with ID #${message.id}`});
-        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
-      })
-      .on('updated', message => {
-        this.props.updateMessageList(message);
-        this.fetchAllData();
-      })
-      .on('patched', message => {
-        this.props.updateMessageList({status: 'success', details: `Updated #${message.id} - ${message.name}`});
-        this.fetchAllData();
-      })
-      .on('removed', message => {
-        this.props.updateMessageList({status: 'success', details: `Discarded pending venue #${message.id} - ${message.name}`});
-        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
-      })
-      .on('error', error => {
-        this.props.updateMessageList({status: 'error', details: error.message});
-      });
-  }
-
-  componentWillUnmount() {
-    this.pendingVenuesService
-      .removeListener('created')
-      .removeListener('updated')
-      .removeListener('patched')
-      .removeListener('removed')
-      .removeListener('error');
-  }
-
-  fetchAllData() {
-    this.pendingVenuesService.find({
-      query: {
-        $sort: buildSortQuery(this.state.sort),
-        $limit: this.state.pageSize,
-        $skip: this.state.pageSize * (this.state.currentPage - 1)
-      }
-    }).then(message => {
-      console.log('find pending-venues', message);
-      this.setState({pendingVenues: message.data, pendingVenuesCount: message.total});
-    });
-  }
-
-  discardListing(id) {
-    this.pendingVenuesService.remove(id).then(message => console.log('removed', message));
-  }
-
-  saveChanges(id, newData) {
-    this.pendingVenuesService.patch(id, newData).then(message => console.log('patched', message));
-  }
-
-  async queryForSimilar(pendingVenue) {
-    return this.venuesService.find({query: {name: pendingVenue.name}});
+    super(props, 'venues');
   }
 
   render() {
-    const pendingVenues = this.state.pendingVenues;
-    const pendingVenuesCount = this.state.pendingVenuesCount;
+    const pendingVenues = this.state.pendingListings;
+    const pendingVenuesCount = this.state.pendingListingsCount;
+    const hoods = this.props.neighborhoods;
 
-    if (!(pendingVenues && this.props.neighborhoods)) {
+    if (!(pendingVenues && hoods)) {
       return <p>Data is loading... Please be patient...</p>;
     } else if (pendingVenuesCount === 0) {
       return <p>No pending venues to list.</p>;
@@ -105,36 +29,39 @@ export default class PendingVenuesModule extends Component {
       ['created_at', 'Imported On'],
       ['status_NOSORT', 'Status']
     ]);
-    const hoods = this.props.neighborhoods;
-    const columnSort = this.state.sort;
-    const clickHandler = this.updateColumnSortSelf;
-    const currentPage = this.state.currentPage;
+    const isVisible = this.state.moduleVisible;
     const pageSize = this.state.pageSize;
+    const currentPage = this.state.currentPage;
+    const sort = this.state.sort;
+    const visibility = this.state.moduleVisible ? 'visible' : 'hidden';
 
-    return ([
-      <PaginationLayout
-        key={'pending-venues-pagination'}
-        pageSize={pageSize} activePage={currentPage} total={pendingVenuesCount}
-        updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
-        schema={'pending-venues'}
-      />,
-      <table className={'schema-table'} key={'pending-venues-table'}>
-        <thead>{renderTableHeader(titleMap, columnSort, clickHandler)}</thead>
-        <tbody>
-        {
-          pendingVenues.map(venue =>
-            <PendingVenueRow
-              key={`venue-${venue.id}`} pendingVenue={venue}
-              neighborhood={hoods.find(h => {
-                return h.id === venue.hood_id
-              })}
-              neighborhoods={hoods}
-              saveChanges={this.saveChanges} discardListing={this.discardListing}
-              venueIsDup={this.queryForSimilar}
-            />)
-        }
-        </tbody>
-      </table>
-    ]);
+    return (
+      <div className={'schema-module'} data-visibility={visibility}>
+        <h3>Venues</h3>
+        <ShowHideToggle isVisible={isVisible} changeVisibility={this.toggleModuleVisibility}/>
+        <PaginationLayout
+          key={'pending-venues-pagination'} pageSize={pageSize} activePage={currentPage}
+          total={pendingVenuesCount} schema={'pending-venues'}
+          updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
+        />
+        <table className={'schema-table'} key={'pending-venues-table'}>
+          <thead>{renderTableHeader(titleMap, sort, this.updateColumnSortSelf)}</thead>
+          <tbody>
+          {
+            pendingVenues.map(venue =>
+              <PendingVenueRow
+                key={`venue-${venue.id}`} pendingListing={venue}
+                neighborhood={hoods.find(h => {
+                  return h.id === venue.hood_id
+                })}
+                neighborhoods={hoods}
+                saveChanges={this.saveChanges} discardListing={this.discardListing}
+                listingIsDup={this.queryForSimilar}
+              />)
+          }
+          </tbody>
+        </table>
+      </div>
+    );
   }
 }
