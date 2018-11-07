@@ -143,12 +143,12 @@ export default class ImportLayout extends Component {
         <h2>Import Data From CSV File</h2>
         <ImportForm fileInputRef={this.fileInput} schemaSelectRef={this.schemaSelect} handleSubmit={this.importData} />
         <h2>Review Unpublished Data</h2>
-          <PendingEventsModule
-            venues={this.state.venues} organizers={this.state.organizers} tags={this.state.tags}
-            defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
-            updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
-            updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
-          />
+        <PendingEventsModule
+          venues={this.state.venues} organizers={this.state.organizers} tags={this.state.tags}
+          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
+          updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
+          updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+        />
         <div className={'schema-module'}>
           <h3>Venues</h3>
           <PendingVenuesModule

@@ -1,5 +1,6 @@
 .schema-table {
   width: 100%;
+  margin-bottom: 1rem;
 }
 
 .schema-table td {
@@ -8,6 +9,10 @@
 
 .schema-table select {
   max-width: 20rem;
+}
+
+.schema-table tr:last-of-type td {
+  border-bottom: 0;
 }
 
 .schema-table button {
