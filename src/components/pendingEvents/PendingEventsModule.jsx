@@ -1,7 +1,7 @@
 import React from "react";
 import {renderTableHeader} from "../../utilities";
 
-import PendingListingsModule from "../generic/PendingListingsModule";
+import PendingListingsModule from "../PendingListingsModule";
 import PaginationLayout from "../common/PaginationLayout";
 import PendingEventRow from "./PendingEventRow";
 import ShowHideToggle from "../common/ShowHideToggle";
@@ -15,10 +15,10 @@ export default class PendingEventsModule extends PendingListingsModule {
     const pendingEvents = this.state.pendingListings;
     const pendingEventsCount = this.state.pendingListingsCount;
     const venues = this.props.venues;
-    const organizers = this.props.organizers;
+    const orgs = this.props.orgs;
     const tags = this.props.tags;
 
-    if (!(pendingEvents && venues && organizers && tags)) {
+    if (!(pendingEvents && venues && orgs && tags)) {
       return <p>Data is loading... Please be patient...</p>;
     } else if (pendingEventsCount === 0) {
       return <p>No pending events to list.</p>
@@ -46,8 +46,8 @@ export default class PendingEventsModule extends PendingListingsModule {
         <ShowHideToggle isVisible={isVisible} changeVisibility={this.toggleModuleVisibility} />
         <div>
           <PaginationLayout
-            key={'pending-events-pagination'} pageSize={pageSize} activePage={currentPage}
-            total={pendingEventsCount} schema={'pending-events'}
+            key={'pending-events-pagination'} schema={'pending-events'}
+            total={pendingEventsCount} pageSize={pageSize} activePage={currentPage}
             updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
           />
           <table className={'schema-table'} key={'pending-events-table'}>
@@ -60,10 +60,10 @@ export default class PendingEventsModule extends PendingListingsModule {
                   venue={venues.find(v => {
                     return v.id === event.venue_id
                   })}
-                  organizer={organizers.find(o => {
+                  org={orgs.find(o => {
                     return o.id === event.org_id
                   })}
-                  venues={venues} organizers={organizers}
+                  venues={venues} orgs={orgs}
                   saveChanges={this.saveChanges} discardListing={this.discardListing}
                   listingIsDup={this.queryForSimilar}
                 />)

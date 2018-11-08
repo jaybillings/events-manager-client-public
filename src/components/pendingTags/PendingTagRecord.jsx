@@ -1,10 +1,9 @@
-import React, {Component} from 'react';
+import React from 'react';
 import Moment from 'moment';
 
-import '../../styles/schema-record.css';
-import '../../styles/toggle.css';
+import ListingRecordUniversal from "../ListingRecordUniversal";
 
-export default class PendingTagRecord extends Component {
+export default class PendingTagRecord extends ListingRecordUniversal {
   constructor(props) {
     super(props);
 
@@ -14,22 +13,8 @@ export default class PendingTagRecord extends Component {
     this.handleClickDelete = this.handleClickDelete.bind(this);
   }
 
-  handleSubmit(e) {
-    e.preventDefault();
-
-    const id = this.props.pendingTag.id;
-    const newData = {name: this.nameInput.current.value.trim()};
-
-    this.props.saveTag(id, newData);
-  }
-
-  handleClickDelete() {
-    const id = this.props.pendingTag.id;
-    this.props.deleteTag(id);
-  }
-
   render() {
-    const pendingTag = this.props.pendingTag;
+    const pendingTag = this.props.listing;
     const tagId = pendingTag.target_id || 'N/A';
     const createdAt = Moment(pendingTag.created_at).calendar();
     const updatedAt = Moment(pendingTag.updated_at).calendar();
@@ -38,15 +23,15 @@ export default class PendingTagRecord extends Component {
       <form id={'pending-tag-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
         <label>
           Live Tag ID
-          <input type={'text'} defaultValue={tagId} disabled />
+          <input type={'text'} value={tagId} disabled />
         </label>
         <label>
           Created
-          <input type={'text'} defaultValue={createdAt} disabled />
+          <input type={'text'} value={createdAt} disabled />
         </label>
         <label>
           Last Updated
-          <input type={'text'} defaultValue={updatedAt} disabled />
+          <input type={'text'} value={updatedAt} disabled />
         </label>
         <label className={'required'}>
           Name

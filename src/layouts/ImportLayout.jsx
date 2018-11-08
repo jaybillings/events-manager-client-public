@@ -18,7 +18,7 @@ export default class ImportLayout extends Component {
     this.state = {
       messages: [], messagePanelVisible: false,
       pendingEvents: [], pendingEventCount: 0,
-      venues: [], organizers: [], neighborhoods: [], tags: [],
+      venues: [], orgs: [], hoods: [], tags: [],
       defaultPageSize: 5, defaultSortOrder: ['created_at', -1]
     };
 
@@ -74,11 +74,11 @@ export default class ImportLayout extends Component {
     });
 
     this.orgsService.find({query: otherSchemaQuery}).then(message => {
-      this.setState({organizers: message.data});
+      this.setState({orgs: message.data});
     });
 
     this.hoodsService.find({query: otherSchemaQuery}).then(message => {
-      this.setState({neighborhoods: message.data});
+      this.setState({hoods: message.data});
     });
 
     this.tagsService.find({query: otherSchemaQuery}).then(message => {
@@ -144,13 +144,13 @@ export default class ImportLayout extends Component {
         <ImportForm fileInputRef={this.fileInput} schemaSelectRef={this.schemaSelect} handleSubmit={this.importData} />
         <h2>Review Unpublished Data</h2>
         <PendingEventsModule
-          venues={this.state.venues} organizers={this.state.organizers} tags={this.state.tags}
+          venues={this.state.venues} orgs={this.state.orgs} tags={this.state.tags}
           defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
           updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
           updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
         />
         <PendingVenuesModule
-          neighborhoods={this.state.neighborhoods}
+          hoods={this.state.hoods}
           defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
           updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
           updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}

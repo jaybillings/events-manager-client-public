@@ -3,7 +3,7 @@ import Moment from 'moment';
 import {Link} from 'react-router-dom';
 import {renderOptionList, renderUpdateStatus} from "../../utilities";
 
-import PendingListingRow from "../generic/PendingListingRow";
+import PendingListingRow from "../PendingListingRow";
 
 export default class PendingVenueRow extends PendingListingRow {
   constructor(props) {
@@ -13,23 +13,24 @@ export default class PendingVenueRow extends PendingListingRow {
   }
 
   handleSaveClick() {
+    const id = this.props.pendingListing.id;
     const newData = {
       name: this.nameInput.current.value.trim(),
       hood_id: this.hoodList.current.value
     };
 
-    this.props.saveChanges(this.props.pendingListing.id, newData);
+    this.props.saveChanges(id, newData);
     this.setState({editable: false});
   }
 
   render() {
     const pendingListing = this.props.pendingListing;
-    const neighborhoods = this.props.neighborhoods;
+    const hoods = this.props.hoods;
     const isDup = this.state.is_dup;
     const isNew = this.state.is_new;
 
-    const hoodLink = this.props.neighborhood
-      ? <Link to={`/pendingNeighborhoods/${this.props.neighborhood.id}`}>{this.props.neighborhood.name}</Link>
+    const hoodLink = this.props.hood
+      ? <Link to={`/pendingNeighborhoods/${this.props.hood.id}`}>{this.props.hood.name}</Link>
       : 'NO NEIGHBORHOOD';
     const createdAt = Moment(pendingListing.created_at).calendar();
 
@@ -45,7 +46,7 @@ export default class PendingVenueRow extends PendingListingRow {
           </td>
           <td>
             <select ref={this.hoodList} defaultValue={pendingListing.hood_id || ''} required>
-              {renderOptionList(neighborhoods)}
+              {renderOptionList(hoods)}
             </select>
           </td>
           <td>{createdAt}</td>

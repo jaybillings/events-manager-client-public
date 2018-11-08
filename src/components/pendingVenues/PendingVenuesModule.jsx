@@ -1,7 +1,7 @@
 import React from "react";
 import {renderTableHeader} from "../../utilities";
 
-import PendingListingsModule from "../generic/PendingListingsModule";
+import PendingListingsModule from "../PendingListingsModule";
 import PaginationLayout from "../common/PaginationLayout";
 import PendingVenueRow from "./PendingVenueRow";
 import ShowHideToggle from "../common/ShowHideToggle";
@@ -14,7 +14,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
   render() {
     const pendingVenues = this.state.pendingListings;
     const pendingVenuesCount = this.state.pendingListingsCount;
-    const hoods = this.props.neighborhoods;
+    const hoods = this.props.hoods;
 
     if (!(pendingVenues && hoods)) {
       return <p>Data is loading... Please be patient...</p>;
@@ -51,10 +51,10 @@ export default class PendingVenuesModule extends PendingListingsModule {
             pendingVenues.map(venue =>
               <PendingVenueRow
                 key={`venue-${venue.id}`} pendingListing={venue}
-                neighborhood={hoods.find(h => {
+                hood={hoods.find(h => {
                   return h.id === venue.hood_id
                 })}
-                neighborhoods={hoods}
+                hoods={hoods}
                 saveChanges={this.saveChanges} discardListing={this.discardListing}
                 listingIsDup={this.queryForSimilar}
               />)

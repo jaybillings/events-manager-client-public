@@ -3,7 +3,7 @@ import Moment from 'moment';
 import {Link} from 'react-router-dom';
 import {renderOptionList, renderUpdateStatus} from "../../utilities";
 
-import PendingListingRow from '../generic/PendingListingRow';
+import PendingListingRow from '../PendingListingRow';
 
 export default class PendingEventRow extends PendingListingRow {
   constructor(props) {
@@ -16,6 +16,7 @@ export default class PendingEventRow extends PendingListingRow {
   }
 
   handleSaveClick() {
+    const id = this.props.pendingListing.id;
     const newData = {
       name: this.nameInput.current.value.trim(),
       start_date: Moment(this.startInput.current.value).valueOf(),
@@ -24,21 +25,21 @@ export default class PendingEventRow extends PendingListingRow {
       org_id: this.orgList.current.value
     };
 
-    this.props.saveChanges(this.props.pendingListing.id, newData);
+    this.props.saveChanges(id, newData);
     this.setState({editable: false});
   }
 
   render() {
     const pendingListing = this.props.pendingListing;
     const venues = this.props.venues;
-    const organizers = this.props.organizers;
+    const orgs = this.props.orgs;
     const isDup = this.state.is_dup;
     const isNew = this.state.is_new;
 
     const venueLink = this.props.venue ?
       <Link to={`/venues/${pendingListing.venue_id}`}>{this.props.venue.name}</Link> : 'NO VENUE';
-    const orgLink = this.props.organizer ?
-      <Link to={`/organizers/${pendingListing.org_id}`}>{this.props.organizer.name}</Link> : 'NO ORGANIZER';
+    const orgLink = this.props.org ?
+      <Link to={`/organizers/${pendingListing.org_id}`}>{this.props.org.name}</Link> : 'NO ORGANIZER';
     const createdAt = Moment(pendingListing.created_at).calendar();
     const startDate = Moment(pendingListing.start_date).format('MM/DD/YYYY');
     const startDateVal = Moment(pendingListing.start_date).format('YYYY-MM-DD');
@@ -56,7 +57,7 @@ export default class PendingEventRow extends PendingListingRow {
           <td><input type={'date'} ref={this.startInput} defaultValue={startDateVal} /></td>
           <td><input type={'date'} ref={this.endInput} defaultValue={endDateVal} /></td>
           <td><select ref={this.venueList} defaultValue={pendingListing.venue_id || ''}>{renderOptionList(venues)}</select></td>
-          <td><select ref={this.orgList} defaultValue={pendingListing.org_id || ''}>{renderOptionList(organizers)}</select></td>
+          <td><select ref={this.orgList} defaultValue={pendingListing.org_id || ''}>{renderOptionList(orgs)}</select></td>
           <td>{createdAt}</td>
           <td>{renderUpdateStatus(isDup, isNew, 'event')}</td>
         </tr>

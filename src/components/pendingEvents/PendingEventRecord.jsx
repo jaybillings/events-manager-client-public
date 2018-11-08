@@ -29,11 +29,6 @@ export default class PendingEventRecord extends Component {
     this.handleClickDelete = this.handleClickDelete.bind(this);
   }
 
-  handleClickDelete() {
-    const id = this.props.pendingEvent.id;
-    this.props.deleteEvent(id);
-  }
-
   handleSubmit(e) {
     e.preventDefault();
 
@@ -69,14 +64,19 @@ export default class PendingEventRecord extends Component {
     });
     uncheckedBoxes.forEach(input => tagsToDelete.push(input.value));
 
-    this.props.saveEvent(id, newData, {to_save: tagsToSave, to_delete: tagsToDelete});
+    this.props.saveListing(id, newData, {to_save: tagsToSave, to_delete: tagsToDelete});
+  }
+
+  handleClickDelete() {
+    const id = this.props.pendingEvent.id;
+    this.props.deleteListing(id);
   }
 
   render() {
     const pendingEvent = this.props.pendingEvent;
     const eventId = this.props.pendingEvent.target_id || 'N/A';
     const venues = this.props.venues;
-    const organizers = this.props.organizers;
+    const orgs = this.props.orgs;
     const tags = this.props.tags;
     const eventTags = this.props.eventTags;
     const startDate = Moment(pendingEvent.start_date).format('YYYY-MM-DD');
@@ -88,15 +88,15 @@ export default class PendingEventRecord extends Component {
       <form id={'pending-event-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
         <label>
           Live Event ID
-          <input type={'text'} defaultValue={eventId} disabled />
+          <input type={'text'} value={eventId} disabled />
         </label>
         <label>
           Created
-          <input type={'text'} defaultValue={createdAt} disabled />
+          <input type={'text'} value={createdAt} disabled />
         </label>
         <label>
           Last Updated
-          <input type="text" defaultValue={updatedAt} disabled />
+          <input type="text" value={updatedAt} disabled />
         </label>
         <label className={'required'}>
           Name
@@ -110,21 +110,21 @@ export default class PendingEventRecord extends Component {
           End Date
           <input type="date" ref={this.endInput} defaultValue={endDate} required />
         </label>
-        <label>
+        <label className={'required'}>
           Venue
           <select ref={this.venueInput} defaultValue={pendingEvent.venue_id || ''} required>
             {renderOptionList(venues)}
           </select>
         </label>
-        <label>
+        <label className={'required'}>
           Organizer
           <select ref={this.orgInput} defaultValue={pendingEvent.org_id || ''} required>
-            {renderOptionList(organizers)}
+            {renderOptionList(orgs)}
           </select>
         </label>
         <label className={'required'}>
           Description
-          <textarea ref={this.descInput} defaultValue={pendingEvent.description} required />
+          <textarea ref={this.descInput} defaultValue={pendingEvent.description} required maxLength={500} />
         </label>
         <label>
           Tags

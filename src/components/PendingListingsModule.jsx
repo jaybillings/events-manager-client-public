@@ -1,13 +1,13 @@
 import React, {Component} from "react";
-import {buildSortQuery, makeTitleCase, renderTableHeader} from "../../utilities";
-import app from '../../services/socketio';
+import {buildSortQuery, makeTitleCase, renderTableHeader} from "../utilities";
+import app from '../services/socketio';
 
-import PaginationLayout from "../common/PaginationLayout";
+import PaginationLayout from "./common/PaginationLayout";
 import PendingListingRow from "./PendingListingRow";
+import ShowHideToggle from "./common/ShowHideToggle";
 
-import '../../styles/schema-module.css';
-import '../../styles/schema-table.css';
-import ShowHideToggle from "../common/ShowHideToggle";
+import '../styles/schema-module.css';
+import '../styles/schema-table.css';
 
 export default class PendingListingsModule extends Component {
   constructor(props, schema) {
@@ -101,9 +101,7 @@ export default class PendingListingsModule extends Component {
   }
 
   toggleModuleVisibility() {
-    this.setState(prevState => ({
-      moduleVisible: !prevState.moduleVisible
-    }));
+    this.setState(prevState => ({moduleVisible: !prevState.moduleVisible}));
   }
 
   render() {
@@ -136,7 +134,7 @@ export default class PendingListingsModule extends Component {
         <div>
           <PaginationLayout
             key={`pending-${schema}-pagination`} schema={`pending-${schema}`}
-            pageSize={pageSize} activePage={currentPage} total={pendingListingsCount}
+            total={pendingListingsCount} pageSize={pageSize} activePage={currentPage}
             updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
           />
           <table className={'schema-table'} key={`pending-${schema}-table`}>

@@ -1,10 +1,9 @@
-import React, {Component} from 'react';
+import React from 'react';
 import Moment from 'moment';
 
-import '../../styles/schema-record.css';
-import '../../styles/toggle.css';
+import ListingRecordUniversal from "../ListingRecordUniversal";
 
-export default class PendingNeighborhoodRecord extends Component {
+export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
   constructor(props) {
     super(props);
 
@@ -14,22 +13,8 @@ export default class PendingNeighborhoodRecord extends Component {
     this.handleClickDelete = this.handleClickDelete.bind(this);
   }
 
-  handleSubmit(e) {
-    e.preventDefault();
-
-    const id = this.props.pendingNeighborhood.id;
-    const newData = {name: this.nameInput.current.value.trim()};
-
-    this.props.saveNeighborhood(id, newData);
-  }
-
-  handleClickDelete() {
-    const id = this.props.pendingNeighborhood.id;
-    this.props.deleteNeighborhood(id);
-  }
-
   render() {
-    const pendingHood = this.props.pendingNeighborhood;
+    const pendingHood = this.props.pendingListing;
     const hoodId = pendingHood.target_id || 'N/A';
     const createdAt = Moment(pendingHood.created_at).calendar();
     const updatedAt = Moment(pendingHood.updated_at).calendar();
@@ -38,15 +23,15 @@ export default class PendingNeighborhoodRecord extends Component {
       <form id={'pending-hood-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
         <label>
           Live Neighborhood ID
-          <input type={'text'} defaultValue={hoodId} disabled />
+          <input type={'text'} value={hoodId} disabled />
         </label>
         <label>
           Created
-          <input type={'text'} defaultValue={createdAt} disabled />
+          <input type={'text'} value={createdAt} disabled />
         </label>
         <label>
           Last Updated
-          <input type={'text'} defaultValue={updatedAt} disabled />
+          <input type={'text'} value={updatedAt} disabled />
         </label>
         <label className={'required'}>
           Name
