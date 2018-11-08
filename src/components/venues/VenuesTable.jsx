@@ -1,64 +1,53 @@
-import React, {Component} from 'react';
+import React from 'react';
+import {renderTableHeader} from "../../utilities";
 
-import SortIndicator from '../common/SortIndicator';
+import ListingsTable from "../ListingsTable";
 import VenueRow from './VenueRow';
+import PaginationLayout from "../common/PaginationLayout";
 
-import '../../styles/schema-table.css';
-
-export default class VenuesTable extends Component {
+export default class VenuesTable extends ListingsTable {
   constructor(props) {
-    super(props);
-
-    this.renderHeader = this.renderHeader.bind(this);
+    super(props, 'venues');
   }
 
-  renderHeader() {
+  render() {
     const titleMap = new Map([
+      ['actions_NOSORT', 'Actions'],
       ['name', 'Name'],
       ['fk_hood', 'Neighborhood'],
       ['updated_at', 'Last Modified']
     ]);
-    let headersList = [<th key={'none'}>Actions</th>];
 
-    titleMap.forEach((title, dataKey) => {
-      let classNames = 'sort-label', direction = 0;
+    const venues = this.props.listings;
+    const hoods = this.props.hoods;
 
-      if (this.props.sort[0] === dataKey) {
-        classNames += ' active';
-        direction = this.props.sort[1];
-      }
+    const pageSize = this.props.pageSize;
+    const currentPage = this.props.currentPage;
+    const eventsTotal = this.props.listingsTotal;
+    const sort = this.props.sort;
 
-      headersList.push(
-        <th className={classNames} key={dataKey} data-sort-type={dataKey} onClick={this.props.handleColumnClick}>
-          {title} <SortIndicator direction={direction}/>
-        </th>
-      );
-    });
-
-    return <tr>{headersList}</tr>;
-  }
-
-  render() {
-    const venues = this.props.venues;
-    const neighborhoods = this.props.neighborhoods;
-
-    return (
-      <table className={'schema-table'}>
-        <thead>
-          {this.renderHeader()}
-        </thead>
+    return ([
+      <PaginationLayout
+        key={'venues-pagination'} schema={'venues'} total={eventsTotal} pageSize={pageSize} activePage={currentPage}
+        updatePageSize={this.handlePageSizeUpdate} updateCurrentPage={this.handlePageNumUpdate}
+      />,
+      <table key={'venues-table'} className={'schema-table'}>
+        <thead>{renderTableHeader(titleMap, sort, this.props.handleSortUpdate)}</thead>
         <tbody>
         {
           venues.map(venue =>
             <VenueRow
               key={venue.id} listing={venue}
-              neighborhood={neighborhoods.find(n => { return n.id === venue.hood_id })}
-              neighborhoods={neighborhoods}
+              hood={hoods.find(n => {
+                return n.id === venue.hood_id
+              })}
+              hoods={hoods}
+              saveChanges={this.handleSaveChanges} deleteListing={this.handleDeleteListing}
             />
           )
         }
         </tbody>
       </table>
-    );
+    ]);
   }
 };

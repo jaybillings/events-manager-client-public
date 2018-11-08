@@ -1,13 +1,13 @@
-import React from 'react';
-import Moment from 'moment';
-import {Link} from 'react-router-dom';
+import React from "react";
+import Moment from "moment";
+import {Link} from "react-router-dom";
 import {renderOptionList} from "../../utilities";
 
-import ListingRow from "../generic/ListingRow";
+import ListingRow from "../ListingRow";
 
 export default class VenueRow extends ListingRow {
   constructor(props) {
-    super(props, 'venues');
+    super(props);
 
     this.hoodList = React.createRef();
   }
@@ -24,9 +24,9 @@ export default class VenueRow extends ListingRow {
 
   render() {
     const venue = this.props.listing;
-    const neighborhoods = this.props.neighborhoods;
+    const hoods = this.props.hoods;
     const updatedAt = Moment(venue['updated_at']).calendar();
-    const hoodNameLink = this.props.neighborhood ? <Link to={`/neighborhoods/${venue.hood_id}`}>{ this.props.neighborhood.name }</Link> : 'NO NEIGHBORHOOD';
+    const hoodNameLink = this.props.hood ? <Link to={`/neighborhoods/${venue.hood_id}`}>{ this.props.hood.name }</Link> : 'NO NEIGHBORHOOD';
 
     if (this.state.editable) {
       return (
@@ -36,7 +36,7 @@ export default class VenueRow extends ListingRow {
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
           <td><input type={'text'} ref={this.nameInput} defaultValue={venue.name} /></td>
-          <td><select ref={this.hoodList} defaultValue={venue.hood_id || ''}>{renderOptionList(neighborhoods)}</select></td>
+          <td><select ref={this.hoodList} defaultValue={venue.hood_id || ''}>{renderOptionList(hoods)}</select></td>
           <td>{updatedAt}</td>
         </tr>
       );

@@ -1,90 +1,107 @@
 import React, {Component} from 'react';
-import app from '../../services/socketio';
 import {renderOptionList} from '../../utilities';
-
-import '../../styles/add-form.css';
 
 export default class VenueAddForm extends Component {
   constructor(props) {
     super(props);
 
-    this.venuesService = app.service('venues');
+    this.nameInput = React.createRef();
+    this.hoodList = React.createRef();
+    this.descInput = React.createRef();
+    this.emailInput = React.createRef();
+    this.urlInput = React.createRef();
+    this.phoneInput = React.createRef();
+    this.streetInput = React.createRef();
+    this.cityInput = React.createRef();
+    this.stateInput = React.createRef();
+    this.zipInput = React.createRef();
 
-    this.createVenue = this.createVenue.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.clearForm = this.clearForm.bind(this);
   }
 
-  createVenue(e) {
+  handleSubmit(e) {
     e.preventDefault();
 
     const venueObj = {
-      name: this.refs['nameInput'].value.trim(),
-      hood_id: this.refs['hoodList'].value,
-      description: this.refs['descInput'].value.trim()
+      name: this.nameInput.current.value.trim(),
+      hood_id: this.hoodList.current.value,
+      description: this.descInput.current.value.trim()
     };
 
-    // Only add non-required if they have a value
-    this.refs['emailInput'].value && (venueObj['email'] = this.refs['emailInput'].value);
-    this.refs['urlInput'].value && (venueObj['url'] = this.refs['urlInput'].value);
-    this.refs['phoneInput'].value && (venueObj['phone'] = this.refs['phoneInput'].value);
-    this.refs['streetInput'].value && (venueObj['address_street'] = this.refs['streetInput'].value);
-    this.refs['cityInput'].value && (venueObj['address_city'] = this.refs['cityInput'].value);
-    this.refs['stateInput'].value && (venueObj['address_state'] = this.refs['stateInput'].value);
-    this.refs['zipInput'].value && (venueObj['address_zip'] = this.refs['zipInput'].value);
+    venueObj.email = this.emailInput.current.value.trim();
+    venueObj.url = this.urlInput.current.value.trim();
+    venueObj.phone = this.phoneInput.current.value.trim();
+    venueObj.address_street = this.streetInput.current.value.trim();
+    venueObj.address_city = this.cityInput.current.value.trim();
+    venueObj.address_state = this.stateInput.current.value.trim();
+    venueObj.address_zip = this.zipInput.current.value.trim();
 
-    this.venuesService.create(venueObj).then(message => {
-      console.log('create', message);
-      document.querySelector('#venue-add-form').reset();
-    }, reason => {
-      console.log('error', JSON.stringify(reason));
-    });
+    this.props.createVenue(venueObj);
+  }
+
+  clearForm() {
+    this.nameInput.current.value = '';
+    this.hoodList.current.value = this.hoodList.current.firstChild.value;
+    this.descInput.current.value = '';
+    this.emailInput.current.value = '';
+    this.urlInput.current.value = '';
+    this.phoneInput.current.value = '';
+    this.streetInput.current.value = '';
+    this.cityInput.current.value = '';
+    this.stateInput.current.value = '';
+    this.zipInput.current.value = '';
   }
 
   render() {
-    const neighborhoods = this.props.neighborhoods;
+    const hoods = this.props.hoods;
 
     return (
-      <form id={'venue-add-form'} className={'add-form'} onSubmit={this.createVenue}>
+      <form id={'venue-add-form'} className={'add-form'} onSubmit={this.handleSubmit}>
         <label className={'required'}>
           Name
-          <input type={'text'} ref={'nameInput'} required maxLength={100} />
+          <input type={'text'} ref={this.nameInput} required maxLength={100} />
         </label>
         <label className={'required'}>
           Neighborhood
-          <select ref={'hoodList'} defaultValue={this.props.neighborhoods[0].id}>{renderOptionList(neighborhoods)}</select>
+          <select ref={this.hoodList} defaultValue={this.props.hoods[0].id}>{renderOptionList(hoods)}</select>
         </label>
         <label className={'required'}>
           Description
-          <textarea ref={'descInput'} required maxLength={500} />
+          <textarea ref={this.descInput} required maxLength={500} />
         </label>
         <label>
-          Email
-          <input type={'email'} ref={'emailInput'} />
+          Email Address
+          <input type={'email'} ref={this.emailInput} />
         </label>
         <label>
-          Url
-          <input type={'url'} ref={'urlInput'} />
+          URL
+          <input type={'url'} ref={this.urlInput} />
         </label>
         <label>
-          Phone #
-          <input type={'tel'} ref={'phoneInput'} />
+          Phone Number
+          <input type={'tel'} ref={this.phoneInput} />
         </label>
         <label>
-          Street Adress
-          <input type={'text'} ref={'streetInput'} />
+          Street Address
+          <input type={'text'} ref={this.streetInput} />
         </label>
         <label>
           City
-          <input type={'text'} ref={'cityInput'} />
+          <input type={'text'} ref={this.cityInput} defaultValue={'Seattle'} />
         </label>
         <label>
           State
-          <input type={'text'} ref={'stateInput'} defaultValue={'Washington'} />
+          <input type={'text'} ref={this.stateInput} defaultValue={'Washington'} />
         </label>
         <label>
           Zip Code
-          <input type={'text'} ref={'zipInput'} />
+          <input type={'text'} ref={this.zipInput} />
         </label>
-        <button type={'submit'} className={'button-primary'}>Add Venue</button>
+        <div>
+          <button type={'button'} onClick={this.clearForm}>Reset</button>
+          <button type={'submit'} className={'button-primary'}>Publish Venue</button>
+        </div>
       </form>
     );
   }
