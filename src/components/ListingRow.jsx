@@ -1,15 +1,13 @@
-import React, {Component} from 'react';
-import Moment from 'moment';
-import {Link} from 'react-router-dom';
+import React, {Component} from "react";
+import Moment from "moment";
+import {Link} from "react-router-dom";
 
-import '../../styles/schema-row.css';
-import '../../styles/toggle.css';
+import "../styles/schema-row.css";
+import "../styles/toggle.css";
 
 export default class ListingRow extends Component {
-  constructor(props, schema) {
+  constructor(props) {
     super(props);
-
-    this.schema = schema;
 
     this.state = {editable: false};
 
@@ -42,7 +40,7 @@ export default class ListingRow extends Component {
 
   render() {
     const listing = this.props.listing;
-    const schema = this.schema;
+    const schema = this.props.schema;
     const updatedAt = Moment(listing.updated_at).calendar();
 
     if (this.state.editable) {

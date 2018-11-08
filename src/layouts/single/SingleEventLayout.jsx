@@ -12,7 +12,7 @@ export default class SingleEventLayout extends Component {
 
     this.state = {
       messages: [], messagePanelVisible: false,
-      event: {}, venues: [], organizers: [], tags: [], eventTags: [],
+      event: {}, venues: [], orgs: [], tags: [], eventTags: [],
       eventLoaded: false, venuesLoaded: false, orgsLoaded: false, tagsLoaded: false,
       hasDeleted: false, notFound: false
     };
@@ -40,7 +40,6 @@ export default class SingleEventLayout extends Component {
     // Register listeners
     this.eventsService
       .on('patched', message => {
-        console.log('patched', message);
         this.setState({event: message, eventLoaded: true});
         this.updateMessagePanel({'status': 'success', 'details': 'Changes saved.'});
       })
@@ -63,12 +62,12 @@ export default class SingleEventLayout extends Component {
     const id = this.props.match.params.id;
     const defaultQuery = {$sort: {name: 1}, $limit: 100};
 
-    this.setState({eventLoaded: false, venuesLoaded: false, orgsLoaded: false, tagsLoaded: false});
+    //this.setState({eventLoaded: false, venuesLoaded: false, orgsLoaded: false, tagsLoaded: false});
 
     this.eventsService.get(id).then(message => {
       this.setState({event: message, eventLoaded: true});
     }, message => {
-      console.log('error', JSON.stringify(message));
+      console.log('error', message);
       this.setState({notFound: true});
     });
 
@@ -77,7 +76,7 @@ export default class SingleEventLayout extends Component {
     });
 
     this.orgsService.find({query: defaultQuery}).then(message => {
-      this.setState({organizers: message.data, orgsLoaded: true})
+      this.setState({orgs: message.data, orgsLoaded: true})
     });
 
     this.tagsService.find({query: defaultQuery}).then(message => {
@@ -94,8 +93,7 @@ export default class SingleEventLayout extends Component {
   }
 
   saveEvent(id, eventData, tagData) {
-    this.setState({eventLoaded: false});
-
+    //this.setState({eventLoaded: false});
     this.eventsService.patch(id, eventData).then(message => {
       console.log('patching', message);
       this.saveTags(id, tagData);
@@ -128,7 +126,7 @@ export default class SingleEventLayout extends Component {
 
   updateMessagePanel(msg) {
     const messageList = this.state.messages;
-    this.setState({messages: [msg].concat(messageList), messagePanelVisible: true});
+    this.setState({messages: [msg, ...messageList], messagePanelVisible: true});
   }
 
   dismissMessagePanel() {
@@ -141,7 +139,7 @@ export default class SingleEventLayout extends Component {
     }
 
     return <EventRecord
-      event={this.state.event} venues={this.state.venues} organizers={this.state.organizers}
+      event={this.state.event} venues={this.state.venues} orgs={this.state.orgs}
       tags={this.state.tags} eventTags={this.state.eventTags} saveEvent={this.saveEvent} deleteEvent={this.deleteEvent}
     />;
   }

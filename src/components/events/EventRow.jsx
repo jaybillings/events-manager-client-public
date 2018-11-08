@@ -1,15 +1,14 @@
-import React from 'react';
-import Moment from 'moment';
-import {Link} from 'react-router-dom';
-import {renderOptionList} from '../../utilities';
+import React from "react";
+import Moment from "moment";
+import {Link} from "react-router-dom";
+import {renderOptionList} from "../../utilities";
 
-import ListingRow from "../generic/ListingRow";
+import ListingRow from "../ListingRow";
 
 export default class EventRow extends ListingRow {
   constructor(props) {
-    super(props, 'events');
+    super(props);
 
-    this.nameInput = React.createRef();
     this.startInput = React.createRef();
     this.endInput = React.createRef();
     this.venueList = React.createRef();
@@ -34,7 +33,7 @@ export default class EventRow extends ListingRow {
   render() {
     const event = this.props.listing;
     const venues = this.props.venues;
-    const organizers = this.props.organizers;
+    const orgs = this.props.orgs;
 
     const startDate = Moment(event.start_date).format('MM/DD/YYYY');
     const startDateVal = Moment(event.start_date).format('YYYY-MM-DD');
@@ -44,9 +43,9 @@ export default class EventRow extends ListingRow {
 
     const venueLink = this.props.venue ?
       <Link to={`/venues/${event.venue_id}`}>{this.props.venue.name}</Link> : 'NO VENUE';
-    const orgLink = this.props.organizer ?
-      <Link to={`/organizers/${event.org_id}`}>{this.props.organizer.name}</Link> : 'NO ORGANIZER';
-    const eventStatus = this.props.event['is_published'] ? <span className="bolded">Published</span> :
+    const orgLink = this.props.org ?
+      <Link to={`/organizers/${event.org_id}`}>{this.props.org.name}</Link> : 'NO ORGANIZER';
+    const eventStatus = event.is_published ? <span className="bolded">Published</span> :
       <span className="muted">Dropped</span>;
 
     if (this.state.editable) {
@@ -60,7 +59,7 @@ export default class EventRow extends ListingRow {
           <td><input type={'date'} ref={this.startInput} defaultValue={startDateVal} /></td>
           <td><input type={'date'} ref={this.endInput} defaultValue={endDateVal} /></td>
           <td><select ref={this.venueList} defaultValue={event.venue_id || ''}>{renderOptionList(venues)}</select></td>
-          <td><select ref={this.orgList} defaultValue={event.org_id || ''}>{renderOptionList(organizers)}</select></td>
+          <td><select ref={this.orgList} defaultValue={event.org_id || ''}>{renderOptionList(orgs)}</select></td>
           <td>{updatedAt}</td>
           <td>
             <input id={'toggle-' + event.id} ref={this.liveToggle} className={'toggle'} type={'checkbox'}

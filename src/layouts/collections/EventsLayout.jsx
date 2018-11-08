@@ -17,10 +17,10 @@ export default class EventsLayout extends Component {
     this.defaultQuery = {$sort: {name: 1}, $select: ['name'], $limit: 100};
 
     this.state = {
-      events: [], venues: [], organizers: [], tags: [], eventsTotal: 0,
+      events: [], venues: [], orgs: [], tags: [], eventsTotal: 0,
       eventsLoaded: false, venuesLoaded: false, orgsLoaded: false, tagsLoaded: false,
-      messagePanelVisible: false, messages: [], pageSize: this.defaultPageSize, currentPage: 1,
-      sort: this.defaultTableSort, filter: {}
+      pageSize: this.defaultPageSize, currentPage: 1, sort: this.defaultTableSort, filter: {},
+      messagePanelVisible: false, messages: []
     };
 
     this.eventsService = app.service('events');
@@ -68,7 +68,10 @@ export default class EventsLayout extends Component {
       })
       .on('removed', message => {
         console.log('event removed', message);
-        this.updateMessagePanel({status: 'success', details: `Permanently deleted event #${message.id} - ${message.name}`});
+        this.updateMessagePanel({
+          status: 'success',
+          details: `Permanently deleted event #${message.id} - ${message.name}`
+        });
         this.setState({currentPage: 1}, () => this.fetchEvents());
       })
       .on('error', error => {
@@ -150,12 +153,17 @@ export default class EventsLayout extends Component {
   }
 
   fetchEvents() {
+    const sort = this.state.sort;
+    const pageSize = this.state.pageSize;
+    const currentPage = this.state.currentPage;
+    const filter = this.state.filter;
+
     let query = {
-      $sort: buildSortQuery(this.state.sort),
-      $limit: this.state.pageSize,
-      $skip: this.state.pageSize * (this.state.currentPage - 1)
+      $sort: buildSortQuery(sort),
+      $limit: pageSize,
+      $skip: pageSize * (currentPage - 1)
     };
-    Object.assign(query, this.state.filter);
+    Object.assign(query, filter);
 
     this.eventsService.find({query: query}).then(message => {
       this.setState({events: message.data, eventsTotal: message.total, eventsLoaded: true});
@@ -170,7 +178,7 @@ export default class EventsLayout extends Component {
 
   fetchOrgs() {
     this.orgsSerivce.find({query: this.defaultQuery}).then(message => {
-      this.setState({organizers: message.data, orgsLoaded: true});
+      this.setState({orgs: message.data, orgsLoaded: true});
     });
   }
 
@@ -267,18 +275,18 @@ export default class EventsLayout extends Component {
 
     const events = this.state.events;
     const venues = this.state.venues;
-    const orgs = this.state.organizers;
+    const orgs = this.state.orgs;
+
     const pageSize = this.state.pageSize;
     const currentPage = this.state.currentPage;
     const total = this.state.eventsTotal;
     const sort = this.state.sort;
 
     return <EventsTable
-      events={events} venues={venues} organizers={orgs}
-      pageSize={pageSize} currentPage={currentPage} eventsTotal={total}
-      sort={sort} handleColumnClick={this.updateColumnSort}
-      updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
-      deleteEvent={this.deleteEvent} saveEvent={this.saveEvent}
+      listings={events} listingsTotal={total} venues={venues} orgs={orgs}
+      pageSize={pageSize} currentPage={currentPage} sort={sort}
+      handleColumnClick={this.updateColumnSort} updatePageSize={this.updatePageSize}
+      updateCurrentPage={this.updateCurrentPage} deleteListing={this.deleteEvent} saveListing={this.saveEvent}
     />;
   }
 
@@ -288,10 +296,10 @@ export default class EventsLayout extends Component {
     }
 
     const venues = this.state.venues;
-    const orgs = this.state.organizers;
+    const orgs = this.state.orgs;
     const tags = this.state.tags;
 
-    return <EventAddForm venues={venues} organizers={orgs} tags={tags} createEvent={this.createEvent} />;
+    return <EventAddForm venues={venues} orgs={orgs} tags={tags} createEvent={this.createEvent} />;
   }
 
   render() {
@@ -299,7 +307,7 @@ export default class EventsLayout extends Component {
     const messages = this.state.messages;
 
     return (
-      <div className="container">
+      <div className={'container'}>
         <Header />
         <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
         <h2>All Events</h2>

@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import Moment from 'moment';
-import {makeTitleCase, renderUpdateStatus} from "../../utilities";
+import {makeTitleCase, renderUpdateStatus} from "../utilities";
 import {Link} from "react-router-dom";
 
 export default class PendingListingRow extends Component {
@@ -36,9 +36,10 @@ export default class PendingListingRow extends Component {
   }
 
   handleSaveClick() {
+    const id = this.props.pendingListing.id;
     const newData = { name: this.nameInput.current.value.trim() };
 
-    this.props.saveChanges(this.props.pendingListing.id, newData);
+    this.props.saveChanges(id, newData);
     this.setState({editable: false});
   }
 

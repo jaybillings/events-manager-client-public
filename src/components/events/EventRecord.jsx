@@ -1,6 +1,6 @@
-import React, {Component} from 'react';
-import Moment from 'moment';
-import {renderOptionList, renderCheckboxList} from '../../utilities';
+import React, {Component} from "react";
+import Moment from "moment";
+import {renderOptionList, renderCheckboxList} from "../../utilities";
 
 import '../../styles/schema-record.css';
 import '../../styles/toggle.css';
@@ -9,7 +9,7 @@ export default class EventRecord extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {hasDeleted: false, tmpStatus: this.props.event.is_published};
+    this.state = {tmpStatus: this.props.event.is_published};
 
     this.nameInput = React.createRef();
     this.startInput = React.createRef();
@@ -35,16 +35,18 @@ export default class EventRecord extends Component {
 
   handleClickDelete() {
     const id = this.props.event.id;
-    this.props.deleteEvent(id);
+    this.props.deleteListing(id);
   }
 
   handleSubmit(e) {
     e.preventDefault();
 
     const event = this.props.event;
-    const id = this.props.event.id;
+    const id = event.id;
     const checkedBoxes = document.querySelectorAll('.js-checkbox:checked');
     const uncheckedBoxes = document.querySelectorAll('.js-checkbox:not(:checked)');
+    let tagsToSave = [], tagsToDelete = [];
+
     const newData = {
       name: this.nameInput.current.value.trim(),
       start_date: Moment(this.startInput.current.value).valueOf(),
@@ -55,7 +57,6 @@ export default class EventRecord extends Component {
       flag_ongoing: this.ongoingInput.current.checked,
       is_published: this.liveToggle.current.checked
     };
-    let tagsToSave = [], tagsToDelete = [];
 
     // Only add non-required if they have a value
     (this.emailInput.current.value !== event.email) && (newData.email = this.emailInput.current.value.trim());
@@ -74,7 +75,7 @@ export default class EventRecord extends Component {
     });
     uncheckedBoxes.forEach(input => tagsToDelete.push(input.value));
 
-    this.props.saveEvent(id, newData, {to_save: tagsToSave, to_delete: tagsToDelete});
+    this.props.saveListing(id, newData, {to_save: tagsToSave, to_delete: tagsToDelete});
   }
 
   toggleStatus() {
@@ -84,7 +85,7 @@ export default class EventRecord extends Component {
   render() {
     const event = this.props.event;
     const venues = this.props.venues;
-    const organizers = this.props.organizers;
+    const orgs = this.props.orgs;
     const tags = this.props.tags;
     const eventTags = this.props.eventTags;
     const startDate = Moment(event.start_date).format('YYYY-MM-DD');
@@ -102,27 +103,27 @@ export default class EventRecord extends Component {
         </div>
         <label>
           ID
-          <input type="text" value={event.id} disabled />
+          <input type={'text'} value={event.id} disabled />
         </label>
         <label>
           Created
-          <input type="text" value={createdAt} disabled />
+          <input type={'text'} value={createdAt} disabled />
         </label>
         <label>
           Last Updated
-          <input type="text" value={updatedAt} disabled />
+          <input type={'text'} value={updatedAt} disabled />
         </label>
         <label className={'required'}>
           Name
-          <input type="text" ref={this.nameInput} defaultValue={event.name} required maxLength={100} />
+          <input type={'text'} ref={this.nameInput} defaultValue={event.name} required maxLength={100} />
         </label>
         <label className={'required'}>
           Start Date
-          <input type="date" ref={this.startInput} defaultValue={startDate} required />
+          <input type={'date'} ref={this.startInput} defaultValue={startDate} required />
         </label>
         <label className={'required'}>
           End Date
-          <input type="date" ref={this.endInput} defaultValue={endDate} required />
+          <input type={'date'} ref={this.endInput} defaultValue={endDate} required />
         </label>
         <label className={'required'}>
           Venue
@@ -130,7 +131,7 @@ export default class EventRecord extends Component {
         </label>
         <label className={'required'}>
           Organizer
-          <select ref={this.orgInput} defaultValue={event.org_id || ''} required>{renderOptionList(organizers)}</select>
+          <select ref={this.orgInput} defaultValue={event.org_id || ''} required>{renderOptionList(orgs)}</select>
         </label>
         <label className={'required'}>
           Description
@@ -142,39 +143,39 @@ export default class EventRecord extends Component {
         </label>
         <label>
           Email Address
-          <input type="email" ref={this.emailInput} defaultValue={event.email} />
+          <input type={'email'} ref={this.emailInput} defaultValue={event.email} />
         </label>
         <label>
           URL
-          <input type="url" ref={this.urlInput} defaultValue={event.url} />
+          <input type={'url'} ref={this.urlInput} defaultValue={event.url} />
         </label>
         <label>
           Phone Number
-          <input type="tel" ref={this.phoneInput} defaultValue={event.phone} />
+          <input type={'tel'} ref={this.phoneInput} defaultValue={event.phone} />
         </label>
         <label>
           Event Hours
-          <input type="text" ref={this.hoursInput} defaultValue={event.hours} />
+          <input type={'text'} ref={this.hoursInput} defaultValue={event.hours} />
         </label>
         <label>
           Ticketing URL
-          <input type="url" ref={this.ticketUrlInput} defaultValue={event.ticket_url} />
+          <input type={'url'} ref={this.ticketUrlInput} defaultValue={event.ticket_url} />
         </label>
         <label>
           Ticketing Phone Number
-          <input type="tel" ref={this.ticketPhoneInput} defaultValue={event.ticket_phone} />
+          <input type={'tel'} ref={this.ticketPhoneInput} defaultValue={event.ticket_phone} />
         </label>
         <label>
           Ticket Prices
-          <input type="text" ref={this.ticketPricesInput} defaultValue={event.ticket_prices} />
+          <input type={'text'} ref={this.ticketPricesInput} defaultValue={event.ticket_prices} />
         </label>
         <label>
-          <input type="checkbox" ref={this.ongoingInput} defaultChecked={event.flag_ongoing} />
+          <input type='checkbox' ref={this.ongoingInput} defaultChecked={event.flag_ongoing} />
           Ongoing Event
         </label>
         <div>
-          <button type="submit" className="button-primary">Save Changes</button>
-          <button type="button" onClick={this.handleClickDelete}>Delete Event</button>
+          <button type={'button'} onClick={this.handleClickDelete}>Delete Event</button>
+          <button type={'submit'} className={'button-primary'}>Save Changes</button>
         </div>
       </form>
     );
