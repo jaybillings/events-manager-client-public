@@ -111,7 +111,7 @@ export default class PendingListingsModule extends Component {
     if (!pendingListings) {
       return <p>Data is loading... Please be patient...</p>;
     } else if (pendingListingsCount === 0) {
-      return <p>No pending ${this.schema} to list.</p>
+      return <p>No pending {this.schema} to list.</p>
     }
 
     const titleMap = new Map([
@@ -150,6 +150,7 @@ export default class PendingListingsModule extends Component {
             }
             </tbody>
           </table>
+          <p>0 / {pendingListingsCount} {schema} selected</p>
         </div>
       </div>
     )

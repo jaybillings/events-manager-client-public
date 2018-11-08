@@ -35,7 +35,7 @@ export default class ImportForm extends Component {
           <label htmlFor={'schema-select'}>Select a schema to update:</label>
           {this.renderSchemaSelect()}
         </div>
-        <button type={'submit'} className={'button-primary'}>Import Data From File</button>
+        <button type={'submit'}>Import Data From File</button>
       </form>
     );
   }

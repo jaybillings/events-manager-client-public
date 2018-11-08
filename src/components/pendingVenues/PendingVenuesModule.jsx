@@ -61,6 +61,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
           }
           </tbody>
         </table>
+        <p>0 / {pendingVenuesCount} venues selected</p>
       </div>
     );
   }

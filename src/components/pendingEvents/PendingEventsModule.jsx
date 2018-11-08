@@ -70,6 +70,7 @@ export default class PendingEventsModule extends PendingListingsModule {
             }
             </tbody>
           </table>
+          <p>0 / {pendingEventsCount} events selected</p>
         </div>
       </div>
     );

@@ -35,6 +35,7 @@ export default class ImportLayout extends Component {
 
     this.fetchInitialData = this.fetchInitialData.bind(this);
     this.importData = this.importData.bind(this);
+    this.publishListings = this.publishListings.bind(this);
     this.updateMessageList = this.updateMessageList.bind(this);
     this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
   }
@@ -108,6 +109,10 @@ export default class ImportLayout extends Component {
     });
   }
 
+  publishListings() {
+
+  }
+
   updateMessageList(newMessage) {
     this.setState(prevState => ({
       messages: [newMessage, ...prevState.messages],
@@ -170,7 +175,7 @@ export default class ImportLayout extends Component {
           updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
           updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
         />
-        <button type={'submit'}>Publish All Pending Listings</button>
+        <button type={'button'} className={'button-primary button-publish'} onClick={this.publishListings}>Publish All Pending Listings</button>
       </div>
     );
   }
