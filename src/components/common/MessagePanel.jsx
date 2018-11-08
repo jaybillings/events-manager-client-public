@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 
-import '../../styles/message-panel.css';
+import "../../styles/message-panel.css";
 
 export default class MessagePanel extends Component {
   constructor(props) {
@@ -27,9 +27,7 @@ export default class MessagePanel extends Component {
       <div className={`messageContainer ${visibleClass}`}>
         <h3>Messages</h3>
         <button className={'dismiss'} onClick={this.props.dismissPanel}>X</button>
-        <ul>
-          {this.renderMessages()}
-        </ul>
+        <ul>{this.renderMessages()}</ul>
       </div>
     );
   }

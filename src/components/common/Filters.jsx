@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 
-import '../../styles/filters.css';
+import "../../styles/filters.css";
 
 export default class Filters extends Component {
   constructor(props) {
