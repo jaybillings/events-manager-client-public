@@ -1,17 +1,15 @@
-import React, {Component} from 'react';
-import app from '../services/socketio';
+import React, {Component} from "react";
+import app from "../services/socketio";
 import {buildColumnSort} from "../utilities";
 
-import Header from '../components/common/Header';
-import ImportForm from '../components/importer/ImportForm';
-import MessagePanel from '../components/common/MessagePanel';
-import PendingEventsModule from '../components/pendingEvents/PendingEventsModule';
-import PendingTagsModule from '../components/pendingTags/PendingTagsModule';
-import PendingVenuesModule from '../components/pendingVenues/PendingVenuesModule';
-import PendingOrganizersModule from '../components/pendingOrganizers/PendingOrganizersModule';
-import PendingNeighborhoodsModule from '../components/pendingNeighborhoods/PendingNeighborhoodsModule';
-
-import '../styles/schema-module.css';
+import Header from "../components/common/Header";
+import ImportForm from "../components/importer/ImportForm";
+import MessagePanel from "../components/common/MessagePanel";
+import PendingEventsModule from "../components/pendingEvents/PendingEventsModule";
+import PendingTagsModule from "../components/pendingTags/PendingTagsModule";
+import PendingVenuesModule from "../components/pendingVenues/PendingVenuesModule";
+import PendingOrganizersModule from "../components/pendingOrganizers/PendingOrganizersModule";
+import PendingNeighborhoodsModule from "../components/pendingNeighborhoods/PendingNeighborhoodsModule";
 
 export default class ImportLayout extends Component {
   constructor(props) {
@@ -20,7 +18,7 @@ export default class ImportLayout extends Component {
     this.state = {
       messages: [], messagePanelVisible: false,
       pendingEvents: [], pendingEventCount: 0,
-      venues: [], organizers: [], neighborhoods: [], tags: [],
+      venues: [], orgs: [], hoods: [], tags: [],
       defaultPageSize: 5, defaultSortOrder: ['created_at', -1]
     };
 
@@ -76,11 +74,11 @@ export default class ImportLayout extends Component {
     });
 
     this.orgsService.find({query: otherSchemaQuery}).then(message => {
-      this.setState({organizers: message.data});
+      this.setState({orgs: message.data});
     });
 
     this.hoodsService.find({query: otherSchemaQuery}).then(message => {
-      this.setState({neighborhoods: message.data});
+      this.setState({hoods: message.data});
     });
 
     this.tagsService.find({query: otherSchemaQuery}).then(message => {
@@ -104,25 +102,20 @@ export default class ImportLayout extends Component {
     }).then((response) => {
       response.json().then((body) => {
         if (body.code >= 400) {
-          this.setState(prevState => ({
-            messages: [...prevState.messages, {status: 'error', details: body.message}],
-            messagePanelVisible: true
-          }));
+          this.updateMessageList({status: 'error', details: body.message});
         }
       });
     });
   }
 
   updateMessageList(newMessage) {
-    let messageList = this.state.messages;
-    this.setState({
-      messages: [newMessage].concat(messageList),
+    this.setState(prevState => ({
+      messages: [newMessage, ...prevState.messages],
       messagePanelVisible: true
-    });
+    }));
   }
 
   dismissMessagePanel() {
-    console.log('clicked!');
     this.setState({messages: [], messagePanelVisible: false});
   }
 
@@ -150,48 +143,33 @@ export default class ImportLayout extends Component {
         <h2>Import Data From CSV File</h2>
         <ImportForm fileInputRef={this.fileInput} schemaSelectRef={this.schemaSelect} handleSubmit={this.importData} />
         <h2>Review Unpublished Data</h2>
-        <div className={'schema-module'}>
-          <h3>Events</h3>
-          <PendingEventsModule
-            venues={this.state.venues} organizers={this.state.organizers} tags={this.state.tags}
-            defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
-            updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
-            updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
-          />
-        </div>
-        <div className={'schema-module'}>
-          <h3>Venues</h3>
-          <PendingVenuesModule
-            neighborhoods={this.state.neighborhoods}
-            defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
-            updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
-            updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
-          />
-        </div>
-        <div className={'schema-module'}>
-          <h3>Organizers</h3>
-          <PendingOrganizersModule
-            defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
-            updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
-            updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
-          />
-        </div>
-        <div className={'schema-module'}>
-          <h3>Neighborhoods</h3>
-          <PendingNeighborhoodsModule
-            defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
-            updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
-            updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
-          />
-        </div>
-        <div className={'schema-module'}>
-          <h3>Tags</h3>
-          <PendingTagsModule
-            defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
-            updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
-            updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
-          />
-        </div>
+        <PendingEventsModule
+          venues={this.state.venues} orgs={this.state.orgs} tags={this.state.tags}
+          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
+          updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
+          updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+        />
+        <PendingVenuesModule
+          hoods={this.state.hoods}
+          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
+          updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
+          updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+        />
+        <PendingOrganizersModule
+          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
+          updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
+          updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+        />
+        <PendingNeighborhoodsModule
+          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
+          updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
+          updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+        />
+        <PendingTagsModule
+          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
+          updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
+          updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+        />
         <button type={'submit'}>Publish All Pending Listings</button>
       </div>
     );

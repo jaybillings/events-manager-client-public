@@ -1,74 +1,52 @@
-import React, {Component} from 'react';
-import Moment from 'moment';
-import {Link} from 'react-router-dom';
-import {renderOptionList,} from "../../utilities";
-import app from '../../services/socketio';
+import React from "react";
+import Moment from "moment";
+import {Link} from "react-router-dom";
+import {renderOptionList} from "../../utilities";
 
-export default class VenueRow extends Component {
+import ListingRow from "../ListingRow";
+
+export default class VenueRow extends ListingRow {
   constructor(props) {
     super(props);
 
-    this.state = {editable: false};
-    this.venuesService = app.service('venues');
-
-    this.startEdit = this.startEdit.bind(this);
-    this.cancelEdit = this.cancelEdit.bind(this);
-    this.deleteVenue = this.deleteVenue.bind(this);
-    this.saveVenue = this.saveVenue.bind(this);
+    this.hoodList = React.createRef();
   }
 
-  startEdit() {
-    this.setState({editable: true});
-  }
-
-  cancelEdit() {
-    this.setState({editable: false});
-  }
-
-  deleteVenue() {
-    // TODO : Lock to admins
-    this.venuesService.remove(this.props.venue.id).then(message => console.log('remove', message));
-  }
-
-  saveVenue() {
+  handleSaveClick() {
     const newData = {
-      name: this.refs['nameInput'].value.trim(),
-      hood_id: this.refs['hoodList'].value
+      name: this.nameInput.current.value.trim(),
+      hood_id: this.hoodList.current.value
     };
 
-    this.venuesService.patch(this.props.venue.id, newData).then(message => console.log(message));
+    this.props.saveChanges(this.props.listing.id, newData);
     this.setState({editable: false});
   }
 
   render() {
-    const venue = this.props.venue;
-    const neighborhoods = this.props.neighborhoods;
-    const hoodNameLink = this.props.neighborhood ? <Link to={`/neighborhoods/${venue.hood_id}`}>{ this.props.neighborhood.name }</Link> : 'NO NEIGHBORHOOD';
+    const venue = this.props.listing;
+    const hoods = this.props.hoods;
     const updatedAt = Moment(venue['updated_at']).calendar();
+    const hoodNameLink = this.props.hood ? <Link to={`/neighborhoods/${venue.hood_id}`}>{ this.props.hood.name }</Link> : 'NO NEIGHBORHOOD';
 
     if (this.state.editable) {
       return (
-        <tr>
+        <tr className={'schema-row'}>
           <td>
-            <button type={'button'} onClick={this.saveVenue}>Save</button>
+            <button type={'button'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
-          <td>
-            <input type={'text'} ref={'nameInput'} defaultValue={venue.name} />
-          </td>
-          <td>
-            <select ref={'hoodList'} defaultValue={venue.hood_id || ''}>{renderOptionList(neighborhoods)}</select>
-          </td>
+          <td><input type={'text'} ref={this.nameInput} defaultValue={venue.name} /></td>
+          <td><select ref={this.hoodList} defaultValue={venue.hood_id || ''}>{renderOptionList(hoods)}</select></td>
           <td>{updatedAt}</td>
         </tr>
       );
     }
 
     return (
-      <tr>
+      <tr className={'schema-row'}>
         <td>
           <button type={'button'} onClick={this.startEdit}>Edit</button>
-          <button type={'button'} onClick={this.deleteVenue}>Delete</button>
+          <button type={'button'} onClick={this.handleDeleteClick}>Delete</button>
         </td>
         <td><Link to={`/venues/${venue.id}`}>{venue.name}</Link></td>
         <td>{hoodNameLink}</td>

@@ -1,10 +1,10 @@
 import React, {Component} from 'react';
 import {Redirect} from 'react-router';
-import app from '../../services/socketio';
+import app from "../../services/socketio";
 
-import Header from '../../components/common/Header';
-import PendingVenueRecord from '../../components/pendingVenues/PendingVenueRecord';
-import MessagePanel from '../../components/common/MessagePanel';
+import Header from "../../components/common/Header";
+import PendingVenueRecord from "../../components/pendingVenues/PendingVenueRecord";
+import MessagePanel from "../../components/common/MessagePanel";
 
 export default class SinglePendingVenueLayout extends Component {
   constructor(props) {
@@ -12,12 +12,12 @@ export default class SinglePendingVenueLayout extends Component {
 
     this.state = {
       messages: [], messagePanelVisible: false,
-      pendingVenue: {}, venueLoaded: false, neighborhoods: [], hoodsLoaded: false,
+      pendingVenue: {}, venueLoaded: false, hoods: [], hoodsLoaded: false,
       hasDeleted: false, notFound: false
     };
 
     this.pendingVenuesService = app.service('pending-venues');
-    this.neighborhoodsService = app.service('neighborhoods');
+    this.hoodsService = app.service('neighborhoods');
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.renderRecord = this.renderRecord.bind(this);
@@ -35,12 +35,8 @@ export default class SinglePendingVenueLayout extends Component {
     // Register listeners
     this.pendingVenuesService
       .on('patched', message => {
-        const patchMsg = {
-          'status': 'success',
-          'details': `Updated ${this.state.pendingVenue.name} successfully.`
-        };
         this.setState({pendingVenue: message, venueLoaded: true});
-        this.updateMessagePanel(patchMsg);
+        this.updateMessagePanel({status: 'success', details: 'Changes saved'});
       })
       .on('removed', () => {
         this.setState({hasDeleted: true});
@@ -51,7 +47,8 @@ export default class SinglePendingVenueLayout extends Component {
   componentWillUnmount() {
     this.pendingVenuesService
       .removeListener('patched')
-      .removeListener('removed');
+      .removeListener('removed')
+      .removeListener('error');
   }
 
   fetchAllData() {
@@ -64,8 +61,8 @@ export default class SinglePendingVenueLayout extends Component {
       this.setState({notFound: true});
     });
 
-    this.neighborhoodsService.find({query: {$sort: {name: 1}}}).then(message => {
-      this.setState({neighborhoods: message.data, hoodsLoaded: true});
+    this.hoodsService.find({query: {$sort: {name: 1}}}).then(message => {
+      this.setState({hoods: message.data, hoodsLoaded: true});
     })
   }
 
@@ -92,19 +89,28 @@ export default class SinglePendingVenueLayout extends Component {
   }
 
   renderRecord() {
-    if (!(this.state.venueLoaded && this.state.hoodsLoaded)) return <p>Data is loading... Please be patient...</p>;
+    if (!(this.state.venueLoaded && this.state.hoodsLoaded)) {
+      return <p>Data is loading... Please be patient...</p>
+    }
 
-    return <PendingVenueRecord pendingVenue={this.state.pendingVenue} neighborhoods={this.state.neighborhoods}
-                               saveVenue={this.saveVenue} deleteVenue={this.deleteVenue} />;
+    return <PendingVenueRecord
+      pendingVenue={this.state.pendingVenue} hoods={this.state.hoods} saveVenue={this.saveVenue}
+      deleteVenue={this.deleteVenue}
+    />
   }
 
   render() {
-    if (this.state.notFound) return <Redirect to={'/404'} />;
+    if (this.state.notFound) {
+      return <Redirect to={'/404'} />
+    }
 
-    if (this.state.hasDeleted) return <Redirect to={`/import`} />;
+    if (this.state.hasDeleted) {
+      return <Redirect to={`/import`} />
+    }
 
     const showMessagePanel = this.state.messagePanelVisible;
     const messages = this.state.messages;
+    const name = this.state.pendingVenue.name;
 
     return (
       <div className={'container'}>
@@ -112,7 +118,7 @@ export default class SinglePendingVenueLayout extends Component {
         <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
         <div className={'block-warning'}
              title={'Caution: This venue is pending. It must be pushed live before it is visible on the site.'}>
-          <h2>{this.state.pendingVenue.name}</h2>
+          <h2>{name}</h2>
         </div>
         {this.renderRecord()}
       </div>

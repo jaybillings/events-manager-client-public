@@ -80,4 +80,24 @@ const buildColumnSort = function (clickTarget, sortState) {
   return {sort: [column, direction]};
 };
 
-export {renderOptionList, renderCheckboxList, renderTableHeader, renderUpdateStatus, buildSortQuery, buildColumnSort};
+/**
+ * From https://gomakethings.com/converting-a-string-to-title-case-with-vanilla-javascript/
+ * @param string
+ */
+const makeTitleCase = function(string) {
+  const tmpStr = string.toLocaleLowerCase().split(' ');
+  tmpStr.forEach((word, i, arr) => {
+    arr[i] = word.charAt(0).toLocaleUpperCase() + word.slice(1);
+  });
+  return tmpStr.join(' ');
+};
+
+export {
+  renderOptionList,
+  renderCheckboxList,
+  renderTableHeader,
+  renderUpdateStatus,
+  buildSortQuery,
+  buildColumnSort,
+  makeTitleCase
+};

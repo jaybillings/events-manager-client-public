@@ -21,8 +21,8 @@ export default class EventAddForm extends Component {
     this.ticketPhoneInput = React.createRef();
     this.ticketPricesInput = React.createRef();
     this.ongoingInput = React.createRef();
-    this.venueInput = React.createRef();
-    this.orgInput = React.createRef();
+    this.venueList = React.createRef();
+    this.orgList = React.createRef();
 
     this.handleSubmit = this.handleSubmit.bind(this);
     this.clearForm = this.clearForm.bind(this);
@@ -35,15 +35,14 @@ export default class EventAddForm extends Component {
       name: this.nameInput.current.value.trim(),
       start_date: Moment(this.startInput.current.value).valueOf(),
       end_date: Moment(this.endInput.current.value).valueOf(),
-      venue_id: this.venueInput.current.value,
-      org_id: this.orgInput.current.value,
+      venue_id: this.venueList.current.value,
+      org_id: this.orgList.current.value,
       description: this.descInput.current.value.trim(),
       flag_ongoing: this.ongoingInput.current.checked
     };
     const checkedBoxes = document.querySelectorAll('.js-checkbox:checked');
     let tagsToSave = [];
 
-    // Only include non-required if they have a value
     eventObj.email = this.emailInput.current.value.trim();
     eventObj.url = this.urlInput.current.value.trim();
     eventObj.phone = this.phoneInput.current.value.trim();
@@ -62,44 +61,53 @@ export default class EventAddForm extends Component {
 
   clearForm() {
     this.nameInput.current.value = '';
+    this.startInput.current.valueAsDate = new Date();
+    this.endInput.current.valueAsDate = new Date();
+    this.venueList.current.value = this.venueList.current.firstChild.value;
+    this.orgList.current.value = this.orgList.current.firstChild.value;
     this.descInput.current.value = '';
-    this.startInput.current.valueAsDate = new Date();
-    this.startInput.current.valueAsDate = new Date();
-    this.venueInput.current.value = this.venueInput.current.firstChild.value;
-    this.orgInput.current.value = this.orgInput.current.firstChild.value;
+    this.ongoingInput.current.checked = false;
+    this.emailInput.current.value = '';
+    this.urlInput.current.value = '';
+    this.phoneInput.current.value = '';
+    this.hoursInput.current.value = '';
+    this.ticketUrlInput.current.value = '';
+    this.ticketPhoneInput.current.value = '';
+    this.ticketPricesInput.current.value = '';
     document.querySelectorAll('.js-checkbox:checked').forEach(chkbx => chkbx.checked = false);
   }
 
   render() {
     const venues = this.props.venues;
-    const organizers = this.props.organizers;
+    const orgs = this.props.orgs;
     const tags = this.props.tags;
+    const currentDate = Moment().format('YYYY-MM-DD');
 
     return (
       <form id={'event-add-form'} className={'add-form'} onSubmit={this.handleSubmit}>
         <label className={'required'}>
           Name
-          <input type={'text'} ref={this.nameInput} required maxLength="100" />
+          <input type={'text'} ref={this.nameInput} required maxLength={100} />
         </label>
         <label className={'required'}>
           Start Date
-          <input type={'date'} ref={this.startInput} defaultValue={Moment().format('YYYY-MM-DD')} required />
+          <input type={'date'} ref={this.startInput} defaultValue={currentDate} required />
         </label>
         <label className={'required'}>
           End Date
-          <input type={'date'} ref={this.endInput} defaultValue={Moment().format('YYYY-MM-DD')} required />
+          <input type={'date'} ref={this.endInput} defaultValue={currentDate} required />
         </label>
         <label className={'required'}>
           Venue
-          <select ref={this.venueInput}>{renderOptionList(venues)}</select>
+          <select ref={this.venueList} defaultValue={this.props.venues[0].id}>{renderOptionList(venues)}</select>
         </label>
         <label className={'required'}>
           Organizers
-          <select ref={this.orgInput}>{renderOptionList(organizers)}</select>
+          <select ref={this.orgList}>{renderOptionList(orgs)}</select>
         </label>
         <label className={'required'}>
           Description
-          <textarea ref={this.descInput} required maxLength="500" />
+          <textarea ref={this.descInput} required maxLength={500} />
         </label>
         <label>
           Tags
@@ -137,7 +145,10 @@ export default class EventAddForm extends Component {
           <input type={'checkbox'} ref={this.ongoingInput} />
           Ongoing Event
         </label>
-        <button type={'submit'} className={'button-primary'}>Publish Event</button>
+        <div>
+          <button type={'button'} onClick={this.clearForm}>Reset</button>
+          <button type={'submit'} className={'button-primary'}>Publish Event</button>
+        </div>
       </form>
     );
   }

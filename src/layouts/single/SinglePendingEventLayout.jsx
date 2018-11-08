@@ -1,10 +1,10 @@
 import React, {Component} from 'react';
 import {Redirect} from 'react-router';
-import app from '../../services/socketio';
+import app from "../../services/socketio";
 
-import Header from '../../components/common/Header';
-import PendingEventRecord from '../../components/pendingEvents/PendingEventRecord';
-import MessagePanel from '../../components/common/MessagePanel';
+import Header from "../../components/common/Header";
+import PendingEventRecord from "../../components/pendingEvents/PendingEventRecord";
+import MessagePanel from "../../components/common/MessagePanel";
 
 export default class SinglePendingEventLayout extends Component {
   constructor(props) {
@@ -12,7 +12,7 @@ export default class SinglePendingEventLayout extends Component {
 
     this.state = {
       messages: [], messagePanelVisible: false,
-      pendingEvent: {}, venues: [], organizers: [], tags: [], eventTags: [],
+      pendingEvent: {}, venues: [], orgs: [], tags: [], eventTags: [],
       eventLoaded: false, venuesLoaded: false, orgsLoaded: false, tagsLoaded: false,
       hasDeleted: false, notFound: false
     };
@@ -72,7 +72,7 @@ export default class SinglePendingEventLayout extends Component {
     });
 
     this.orgsService.find({query: defaultQuery}).then(message => {
-      this.setState({organizers: message.data, orgsLoaded: true});
+      this.setState({orgs: message.data, orgsLoaded: true});
     });
 
     this.tagsService.find({query: defaultQuery}).then(message => {
@@ -105,14 +105,14 @@ export default class SinglePendingEventLayout extends Component {
         tag_id: {$in: tagData.to_delete}
       }
     }).then(message => {
-      console.log('pending-tag-lookup removed', message);
+      console.log('pending-tag-lookup removing', message);
     }, err => {
       console.log('error', err);
       this.updateMessagePanel(err);
     });
 
     this.pendingTagsLookupService.create(tagData.to_save).then(message => {
-      console.log('pending-tag-lookup created', message);
+      console.log('pending-tag-lookup creating', message);
     }, err => {
       console.log('error', err);
       this.updateMessagePanel(err);
@@ -130,7 +130,7 @@ export default class SinglePendingEventLayout extends Component {
 
   updateMessagePanel(msg) {
     const messageList = this.state.messages;
-    this.setState({messages: [msg].concat(messageList), messagePanelVisible: true});
+    this.setState({messages: [msg, ...messageList], messagePanelVisible: true});
   }
 
   dismissMessagePanel() {
@@ -143,7 +143,7 @@ export default class SinglePendingEventLayout extends Component {
     }
 
     return <PendingEventRecord
-      pendingEvent={this.state.pendingEvent} venues={this.state.venues} organizers={this.state.organizers}
+      pendingEvent={this.state.pendingEvent} venues={this.state.venues} orgs={this.state.orgs}
       tags={this.state.tags} eventTags={this.state.eventTags} saveEvent={this.saveEvent} deleteEvent={this.deleteEvent}
     />;
   }

@@ -1,28 +1,43 @@
-import React, {Component} from 'react';
-import app from '../../services/socketio';
+import React, {Component} from "react";
+import {buildColumnSort, buildSortQuery} from "../../utilities";
+import app from "../../services/socketio";
 
-import Header from '../../components/common/Header';
-import PaginationLayout from '../../components/common/PaginationLayout';
-import VenuesTable from '../../components/venues/VenuesTable';
-import VenueAddForm from '../../components/venues/VenueAddForm';
+import Header from "../../components/common/Header";
+import VenuesTable from "../../components/venues/VenuesTable";
+import VenueAddForm from "../../components/venues/VenueAddForm";
+import MessagePanel from "../../components/common/MessagePanel";
 
 export default class VenuesLayout extends Component {
   constructor(props) {
     super(props);
 
+    this.defaultPageSize = 5;
+    this.defaultTableSort = ['updated_at', -1];
+    this.defaultQuery = {$sort: {name: 1}, $select: ['name'], $limit: 100};
+
     this.state = {
-      venues: [], neighborhoods: [], venuesTotal: 0, venuesLoaded: false, hoodsLoaded: false,
-      pageSize: 5, currentPage: 1, sort: ['updated_at', -1]
+      venues: [], hoods: [], venuesTotal: 0, venuesLoaded: false, hoodsLoaded: false,
+      pageSize: this.defaultPageSize, currentPage: 1, sort: this.defaultTableSort,
+      messagePanelVisible: false, messages: []
     };
 
     this.venuesService = app.service('venues');
     this.hoodsService = app.service('neighborhoods');
 
     this.fetchAllData = this.fetchAllData.bind(this);
-    this.buildSortQuery = this.buildSortQuery.bind(this);
+    this.fetchVenues = this.fetchVenues.bind(this);
+    this.fetchHoods = this.fetchHoods.bind(this);
+
     this.updatePageSize = this.updatePageSize.bind(this);
     this.updateCurrentPage = this.updateCurrentPage.bind(this);
     this.updateColumnSort = this.updateColumnSort.bind(this);
+    this.updateMessagePanel = this.updateMessagePanel.bind(this);
+    this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
+
+    this.deleteVenue = this.deleteVenue.bind(this);
+    this.saveVenue = this.saveVenue.bind(this);
+    this.createVenue = this.createVenue.bind(this);
+
     this.renderTable = this.renderTable.bind(this);
     this.renderAddForm = this.renderAddForm.bind(this);
   }
@@ -32,17 +47,41 @@ export default class VenuesLayout extends Component {
 
     // Register listeners
     this.venuesService
-      .on('created', (message) => {
-        console.log('created', message);
-        this.setState({currentPage: 1, pageSize: 5}, () => this.fetchAllData());
+      .on('created', message => {
+        console.log('venue created', message);
+        this.updateMessagePanel({status: 'success', details: `Created venue #${message.id} - ${message.name}`});
+        this.setState({currentPage: 1}, () => this.fetchVenues());
       })
       .on('patched', message => {
-        console.log('patched', message);
-        this.fetchAllData();
+        console.log('venue patched', message);
+        this.updateMessagePanel({status: 'success', details: `Updated venue #${message.id} - ${message.name}`});
+        this.fetchVenues();
       })
       .on('removed', message => {
-        console.log('removed', message);
-        this.setState({currentPage: 1, pageSize: 5}, () => this.fetchAllData());
+        console.log('venue removed', message);
+        this.updateMessagePanel({
+          status: 'success',
+          details: `Permanently deleted venue #${message.id} - ${message.name}`
+        });
+        this.setState({currentPage: 1}, () => this.fetchVenues());
+      })
+      .on('error', error => {
+        console.log('venue error', error);
+        this.updateMessagePanel({status: 'error', details: error.message});
+      });
+
+    this.hoodsService
+      .on('created', message => {
+        console.log('hood created', message);
+        this.fetchHoods();
+      })
+      .on('patched', message => {
+        console.log('hood patched', message);
+        this.fetchHoods();
+      })
+      .on('removed', message => {
+        console.log('hood removed', message);
+        this.fetchHoods();
       });
   }
 
@@ -50,47 +89,84 @@ export default class VenuesLayout extends Component {
     this.venuesService
       .removeListener('created')
       .removeListener('patched')
+      .removeListener('removed')
+      .removeListener('error');
+
+    this.hoodsService
+      .removeListener('created')
+      .removeListener('patched')
       .removeListener('removed');
   }
 
   fetchAllData() {
+    this.fetchVenues();
+    this.fetchHoods();
+  }
+
+  fetchVenues() {
+    const sort = this.state.sort;
+    const pageSize = this.state.pageSize;
+    const currentPage = this.state.currentPage;
+
     this.venuesService.find({
       query: {
-        $sort: this.buildSortQuery(),
-        $limit: this.state.pageSize,
-        $skip: this.state.pageSize * (this.state.currentPage - 1)
+        $sort: buildSortQuery(sort),
+        $limit: pageSize,
+        $skip: pageSize * (currentPage - 1)
       }
     }).then(message => {
       this.setState({venues: message.data, venuesTotal: message.total, venuesLoaded: true});
     });
-
-    this.hoodsService.find({query: {$sort: {name: 1}}}).then(message => {
-      this.setState({neighborhoods: message.data, hoodsLoaded: true});
-    });
   }
 
-  buildSortQuery() {
-    if (this.state.sort[0] === 'name') {
-      return {'name': this.state.sort[1]};
-    }
-    return {[this.state.sort[0]]: this.state.sort[1], 'name': 1};
+  fetchHoods() {
+    this.hoodsService.find({query: this.defaultQuery}).then(message => {
+      this.setState({hoods: message.data, hoodsLoaded: true});
+    })
   }
 
   updatePageSize(e) {
-    this.setState({pageSize: parseInt(e.target.value, 10), currentPage: 1}, () => this.fetchAllData());
+    this.setState({pageSize: parseInt(e.target.value, 10), currentPage: 1}, () => this.fetchVenues());
   }
 
   updateCurrentPage(page) {
-    console.log(`active page is ${page}`);
-    this.setState({currentPage: parseInt(page, 10)}, () => this.fetchAllData());
+    this.setState({currentPage: parseInt(page, 10)}, () => this.fetchVenues());
   }
 
   updateColumnSort(e) {
-    let target = (e.target.nodeName === 'TH') ? e.target : e.target.closest('th');
-    const column = target.dataset.sortType;
-    const direction = (column === this.state.sort[0]) ? -(parseInt(this.state.sort[1], 10)) : -1;
+    const colSortState = buildColumnSort(e.target, this.state.sort);
+    this.setState(colSortState, () => this.fetchVenues());
+  }
 
-    this.setState({sort: [column, direction]}, () => this.fetchAllData());
+  updateMessagePanel(msg) {
+    const messageList = this.state.messages;
+    this.setState({messages: messageList.concat([msg]), messagePanelVisible: true});
+  }
+
+  dismissMessagePanel() {
+    this.setState({messages: [], messagePanelVisible: false});
+  }
+
+  deleteVenue(id) {
+    this.venuesService.remove(id).then(message => console.log('removing venue', message));
+  }
+
+  saveVenue(id, newData) {
+    this.venuesService.patch(id, newData).then(message => {
+      console.log('patching venue', message);
+    }, err => {
+      console.log('error patching venue', err);
+      this.updateMessagePanel(err);
+    });
+  }
+
+  createVenue(venueObj) {
+    this.venuesService.create(venueObj).then(message => {
+      console.log('creating venue', message);
+    }, err => {
+      console.log('error creating venue', err);
+      this.updateMessagePanel(err);
+    });
   }
 
   renderTable() {
@@ -98,8 +174,20 @@ export default class VenuesLayout extends Component {
       return <p>Data is loading... Please be patient...</p>;
     }
 
-    return <VenuesTable venues={this.state.venues} neighborhoods={this.state.neighborhoods}
-                        sort={this.state.sort} handleColumnClick={this.updateColumnSort} />;
+    const venues = this.state.venues;
+    const hoods = this.state.hoods;
+
+    const pageSize = this.state.pageSize;
+    const currentPage = this.state.currentPage;
+    const total = this.state.venuesTotal;
+    const sort = this.state.sort;
+
+    return <VenuesTable
+      listings={venues} listingsTotal={total} hoods={hoods}
+      pageSize={pageSize} currentPage={currentPage} sort={sort}
+      handleColumnClick={this.updateColumnSort} updatePageSize={this.updatePageSize}
+      updateCurrentPage={this.updateCurrentPage} deleteListing={this.deleteVenue} saveListing={this.saveVenue}
+    />;
   }
 
   renderAddForm() {
@@ -107,18 +195,19 @@ export default class VenuesLayout extends Component {
       return <p>Data is loading... Please be patient...</p>;
     }
 
-    return <VenueAddForm neighborhoods={this.state.neighborhoods} />;
+    const hoods = this.state.hoods;
+    return <VenueAddForm hoods={hoods} createVenue={this.createVenue}/>;
   }
 
   render() {
+    const showMessagePanel = this.state.messagePanelVisible;
+    const messages = this.state.messages;
+
     return (
       <div className={'container'}>
         <Header />
-        <h2>Venues</h2>
-        <h3>View/Modify</h3>
-        <PaginationLayout pageSize={this.state.pageSize} activePage={this.state.currentPage}
-                          total={this.state.venuesTotal} schema={'venues'}
-                          updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage} />
+        <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
+        <h2>All Venues</h2>
         {this.renderTable()}
         <h3>Add New Venue</h3>
         {this.renderAddForm()}

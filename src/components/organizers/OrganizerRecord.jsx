@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
 import Moment from 'moment';
-import app from '../../services/socketio';
 
 import '../../styles/schema-record.css';
 
@@ -8,78 +7,76 @@ export default class OrganizerRecord extends Component {
   constructor(props) {
     super(props);
 
-    this.orgsService = app.service('organizers');
-    this.state = {hasDeleted: false};
+    this.nameInput = React.createRef();
+    this.descInput = React.createRef();
+    this.urlInput = React.createRef();
+    this.phoneInput = React.createRef();
 
-    this.deleteOrganizer = this.deleteOrganizer.bind(this);
-    this.saveOrganizer = this.saveOrganizer.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleClickDelete = this.handleClickDelete.bind(this);
   }
 
-  deleteOrganizer() {
-    // TODO: Restrict to admins
-    const id = this.props.organizer.id;
-    this.orgsService.remove(id).then(this.setState({hasDeleted: true}));
+  handleClickDelete() {
+    const id = this.props.org.id;
+    this.props.deleteOrg(id);
   }
 
-  saveOrganizer(e) {
+  handleSubmit(e) {
     e.preventDefault(e);
 
-    const id = this.props.organizer.id;
+    const org = this.props.org;
+    const id = org.id;
     const newData = {
-      name: this.refs['nameInput'].value.trim(),
-      description: this.refs['descInput'].value.trim()
+      name: this.nameInput.current.value.trim(),
+      description: this.descInput.current.value.trim()
     };
 
     // Only add non-required if they have a value
-    this.refs['urlInput'].value && (newData['url'] = this.refs['urlInput'].value);
-    this.refs['phoneInput'].value && (newData['phone'] = this.refs['phoneInput'].value);
+    (this.urlInput.current.value !== org.url) && (newData.url = this.urlInput.current.value.trim());
+    (this.phoneInput.current.value !== org.phone) && (newData.phone = this.phoneInput.current.value.trim());
 
-    this.orgsService.patch(id, newData).then(message => {
-      console.log('patch', message);
-    }, message => {
-      console.log('error', message);
-    });
+    this.props.saveOrg(id, newData);
   }
 
   render() {
-    const organizer = this.props.organizer;
-    const createdAt = Moment(organizer['created_at']).calendar();
-    const updatedAt = Moment(organizer['updated_at']).calendar();
+    const org = this.props.org;
+    const createdAt = Moment(org['created_at']).calendar();
+    const updatedAt = Moment(org['updated_at']).calendar();
 
     return (
-      <form id={'organizer-listing-form'} className={'schema-record'} onSubmit={this.saveOrganizer}>
-        <div>
-          <button type={'button'} ref={'deleteButton'} onClick={this.deleteOrganizer}>Delete Organizer</button>
-          <button type={'submit'} ref={'submitButton'} className={'button-primary'}>Save Changes</button>
-        </div>
+      <form id={'organizer-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
         <label>
           ID
-          <input type={'text'} defaultValue={organizer.id} disabled/>
+          <input type={'text'} value={org.id} disabled />
         </label>
         <label>
-          Created At
-          <input type={'text'} defaultValue={createdAt} disabled/>
+          Created
+          <input type={'text'} value={createdAt} disabled />
         </label>
         <label>
           Last Updated
-          <input type="text" defaultValue={updatedAt} disabled/>
+          <input type={'text'} value={updatedAt} disabled />
         </label>
-        <label>
+        <label className={'required'}>
           Name
-          <input type={'text'} ref={'nameInput'} defaultValue={organizer.name}/>
+          <input type={'text'} ref={this.nameInput} defaultValue={org.name} required maxLength={100} />
         </label>
-        <label>
+        <label className={'required'}>
           Description
-          <textarea ref={'descInput'} defaultValue={organizer.description}/>
+          <textarea ref={this.descInput} defaultValue={org.description} required />
         </label>
         <label>
-          Url
-          <input type={'url'} ref={'urlInput'} defaultValue={organizer.url} />
+          URL
+          <input type={'url'} ref={this.urlInput} defaultValue={org.url} />
         </label>
         <label>
-          Phone #
-          <input type={'tel'} ref={'phoneInput'} defaultValue={organizer.phone} />
+          Phone Number
+          <input type={'tel'} ref={this.phoneInput} defaultValue={org.phone} />
         </label>
+        <div>
+          <button type={'button'} onClick={this.handleClickDelete}>Delete Organizer</button>
+          <button type={'submit'} className={'button-primary'}>Save Changes</button>
+        </div>
       </form>
     );
   }

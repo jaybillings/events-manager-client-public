@@ -19,26 +19,27 @@ export default class PendingOrganizerRecord extends Component {
   handleSubmit(e) {
     e.preventDefault();
 
-    const id = this.props.pendingOrganizer.id;
+    const pendingOrg = this.props.pendingOrg;
+    const id = pendingOrg.id;
     const newData = {
       name: this.nameInput.current.value.trim(),
       description: this.descInput.current.value.trim()
     };
 
     // Only add non-required if they have a value
-    this.urlInput.current.value && (newData.url = this.urlInput.current.value.trim());
-    this.phoneInput.current.value && (newData.phone = this.phoneInput.current.value.trim());
+    (this.urlInput.current.value !== pendingOrg.url) && (newData.url = this.urlInput.current.value.trim());
+    (this.phoneInput.current.value !== pendingOrg.phone) && (newData.phone = this.phoneInput.current.value.trim());
 
-    this.props.saveOrganizer(id, newData);
+    this.props.saveOrg(id, newData);
   }
 
   handleClickDelete() {
-    const id = this.props.pendingOrganizer.id;
-    this.props.deleteOrganizer(id);
+    const id = this.props.pendingOrg.id;
+    this.props.deleteOrg(id);
   }
 
   render() {
-    const pendingOrg = this.props.pendingOrganizer;
+    const pendingOrg = this.props.pendingOrg;
     const orgId = pendingOrg.target_id || 'N/A';
     const createdAt = Moment(pendingOrg.created_at).calendar();
     const updatedAt = Moment(pendingOrg.updated_at).calendar();
@@ -47,23 +48,23 @@ export default class PendingOrganizerRecord extends Component {
       <form id={'pending-org-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
         <label>
           Live Organizer ID
-          <input type={'text'} defaultValue={orgId} disabled />
+          <input type={'text'} value={orgId} disabled />
         </label>
         <label>
           Created
-          <input type={'text'} defaultValue={createdAt} disabled />
+          <input type={'text'} value={createdAt} disabled />
         </label>
         <label>
           Last Updated
-          <input type={'text'} defaultValue={updatedAt} disabled />
+          <input type={'text'} value={updatedAt} disabled />
         </label>
-        <label>
+        <label className={'required'}>
           Name
           <input type={'text'} ref={this.nameInput} defaultValue={pendingOrg.name} required maxLength={100} />
         </label>
-        <label>
+        <label className={'required'}>
           Description
-          <textarea ref={this.descInput} defaultValue={pendingOrg.description} />
+          <textarea ref={this.descInput} defaultValue={pendingOrg.description} required maxLength={500} />
         </label>
         <label>
           Url
@@ -75,7 +76,7 @@ export default class PendingOrganizerRecord extends Component {
         </label>
         <div className={'block-warning'} title={'Caution: This organizer is pending. It must be pushed live before it is visible on the site.'}>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
-          <button type={'button'} onClick={this.props.deleteOrganizer}>Discard Organizer</button>
+          <button type={'button'} onClick={this.handleClickDelete}>Discard Organizer</button>
         </div>
       </form>
     )

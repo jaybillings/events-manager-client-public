@@ -1,27 +1,26 @@
 import React, {Component} from 'react';
 import {Redirect} from 'react-router';
-import app from '../../services/socketio';
+import app from "../../services/socketio";
 
-import Header from '../../components/common/Header';
-import PendingOrganizerRecord from '../../components/pendingOrganizers/PendingOrganizerRecord';
-import MessagePanel from '../../components/common/MessagePanel';
+import Header from "../../components/common/Header";
+import PendingOrganizerRecord from "../../components/pendingOrganizers/PendingOrganizerRecord";
+import MessagePanel from "../../components/common/MessagePanel";
 
 export default class SinglePendingOrganizerLayout extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      messages: [], messagePanelVisible: false,
-      pendingOrganizer: {}, orgLoaded: false,
+      messages: [], messagePanelVisible: false, pendingOrg: {}, orgLoaded: false,
       hasDeleted: false, notFound: false
     };
 
-    this.pendingOrganizersService = app.service('pending-organizers');
+    this.pendingOrgsService = app.service('pending-organizers');
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.renderRecord = this.renderRecord.bind(this);
-    this.saveOrganizer = this.saveOrganizer.bind(this);
-    this.deleteOrganizer = this.deleteOrganizer.bind(this);
+    this.saveOrg = this.saveOrg.bind(this);
+    this.deleteOrg = this.deleteOrg.bind(this);
     this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
     this.updateMessagePanel = this.updateMessagePanel.bind(this);
   }
@@ -32,11 +31,10 @@ export default class SinglePendingOrganizerLayout extends Component {
     this.setState({orgLoaded: false});
 
     // Register listeners
-    this.pendingOrganizersService
+    this.pendingOrgsService
       .on('patched', message => {
-        const patchMsg = {status: 'success', details: `Updated ${this.state.pendingOrganizer.name} successfully.`};
-        this.setState({pendingOrganizer: message, orgLoaded: true});
-        this.updateMessagePanel(patchMsg);
+        this.setState({pendingOrg: message, orgLoaded: true});
+        this.updateMessagePanel({status: 'success', details: 'Changes saved'});
       })
       .on('removed', () => {
         this.setState({hasDeleted: true});
@@ -45,7 +43,7 @@ export default class SinglePendingOrganizerLayout extends Component {
   }
 
   componentWillUnmount() {
-    this.pendingOrganizersService
+    this.pendingOrgsService
       .removeListener('patched')
       .removeListener('removed')
       .removeListener('error');
@@ -54,20 +52,20 @@ export default class SinglePendingOrganizerLayout extends Component {
   fetchAllData() {
     const id = this.props.match.params.id;
 
-    this.pendingOrganizersService.get(id).then(message => {
-      this.setState({pendingOrganizer: message, orgLoaded: true});
+    this.pendingOrgsService.get(id).then(message => {
+      this.setState({pendingOrg: message, orgLoaded: true});
     }, message => {
       console.log('error', message);
       this.setState({notFound: true});
     });
   }
 
-  deleteOrganizer(id) {
-    this.pendingOrganizersService.remove(id).then(this.setState({hasDeleted: true}));
+  deleteOrg(id) {
+    this.pendingOrgsService.remove(id).then(this.setState({hasDeleted: true}));
   }
 
-  saveOrganizer(id, newData) {
-    this.pendingOrganizersService.patch(id, newData).then(message => {
+  saveOrg(id, newData) {
+    this.pendingOrgsService.patch(id, newData).then(message => {
       console.log('patch', message);
     }, err => {
       console.log('error', err);
@@ -76,8 +74,7 @@ export default class SinglePendingOrganizerLayout extends Component {
   }
 
   updateMessagePanel(msg) {
-    const messageList = this.state.messages;
-    this.setState({messages: messageList.concat([msg]), messagePanelVisible: true});
+    this.setState({messages: [msg, ...this.state.messages], messagePanelVisible: true});
   }
 
   dismissMessagePanel() {
@@ -87,8 +84,9 @@ export default class SinglePendingOrganizerLayout extends Component {
   renderRecord() {
     if (!this.state.orgLoaded) return <p>Data is loading... Please be patient...</p>;
 
-    return <PendingOrganizerRecord pendingOrganizer={this.state.pendingOrganizer}
-                                   saveOrganizer={this.saveOrganizer} deleteOrganizer={this.deleteOrganizer} />;
+    return <PendingOrganizerRecord
+      pendingOrg={this.state.pendingOrg} saveOrg={this.saveOrg} deleteOrg={this.deleteOrg}
+    />;
   }
 
   render() {
@@ -98,6 +96,7 @@ export default class SinglePendingOrganizerLayout extends Component {
 
     const showMessagePanel = this.state.messagePanelVisible;
     const messages = this.state.messages;
+    const name = this.state.pendingOrg.name;
 
     return (
       <div className={'container'}>
@@ -105,7 +104,7 @@ export default class SinglePendingOrganizerLayout extends Component {
         <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
         <div className={'block-warning'}
              title={'Caution: This organizer is pending. It must be pushed live before it is visible on the site.'}>
-          <h2>{this.state.pendingOrganizer.name}</h2>
+          <h2>{name}</h2>
         </div>
         {this.renderRecord()}
       </div>

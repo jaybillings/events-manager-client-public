@@ -1,8 +1,11 @@
-import React, {Component} from 'react';
-import Moment from 'moment';
-import {Link} from 'react-router-dom';
+import React, {Component} from "react";
+import Moment from "moment";
+import {Link} from "react-router-dom";
 
-export default class PendingTagRow extends Component {
+import "../styles/schema-row.css";
+import "../styles/toggle.css";
+
+export default class ListingRow extends Component {
   constructor(props) {
     super(props);
 
@@ -25,19 +28,20 @@ export default class PendingTagRow extends Component {
   }
 
   handleDeleteClick() {
-    this.props.discardListing(this.props.pendingTag.id);
+    this.props.handleDeleteClick(this.props.listing.id);
   }
 
   handleSaveClick() {
     const newData = {name: this.nameInput.current.value.trim()};
 
-    this.props.saveChanges(this.props.pendingTag.id, newData);
+    this.props.saveChanges(this.props.listing.id, newData);
     this.setState({editable: false});
   }
 
   render() {
-    const pendingTag = this.props.pendingTag;
-    const createdAt = Moment(pendingTag.created_at).calendar();
+    const listing = this.props.listing;
+    const schema = this.props.schema;
+    const updatedAt = Moment(listing.updated_at).calendar();
 
     if (this.state.editable) {
       return (
@@ -46,10 +50,8 @@ export default class PendingTagRow extends Component {
             <button type={'button'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
-          <td>
-            <input type={'text'} ref={this.nameInput} defaultValue={pendingTag.name} />
-          </td>
-          <td>{createdAt}</td>
+          <td><input type={'text'} ref={this.nameInput} defaultValue={listing.name} /></td>
+          <td>{updatedAt}</td>
         </tr>
       );
     }
@@ -58,10 +60,10 @@ export default class PendingTagRow extends Component {
       <tr className={'schema-row'}>
         <td>
           <button type={'button'} onClick={this.startEdit}>Edit</button>
-          <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Discard</button>
+          <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button>
         </td>
-        <td><Link to={`/pendingTags/${pendingTag.id}`}>{pendingTag.name}</Link></td>
-        <td>{createdAt}</td>
+        <td><Link to={`/${schema}/${listing.id}`}>{listing.name}</Link></td>
+        <td>{updatedAt}</td>
       </tr>
     );
   }
