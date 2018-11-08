@@ -18,16 +18,19 @@
 .schema-table button {
   color: var(--notice-color);
   border-color: var(--notice-color);
+  padding: 0 2rem;
+}
+
+.schema-table button:first-of-type {
+  margin-right: 1rem;
 }
 
 .schema-table button.delete {
-  width: 100%;
-  padding: 0;
   color: var(--error-color);
-  border: none;
-  text-decoration: underline;
+  border-color: var(--error-color);
 }
 
 .schema-table button.delete:hover {
-  color: var(--text-color);
+  color: white;
+  background-color: var(--error-color);
 }

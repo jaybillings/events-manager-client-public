@@ -55,6 +55,11 @@ h2:first-of-type {
   padding-top: 0;
 }
 
+/* Override to parent theme */
+.container {
+  max-width: 1200px;
+}
+
 a.current {
   color: var(--current-link-color);
 }
