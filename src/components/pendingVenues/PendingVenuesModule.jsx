@@ -42,10 +42,10 @@ export default class PendingVenuesModule extends PendingListingsModule {
         <PaginationLayout
           key={'pending-venues-pagination'} pageSize={pageSize} activePage={currentPage}
           total={pendingVenuesCount} schema={'pending-venues'}
-          updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
+          updatePageSize={this.handleUpdatePageSize} updateCurrentPage={this.handleUpdateCurrentPage}
         />
         <table className={'schema-table'} key={'pending-venues-table'}>
-          <thead>{renderTableHeader(titleMap, sort, this.updateColumnSortSelf)}</thead>
+          <thead>{renderTableHeader(titleMap, sort, this.handleUpdateSort)}</thead>
           <tbody>
           {
             pendingVenues.map(venue =>
@@ -55,7 +55,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
                   return h.id === venue.hood_id
                 })}
                 hoods={hoods}
-                saveChanges={this.saveChanges} discardListing={this.discardListing}
+                saveChanges={this.handleSaveChanges} discardListing={this.handleDiscardListing}
                 listingIsDup={this.queryForSimilar}
               />)
           }

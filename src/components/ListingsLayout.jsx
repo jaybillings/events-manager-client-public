@@ -104,7 +104,7 @@ export default class ListingsLayout extends Component {
 
   updateColumnSort(e) {
     const colSortState = buildColumnSort(e.target, this.state.sort);
-    this.setState(colSortState, () => this.fetchAllData());
+    this.setState({sort: colSortState}, () => this.fetchAllData());
   }
 
   updateMessagePanel(msg) {

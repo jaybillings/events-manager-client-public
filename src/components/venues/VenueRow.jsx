@@ -18,7 +18,7 @@ export default class VenueRow extends ListingRow {
       hood_id: this.hoodList.current.value
     };
 
-    this.props.saveChanges(this.props.listing.id, newData);
+    this.props.handleSaveChanges(this.props.listing.id, newData);
     this.setState({editable: false});
   }
 

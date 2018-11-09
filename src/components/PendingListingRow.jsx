@@ -32,14 +32,14 @@ export default class PendingListingRow extends Component {
   }
 
   handleDeleteClick() {
-    this.props.discardListing(this.props.pendingListing.id);
+    this.props.handleDiscardListing(this.props.pendingListing.id);
   }
 
   handleSaveClick() {
     const id = this.props.pendingListing.id;
     const newData = { name: this.nameInput.current.value.trim() };
 
-    this.props.saveChanges(id, newData);
+    this.props.handleSaveChanges(id, newData);
     this.setState({editable: false});
   }
 

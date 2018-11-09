@@ -29,10 +29,10 @@ export default class VenuesTable extends ListingsTable {
     return ([
       <PaginationLayout
         key={'venues-pagination'} schema={'venues'} total={eventsTotal} pageSize={pageSize} activePage={currentPage}
-        updatePageSize={this.handlePageSizeUpdate} updateCurrentPage={this.handlePageNumUpdate}
+        updatePageSize={this.handleUpdatePageSize} updateCurrentPage={this.handleUpdateCurrentPage}
       />,
       <table key={'venues-table'} className={'schema-table'}>
-        <thead>{renderTableHeader(titleMap, sort, this.props.handleSortUpdate)}</thead>
+        <thead>{renderTableHeader(titleMap, sort, this.props.handleUpdateSort)}</thead>
         <tbody>
         {
           venues.map(venue =>

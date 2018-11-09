@@ -34,7 +34,7 @@ export default class ListingRow extends Component {
   handleSaveClick() {
     const newData = {name: this.nameInput.current.value.trim()};
 
-    this.props.saveChanges(this.props.listing.id, newData);
+    this.props.handleSaveChanges(this.props.listing.id, newData);
     this.setState({editable: false});
   }
 

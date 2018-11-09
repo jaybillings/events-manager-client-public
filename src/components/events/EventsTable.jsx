@@ -34,10 +34,10 @@ export default class EventsTable extends ListingsTable {
     return ([
       <PaginationLayout
         key={'events-pagination'} schema={'events'} total={eventsTotal} pageSize={pageSize} activePage={currentPage}
-        updatePageSize={this.handlePageSizeUpdate} updateCurrentPage={this.handlePageNumUpdate}
+        updatePageSize={this.handleUpdatePageSize} updateCurrentPage={this.handleUpdateCurrentPage}
       />,
       <table key={'events-table'} className={'schema-table'}>
-        <thead>{renderTableHeader(titleMap, sort, this.handleSortUpdate)}</thead>
+        <thead>{renderTableHeader(titleMap, sort, this.handleUpdateSort)}</thead>
         <tbody>
         {
           events.map(event =>

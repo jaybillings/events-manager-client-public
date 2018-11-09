@@ -77,7 +77,7 @@ const buildColumnSort = function (clickTarget, sortState) {
   const column = target.dataset.sortType;
   const direction = column === sortState[0] ? -(parseInt(sortState[1], 10)) : 1;
 
-  return {sort: [column, direction]};
+  return [column, direction];
 };
 
 /**

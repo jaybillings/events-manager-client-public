@@ -135,7 +135,7 @@ export default class VenuesLayout extends Component {
 
   updateColumnSort(e) {
     const colSortState = buildColumnSort(e.target, this.state.sort);
-    this.setState(colSortState, () => this.fetchVenues());
+    this.setState({sort: colSortState}, () => this.fetchVenues());
   }
 
   updateMessagePanel(msg) {

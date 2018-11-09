@@ -218,7 +218,7 @@ export default class EventsLayout extends Component {
 
   updateColumnSort(e) {
     const colSortState = buildColumnSort(e.target, this.state.sort);
-    this.setState(colSortState, () => this.fetchEvents());
+    this.setState({sort: colSortState}, () => this.fetchEvents());
   }
 
   updateMessagePanel(msg) {

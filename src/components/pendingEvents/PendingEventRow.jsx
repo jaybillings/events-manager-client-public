@@ -25,7 +25,7 @@ export default class PendingEventRow extends PendingListingRow {
       org_id: this.orgList.current.value
     };
 
-    this.props.saveChanges(id, newData);
+    this.props.handleSaveChanges(id, newData);
     this.setState({editable: false});
   }
 
