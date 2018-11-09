@@ -1,6 +1,5 @@
 import React, {Component} from "react";
-import {buildSortQuery, makeTitleCase, renderTableHeader} from "../utilities";
-import app from '../services/socketio';
+import {buildColumnSort, buildSortQuery, makeTitleCase, renderTableHeader} from "../utilities";
 
 import PaginationLayout from "./common/PaginationLayout";
 import PendingListingRow from "./PendingListingRow";
@@ -14,90 +13,77 @@ export default class PendingListingsModule extends Component {
     super(props);
 
     this.state = {
-      moduleVisible: true, pendingListings: [], pendingListingsCount: 0,
-      pageSize: this.props.defaultPageSize, currentPage: 1, sort: this.props.defaultSortOrder
+      moduleVisible: true, pageSize: this.props.defaultPageSize, currentPage: 1,
+      sort: this.props.defaultSortOrder
     };
 
     this.schema = schema;
-    this.pendingListingsService = app.service(`pending-${this.schema}`);
-    this.listingsService = app.service(this.schema);
 
-    this.fetchAllData = this.fetchAllData.bind(this);
-    this.saveChanges = this.saveChanges.bind(this);
-    this.discardListing = this.discardListing.bind(this);
-    this.queryForSimilar = this.queryForSimilar.bind(this);
+    this.handleSaveChanges = this.handleSaveChanges.bind(this);
+    this.handleDiscardListing = this.handleDiscardListing.bind(this);
+    this.handleUpdatePageSize = this.handleUpdatePageSize.bind(this);
+    this.handleUpdateCurrentPage = this.handleUpdateCurrentPage.bind(this);
+    this.handleUpdateSort = this.handleUpdateSort.bind(this);
     this.toggleModuleVisibility = this.toggleModuleVisibility.bind(this);
-
-    this.updateColumnSortSelf = this.props.updateColumnSort.bind(this);
-    this.updatePageSizeSelf = this.props.updatePageSize.bind(this);
-    this.updateCurrentPageSelf = this.props.updateCurrentPage.bind(this);
   }
 
-  componentDidMount() {
-    this.fetchAllData();
+  refreshData() {
+    const query = {
+      $sort: buildSortQuery(this.state.sort),
+      $limit: this.state.pageSize,
+      $skip: this.state.pageSize * (this.state.currentPage - 1)
+    };
+    this.props.fetchData(query, this.schema);
+  }
 
-    this.pendingListingsService
-      .on('created', message => {
-        this.props.updateMessageList({status: 'success', details: `Added ${message.name} with ID #${message.id}`});
-        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
-      })
-      .on('updated', message => {
-        this.props.updateMessageList(message);
-        this.fetchAllData();
-      })
-      .on('patched', message => {
-        this.props.updateMessageList({status: 'success', details: `Updated #${message.id} - ${message.name}`});
-        this.fetchAllData();
-      })
-      .on('removed', message => {
-        this.props.updateMessageList({
-          status: 'success',
-          details: `Discarded ${this.schema} #${message.id} - ${message.name}`
+  publishListings() {
+    this.state.pendingListings.forEach(listing => {
+      delete(listing.id);
+      if (listing.target_id) {
+        const target_id = listing.target_id;
+        console.log('TARGET ID FOUND');
+        //delete(target_id); TODO: Is this necessary?
+        // Update
+        this.listingsService.update(target_id, listing).then((msg) => {
+          console.log(`${this.schema} update`, msg);
+          //this.pendingListingsService.remove(listing.id);
+        }, err => {
+          console.log(`${this.schema} update error`, err);
+          this.props.updateMessagePanel({status: 'error', details: err});
         });
-        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
-      })
-      .on('error', error => {
-        this.props.updateMessageList({status: 'error', details: error.message});
-      });
-  }
-
-  componentWillUnmount() {
-    this.pendingListingsService
-      .removeListener('created')
-      .removeListener('updated')
-      .removeListener('patched')
-      .removeListener('removed')
-      .removeListener('error');
-  }
-
-  fetchAllData() {
-    this.pendingListingsService.find({
-      query: {
-        $sort: buildSortQuery(this.state.sort),
-        $limit: this.state.pageSize,
-        $skip: this.state.pageSize * (this.state.currentPage - 1)
-      }
-    }).then(message => {
-      this.setState({pendingListings: message.data, pendingListingsCount: message.total});
-    });
-  }
-
-  discardListing(id) {
-    this.pendingListingsService.remove(id).then(message => console.log('removed', message));
-  }
-
-  saveChanges(id, newData) {
-    this.pendingListingsService.patch(id, newData).then(message => console.log('patched', message));
-  }
-
-  async queryForSimilar(pendingListing) {
-    return this.listingsService.find({
-      query: {
-        name: pendingListing.name,
-        start_date: pendingListing.start_date,
-        end_date: pendingListing.end_date
+      } else {
+        // Create
+        this.listingsService.create(listing).then((msg) => {
+          console.log(`${this.schema} create`, msg);
+          //this.pendingListingsService.remove(listing.id);
+        }, err => {
+          console.log(`${this.schema} create error`, err);
+          this.props.updateMessagePanel({status: 'error', details: err});
+        });
       }
     });
+  }
+
+  handleDiscardListing(id) {
+    this.props.discardListing(id, this.schema);
+  }
+
+  handleSaveChanges(id, newData) {
+    this.props.saveListing(id, newData, this.schema);
+  }
+
+  handleUpdatePageSize(e) {
+    // TODO: Should parent handle sort?
+    this.setState({pageSize: parseInt(e.target.value, 10), currentPage: 1}, () => this.refreshData());
+  }
+
+  handleUpdateCurrentPage(page) {
+    this.setState({currentPage: parseInt(page, 10)}, () => this.refreshData());
+  }
+
+  handleUpdateSort(e) {
+    const colSortState = buildColumnSort(e.target, this.state.sort);
+    this.setState({sort: colSortState}, () => this.refreshData());
   }
 
   toggleModuleVisibility() {
@@ -105,8 +91,8 @@ export default class PendingListingsModule extends Component {
   }
 
   render() {
-    const pendingListings = this.state.pendingListings;
-    const pendingListingsCount = this.state.pendingListingsCount;
+    const pendingListings = this.props.pendingListings;
+    const pendingListingsCount = pendingListings.length;
 
     if (!pendingListings) {
       return <p>Data is loading... Please be patient...</p>;
@@ -121,30 +107,31 @@ export default class PendingListingsModule extends Component {
       ['status_NOSORT', 'Status']
     ]);
     const schema = this.schema;
-    const isVisible = this.state.moduleVisible;
     const pageSize = this.state.pageSize;
     const currentPage = this.state.currentPage;
     const sort = this.state.sort;
-    const visibility = isVisible ? 'visible' : 'hidden';
+
+    const isVisible = this.state.moduleVisible;
+    const visibilityLabel = isVisible ? 'visible' : 'hidden';
 
     return (
-      <div className={'schema-module'} data-visibility={visibility}>
+      <div className={'schema-module'} data-visibility={visibilityLabel}>
         <h3>{makeTitleCase(schema)}</h3>
         <ShowHideToggle isVisible={isVisible} changeVisibility={this.toggleModuleVisibility} />
         <div>
           <PaginationLayout
             key={`pending-${schema}-pagination`} schema={`pending-${schema}`}
             total={pendingListingsCount} pageSize={pageSize} activePage={currentPage}
-            updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
+            updatePageSize={this.handleUpdatePageSize} updateCurrentPage={this.handleUpdateCurrentPage}
           />
           <table className={'schema-table'} key={`pending-${schema}-table`}>
-            <thead>{renderTableHeader(titleMap, sort, this.updateColumnSortSelf)}</thead>
+            <thead>{renderTableHeader(titleMap, sort, this.handleUpdateSort)}</thead>
             <tbody>
             {
               pendingListings.map(listing =>
                 <PendingListingRow
                   key={`${this.schema}-${listing.id}`} schema={schema} pendingListing={listing}
-                  saveChanges={this.saveChanges} discardListing={this.discardListing}
+                  saveChanges={this.handleSaveChanges} discardListing={this.handleDiscardListing}
                   listingIsDup={this.queryForSimilar}
                 />)
             }
