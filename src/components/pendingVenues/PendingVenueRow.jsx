@@ -19,7 +19,7 @@ export default class PendingVenueRow extends PendingListingRow {
       hood_id: this.hoodList.current.value
     };
 
-    this.props.handleSaveChanges(id, newData);
+    this.props.saveChanges(id, newData);
     this.setState({editable: false});
   }
 

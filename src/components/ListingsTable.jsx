@@ -26,15 +26,15 @@ export default class ListingsTable extends Component {
   }
 
   handleUpdatePageSize(e) {
-    this.props.handleUpdatePageSize(e);
+    this.props.updatePageSize(e);
   }
 
   handleUpdateCurrentPage(page) {
-    this.props.handleUpdateCurrentPage(page);
+    this.props.updateCurrentPage(page);
   }
 
   handleUpdateSort(e) {
-    this.props.handleUpdateSort(e);
+    this.props.updateColumnSort(e);
   }
 
   render() {
