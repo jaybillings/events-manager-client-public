@@ -11,7 +11,15 @@ export default class PendingEventsModule extends PendingListingsModule {
     super(props, 'events');
   }
 
-  render() {
+  createLiveListing() {
+    // TODO: Modify tags lookup
+  }
+
+  updateLiveListing() {
+    // TODO: Modify tags lookup
+  }
+
+  renderTable() {
     const pendingEvents = this.state.pendingListings;
     const pendingEventsCount = this.state.pendingListingsCount;
     const venues = this.props.venues;
@@ -34,45 +42,53 @@ export default class PendingEventsModule extends PendingListingsModule {
       ['created_at', 'Imported On'],
       ['status_NOSORT', 'Status']
     ]);
-    const isVisible = this.state.moduleVisible;
+    const sort = this.state.sort;
     const pageSize = this.state.pageSize;
     const currentPage = this.state.currentPage;
-    const sort = this.state.sort;
+    const isVisible = this.state.moduleVisible;
+
+    return (
+      <div>
+        <ShowHideToggle isVisible={isVisible} changeVisibility={this.toggleModuleVisibility} />
+        <PaginationLayout
+          key={'pending-events-pagination'} schema={'pending-events'}
+          total={pendingEventsCount} pageSize={pageSize} activePage={currentPage}
+          updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
+        />
+        <table className={'schema-table'} key={'pending-events-table'}>
+          <thead>{renderTableHeader(titleMap, sort, this.updateColSort)}</thead>
+          <tbody>
+          {
+            pendingEvents.map(event =>
+              <PendingEventRow
+                key={`event-${event.id}`} pendingListing={event}
+                venue={venues.find(v => {
+                  return v.id === event.venue_id
+                })}
+                org={orgs.find(o => {
+                  return o.id === event.org_id
+                })}
+                venues={venues} orgs={orgs}
+                saveChanges={this.saveChanges} discardListing={this.discardListing}
+                listingIsDup={this.queryForSimilar}
+              />)
+          }
+          </tbody>
+        </table>
+        <p>0 / {pendingEventsCount} events selected</p>
+        <button type={'button'} onClick={this.publishListings}>Publish All Pending Events</button>
+      </div>
+    )
+  }
+
+  render() {
     const visibility = this.state.moduleVisible ? 'visible' : 'hidden';
 
     return (
       <div className={'schema-module'} data-visibility={visibility}>
         <h3>Events</h3>
-        <ShowHideToggle isVisible={isVisible} changeVisibility={this.toggleModuleVisibility} />
-        <div>
-          <PaginationLayout
-            key={'pending-events-pagination'} schema={'pending-events'}
-            total={pendingEventsCount} pageSize={pageSize} activePage={currentPage}
-            updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
-          />
-          <table className={'schema-table'} key={'pending-events-table'}>
-            <thead>{renderTableHeader(titleMap, sort, this.updateColumnSortSelf)}</thead>
-            <tbody>
-            {
-              pendingEvents.map(event =>
-                <PendingEventRow
-                  key={`event-${event.id}`} pendingListing={event}
-                  venue={venues.find(v => {
-                    return v.id === event.venue_id
-                  })}
-                  org={orgs.find(o => {
-                    return o.id === event.org_id
-                  })}
-                  venues={venues} orgs={orgs}
-                  saveChanges={this.saveChanges} discardListing={this.discardListing}
-                  listingIsDup={this.queryForSimilar}
-                />)
-            }
-            </tbody>
-          </table>
-          <p>0 / {pendingEventsCount} events selected</p>
-        </div>
+        {this.renderTable()}
       </div>
     );
   }
-};
+}

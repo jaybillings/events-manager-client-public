@@ -1,6 +1,5 @@
 import React, {Component} from "react";
 import app from "../services/socketio";
-import {buildColumnSort} from "../utilities";
 
 import Header from "../components/common/Header";
 import ImportForm from "../components/importer/ImportForm";
@@ -15,17 +14,19 @@ export default class ImportLayout extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      messages: [], messagePanelVisible: false,
-      pendingEvents: [], pendingEventCount: 0,
-      venues: [], orgs: [], hoods: [], tags: [],
-      defaultPageSize: 5, defaultSortOrder: ['created_at', -1]
-    };
+    this.state = {messages: [], messagePanelVisible: false, venues: [], orgs: [], hoods: [], tags: []};
 
     this.API_URI = 'http://localhost:3030/importer';
+    this.defaultPageSize = 5;
+    this.defaultSortOrder = ['created_at', -1];
 
     this.fileInput = React.createRef();
     this.schemaSelect = React.createRef();
+    this.eventsSubmit = React.createRef();
+    this.venuesSubmit = React.createRef();
+    this.orgsSubmit = React.createRef();
+    this.hoodsSubmit = React.createRef();
+    this.tagsSubmit = React.createRef();
 
     this.importerService = app.service('importer');
     this.venuesService = app.service('venues');
@@ -110,7 +111,7 @@ export default class ImportLayout extends Component {
   }
 
   publishListings() {
-
+    this.hoodsSubmit.current.publishListings();
   }
 
   updateMessageList(newMessage) {
@@ -122,19 +123,6 @@ export default class ImportLayout extends Component {
 
   dismissMessagePanel() {
     this.setState({messages: [], messagePanelVisible: false});
-  }
-
-  childUpdateColumnSort(e) {
-    const columnSortState = buildColumnSort(e.target, this.state.sort);
-    this.setState(columnSortState, () => this.fetchAllData());
-  }
-
-  childUpdatePageSize(e) {
-    this.setState({pageSize: parseInt(e.target.value, 10), currentPage: 1}, () => this.fetchAllData());
-  }
-
-  childUpdateCurrentPage(page) {
-    this.setState({currentPage: parseInt(page, 10)}, () => this.fetchAllData());
   }
 
   render() {
@@ -149,31 +137,30 @@ export default class ImportLayout extends Component {
         <ImportForm fileInputRef={this.fileInput} schemaSelectRef={this.schemaSelect} handleSubmit={this.importData} />
         <h2>Review Unpublished Data</h2>
         <PendingEventsModule
+          ref={this.eventsSubmit}
           venues={this.state.venues} orgs={this.state.orgs} tags={this.state.tags}
-          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
-          updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
-          updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+          defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
+          updateMessageList={this.updateMessageList}
         />
         <PendingVenuesModule
-          hoods={this.state.hoods}
-          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
-          updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
-          updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+          ref={this.venuesSubmit} hoods={this.state.hoods}
+          defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
+          updateMessageList={this.updateMessageList}
         />
         <PendingOrganizersModule
-          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
-          updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
-          updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+          ref={this.orgsSubmit}
+          defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
+          updateMessageList={this.updateMessageList}
         />
         <PendingNeighborhoodsModule
-          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
-          updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
-          updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+          ref={this.hoodsSubmit}
+          defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
+          updateMessageList={this.updateMessageList}
         />
         <PendingTagsModule
-          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
-          updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
-          updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+          ref={this.tagsSubmit}
+          defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
+          updateMessageList={this.updateMessageList}
         />
         <button type={'button'} className={'button-primary button-publish'} onClick={this.publishListings}>Publish All Pending Listings</button>
       </div>

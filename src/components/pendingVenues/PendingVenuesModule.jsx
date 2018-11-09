@@ -11,17 +11,10 @@ export default class PendingVenuesModule extends PendingListingsModule {
     super(props, 'venues');
   }
 
-  render() {
+  renderTable() {
     const pendingVenues = this.state.pendingListings;
     const pendingVenuesCount = this.state.pendingListingsCount;
     const hoods = this.props.hoods;
-
-    if (!(pendingVenues && hoods)) {
-      return <p>Data is loading... Please be patient...</p>;
-    } else if (pendingVenuesCount === 0) {
-      return <p>No pending venues to list.</p>;
-    }
-
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
       ['name', 'Name'],
@@ -29,20 +22,24 @@ export default class PendingVenuesModule extends PendingListingsModule {
       ['created_at', 'Imported On'],
       ['status_NOSORT', 'Status']
     ]);
-    const isVisible = this.state.moduleVisible;
+    const sort = this.state.sort;
     const pageSize = this.state.pageSize;
     const currentPage = this.state.currentPage;
-    const sort = this.state.sort;
-    const visibility = this.state.moduleVisible ? 'visible' : 'hidden';
+    const isVisible = this.state.moduleVisible;
+
+    if (!(pendingVenues && hoods)) {
+      return <p>Data is loading... Please be patient...</p>;
+    } else if (pendingVenuesCount === 0) {
+      return <p>No pending venues to list.</p>;
+    }
 
     return (
-      <div className={'schema-module'} data-visibility={visibility}>
-        <h3>Venues</h3>
-        <ShowHideToggle isVisible={isVisible} changeVisibility={this.toggleModuleVisibility}/>
+      <div>
+        <ShowHideToggle isVisible={isVisible} changeVisibility={this.toggleModuleVisibility} />
         <PaginationLayout
           key={'pending-venues-pagination'} pageSize={pageSize} activePage={currentPage}
           total={pendingVenuesCount} schema={'pending-venues'}
-          updatePageSize={this.handleUpdatePageSize} updateCurrentPage={this.handleUpdateCurrentPage}
+          updatePageSize={this.updatePageSize} updateCurrentPage={this.handleUpdateCurrentPage}
         />
         <table className={'schema-table'} key={'pending-venues-table'}>
           <thead>{renderTableHeader(titleMap, sort, this.handleUpdateSort)}</thead>
@@ -55,13 +52,25 @@ export default class PendingVenuesModule extends PendingListingsModule {
                   return h.id === venue.hood_id
                 })}
                 hoods={hoods}
-                saveChanges={this.handleSaveChanges} discardListing={this.handleDiscardListing}
+                saveChanges={this.saveChanges} discardListing={this.discardListing}
                 listingIsDup={this.queryForSimilar}
               />)
           }
           </tbody>
         </table>
         <p>0 / {pendingVenuesCount} venues selected</p>
+        <button type={'button'} onClick={this.publishListings}>Publish All Pending Venues</button>
+      </div>
+    )
+  }
+
+  render() {
+    const visibility = this.state.moduleVisible ? 'visible' : 'hidden';
+
+    return (
+      <div className={'schema-module'} data-visibility={visibility}>
+        <h3>Venues</h3>
+        {this.renderTable()}
       </div>
     );
   }
