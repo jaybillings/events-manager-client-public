@@ -17,102 +17,57 @@ export default class ImportLayout extends Component {
 
     this.state = {
       messages: [], messagePanelVisible: false,
-      pendingHoods: [],
-      venues: [], orgs: [], hoods: [], tags: []
+      pendingEvents: [], pendingEventCount: 0,
+      venues: [], orgs: [], hoods: [], tags: [],
+      defaultPageSize: 5, defaultSortOrder: ['created_at', -1]
     };
 
     this.API_URI = 'http://localhost:3030/importer';
-    this.defaultPageSize = 5;
-    this.defaultSortOrder = ['created_at', -1];
 
     this.fileInput = React.createRef();
     this.schemaSelect = React.createRef();
 
     this.importerService = app.service('importer');
-    this.eventsService = app.service('events');
-    this.liveServices = {
-      'venues': app.service('venues'),
-      'orgs': app.service('organizers'),
-      'hoods': app.service('neighborhoods'),
-      'tags': app.service('tags'),
-    };
-    this.pendingServices = {
-      'pending-events': app.service('pending-events'),
-      'pending-venues': app.service('pending-venues'),
-      'pending-orgs': app.service('pending-organizers'),
-      'pending-hoods': app.service('pending-neighborhoods'),
-      'pending-tags': app.service('pending-tags')
-    };
+    this.venuesService = app.service('venues');
+    this.orgsService = app.service('organizers');
+    this.hoodsService = app.service('neighborhoods');
+    this.tagsService = app.service('tags');
 
-    this.fetchAllData = this.fetchAllData.bind(this);
-    this.fetchSchemaListings = this.fetchSchemaListings.bind(this);
-
+    this.fetchInitialData = this.fetchInitialData.bind(this);
     this.importData = this.importData.bind(this);
     this.publishListings = this.publishListings.bind(this);
-
-    this.saveListing = this.saveListing.bind(this);
-    this.discardListing = this.discardListing.bind(this);
-
     this.updateMessageList = this.updateMessageList.bind(this);
     this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
   }
 
   componentDidMount() {
-    this.fetchAllData();
+    this.fetchInitialData();
 
     // Register listeners
     this.importerService
       .on('status', message => {
-        this.updateMessageList(message);
+        let messageList = this.state.messages;
+        this.setState({
+          messages: messageList.concat([message]),
+          messagePanelVisible: true
+        });
       })
       .on('error', error => {
-        this.updateMessageList(error);
-      });
-
-    this.pendingServices.forEach((service, key) => {
-      service
-        .on('created', message => {
-          this.updateMessageList({status: 'success', details: `Added ${message.name} with ID #${message.id}`});
-          this.fetchSchemaListings(key);
-        })
-        .on('updated', message => {
-          this.props.updateMessageList(message);
-          this.fetchSchemaListings(key);
-        })
-        .on('patched', message => {
-          this.updateMessageList({status: 'success', details: `Updated #${message.id} - ${message.name}`});
-          this.fetchSchemaListings(key);
-        })
-        .on('removed', message => {
-          this.updateMessageList({
-            status: 'success',
-            details: `Discarded ${this.schema} #${message.id} - ${message.name}`
-          });
-          this.fetchSchemaListings(key);
-        })
-        .on('error', error => {
-          this.updateMessageList({status: 'error', details: error.message});
+        let messageList = this.state.messages;
+        this.setState({
+          messages: messageList.concat([{status: 'error', details: error.message}]),
+          messagePanelVisible: true
         });
-    })
-
+      });
   }
 
   componentWillUnmount() {
     this.importerService
       .removeListener('status')
       .removeListener('error');
-
-    this.pendingServices.forEach(service => {
-      service
-        .removeListener('created')
-        .removeListener('updated')
-        .removeListener('patched')
-        .removeListener('removed')
-        .removeListener('error');
-    });
   }
 
-  fetchAllData() {
+  fetchInitialData() {
     const otherSchemaQuery = {$sort: {name: 1}};
 
     this.venuesService.find({query: otherSchemaQuery}).then(message => {
@@ -134,7 +89,6 @@ export default class ImportLayout extends Component {
 
   importData(e) {
     // TODO: Handle multiple files
-    // TODO: When importing events, if mapped tag is pending w/ target_id, populate both IDs
     e.preventDefault();
 
     const importUrl = `${this.API_URI}?schema=${this.schemaSelect.current.value}`;
@@ -156,19 +110,7 @@ export default class ImportLayout extends Component {
   }
 
   publishListings() {
-    // Send custom event do-publish
-    console.log('PUBLISH CLICKED');
-    this.importerService.emit('publish');
-  }
 
-  async queryForSimilar(pendingListing) {
-    return this.listingsService.find({
-      query: {
-        name: pendingListing.name,
-        start_date: pendingListing.start_date,
-        end_date: pendingListing.end_date
-      }
-    });
   }
 
   updateMessageList(newMessage) {
@@ -180,6 +122,19 @@ export default class ImportLayout extends Component {
 
   dismissMessagePanel() {
     this.setState({messages: [], messagePanelVisible: false});
+  }
+
+  childUpdateColumnSort(e) {
+    const columnSortState = buildColumnSort(e.target, this.state.sort);
+    this.setState(columnSortState, () => this.fetchAllData());
+  }
+
+  childUpdatePageSize(e) {
+    this.setState({pageSize: parseInt(e.target.value, 10), currentPage: 1}, () => this.fetchAllData());
+  }
+
+  childUpdateCurrentPage(page) {
+    this.setState({currentPage: parseInt(page, 10)}, () => this.fetchAllData());
   }
 
   render() {
@@ -195,34 +150,32 @@ export default class ImportLayout extends Component {
         <h2>Review Unpublished Data</h2>
         <PendingEventsModule
           venues={this.state.venues} orgs={this.state.orgs} tags={this.state.tags}
-          defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
+          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
           updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
           updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
         />
         <PendingVenuesModule
           hoods={this.state.hoods}
-          defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
+          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
           updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
           updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
         />
         <PendingOrganizersModule
-          defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
+          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
           updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
           updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
         />
         <PendingNeighborhoodsModule
-          pendingListings={this.pendingHoods}
-          defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
-          fetchData={this.fetchSchemaListings} saveListing={this.saveListing} discardListing={this.discardListing}
-        />
-        <PendingTagsModule
-          defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
+          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
           updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
           updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
         />
-        <button type={'button'} className={'button-primary button-publish'} onClick={this.triggerPublish}>Publish All
-          Pending Listings
-        </button>
+        <PendingTagsModule
+          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
+          updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
+          updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+        />
+        <button type={'button'} className={'button-primary button-publish'} onClick={this.publishListings}>Publish All Pending Listings</button>
       </div>
     );
   }

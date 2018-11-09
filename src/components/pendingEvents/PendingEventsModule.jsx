@@ -1,6 +1,5 @@
 import React from "react";
 import {renderTableHeader} from "../../utilities";
-import app from '../../services/socketio';
 
 import PendingListingsModule from "../PendingListingsModule";
 import PaginationLayout from "../common/PaginationLayout";
@@ -10,18 +9,6 @@ import ShowHideToggle from "../common/ShowHideToggle";
 export default class PendingEventsModule extends PendingListingsModule {
   constructor(props) {
     super(props, 'events');
-
-    this.tagLookupSerivce = app.service('pending-events-tags-lookup');
-  }
-
-  handleDiscardListing(id) {
-    // TODO: Remove tag lookup records
-    this.pendingListingsService.remove(id).then(eventMsg => {
-      console.log('removed', eventMsg);
-      this.tagLookupSerivce.remove(null, {query: {pending_event_id: id}}).then(lookupMsg => {
-        console.log('lookup row removed', lookupMsg);
-      });
-    });
   }
 
   render() {
@@ -61,10 +48,10 @@ export default class PendingEventsModule extends PendingListingsModule {
           <PaginationLayout
             key={'pending-events-pagination'} schema={'pending-events'}
             total={pendingEventsCount} pageSize={pageSize} activePage={currentPage}
-            updatePageSize={this.handleUpdatePageSize} updateCurrentPage={this.handleUpdateCurrentPage}
+            updatePageSize={this.updatePageSizeSelf} updateCurrentPage={this.updateCurrentPageSelf}
           />
           <table className={'schema-table'} key={'pending-events-table'}>
-            <thead>{renderTableHeader(titleMap, sort, this.handleUpdateSort)}</thead>
+            <thead>{renderTableHeader(titleMap, sort, this.updateColumnSortSelf)}</thead>
             <tbody>
             {
               pendingEvents.map(event =>
@@ -77,7 +64,7 @@ export default class PendingEventsModule extends PendingListingsModule {
                     return o.id === event.org_id
                   })}
                   venues={venues} orgs={orgs}
-                  saveChanges={this.handleSaveChanges} discardListing={this.handleDiscardListing}
+                  saveChanges={this.saveChanges} discardListing={this.discardListing}
                   listingIsDup={this.queryForSimilar}
                 />)
             }
