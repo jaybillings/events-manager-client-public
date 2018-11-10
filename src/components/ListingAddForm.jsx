@@ -36,7 +36,7 @@ export default class ListingAddForm extends Component {
         </label>
         <div>
           <button type={'button'} onClick={this.clearForm}>Reset</button>
-          <button type={'submit'} className={'button-primary'}>Publish {titleCaseSchema}</button>
+          <button type={'submit'} className={'button-primary'}>Add {titleCaseSchema}</button>
         </div>
       </form>
     );

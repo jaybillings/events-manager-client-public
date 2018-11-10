@@ -232,6 +232,7 @@ export default class EventsLayout extends Component {
 
   deleteEvent(id) {
     this.eventsService.remove(id).then(message => console.log('removing event', message));
+    // Remove tags?
   }
 
   saveEvent(id, newData) {

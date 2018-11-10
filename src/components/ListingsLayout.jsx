@@ -174,7 +174,7 @@ export default class ListingsLayout extends Component {
     const listings = this.state.listings;
     const schema = this.schema;
 
-    return <ListingAddForm tags={listings} schema={schema} createTag={this.createListing} />;
+    return <ListingAddForm tags={listings} schema={schema} createListing={this.createListing} />;
   }
 
   render() {
