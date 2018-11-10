@@ -1,5 +1,6 @@
 import React from "react";
 import {renderTableHeader} from "../../utilities";
+import app from '../../services/socketio';
 
 import PendingListingsModule from "../PendingListingsModule";
 import PaginationLayout from "../common/PaginationLayout";
@@ -9,14 +10,82 @@ import ShowHideToggle from "../common/ShowHideToggle";
 export default class PendingEventsModule extends PendingListingsModule {
   constructor(props) {
     super(props, 'events');
+
+    this.pendingTagLookupService = app.service('pending-events-tags-lookup');
+    this.tagLookupService = app.service('events-tags-lookup');
+
+    this.removeTagAssociations = this.removeTagAssociations.bind(this);
+    this.addTagAssociations = this.addTagAssociations.bind(this);
   }
 
-  createLiveListing() {
-    // TODO: Modify tags lookup
+  createLiveListing(listing) {
+    // On create, copy tags lookup to live table
+    const id = listing.id;
+
+    delete(listing.id);
+    delete(listing.target_id);
+
+    this.listingsService.create(listing).then(result => {
+      console.log('creating event', result);
+      this.props.updateMessageList({
+        status: 'success',
+        details: `Published live event ${result.name} with ID #${result.id}`
+      });
+      this.addTagAssociations(id, result.id).then(this.discardListing(id));
+    }, err => {
+      console.log('error creating event', err);
+      this.props.updateMessageList({status: 'error', details: err.message});
+    });
   }
 
-  updateLiveListing() {
-    // TODO: Modify tags lookup
+  updateLiveListing(listing) {
+    const id = listing.id;
+    const target_id = listing.target_id;
+
+    delete(listing.id);
+    delete(listing.target_id);
+
+    this.listingsService.update(target_id, listing).then(msg => {
+      console.log('updating event', msg);
+      this.props.updateMessageList({
+        status: 'success',
+        details: `Updated live event #${listing.id} - ${listing.name}`
+      });
+      this.removeTagAssociations(id, listing.id).then(this.addTagAssociations(id, listing.id).then(this.discardListing(id)));
+    }, err => {
+      console.log('error updating event', err);
+      this.props.updateMessageList({status: 'error', details: err.message});
+    });
+  }
+
+  discardListing(id) {
+    // TODO: Remove tags as well
+    this.pendingListingsService.remove(id).then(message => {
+      console.log('removing pending event', message);
+      this.removeTagAssociations(id);
+    }, err => {
+      console.log(`error removing pending event`, err);
+      this.props.updateMessageList({status: 'error', details: err.message});
+    });
+  }
+
+  addTagAssociations(pendingID, liveID) {
+    this.pendingTagLookupService.find({query: {pending_event_id: pendingID}}).then(resultSet => {
+      const tagAssociations = [];
+
+      resultSet.data.forEach(lookupRow => {
+        tagAssociations.push({event_id: liveID, tag_id: lookupRow.tag_id});
+      });
+
+      this.tagLookupService.create(tagAssociations)
+        .then(msg => console.log('tag lookups created', msg), err => console.log('error creating tag lookups', err));
+    }, err => console.log('error looking up pending tag associations', err));
+  }
+
+  removeTagAssociations(id) {
+    this.pendingTagLookupService.remove(null, {query: {pending_event_id: id}})
+      .then(result => console.log('pending tag lookups removed', result),
+        err => console.log('error removing pending tag associations', err));
   }
 
   renderTable() {

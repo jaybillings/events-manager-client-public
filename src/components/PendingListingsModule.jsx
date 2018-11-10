@@ -59,20 +59,6 @@ export default class PendingListingsModule extends Component {
         });
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       });
-
-    this.listingsService
-      .on('created', newListing => {
-        this.props.updateMessageList({
-          status: 'success',
-          details: `Published ${newListing.name} with live ID ${newListing.id}`
-        });
-      })
-      .on('updated', listing => {
-        this.props.updateMessageList({
-          status: 'success',
-          details: `Updated live ${this.schema} #${listing.id} - ${listing.name}`
-        });
-      });
   }
 
   componentWillUnmount() {
@@ -81,10 +67,6 @@ export default class PendingListingsModule extends Component {
       .removeListener('updated')
       .removeListener('patched')
       .removeListener('removed');
-
-    this.listingsService
-      .removeListener('created')
-      .removeListener('updated');
   }
 
   fetchAllData() {
@@ -100,20 +82,16 @@ export default class PendingListingsModule extends Component {
   }
 
   publishListings() {
-    console.log(`PUBLISHING ${this.schema}`);
     // TODO: Use 'selections' array of IDs
-    // Get complete dataset for each listing
     this.pendingListingsService.find({paginate: false}).then(resultSet => {
       resultSet.data.forEach(listing => {
         if (listing.target_id) {
-          console.log('TARGET ID FOUND');
           this.updateLiveListing(listing);
         } else {
-          // Create
           this.createLiveListing(listing);
         }
-      })
-    })
+      });
+    });
   }
 
   saveChanges(id, newData) {
@@ -142,6 +120,10 @@ export default class PendingListingsModule extends Component {
 
     this.listingsService.create(listing).then(msg => {
       console.log(`creating ${this.schema}`, msg);
+      this.props.updateMessageList({
+        status: 'success',
+        details: `Published live ${this.schema} ${msg.name} with ID ${msg.id}`
+      });
       this.discardListing(id);
     }, err => {
       console.log(`error creating ${this.schema}`, err);
@@ -158,6 +140,10 @@ export default class PendingListingsModule extends Component {
 
     this.listingsService.update(target_id, listing).then(msg => {
       console.log(`updating ${this.schema}`, msg);
+      this.props.updateMessageList({
+        status: 'success',
+        details: `Updated live ${this.schema} #${listing.id} - ${listing.name}`
+      });
       this.discardListing(id);
     }, err => {
       console.log(`error updating ${this.schema}`, err);

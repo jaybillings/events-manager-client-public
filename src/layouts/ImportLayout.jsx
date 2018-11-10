@@ -19,14 +19,15 @@ export default class ImportLayout extends Component {
     this.API_URI = 'http://localhost:3030/importer';
     this.defaultPageSize = 5;
     this.defaultSortOrder = ['created_at', -1];
+    this.liveSchemaQuery = {$sort: {name: 1}};
 
     this.fileInput = React.createRef();
     this.schemaSelect = React.createRef();
-    this.eventsSubmit = React.createRef();
-    this.venuesSubmit = React.createRef();
-    this.orgsSubmit = React.createRef();
-    this.hoodsSubmit = React.createRef();
-    this.tagsSubmit = React.createRef();
+    this.eventsModule = React.createRef();
+    this.venuesModule = React.createRef();
+    this.orgsModule = React.createRef();
+    this.hoodsModule = React.createRef();
+    this.tagsModule = React.createRef();
 
     this.importerService = app.service('importer');
     this.venuesService = app.service('venues');
@@ -34,7 +35,11 @@ export default class ImportLayout extends Component {
     this.hoodsService = app.service('neighborhoods');
     this.tagsService = app.service('tags');
 
-    this.fetchInitialData = this.fetchInitialData.bind(this);
+    this.fetchLiveData = this.fetchLiveData.bind(this);
+    this.fetchVenues = this.fetchVenues.bind(this);
+    this.fetchOrgs = this.fetchOrgs.bind(this);
+    this.fetchHoods = this.fetchHoods.bind(this);
+    this.fetchTags = this.fetchTags.bind(this);
     this.importData = this.importData.bind(this);
     this.publishListings = this.publishListings.bind(this);
     this.updateMessageList = this.updateMessageList.bind(this);
@@ -42,7 +47,7 @@ export default class ImportLayout extends Component {
   }
 
   componentDidMount() {
-    this.fetchInitialData();
+    this.fetchLiveData();
 
     // Register listeners
     this.importerService
@@ -60,30 +65,87 @@ export default class ImportLayout extends Component {
           messagePanelVisible: true
         });
       });
+
+    const liveServices = new Map([
+      ['venues', this.venuesService],
+      ['orgs', this.orgsService],
+      ['hoods', this.hoodsService],
+      ['tags', this.tagsService]
+    ]);
+
+    const fetchCallbacks = {
+      venues: this.fetchVenues,
+      orgs: this.fetchOrgs,
+      hoods: this.fetchHoods,
+      tags: this.fetchTags
+    };
+
+    // TODO: Register listeners to refresh live data on create/update
+    liveServices.forEach((service, schema) => {
+      service
+        .on('created', () => {
+          fetchCallbacks[schema]();
+        })
+        .on('updated', () => {
+          fetchCallbacks[schema]();
+        })
+        .on('removed', () => {
+          fetchCallbacks[schema]();
+        })
+        .on('patched', () => {
+          fetchCallbacks[schema]();
+        });
+    });
   }
 
   componentWillUnmount() {
     this.importerService
       .removeListener('status')
       .removeListener('error');
+
+    const liveServices = new Map([
+      ['venues', this.venuesService],
+      ['orgs', this.orgsService],
+      ['hoods', this.hoodsService],
+      ['tags', this.tagsService]
+    ]);
+
+    liveServices.forEach(service => {
+      service
+        .removeListener('created')
+        .removeListener('updated')
+        .removeListener('patched')
+        .removeListener('removed');
+    });
   }
 
-  fetchInitialData() {
-    const otherSchemaQuery = {$sort: {name: 1}};
+  fetchLiveData() {
+    this.fetchVenues();
+    this.fetchOrgs();
+    this.fetchHoods();
+    this.fetchTags();
+  }
 
-    this.venuesService.find({query: otherSchemaQuery}).then(message => {
+  fetchVenues() {
+    this.venuesService.find({query: this.liveSchemaQuery}).then(message => {
       this.setState({venues: message.data});
     });
+  }
 
-    this.orgsService.find({query: otherSchemaQuery}).then(message => {
+  fetchOrgs() {
+    this.orgsService.find({query: this.liveSchemaQuery}).then(message => {
       this.setState({orgs: message.data});
     });
+  }
 
-    this.hoodsService.find({query: otherSchemaQuery}).then(message => {
+  fetchHoods() {
+    this.hoodsService.find({query: this.liveSchemaQuery}).then(message => {
       this.setState({hoods: message.data});
     });
+  }
 
-    this.tagsService.find({query: otherSchemaQuery}).then(message => {
+  fetchTags() {
+    this.tagsService.find({query: this.liveSchemaQuery}).then(message => {
       this.setState({tags: message.data});
     });
   }
@@ -111,7 +173,15 @@ export default class ImportLayout extends Component {
   }
 
   publishListings() {
-    this.hoodsSubmit.current.publishListings();
+    Promise
+      .all([
+        this.hoodsModule.current.publishListings(),
+        this.tagsModule.current.publishListings(),
+        this.orgsModule.current.publishListings()
+      ])
+      .then(this.venuesModule.current.publishListings())
+      .then(this.eventsModule.current.publishListings())
+      .catch((err) => console.log(err));
   }
 
   updateMessageList(newMessage) {
@@ -137,32 +207,34 @@ export default class ImportLayout extends Component {
         <ImportForm fileInputRef={this.fileInput} schemaSelectRef={this.schemaSelect} handleSubmit={this.importData} />
         <h2>Review Unpublished Data</h2>
         <PendingEventsModule
-          ref={this.eventsSubmit}
+          ref={this.eventsModule}
           venues={this.state.venues} orgs={this.state.orgs} tags={this.state.tags}
           defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
           updateMessageList={this.updateMessageList}
         />
         <PendingVenuesModule
-          ref={this.venuesSubmit} hoods={this.state.hoods}
+          ref={this.venuesModule} hoods={this.state.hoods}
           defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
           updateMessageList={this.updateMessageList}
         />
         <PendingOrganizersModule
-          ref={this.orgsSubmit}
+          ref={this.orgsModule}
           defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
           updateMessageList={this.updateMessageList}
         />
         <PendingNeighborhoodsModule
-          ref={this.hoodsSubmit}
+          ref={this.hoodsModule}
           defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
           updateMessageList={this.updateMessageList}
         />
         <PendingTagsModule
-          ref={this.tagsSubmit}
+          ref={this.tagsModule}
           defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
           updateMessageList={this.updateMessageList}
         />
-        <button type={'button'} className={'button-primary button-publish'} onClick={this.publishListings}>Publish All Pending Listings</button>
+        <button type={'button'} className={'button-primary button-publish'} onClick={this.publishListings}>Publish All
+          Pending Listings
+        </button>
       </div>
     );
   }
