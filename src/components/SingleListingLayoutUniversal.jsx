@@ -49,9 +49,9 @@ export default class SingleListingLayoutUniversal extends Component {
 
   componentWillUnmount() {
     this.listingsService
-      .removeListener('patched')
-      .removeListener('removed')
-      .removeListener('error');
+      .removeAllListeners('patched')
+      .removeAllListeners('removed')
+      .removeAllListeners('error');
   }
 
   fetchAllData() {

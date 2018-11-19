@@ -44,9 +44,9 @@ export default class SinglePendingOrganizerLayout extends Component {
 
   componentWillUnmount() {
     this.pendingOrgsService
-      .removeListener('patched')
-      .removeListener('removed')
-      .removeListener('error');
+      .removeAllListeners('patched')
+      .removeAllListeners('removed')
+      .removeAllListeners('error');
   }
 
   fetchAllData() {

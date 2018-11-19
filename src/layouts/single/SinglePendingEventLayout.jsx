@@ -51,9 +51,8 @@ export default class SinglePendingEventLayout extends Component {
 
   componentWillUnmount() {
     this.pendingEventsService
-      .removeListener('patched')
-      .removeListener('removed')
-      .removeListener('error');
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
   }
 
   fetchAllData() {

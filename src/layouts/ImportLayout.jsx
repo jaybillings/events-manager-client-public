@@ -100,8 +100,8 @@ export default class ImportLayout extends Component {
 
   componentWillUnmount() {
     this.importerService
-      .removeListener('status')
-      .removeListener('error');
+      .removeAllListeners('status')
+      .removeAllListeners('error');
 
     const liveServices = new Map([
       ['venues', this.venuesService],
@@ -112,10 +112,10 @@ export default class ImportLayout extends Component {
 
     liveServices.forEach(service => {
       service
-        .removeListener('created')
-        .removeListener('updated')
-        .removeListener('patched')
-        .removeListener('removed');
+        .removeAllListeners('created')
+        .removeAllListeners('updated')
+        .removeAllListeners('patched')
+        .removeAllListeners('removed');
     });
   }
 

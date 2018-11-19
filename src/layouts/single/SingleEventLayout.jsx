@@ -53,9 +53,8 @@ export default class SingleEventLayout extends Component {
 
   componentWillUnmount() {
     this.eventsService
-      .removeListener('patched')
-      .removeListener('removed')
-      .removeListener('error');
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
   }
 
   fetchAllData() {

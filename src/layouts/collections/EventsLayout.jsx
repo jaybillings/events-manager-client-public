@@ -124,25 +124,24 @@ export default class EventsLayout extends Component {
 
   componentWillUnmount() {
     this.eventsService
-      .removeListener('created')
-      .removeListener('patched')
-      .removeListener('removed')
-      .removeListener('error');
+      .removeAllListeners('created')
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
 
     this.venuesService
-      .removeListener('created')
-      .removeListener('patched')
-      .removeListener('removed');
+      .removeAllListeners('created')
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
 
     this.orgsSerivce
-      .removeListener('created')
-      .removeListener('patched')
-      .removeListener('removed');
+      .removeAllListeners('created')
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
 
     this.tagsService
-      .removeListener('created')
-      .removeListener('patched')
-      .removeListener('removed');
+      .removeAllListeners('created')
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
   }
 
   fetchAllData() {

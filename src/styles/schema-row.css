@@ -1,3 +1,7 @@
+.schema-row.is-selected {
+  background-color: var(--pale-blue);
+}
+
 .schema-row span {
   padding: 1rem;
   border-radius: 4px;

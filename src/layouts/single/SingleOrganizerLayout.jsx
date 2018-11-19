@@ -43,9 +43,9 @@ export default class SingleOrganizerLayout extends Component {
 
   componentWillUnmount() {
     this.orgsService
-      .removeListener('patched')
-      .removeListener('removed')
-      .removeListener('error');
+      .removeAllListeners('patched')
+      .removeAllListeners('removed')
+      .removeAllListeners('error');
   }
 
   fetchAllData() {

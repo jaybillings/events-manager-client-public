@@ -16,7 +16,7 @@ export default class PaginationLayout extends Component {
     let pageOptions = [];
 
     pageSizes.forEach(size => {
-      if (this.props.total >= size) {
+      if (this.props.total > size) {
         pageOptions.push(<option key={`${schema}-paging-${size}`} value={size}>{size}</option>);
       }
     });

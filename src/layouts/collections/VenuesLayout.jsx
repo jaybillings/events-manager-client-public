@@ -87,15 +87,14 @@ export default class VenuesLayout extends Component {
 
   componentWillUnmount() {
     this.venuesService
-      .removeListener('created')
-      .removeListener('patched')
-      .removeListener('removed')
-      .removeListener('error');
+      .removeAllListeners('created')
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
 
     this.hoodsService
-      .removeListener('created')
-      .removeListener('patched')
-      .removeListener('removed');
+      .removeAllListeners('created')
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
   }
 
   fetchAllData() {

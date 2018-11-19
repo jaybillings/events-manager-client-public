@@ -46,9 +46,9 @@ export default class SingleVenueLayout extends Component {
 
   componentWillUnmount() {
     this.venuesService
-      .removeListener('patched')
-      .removeListener('removed')
-      .removeListener('error');
+      .removeAllListeners('patched')
+      .removeAllListeners('removed')
+      .removeAllListeners('error');
   }
 
   fetchAllData() {

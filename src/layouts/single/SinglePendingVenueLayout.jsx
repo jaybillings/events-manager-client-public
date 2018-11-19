@@ -46,9 +46,9 @@ export default class SinglePendingVenueLayout extends Component {
 
   componentWillUnmount() {
     this.pendingVenuesService
-      .removeListener('patched')
-      .removeListener('removed')
-      .removeListener('error');
+      .removeAllListeners('patched')
+      .removeAllListeners('removed')
+      .removeAllListeners('error');
   }
 
   fetchAllData() {

@@ -97,7 +97,7 @@ export default class EventRecord extends Component {
       <form id={'event-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
         <div>
           <p className={'label'}>Status - {this.state.tmpStatus ? 'Published' : 'Dropped'}</p>
-          <input id={'toggle-' + event.id} ref={this.liveToggle} className={'toggle'} type={'checkbox'}
+          <input id={`toggle-${event.id}`} ref={this.liveToggle} className={'toggle'} type={'checkbox'}
                  defaultChecked={event.is_published} onClick={this.toggleStatus} />
           <label className={'toggle-switch'} htmlFor={'toggle-' + event.id} />
         </div>

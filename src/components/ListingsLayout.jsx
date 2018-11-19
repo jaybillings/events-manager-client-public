@@ -72,10 +72,9 @@ export default class ListingsLayout extends Component {
 
   componentWillUnmount() {
     this.listingsService
-      .removeListener('created')
-      .removeListener('patched')
-      .removeListener('removed')
-      .removeListener('error');
+      .removeAllListeners('created')
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
   }
 
   fetchAllData() {
