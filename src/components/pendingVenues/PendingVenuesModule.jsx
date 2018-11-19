@@ -35,9 +35,9 @@ export default class PendingVenuesModule extends PendingListingsModule {
       return <p>No pending venues to list.</p>;
     }
 
-    return (
-      <div>
-        <ShowHideToggle isVisible={isVisible} changeVisibility={this.toggleModuleVisibility} />
+    return ([
+      <ShowHideToggle key={'venues-module-showhide'} isVisible={isVisible} changeVisibility={this.toggleModuleVisibility} />,
+      <div key={'venues-module-body'}>
         <PaginationLayout
           key={'pending-venues-pagination'} pageSize={pageSize} activePage={currentPage}
           total={pendingVenuesCount} schema={'pending-venues'}
@@ -63,7 +63,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
         <p>{numSelected} / {pendingVenuesCount} venues selected</p>
         <button type={'button'} onClick={this.publishListings}>Publish All Pending Venues</button>
       </div>
-    )
+    ])
   }
 
   render() {

@@ -219,9 +219,10 @@ export default class PendingListingsModule extends Component {
     const selectedListings = this.state.selectedListings;
     const numSelected = selectedListings.length;
 
-    return (
-      <div>
-        <ShowHideToggle isVisible={isVisible} changeVisibility={this.toggleModuleVisibility} />
+    return ([
+      <ShowHideToggle key={`${schema}-module-showhide`} isVisible={isVisible}
+                      changeVisibility={this.toggleModuleVisibility} />,
+      <div key={`${schema}-module-body`}>
         <PaginationLayout
           key={`pending-${schema}-pagination`} schema={`pending-${schema}`}
           total={pendingListingsCount} pageSize={pageSize} activePage={currentPage}
@@ -244,7 +245,7 @@ export default class PendingListingsModule extends Component {
         <p>{numSelected} / {pendingListingsCount} {schema} selected</p>
         <button type={'button'} onClick={this.publishListings}>Publish All Pending {schema}</button>
       </div>
-    )
+    ])
   }
 
   render() {

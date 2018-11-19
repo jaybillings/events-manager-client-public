@@ -22,8 +22,8 @@ export default class PendingEventsModule extends PendingListingsModule {
     // On create, copy tags lookup to live table
     const id = listing.id;
 
-    delete(listing.id);
-    delete(listing.target_id);
+    delete (listing.id);
+    delete (listing.target_id);
 
     this.listingsService.create(listing).then(result => {
       console.log('creating event', result);
@@ -42,8 +42,8 @@ export default class PendingEventsModule extends PendingListingsModule {
     const id = listing.id;
     const target_id = listing.target_id;
 
-    delete(listing.id);
-    delete(listing.target_id);
+    delete (listing.id);
+    delete (listing.target_id);
 
     this.listingsService.update(target_id, listing).then(msg => {
       console.log('updating event', msg);
@@ -118,9 +118,10 @@ export default class PendingEventsModule extends PendingListingsModule {
     const selectedListings = this.state.selectedListings;
     const numSelected = selectedListings.length;
 
-    return (
-      <div>
-        <ShowHideToggle isVisible={isVisible} changeVisibility={this.toggleModuleVisibility} />
+    return ([
+      <ShowHideToggle key={'events-module-showhide'} isVisible={isVisible}
+                      changeVisibility={this.toggleModuleVisibility} />,
+      <div key={'events-module-body'}>
         <PaginationLayout
           key={'pending-events-pagination'} schema={'pending-events'}
           total={pendingEventsCount} pageSize={pageSize} activePage={currentPage}
@@ -149,7 +150,7 @@ export default class PendingEventsModule extends PendingListingsModule {
         <p>{numSelected} / {pendingEventsCount} events selected</p>
         <button type={'button'} onClick={this.publishListings}>Publish All Pending Events</button>
       </div>
-    )
+    ])
   }
 
   render() {
