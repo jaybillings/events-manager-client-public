@@ -115,6 +115,8 @@ export default class PendingEventsModule extends PendingListingsModule {
     const pageSize = this.state.pageSize;
     const currentPage = this.state.currentPage;
     const isVisible = this.state.moduleVisible;
+    const selectedListings = this.state.selectedListings;
+    const numSelected = selectedListings.length;
 
     return (
       <div>
@@ -137,14 +139,14 @@ export default class PendingEventsModule extends PendingListingsModule {
                 org={orgs.find(o => {
                   return o.id === event.org_id
                 })}
-                venues={venues} orgs={orgs}
+                venues={venues} orgs={orgs} selected={selectedListings.includes(event.id)}
                 saveChanges={this.saveChanges} discardListing={this.discardListing}
-                listingIsDup={this.queryForSimilar}
+                listingIsDup={this.queryForSimilar} handleListingSelect={this.handleListingSelect}
               />)
           }
           </tbody>
         </table>
-        <p>0 / {pendingEventsCount} events selected</p>
+        <p>{numSelected} / {pendingEventsCount} events selected</p>
         <button type={'button'} onClick={this.publishListings}>Publish All Pending Events</button>
       </div>
     )

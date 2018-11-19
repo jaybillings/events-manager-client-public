@@ -31,16 +31,19 @@ export default class PendingEventRow extends PendingListingRow {
 
   render() {
     const pendingListing = this.props.pendingListing;
-    const venues = this.props.venues;
-    const orgs = this.props.orgs;
+    const createdAt = Moment(pendingListing.created_at).calendar();
+    const selected = this.state.is_selected;
     const isDup = this.state.is_dup;
     const isNew = this.state.is_new;
+    const selectClass = selected ? ' is-selected' : '';
 
+    const venues = this.props.venues;
+    const orgs = this.props.orgs;
     const venueLink = this.props.venue ?
       <Link to={`/venues/${pendingListing.venue_id}`}>{this.props.venue.name}</Link> : 'NO VENUE';
     const orgLink = this.props.org ?
       <Link to={`/organizers/${pendingListing.org_id}`}>{this.props.org.name}</Link> : 'NO ORGANIZER';
-    const createdAt = Moment(pendingListing.created_at).calendar();
+
     const startDate = Moment(pendingListing.start_date).format('MM/DD/YYYY');
     const startDateVal = Moment(pendingListing.start_date).format('YYYY-MM-DD');
     const endDate = Moment(pendingListing.end_date).format('MM/DD/YYYY');
@@ -48,7 +51,7 @@ export default class PendingEventRow extends PendingListingRow {
 
     if (this.state.editable) {
       return (
-        <tr className={'schema-row'}>
+        <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
           <td>
             <button type={'button'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
@@ -65,7 +68,7 @@ export default class PendingEventRow extends PendingListingRow {
     }
 
     return (
-      <tr className={'schema-row'}>
+      <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
         <td>
           <button type={'button'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Discard</button>

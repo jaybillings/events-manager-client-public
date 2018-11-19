@@ -3,11 +3,13 @@ import Moment from 'moment';
 import {makeTitleCase, renderUpdateStatus} from "../utilities";
 import {Link} from "react-router-dom";
 
+import "../styles/schema-row.css";
+
 export default class PendingListingRow extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {editable: false, is_new: true, is_dup: false};
+    this.state = {editable: false, is_selected: this.props.selected, is_new: true, is_dup: false};
     this.nameInput = React.createRef();
 
     this.startEdit = this.startEdit.bind(this);
@@ -16,6 +18,7 @@ export default class PendingListingRow extends Component {
     this.checkIfNew = this.checkIfNew.bind(this);
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
     this.handleSaveClick = this.handleSaveClick.bind(this);
+    this.handleRowClick = this.handleRowClick.bind(this);
   }
 
   componentDidMount() {
@@ -43,6 +46,12 @@ export default class PendingListingRow extends Component {
     this.setState({editable: false});
   }
 
+  handleRowClick() {
+    const selected = !this.state['is_selected'];
+    this.setState({is_selected: selected});
+    this.props.handleListingSelect(this.props.pendingListing.id, selected);
+  }
+
   checkIfDup() {
     // TODO: Attach to event editing
     // TODO: Attach to data for filtering/paging
@@ -58,14 +67,16 @@ export default class PendingListingRow extends Component {
   render() {
     const pendingListing = this.props.pendingListing;
     const createdAt = Moment(pendingListing.created_at).calendar();
+    const selected = this.state.is_selected;
     const isDup = this.state.is_dup;
     const isNew = this.state.is_new;
     const schema = this.props.schema;
     const titleCaseSchema = makeTitleCase(this.props.schema);
+    const selectClass = selected ? ' is-selected' : '';
 
     if (this.state.editable) {
       return (
-        <tr className={'schema-row'}>
+        <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
           <td>
             <button type={'button'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
@@ -78,7 +89,7 @@ export default class PendingListingRow extends Component {
     }
 
     return (
-      <tr className={'schema-row'}>
+      <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
         <td>
           <button type={'button'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Discard</button>

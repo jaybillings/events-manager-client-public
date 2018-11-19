@@ -25,18 +25,20 @@ export default class PendingVenueRow extends PendingListingRow {
 
   render() {
     const pendingListing = this.props.pendingListing;
-    const hoods = this.props.hoods;
+    const createdAt = Moment(pendingListing.created_at).calendar();
+    const selected = this.state.is_selected;
     const isDup = this.state.is_dup;
     const isNew = this.state.is_new;
+    const selectClass = selected ? ' is-selected' : '';
 
+    const hoods = this.props.hoods;
     const hoodLink = this.props.hood
       ? <Link to={`/pendingNeighborhoods/${this.props.hood.id}`}>{this.props.hood.name}</Link>
       : 'NO NEIGHBORHOOD';
-    const createdAt = Moment(pendingListing.created_at).calendar();
 
     if (this.state.editable) {
       return (
-        <tr className={'schema-row'}>
+        <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
           <td>
             <button type={'button'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
@@ -56,7 +58,7 @@ export default class PendingVenueRow extends PendingListingRow {
     }
 
     return (
-      <tr className={'schema-row'}>
+      <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
         <td>
           <button type={'button'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Discard</button>

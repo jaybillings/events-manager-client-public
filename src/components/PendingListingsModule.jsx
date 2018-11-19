@@ -14,7 +14,7 @@ export default class PendingListingsModule extends Component {
     super(props);
 
     this.state = {
-      moduleVisible: true, pendingListings: [], pendingListingsCount: 0,
+      moduleVisible: true, pendingListings: [], pendingListingsCount: 0, selectedListings: [],
       pageSize: this.props.defaultPageSize, currentPage: 1, sort: this.props.defaultSortOrder
     };
 
@@ -32,6 +32,7 @@ export default class PendingListingsModule extends Component {
     this.updateCurrentPage = this.updateCurrentPage.bind(this);
     this.queryForSimilar = this.queryForSimilar.bind(this);
     this.toggleModuleVisibility = this.toggleModuleVisibility.bind(this);
+    this.handleListingSelect = this.handleListingSelect.bind(this);
     this.renderTable = this.renderTable.bind(this);
   }
 
@@ -63,10 +64,10 @@ export default class PendingListingsModule extends Component {
 
   componentWillUnmount() {
     this.pendingListingsService
-      .removeListener('created')
-      .removeListener('updated')
-      .removeListener('patched')
-      .removeListener('removed');
+      .removeAllListeners('created')
+      .removeAllListeners('updated')
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
   }
 
   fetchAllData() {
@@ -115,8 +116,8 @@ export default class PendingListingsModule extends Component {
   createLiveListing(listing) {
     const id = listing.id;
 
-    delete(listing.id);
-    delete(listing.target_id);
+    delete (listing.id);
+    delete (listing.target_id);
 
     this.listingsService.create(listing).then(msg => {
       console.log(`creating ${this.schema}`, msg);
@@ -135,8 +136,8 @@ export default class PendingListingsModule extends Component {
     const id = listing.id;
     const target_id = listing.target_id;
 
-    delete(listing.id);
-    delete(listing.target_id);
+    delete (listing.id);
+    delete (listing.target_id);
 
     this.listingsService.update(target_id, listing).then(msg => {
       console.log(`updating ${this.schema}`, msg);
@@ -178,6 +179,22 @@ export default class PendingListingsModule extends Component {
     this.setState(prevState => ({moduleVisible: !prevState.moduleVisible}));
   }
 
+  handleListingSelect(id, shouldAdd) {
+    const selections = this.state.selectedListings;
+
+    if (shouldAdd) {
+      selections.push(id);
+      const uniqueArray = Array.from(new Set(selections));
+      this.setState({selectedListings: uniqueArray});
+    } else {
+      const index = selections.indexOf(id);
+      if (index > -1) {
+        selections.splice(index, 1);
+        this.setState({selectedListings: selections});
+      }
+    }
+  }
+
   renderTable() {
     const pendingListings = this.state.pendingListings;
     const pendingListingsCount = this.state.pendingListingsCount;
@@ -199,6 +216,8 @@ export default class PendingListingsModule extends Component {
     const currentPage = this.state.currentPage;
     const isVisible = this.state.moduleVisible;
     const schema = this.schema;
+    const selectedListings = this.state.selectedListings;
+    const numSelected = selectedListings.length;
 
     return (
       <div>
@@ -215,13 +234,14 @@ export default class PendingListingsModule extends Component {
             pendingListings.map(listing =>
               <PendingListingRow
                 key={`${this.schema}-${listing.id}`} schema={schema} pendingListing={listing}
+                selected={selectedListings.includes(listing.id)}
                 saveChanges={this.saveChanges} discardListing={this.discardListing}
-                listingIsDup={this.queryForSimilar}
+                listingIsDup={this.queryForSimilar} handleListingSelect={this.handleListingSelect}
               />)
           }
           </tbody>
         </table>
-        <p>0 / {pendingListingsCount} {schema} selected</p>
+        <p>{numSelected} / {pendingListingsCount} {schema} selected</p>
         <button type={'button'} onClick={this.publishListings}>Publish All Pending {schema}</button>
       </div>
     )
