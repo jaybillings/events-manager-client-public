@@ -16,7 +16,7 @@ export default class PendingListingsModule extends Component {
 
     this.state = {
       moduleVisible: true, pendingListings: [], pendingListingsCount: 0, selectedListings: [],
-      pageSize: this.props.defaultPageSize, currentPage: 1, sort: this.props.defaultSortOrder
+      listingsLoaded: false, pageSize: this.props.defaultPageSize, currentPage: 1, sort: this.props.defaultSortOrder
     };
 
     this.schema = schema;
@@ -81,13 +81,20 @@ export default class PendingListingsModule extends Component {
         $skip: this.state.pageSize * (this.state.currentPage - 1)
       }
     }).then(message => {
-      this.setState({pendingListings: message.data, pendingListingsCount: message.total});
+      this.setState({pendingListings: message.data, pendingListingsCount: message.total, listingsLoaded: true});
     });
   }
 
   publishListings() {
-    // TODO: Use 'selections' array of IDs
-    this.pendingListingsService.find({paginate: false}).then(resultSet => {
+    const query = this.state.selectedListings.length === 0 ? {} : {id: {$in: this.state.selectedListings}};
+    let findTerms = {paginate: false};
+    if (query) findTerms.query = query;
+
+    this.setState({selectedListings: []});
+
+    console.log(`in inner publishlistings for ${this.schema} with query: ${JSON.stringify(findTerms)}`);
+
+    this.pendingListingsService.find(findTerms).then(resultSet => {
       resultSet.data.forEach(listing => {
         if (listing.target_id) {
           this.updateLiveListing(listing);
@@ -95,6 +102,8 @@ export default class PendingListingsModule extends Component {
           this.createLiveListing(listing);
         }
       });
+    }, err => {
+      console.log(`error publishing ${this.schema}: ${err}`);
     });
   }
 
@@ -208,15 +217,15 @@ export default class PendingListingsModule extends Component {
   }
 
   renderTable() {
-    const pendingListings = this.state.pendingListings;
     const pendingListingsCount = this.state.pendingListingsCount;
 
-    if (!pendingListings) {
+    if (!this.state.listingsLoaded) {
       return <p>Data is loading... Please be patient...</p>;
     } else if (pendingListingsCount === 0) {
       return <p>No pending {this.schema} to list.</p>
     }
 
+    const pendingListings = this.state.pendingListings;
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
       ['name', 'Name'],
@@ -259,7 +268,7 @@ export default class PendingListingsModule extends Component {
           }
           </tbody>
         </table>
-        <button type={'button'} onClick={this.publishListings}>Publish All Pending {schema}</button>
+        <button type={'button'} disabled={selectedListings.length === 0} onClick={this.publishListings}>Publish {schema}</button>
       </div>
     ])
   }

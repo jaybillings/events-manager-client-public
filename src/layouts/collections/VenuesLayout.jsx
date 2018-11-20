@@ -184,7 +184,7 @@ export default class VenuesLayout extends Component {
     return <VenuesTable
       listings={venues} listingsTotal={total} hoods={hoods}
       pageSize={pageSize} currentPage={currentPage} sort={sort}
-      handleColumnClick={this.updateColumnSort} updatePageSize={this.updatePageSize}
+      updateColumnSort={this.updateColumnSort} updatePageSize={this.updatePageSize}
       updateCurrentPage={this.updateCurrentPage} deleteListing={this.deleteVenue} saveListing={this.saveVenue}
     />;
   }

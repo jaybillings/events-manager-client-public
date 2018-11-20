@@ -285,7 +285,7 @@ export default class EventsLayout extends Component {
     return <EventsTable
       listings={events} listingsTotal={total} venues={venues} orgs={orgs}
       pageSize={pageSize} currentPage={currentPage} sort={sort}
-      handleColumnClick={this.updateColumnSort} updatePageSize={this.updatePageSize}
+      updateColumnSort={this.updateColumnSort} updatePageSize={this.updatePageSize}
       updateCurrentPage={this.updateCurrentPage} deleteListing={this.deleteEvent} saveListing={this.saveEvent}
     />;
   }

@@ -16,6 +16,10 @@
   transform: translate(0,-90%);
 }
 
+.schema-module button {
+  cursor: pointer;
+}
+
 .schema-module .visibility-toggle {
   position: absolute;
   top: 0;
@@ -27,6 +31,16 @@
   padding: 0 1rem;
   font-size: 1.25rem;
   transform: translate(0, -50%);
+}
+
+.schema-module button[disabled] {
+  background-color: var(--light-gray);
+  color: var(--true-white);
+  cursor: not-allowed;
+}
+
+.schema-module button[disabled]:hover {
+  border-color: var(--light-gray);
 }
 
 .schema-module[data-visibility='hidden'] > div {

@@ -1,0 +1,9 @@
+.status-label.status-dup {
+  color: var(--light-bg-text-color);
+  background-color: var(--warning-color);
+}
+
+.status-label.status-change {
+  background-color: var(--alert-color);
+}
+

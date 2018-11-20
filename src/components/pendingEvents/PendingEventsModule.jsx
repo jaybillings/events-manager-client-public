@@ -25,6 +25,7 @@ export default class PendingEventsModule extends PendingListingsModule {
 
     delete (listing.id);
     delete (listing.target_id);
+    listing.is_published = 1;
 
     this.listingsService.create(listing).then(result => {
       console.log('creating event', result);
@@ -32,7 +33,8 @@ export default class PendingEventsModule extends PendingListingsModule {
         status: 'success',
         details: `Published live event ${result.name} with ID #${result.id}`
       });
-      this.addTagAssociations(id, result.id).then(this.discardListing(id));
+      this.addTagAssociations(id, result.id);
+      this.discardListing(id);
     }, err => {
       console.log('error creating event', err);
       this.props.updateMessageList({status: 'error', details: err.message});
@@ -45,6 +47,7 @@ export default class PendingEventsModule extends PendingListingsModule {
 
     delete (listing.id);
     delete (listing.target_id);
+    listing.is_published = 1;
 
     this.listingsService.update(target_id, listing).then(msg => {
       console.log('updating event', msg);
@@ -52,7 +55,8 @@ export default class PendingEventsModule extends PendingListingsModule {
         status: 'success',
         details: `Updated live event #${listing.id} - ${listing.name}`
       });
-      this.removeTagAssociations(id, listing.id).then(this.addTagAssociations(id, listing.id).then(this.discardListing(id)));
+      this.discardListing(id);
+      this.removeTagAssociations(id, listing.id).then(this.addTagAssociations(id, listing.id));
     }, err => {
       console.log('error updating event', err);
       this.props.updateMessageList({status: 'error', details: err.message});
@@ -60,6 +64,7 @@ export default class PendingEventsModule extends PendingListingsModule {
   }
 
   discardListing(id) {
+     console.log(`in discardEvent id ${id}`);
     // TODO: Remove tags as well
     this.pendingListingsService.remove(id).then(message => {
       console.log('removing pending event', message);
@@ -71,6 +76,7 @@ export default class PendingEventsModule extends PendingListingsModule {
   }
 
   addTagAssociations(pendingID, liveID) {
+    console.log('in addTagAssociations');
     this.pendingTagLookupService.find({query: {pending_event_id: pendingID}}).then(resultSet => {
       const tagAssociations = [];
 
@@ -78,25 +84,27 @@ export default class PendingEventsModule extends PendingListingsModule {
         tagAssociations.push({event_id: liveID, tag_id: lookupRow.tag_id});
       });
 
-      this.tagLookupService.create(tagAssociations)
-        .then(msg => console.log('tag lookups created', msg), err => console.log('error creating tag lookups', err));
+      this.tagLookupService.create(tagAssociations).then(() => {
+        this.props.updateMessageList({status: 'info', details: `Tags associated with new ${this.schema} #${liveID}`});
+      }, err => {
+        const details = `Could not associate tags with new ${this.schema} #${liveID}. Please re-save listing on live ${this.schema} panel.`;
+        this.props.updateMessageList({status: 'error', details: details});
+        console.log('error creating tag lookups', err);
+      });
     }, err => console.log('error looking up pending tag associations', err));
   }
 
   removeTagAssociations(id) {
+    console.log('in removeTagAssociations');
     this.pendingTagLookupService.remove(null, {query: {pending_event_id: id}})
       .then(result => console.log('pending tag lookups removed', result),
         err => console.log('error removing pending tag associations', err));
   }
 
   renderTable() {
-    const pendingEvents = this.state.pendingListings;
     const pendingEventsCount = this.state.pendingListingsCount;
-    const venues = this.props.venues;
-    const orgs = this.props.orgs;
-    const tags = this.props.tags;
 
-    if (!(pendingEvents && venues && orgs && tags)) {
+    if (!(this.state.listingsLoaded && this.props.venuesLoaded && this.props.orgsLoaded && this.props.tagsLoaded)) {
       return <p>Data is loading... Please be patient...</p>;
     } else if (pendingEventsCount === 0) {
       return <p>No pending events to list.</p>
@@ -112,6 +120,9 @@ export default class PendingEventsModule extends PendingListingsModule {
       ['created_at', 'Imported On'],
       ['status_NOSORT', 'Status']
     ]);
+    const pendingEvents = this.state.pendingListings;
+    const venues = this.props.venues;
+    const orgs = this.props.orgs;
     const sort = this.state.sort;
     const pageSize = this.state.pageSize;
     const currentPage = this.state.currentPage;
@@ -153,7 +164,7 @@ export default class PendingEventsModule extends PendingListingsModule {
           }
           </tbody>
         </table>
-        <button type={'button'} onClick={this.publishListings}>Publish All Pending Events</button>
+        <button type={'button'} disabled={selectedEvents.length === 0} onClick={this.publishListings}>Publish Events</button>
       </div>
     ])
   }

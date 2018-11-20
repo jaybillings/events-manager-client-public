@@ -1,9 +1,10 @@
 import React, {Component} from 'react';
 import Moment from 'moment';
-import {makeTitleCase, renderUpdateStatus} from "../utilities";
+import {makeTitleCase} from "../utilities";
 import {Link} from "react-router-dom";
 
 import "../styles/schema-row.css";
+import StatusLabel from "./common/StatusLabel";
 
 export default class PendingListingRow extends Component {
   constructor(props) {
@@ -35,7 +36,7 @@ export default class PendingListingRow extends Component {
   }
 
   handleDeleteClick() {
-    this.props.handleDiscardListing(this.props.pendingListing.id);
+    this.props.discardListing(this.props.pendingListing.id);
   }
 
   handleSaveClick() {
@@ -82,7 +83,7 @@ export default class PendingListingRow extends Component {
           </td>
           <td><input type={'text'} ref={this.nameInput} defaultValue={pendingListing.name} /></td>
           <td>{createdAt}</td>
-          <td>{renderUpdateStatus(isDup, isNew, schema)}</td>
+          <td><StatusLabel isNew={isNew} isDup={isDup} schema={schema}/></td>
         </tr>
       );
     }
@@ -95,7 +96,7 @@ export default class PendingListingRow extends Component {
         </td>
         <td><Link to={`/pending${titleCaseSchema}/${pendingListing.id}`}>{pendingListing.name}</Link></td>
         <td>{createdAt}</td>
-        <td>{renderUpdateStatus(isDup, isNew, schema)}</td>
+        <td><StatusLabel isNew={isNew} isDup={isDup} schema={schema}/></td>
       </tr>
     );
   }

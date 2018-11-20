@@ -1,9 +1,10 @@
 import React from 'react';
 import Moment from 'moment';
 import {Link} from 'react-router-dom';
-import {renderOptionList, renderUpdateStatus} from "../../utilities";
+import {renderOptionList} from "../../utilities";
 
 import PendingListingRow from "../PendingListingRow";
+import StatusLabel from "../common/StatusLabel";
 
 export default class PendingVenueRow extends PendingListingRow {
   constructor(props) {
@@ -52,7 +53,7 @@ export default class PendingVenueRow extends PendingListingRow {
             </select>
           </td>
           <td>{createdAt}</td>
-          <td>{renderUpdateStatus(isDup, isNew, 'venue')}</td>
+          <td><StatusLabel isDup={isDup} isNew={isNew} schema={'venues'}/></td>
         </tr>
       );
     }
@@ -66,7 +67,7 @@ export default class PendingVenueRow extends PendingListingRow {
         <td><Link to={`/pendingVenues/${pendingListing.id}`}>{pendingListing.name}</Link></td>
         <td>{hoodLink}</td>
         <td>{createdAt}</td>
-        <td>{renderUpdateStatus(isDup, isNew, 'venue')}</td>
+        <td><StatusLabel isDup={isDup} isNew={isNew} schema={'venues'}/></td>
       </tr>
     );
   }

@@ -55,14 +55,23 @@
   border: 2px solid var(--warning-color);
 }
 
-.messageContainer span.success {
+.messageContainer li.info {
+  border: 2px solid var(--light-gray);
+  color: var(--medium-gray);
+}
+
+.messageContainer li.success span {
   color: var(--success-color);
 }
 
-.messageContainer span.error {
+.messageContainer li.error span {
   color: var(--error-color);
 }
 
-.messageContainer span.warning {
+.messageContainer li.warning span {
   color: var(--warning-color);
+}
+
+.messageContainer li.info span {
+  color: var(--light-gray);
 }

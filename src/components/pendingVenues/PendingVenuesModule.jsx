@@ -13,8 +13,15 @@ export default class PendingVenuesModule extends PendingListingsModule {
   }
 
   renderTable() {
-    const pendingVenues = this.state.pendingListings;
     const pendingVenuesCount = this.state.pendingListingsCount;
+
+    if (!(this.state.listingsLoaded && this.props.hoodsLoaded)) {
+      return <p>Data is loading... Please be patient...</p>;
+    } else if (pendingVenuesCount === 0) {
+      return <p>No pending venues to list.</p>;
+    }
+
+    const pendingVenues = this.state.pendingListings;
     const hoods = this.props.hoods;
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
@@ -28,12 +35,6 @@ export default class PendingVenuesModule extends PendingListingsModule {
     const currentPage = this.state.currentPage;
     const isVisible = this.state.moduleVisible;
     const selectedVenues = this.state.selectedListings;
-
-    if (!(pendingVenues && hoods)) {
-      return <p>Data is loading... Please be patient...</p>;
-    } else if (pendingVenuesCount === 0) {
-      return <p>No pending venues to list.</p>;
-    }
 
     return ([
       <ShowHideToggle
@@ -67,7 +68,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
           }
           </tbody>
         </table>
-        <button type={'button'} onClick={this.publishListings}>Publish All Pending Venues</button>
+        <button type={'button'} disabled={selectedVenues.length === 0} onClick={this.publishListings}>Publish Venues</button>
       </div>
     ])
   }

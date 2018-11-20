@@ -14,7 +14,10 @@ export default class ImportLayout extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {messages: [], messagePanelVisible: false, venues: [], orgs: [], hoods: [], tags: []};
+    this.state = {
+      messages: [], messagePanelVisible: false, venues: [], orgs: [], hoods: [], tags: [],
+      eventsLoaded: false, venuesLoaded: false, orgsLoaded: false, hoodsLoaded: false, tagsLoaded: false
+    };
 
     this.API_URI = 'http://localhost:3030/importer';
     this.defaultPageSize = 5;
@@ -128,25 +131,25 @@ export default class ImportLayout extends Component {
 
   fetchVenues() {
     this.venuesService.find({query: this.liveSchemaQuery}).then(message => {
-      this.setState({venues: message.data});
+      this.setState({venues: message.data, venuesLoaded: true});
     });
   }
 
   fetchOrgs() {
     this.orgsService.find({query: this.liveSchemaQuery}).then(message => {
-      this.setState({orgs: message.data});
+      this.setState({orgs: message.data, orgsLoaded: true});
     });
   }
 
   fetchHoods() {
     this.hoodsService.find({query: this.liveSchemaQuery}).then(message => {
-      this.setState({hoods: message.data});
+      this.setState({hoods: message.data, hoodsLoaded: true});
     });
   }
 
   fetchTags() {
     this.tagsService.find({query: this.liveSchemaQuery}).then(message => {
-      this.setState({tags: message.data});
+      this.setState({tags: message.data, tagsLoaded: true});
     });
   }
 
@@ -173,6 +176,8 @@ export default class ImportLayout extends Component {
   }
 
   publishListings() {
+    console.log('in publishlistings');
+
     Promise
       .all([
         this.hoodsModule.current.publishListings(),
@@ -198,6 +203,14 @@ export default class ImportLayout extends Component {
   render() {
     const showMessagePanel = this.state.messagePanelVisible;
     const messages = this.state.messages;
+    const venues = this.state.venues;
+    const venuesLoaded = this.state.venuesLoaded;
+    const orgs = this.state.orgs;
+    const orgsLoaded = this.state.orgsLoaded;
+    const hoods = this.state.hoods;
+    const hoodsLoaded = this.state.hoodsLoaded;
+    const tags = this.state.tags;
+    const tagsLoaded = this.state.tagsLoaded;
 
     return (
       <div className="container">
@@ -208,12 +221,13 @@ export default class ImportLayout extends Component {
         <h2>Review Unpublished Data</h2>
         <PendingEventsModule
           ref={this.eventsModule}
-          venues={this.state.venues} orgs={this.state.orgs} tags={this.state.tags}
+          venues={venues} orgs={orgs} tags={tags}
+          venuesLoaded={venuesLoaded} orgsLoaded={orgsLoaded} tagsLoaded={tagsLoaded}
           defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
           updateMessageList={this.updateMessageList}
         />
         <PendingVenuesModule
-          ref={this.venuesModule} hoods={this.state.hoods}
+          ref={this.venuesModule} hoods={hoods} hoodsLoaded={hoodsLoaded}
           defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
           updateMessageList={this.updateMessageList}
         />

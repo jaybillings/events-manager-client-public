@@ -1,9 +1,10 @@
 import React from 'react';
 import Moment from 'moment';
 import {Link} from 'react-router-dom';
-import {renderOptionList, renderUpdateStatus} from "../../utilities";
+import {renderOptionList} from "../../utilities";
 
 import PendingListingRow from '../PendingListingRow';
+import StatusLabel from "../common/StatusLabel";
 
 export default class PendingEventRow extends PendingListingRow {
   constructor(props) {
@@ -25,7 +26,7 @@ export default class PendingEventRow extends PendingListingRow {
       org_id: this.orgList.current.value
     };
 
-    this.props.handleSaveChanges(id, newData);
+    this.props.saveChanges(id, newData);
     this.setState({editable: false});
   }
 
@@ -62,7 +63,7 @@ export default class PendingEventRow extends PendingListingRow {
           <td><select ref={this.venueList} defaultValue={pendingListing.venue_id || ''}>{renderOptionList(venues)}</select></td>
           <td><select ref={this.orgList} defaultValue={pendingListing.org_id || ''}>{renderOptionList(orgs)}</select></td>
           <td>{createdAt}</td>
-          <td>{renderUpdateStatus(isDup, isNew, 'event')}</td>
+          <td><StatusLabel isNew={isNew} isDup={isDup} schema={'events'} /></td>
         </tr>
       );
     }
@@ -79,7 +80,7 @@ export default class PendingEventRow extends PendingListingRow {
         <td>{venueLink}</td>
         <td>{orgLink}</td>
         <td>{createdAt}</td>
-        <td>{renderUpdateStatus(isDup, isNew, 'event')}</td>
+        <td><StatusLabel isNew={isNew} isDup={isDup} schema={'events'} /></td>
       </tr>
     );
   }
