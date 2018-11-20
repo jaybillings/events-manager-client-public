@@ -8,6 +8,7 @@ import ShowHideToggle from "./common/ShowHideToggle";
 
 import '../styles/schema-module.css';
 import '../styles/schema-table.css';
+import SelectionControl from "./common/SelectionControl";
 
 export default class PendingListingsModule extends Component {
   constructor(props, schema) {
@@ -33,6 +34,8 @@ export default class PendingListingsModule extends Component {
     this.queryForSimilar = this.queryForSimilar.bind(this);
     this.toggleModuleVisibility = this.toggleModuleVisibility.bind(this);
     this.handleListingSelect = this.handleListingSelect.bind(this);
+    this.selectAllListings = this.selectAllListings.bind(this);
+    this.selectNoListings = this.selectNoListings.bind(this);
     this.renderTable = this.renderTable.bind(this);
   }
 
@@ -195,6 +198,15 @@ export default class PendingListingsModule extends Component {
     }
   }
 
+  selectAllListings() {
+    const allListingIDs = this.state.pendingListings.map(listing => listing.id);
+    this.setState({selectedListings: allListingIDs});
+  }
+
+  selectNoListings() {
+    this.setState({selectedListings: []});
+  }
+
   renderTable() {
     const pendingListings = this.state.pendingListings;
     const pendingListingsCount = this.state.pendingListingsCount;
@@ -217,12 +229,17 @@ export default class PendingListingsModule extends Component {
     const isVisible = this.state.moduleVisible;
     const schema = this.schema;
     const selectedListings = this.state.selectedListings;
-    const numSelected = selectedListings.length;
 
     return ([
-      <ShowHideToggle key={`${schema}-module-showhide`} isVisible={isVisible}
-                      changeVisibility={this.toggleModuleVisibility} />,
+      <ShowHideToggle
+        key={`${schema}-module-showhide`} isVisible={isVisible}
+        changeVisibility={this.toggleModuleVisibility}
+      />,
       <div key={`${schema}-module-body`}>
+        <SelectionControl
+          numSelected={selectedListings.length} totalCount={pendingListings.length} schema={schema}
+          selectAll={this.selectAllListings} selectNone={this.selectNoListings}
+        />
         <PaginationLayout
           key={`pending-${schema}-pagination`} schema={`pending-${schema}`}
           total={pendingListingsCount} pageSize={pageSize} activePage={currentPage}
@@ -235,14 +252,13 @@ export default class PendingListingsModule extends Component {
             pendingListings.map(listing =>
               <PendingListingRow
                 key={`${this.schema}-${listing.id}`} schema={schema} pendingListing={listing}
-                selected={selectedListings.includes(listing.id)}
+                selected={this.state.selectedListings.includes(listing.id)}
                 saveChanges={this.saveChanges} discardListing={this.discardListing}
                 listingIsDup={this.queryForSimilar} handleListingSelect={this.handleListingSelect}
               />)
           }
           </tbody>
         </table>
-        <p>{numSelected} / {pendingListingsCount} {schema} selected</p>
         <button type={'button'} onClick={this.publishListings}>Publish All Pending {schema}</button>
       </div>
     ])

@@ -1,0 +1,8 @@
+.selection-control > p {
+  display: inline-block;
+  float: right;
+}
+
+.selection-control button + button {
+  margin-right: 1rem;
+}

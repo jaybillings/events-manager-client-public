@@ -5,6 +5,7 @@ import PendingListingsModule from "../PendingListingsModule";
 import PaginationLayout from "../common/PaginationLayout";
 import PendingVenueRow from "./PendingVenueRow";
 import ShowHideToggle from "../common/ShowHideToggle";
+import SelectionControl from "../common/SelectionControl";
 
 export default class PendingVenuesModule extends PendingListingsModule {
   constructor(props) {
@@ -26,8 +27,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
     const pageSize = this.state.pageSize;
     const currentPage = this.state.currentPage;
     const isVisible = this.state.moduleVisible;
-    const selectedListings = this.state.selectedListings;
-    const numSelected = selectedListings.length;
+    const selectedVenues = this.state.selectedListings;
 
     if (!(pendingVenues && hoods)) {
       return <p>Data is loading... Please be patient...</p>;
@@ -36,8 +36,15 @@ export default class PendingVenuesModule extends PendingListingsModule {
     }
 
     return ([
-      <ShowHideToggle key={'venues-module-showhide'} isVisible={isVisible} changeVisibility={this.toggleModuleVisibility} />,
+      <ShowHideToggle
+        key={'venues-module-showhide'} isVisible={isVisible}
+        changeVisibility={this.toggleModuleVisibility}
+      />,
       <div key={'venues-module-body'}>
+        <SelectionControl
+          numSelected={selectedVenues.length} totalCount={pendingVenues.length} schema={'venues'}
+          selectAll={this.selectAllListings} selectNone={this.selectNoListings}
+        />
         <PaginationLayout
           key={'pending-venues-pagination'} pageSize={pageSize} activePage={currentPage}
           total={pendingVenuesCount} schema={'pending-venues'}
@@ -53,14 +60,13 @@ export default class PendingVenuesModule extends PendingListingsModule {
                 hood={hoods.find(h => {
                   return h.id === venue.hood_id
                 })}
-                hoods={hoods} selected={selectedListings.includes(venue.id)}
+                hoods={hoods} selected={selectedVenues.includes(venue.id)}
                 saveChanges={this.saveChanges} discardListing={this.discardListing}
                 listingIsDup={this.queryForSimilar} handleListingSelect={this.handleListingSelect}
               />)
           }
           </tbody>
         </table>
-        <p>{numSelected} / {pendingVenuesCount} venues selected</p>
         <button type={'button'} onClick={this.publishListings}>Publish All Pending Venues</button>
       </div>
     ])

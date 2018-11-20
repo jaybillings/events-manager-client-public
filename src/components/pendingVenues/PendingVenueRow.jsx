@@ -26,7 +26,7 @@ export default class PendingVenueRow extends PendingListingRow {
   render() {
     const pendingListing = this.props.pendingListing;
     const createdAt = Moment(pendingListing.created_at).calendar();
-    const selected = this.state.is_selected;
+    const selected = this.props.selected;
     const isDup = this.state.is_dup;
     const isNew = this.state.is_new;
     const selectClass = selected ? ' is-selected' : '';

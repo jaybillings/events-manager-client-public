@@ -9,7 +9,7 @@ export default class PendingListingRow extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {editable: false, is_selected: this.props.selected, is_new: true, is_dup: false};
+    this.state = {editable: false, is_new: true, is_dup: false};
     this.nameInput = React.createRef();
 
     this.startEdit = this.startEdit.bind(this);
@@ -47,8 +47,7 @@ export default class PendingListingRow extends Component {
   }
 
   handleRowClick() {
-    const selected = !this.state['is_selected'];
-    this.setState({is_selected: selected});
+    const selected = !this.props.selected;
     this.props.handleListingSelect(this.props.pendingListing.id, selected);
   }
 
@@ -67,7 +66,7 @@ export default class PendingListingRow extends Component {
   render() {
     const pendingListing = this.props.pendingListing;
     const createdAt = Moment(pendingListing.created_at).calendar();
-    const selected = this.state.is_selected;
+    const selected = this.props.selected;
     const isDup = this.state.is_dup;
     const isNew = this.state.is_new;
     const schema = this.props.schema;

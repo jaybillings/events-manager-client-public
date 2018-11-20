@@ -6,6 +6,7 @@ import PendingListingsModule from "../PendingListingsModule";
 import PaginationLayout from "../common/PaginationLayout";
 import PendingEventRow from "./PendingEventRow";
 import ShowHideToggle from "../common/ShowHideToggle";
+import SelectionControl from "../common/SelectionControl";
 
 export default class PendingEventsModule extends PendingListingsModule {
   constructor(props) {
@@ -115,13 +116,18 @@ export default class PendingEventsModule extends PendingListingsModule {
     const pageSize = this.state.pageSize;
     const currentPage = this.state.currentPage;
     const isVisible = this.state.moduleVisible;
-    const selectedListings = this.state.selectedListings;
-    const numSelected = selectedListings.length;
+    const selectedEvents = this.state.selectedListings;
 
     return ([
-      <ShowHideToggle key={'events-module-showhide'} isVisible={isVisible}
-                      changeVisibility={this.toggleModuleVisibility} />,
+      <ShowHideToggle
+        key={'events-module-showhide'} isVisible={isVisible}
+        changeVisibility={this.toggleModuleVisibility}
+      />,
       <div key={'events-module-body'}>
+        <SelectionControl
+          numSelected={selectedEvents.length} totalCount={pendingEvents.length} schema={'events'}
+          selectAll={this.selectAllListings} selectNone={this.selectNoListings}
+        />
         <PaginationLayout
           key={'pending-events-pagination'} schema={'pending-events'}
           total={pendingEventsCount} pageSize={pageSize} activePage={currentPage}
@@ -140,14 +146,13 @@ export default class PendingEventsModule extends PendingListingsModule {
                 org={orgs.find(o => {
                   return o.id === event.org_id
                 })}
-                venues={venues} orgs={orgs} selected={selectedListings.includes(event.id)}
+                venues={venues} orgs={orgs} selected={selectedEvents.includes(event.id)}
                 saveChanges={this.saveChanges} discardListing={this.discardListing}
                 listingIsDup={this.queryForSimilar} handleListingSelect={this.handleListingSelect}
               />)
           }
           </tbody>
         </table>
-        <p>{numSelected} / {pendingEventsCount} events selected</p>
         <button type={'button'} onClick={this.publishListings}>Publish All Pending Events</button>
       </div>
     ])
