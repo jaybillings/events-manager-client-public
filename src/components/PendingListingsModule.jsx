@@ -44,23 +44,20 @@ export default class PendingListingsModule extends Component {
 
     this.pendingListingsService
       .on('created', message => {
-        this.props.updateMessageList({status: 'success', details: `Added ${message.name} with ID #${message.id}`});
+        this.props.updateMessageList({status: 'success', details: `Added ${message.name} as pending ${this.schema.slice(0, -1)} #${message.id}`});
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('updated', message => {
-        // Message already formatted properly by server code
+        // Message already formatted properly by server code TODO: Make fit other format
         this.props.updateMessageList(message);
         this.fetchAllData();
       })
       .on('patched', message => {
-        this.props.updateMessageList({status: 'success', details: `Updated #${message.id} - ${message.name}`});
+        this.props.updateMessageList({status: 'success', details: `Updated ${message.name} (pending ${this.schema.slice(0, -1)} #${message.id})`});
         this.fetchAllData();
       })
       .on('removed', message => {
-        this.props.updateMessageList({
-          status: 'success',
-          details: `Discarded ${this.schema} #${message.id} - ${message.name}`
-        });
+        this.props.updateMessageList({status: 'info', details: `Discarded ${message.name} (pending ${this.schema.slice(0, -1)} #${message.id})`});
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       });
   }
@@ -81,18 +78,15 @@ export default class PendingListingsModule extends Component {
         $skip: this.state.pageSize * (this.state.currentPage - 1)
       }
     }).then(message => {
-      this.setState({pendingListings: message.data, pendingListingsCount: message.total, listingsLoaded: true});
+      this.setState({pendingListings: message.data, pendingListingsCount: message.total, listingsLoaded: true, selectedListings: []});
     });
   }
 
   publishListings() {
     const query = this.state.selectedListings.length === 0 ? {} : {id: {$in: this.state.selectedListings}};
     let findTerms = {paginate: false};
+
     if (query) findTerms.query = query;
-
-    this.setState({selectedListings: []});
-
-    console.log(`in inner publishlistings for ${this.schema} with query: ${JSON.stringify(findTerms)}`);
 
     this.pendingListingsService.find(findTerms).then(resultSet => {
       resultSet.data.forEach(listing => {
@@ -109,7 +103,7 @@ export default class PendingListingsModule extends Component {
 
   saveChanges(id, newData) {
     this.pendingListingsService.patch(id, newData).then(message => {
-      console.log(`patching ${this.schema}`, message)
+      console.log(`patching ${this.schema}`, message);
     }, err => {
       console.log(`patching ${this.schema} error`, err);
       this.props.updateMessageList({status: 'error', details: err.message});
@@ -135,7 +129,7 @@ export default class PendingListingsModule extends Component {
       console.log(`creating ${this.schema}`, msg);
       this.props.updateMessageList({
         status: 'success',
-        details: `Published live ${this.schema} ${msg.name} with ID ${msg.id}`
+        details: `Published ${msg.name} as new ${this.schema.slice(0, -1)} #${msg.id}`
       });
       this.discardListing(id);
     }, err => {
@@ -155,12 +149,22 @@ export default class PendingListingsModule extends Component {
       console.log(`updating ${this.schema}`, msg);
       this.props.updateMessageList({
         status: 'success',
-        details: `Updated live ${this.schema} #${listing.id} - ${listing.name}`
+        details: `Published ${listing.name} as update to ${this.schema.slice(0, -1)} #${msg.id}`
       });
       this.discardListing(id);
     }, err => {
       console.log(`error updating ${this.schema}`, err);
       this.props.updateMessageList({status: 'error', details: err.message});
+    });
+  }
+
+  async queryForSimilar(pendingListing) {
+    return this.listingsService.find({
+      query: {
+        name: pendingListing.name,
+        start_date: pendingListing.start_date,
+        end_date: pendingListing.end_date
+      }
     });
   }
 
@@ -175,16 +179,6 @@ export default class PendingListingsModule extends Component {
 
   updateCurrentPage(page) {
     this.setState({currentPage: parseInt(page, 10)}, () => this.fetchAllData());
-  }
-
-  async queryForSimilar(pendingListing) {
-    return this.listingsService.find({
-      query: {
-        name: pendingListing.name,
-        start_date: pendingListing.start_date,
-        end_date: pendingListing.end_date
-      }
-    });
   }
 
   toggleModuleVisibility() {

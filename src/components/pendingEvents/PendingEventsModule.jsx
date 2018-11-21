@@ -19,6 +19,18 @@ export default class PendingEventsModule extends PendingListingsModule {
     this.addTagAssociations = this.addTagAssociations.bind(this);
   }
 
+  discardListing(id) {
+    console.log(`in discardEvent id ${id}`);
+    // TODO: Remove tags as well
+    this.pendingListingsService.remove(id).then(message => {
+      console.log('removing pending event', message);
+      this.removeTagAssociations(id);
+    }, err => {
+      console.log(`error removing pending event`, err);
+      this.props.updateMessageList({status: 'error', details: err.message});
+    });
+  }
+
   createLiveListing(listing) {
     // On create, copy tags lookup to live table
     const id = listing.id;
@@ -31,7 +43,7 @@ export default class PendingEventsModule extends PendingListingsModule {
       console.log('creating event', result);
       this.props.updateMessageList({
         status: 'success',
-        details: `Published live event ${result.name} with ID #${result.id}`
+        details: `Published ${result.name} as new event #${result.id}`
       });
       this.addTagAssociations(id, result.id);
       this.discardListing(id);
@@ -53,24 +65,12 @@ export default class PendingEventsModule extends PendingListingsModule {
       console.log('updating event', msg);
       this.props.updateMessageList({
         status: 'success',
-        details: `Updated live event #${listing.id} - ${listing.name}`
+        details: `Published ${listing.name} as an update to event #${msg.id}`
       });
       this.discardListing(id);
       this.removeTagAssociations(id, listing.id).then(this.addTagAssociations(id, listing.id));
     }, err => {
       console.log('error updating event', err);
-      this.props.updateMessageList({status: 'error', details: err.message});
-    });
-  }
-
-  discardListing(id) {
-     console.log(`in discardEvent id ${id}`);
-    // TODO: Remove tags as well
-    this.pendingListingsService.remove(id).then(message => {
-      console.log('removing pending event', message);
-      this.removeTagAssociations(id);
-    }, err => {
-      console.log(`error removing pending event`, err);
       this.props.updateMessageList({status: 'error', details: err.message});
     });
   }
@@ -85,9 +85,9 @@ export default class PendingEventsModule extends PendingListingsModule {
       });
 
       this.tagLookupService.create(tagAssociations).then(() => {
-        this.props.updateMessageList({status: 'info', details: `Tags associated with new ${this.schema} #${liveID}`});
+        this.props.updateMessageList({status: 'info', details: `Associated tags with ${this.schema.slice(0, -1)} #${liveID}`});
       }, err => {
-        const details = `Could not associate tags with new ${this.schema} #${liveID}. Please re-save listing on live ${this.schema} panel.`;
+        const details = `Could not associate tags with ${this.schema.slice(0, -1)} #${liveID}. Please re-save listing by going to its listing page.`;
         this.props.updateMessageList({status: 'error', details: details});
         console.log('error creating tag lookups', err);
       });
