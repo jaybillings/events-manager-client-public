@@ -96,7 +96,7 @@ export default class PendingListingsModule extends Component {
         this.queryForLive(listing).then(message => {
           console.log(message);
           if (message.total) {
-            this.updateLiveListing(listing, message.data[0].id);
+            this.updateLiveListing(listing, message.data[0]);
           } else {
             this.createLiveListing(listing);
           }
@@ -154,15 +154,15 @@ export default class PendingListingsModule extends Component {
     });
   }
 
-  updateLiveListing(listing, targetID) {
+  updateLiveListing(listing, target) {
     const id = listing.id;
     delete (listing.id);
 
-    this.listingsService.update(targetID, listing).then(msg => {
+    this.listingsService.update(target.id, listing).then(msg => {
       console.log(`updating ${this.schema}`, msg);
       this.props.updateMessageList({
         status: 'success',
-        details: `Published ${listing.name} as update to ${listing.name}`
+        details: `Published ${msg.name} as update to ${target.name}`
       });
       this.removeListing(id);
     }, err => {

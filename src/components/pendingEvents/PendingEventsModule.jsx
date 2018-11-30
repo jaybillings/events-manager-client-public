@@ -53,19 +53,17 @@ export default class PendingEventsModule extends PendingListingsModule {
     });
   }
 
-  updateLiveListing(listing) {
+  updateLiveListing(listing, target) {
     const id = listing.id;
-    const target_id = listing.target_id;
 
     delete (listing.id);
-    delete (listing.target_id);
     listing.is_published = 1;
 
-    this.listingsService.update(target_id, listing).then(msg => {
+    this.listingsService.update(target.id, listing).then(msg => {
       console.log('updating event', msg);
       this.props.updateMessageList({
         status: 'success',
-        details: `Published ${listing.name} as an update to event #${msg.id}`
+        details: `Published ${msg.name} as an update to ${target.name}`
       });
       this.removeListing(id);
       this.removeTagAssociations(id, listing.id).then(this.addTagAssociations(id, listing.id));
