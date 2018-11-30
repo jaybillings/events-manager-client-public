@@ -23,8 +23,8 @@ export default class PendingListingRow extends Component {
   }
 
   componentDidMount() {
-    this.checkIfDup();
-    this.checkIfNew();
+    this.checkIfDup(this.props.pendingListing);
+    this.checkIfNew(this.props.pendingListing);
   }
 
   startEdit() {
@@ -36,33 +36,36 @@ export default class PendingListingRow extends Component {
   }
 
   handleDeleteClick() {
-    this.props.discardListing(this.props.pendingListing.id);
+    this.props.removeListing(this.props.pendingListing.id);
   }
 
   handleSaveClick() {
     const id = this.props.pendingListing.id;
     const newData = { name: this.nameInput.current.value.trim() };
 
-    this.props.handleSaveChanges(id, newData);
-    this.setState({editable: false});
+    this.props.saveChanges(id, newData).then((result) => {
+      // noinspection JSCheckFunctionSignatures
+      Promise.all([this.checkIfDup(result), this.checkIfNew(result)]).then(() => {
+        this.setState({editable: false});
+      });
+    });
   }
 
   handleRowClick() {
     const selected = !this.props.selected;
-    this.props.handleListingSelect(this.props.pendingListing.id, selected);
+    this.props.selectListing(this.props.pendingListing.id, selected);
   }
 
-  checkIfDup() {
-    // TODO: Attach to event editing
+  checkIfDup(listing) {
     // TODO: Attach to data for filtering/paging
-    this.props.listingIsDup(this.props.pendingListing).then(message => {
-      this.setState({is_dup: message.total && message.total > 0});
+    this.props.listingIsDup(listing).then(result => {
+      this.setState({is_dup: !!(result.total && result.total > 0)});
     }, err => console.log('error in checkIfDup()', err));
   }
 
-  checkIfNew() {
-    this.props.listingIsNew(this.props.pendingListing).then(message => {
-      this.setState({is_new: !(message.total && message.total > 0)});
+  checkIfNew(listing) {
+    this.props.listingIsNew(listing).then(result => {
+      this.setState({is_new: !(result.total && result.total > 0)});
     }, err => console.log('error in checkIfNew()', err));
   }
 

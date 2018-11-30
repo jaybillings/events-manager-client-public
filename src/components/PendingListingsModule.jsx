@@ -25,14 +25,17 @@ export default class PendingListingsModule extends Component {
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.publishListings = this.publishListings.bind(this);
+    this.discardListings = this.discardListings.bind(this);
     this.saveChanges = this.saveChanges.bind(this);
-    this.discardListing = this.discardListing.bind(this);
+    this.removeListing = this.removeListing.bind(this);
 
     this.updateColSort = this.updateColSort.bind(this);
     this.updatePageSize = this.updatePageSize.bind(this);
     this.updateCurrentPage = this.updateCurrentPage.bind(this);
+
     this.queryForLive = this.queryForLive.bind(this);
     this.queryForSimilar = this.queryForSimilar.bind(this);
+
     this.toggleModuleVisibility = this.toggleModuleVisibility.bind(this);
     this.handleListingSelect = this.handleListingSelect.bind(this);
     this.selectAllListings = this.selectAllListings.bind(this);
@@ -49,8 +52,8 @@ export default class PendingListingsModule extends Component {
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('updated', message => {
-        this.props.updateMessageList(message);
-        this.fetchAllData({status: 'info', details: message.details});
+        this.props.updateMessageList({status: 'info', details: message.details});
+        this.fetchAllData();
       })
       .on('patched', message => {
         this.props.updateMessageList({status: 'success', details: `Updated pending ${this.schema.slice(0, -1)} "${message.name}"`});
@@ -84,11 +87,11 @@ export default class PendingListingsModule extends Component {
 
   publishListings() {
     const query = this.state.selectedListings.length === 0 ? {} : {id: {$in: this.state.selectedListings}};
-    let findTerms = {paginate: false};
+    let searchOptions = {paginate: false};
 
-    if (query) findTerms.query = query;
+    if (query) searchOptions.query = query;
 
-    this.pendingListingsService.find(findTerms).then(resultSet => {
+    this.pendingListingsService.find(searchOptions).then(resultSet => {
       resultSet.data.forEach(listing => {
         this.queryForLive(listing).then(message => {
           console.log(message);
@@ -97,29 +100,41 @@ export default class PendingListingsModule extends Component {
           } else {
             this.createLiveListing(listing);
           }
+        }, err => {
+          console.log(`Error querying for live event: ${err}`);
         });
       });
     }, err => {
+      this.props.updateMessageList({status: 'error', details: err});
       console.log(`error publishing ${this.schema}: ${err}`);
     });
   }
 
-  saveChanges(id, newData) {
-    this.pendingListingsService.patch(id, newData).then(message => {
-      console.log(`patching ${this.schema}`, message);
+  discardListings() {
+    const query = this.state.selectedListings.length === 0 ? {} : { id: {$in: this.state.selectedListings}};
+    let searchOptions = {paginate: false};
+
+    if (query) searchOptions.query = query;
+
+    this.pendingListingsService.remove(null, searchOptions).then(message => {
+      console.log(message);
     }, err => {
-      console.log(`patching ${this.schema} error`, err);
-      this.props.updateMessageList({status: 'error', details: err.message});
+      this.props.updateMessageList({status: 'error', details: err});
+      console.log(`error publishing ${this.schema}: ${err}`);
     });
   }
 
-  discardListing(id) {
+  removeListing(id) {
     this.pendingListingsService.remove(id).then(message => {
       console.log(`removing ${this.schema}`, message);
     }, err => {
       console.log(`error removing ${this.schema} error`, err);
       this.props.updateMessageList({status: 'error', details: err.message});
     });
+  }
+
+  async saveChanges(id, newData) {
+    return this.pendingListingsService.patch(id, newData);
   }
 
   createLiveListing(listing) {
@@ -132,7 +147,7 @@ export default class PendingListingsModule extends Component {
         status: 'success',
         details: `Published ${msg.name} as new ${this.schema.slice(0, -1)}`
       });
-      this.discardListing(id);
+      this.removeListing(id);
     }, err => {
       console.log(`error creating ${this.schema}`, err);
       this.props.updateMessageList({status: 'error', details: err.message});
@@ -149,7 +164,7 @@ export default class PendingListingsModule extends Component {
         status: 'success',
         details: `Published ${listing.name} as update to ${listing.name}`
       });
-      this.discardListing(id);
+      this.removeListing(id);
     }, err => {
       console.log(`error updating ${this.schema}`, err);
       this.props.updateMessageList({status: 'error', details: err.message});
@@ -161,13 +176,7 @@ export default class PendingListingsModule extends Component {
   }
 
   async queryForSimilar(pendingListing) {
-    return this.listingsService.find({
-      query: {
-        name: pendingListing.name,
-        start_date: pendingListing.start_date,
-        end_date: pendingListing.end_date
-      }
-    });
+    return this.listingsService.find({query: { name: pendingListing.name }});
   }
 
   updateColSort(e) {
@@ -259,13 +268,15 @@ export default class PendingListingsModule extends Component {
               <PendingListingRow
                 key={`${this.schema}-${listing.id}`} schema={schema} pendingListing={listing}
                 selected={this.state.selectedListings.includes(listing.id)}
-                saveChanges={this.saveChanges} discardListing={this.discardListing}
-                listingIsDup={this.queryForSimilar} listingIsNew={this.queryForLive} handleListingSelect={this.handleListingSelect}
+                saveChanges={this.saveChanges} removeListing={this.removeListing}
+                selectListing={this.handleListingSelect}
+                listingIsDup={this.queryForSimilar} listingIsNew={this.queryForLive}
               />)
           }
           </tbody>
         </table>
         <button type={'button'} onClick={this.publishListings}>Publish {numSchemaLabel} {schemaLabel}</button>
+        <button type={'button'} onClick={this.discardListings}>Discard {numSchemaLabel} {schemaLabel}</button>
       </div>
     ])
   }

@@ -19,7 +19,7 @@ export default class PendingEventsModule extends PendingListingsModule {
     this.addTagAssociations = this.addTagAssociations.bind(this);
   }
 
-  discardListing(id) {
+  removeListing(id) {
     console.log(`in discardEvent id ${id}`);
     // TODO: Remove tags as well
     this.pendingListingsService.remove(id).then(message => {
@@ -46,7 +46,7 @@ export default class PendingEventsModule extends PendingListingsModule {
         details: `Published ${result.name} as new event #${result.id}`
       });
       this.addTagAssociations(id, result.id);
-      this.discardListing(id);
+      this.removeListing(id);
     }, err => {
       console.log('error creating event', err);
       this.props.updateMessageList({status: 'error', details: err.message});
@@ -67,7 +67,7 @@ export default class PendingEventsModule extends PendingListingsModule {
         status: 'success',
         details: `Published ${listing.name} as an update to event #${msg.id}`
       });
-      this.discardListing(id);
+      this.removeListing(id);
       this.removeTagAssociations(id, listing.id).then(this.addTagAssociations(id, listing.id));
     }, err => {
       console.log('error updating event', err);
@@ -99,6 +99,16 @@ export default class PendingEventsModule extends PendingListingsModule {
     this.pendingTagLookupService.remove(null, {query: {pending_event_id: id}})
       .then(result => console.log('pending tag lookups removed', result),
         err => console.log('error removing pending tag associations', err));
+  }
+
+  queryForSimilar(pendingListing) {
+    return this.listingsService.find({
+      query: {
+        name: pendingListing.name,
+        start_date: pendingListing.start_date,
+        end_date: pendingListing.end_date
+      }
+    });
   }
 
   renderTable() {
@@ -158,7 +168,7 @@ export default class PendingEventsModule extends PendingListingsModule {
                   return o.id === event.org_id
                 })}
                 venues={venues} orgs={orgs} selected={selectedEvents.includes(event.id)}
-                saveChanges={this.saveChanges} discardListing={this.discardListing}
+                saveChanges={this.saveChanges} discardListing={this.removeListing}
                 listingIsDup={this.queryForSimilar} handleListingSelect={this.handleListingSelect}
               />)
           }

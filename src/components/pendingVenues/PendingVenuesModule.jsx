@@ -62,7 +62,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
                   return h.id === venue.hood_id
                 })}
                 hoods={hoods} selected={selectedVenues.includes(venue.id)}
-                saveChanges={this.saveChanges} discardListing={this.discardListing}
+                saveChanges={this.saveChanges} discardListing={this.removeListing}
                 listingIsDup={this.queryForSimilar} handleListingSelect={this.handleListingSelect}
               />)
           }
