@@ -61,7 +61,9 @@ export default class PendingListingRow extends Component {
   }
 
   checkIfNew() {
-    this.setState({is_new: !this.props.pendingListing.target_id});
+    this.props.listingIsNew(this.props.pendingListing).then(message => {
+      this.setState({is_new: !(message.total && message.total > 0)});
+    }, err => console.log('error in checkIfNew()', err));
   }
 
   render() {
@@ -94,7 +96,7 @@ export default class PendingListingRow extends Component {
           <button type={'button'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Discard</button>
         </td>
-        <td><Link to={`/pending${titleCaseSchema}/${pendingListing.id}`}>{pendingListing.name}</Link></td>
+        <td><Link to={`/pending${titleCaseSchema}/${pendingListing.uuid}`}>{pendingListing.name}</Link></td>
         <td>{createdAt}</td>
         <td><StatusLabel isNew={isNew} isDup={isDup} schema={schema}/></td>
       </tr>

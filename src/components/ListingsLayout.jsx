@@ -7,6 +7,8 @@ import ListingsTable from "./ListingsTable";
 import ListingAddForm from "./ListingAddForm";
 import MessagePanel from "./common/MessagePanel";
 
+import uuid from "uuid/v1";
+
 export default class ListingsLayout extends Component {
   constructor(props, schema) {
     super(props);
@@ -48,19 +50,19 @@ export default class ListingsLayout extends Component {
     this.listingsService
       .on('created', message => {
         console.log(`${schema} created`, message);
-        this.updateMessagePanel({status: 'success', details: `Created ${schema} #${message.id} - ${message.name}`});
+        this.updateMessagePanel({status: 'success', details: `Created new ${schema.slice(0, -1)} "${message.name}"`});
         this.setState({currentPage: 1}, () => this.fetchAllData());
       })
       .on('patched', message => {
         console.log(`${schema} patched`, message);
-        this.updateMessagePanel({status: 'success', details: `Updated ${schema} #${message.id} - ${message.name}`});
+        this.updateMessagePanel({status: 'success', details: `Updated ${schema.slice(0, -1)} "${message.name}"`});
         this.fetchAllData();
       })
       .on('removed', message => {
         console.log(`${schema} removed`, message);
         this.updateMessagePanel({
           status: 'success',
-          details: `Permanently deleted ${schema} #${message.id} - ${message.name}`
+          details: `Permanently deleted ${schema.slice(0, -1)} "${message.name}"`
         });
         this.setState({currentPage: 1}, () => this.fetchAllData());
       })
@@ -133,6 +135,9 @@ export default class ListingsLayout extends Component {
 
   createListing(newData) {
     const schema = this.schema;
+
+    // Give the new listing a UUID
+    newData.uuid = uuid();
 
     this.listingsService.create(newData).then(() => {
       console.log(`creating ${schema}`);

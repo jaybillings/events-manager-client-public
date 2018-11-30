@@ -31,6 +31,7 @@ export default class ListingRecordUniversal extends Component {
   }
 
   render() {
+    // TODO: Needs to be a way to select UUID for copy
     const listing = this.props.listing;
     const schema = this.props.schema;
     const titleCaseSchema = makeTitleCase(schema);
@@ -40,8 +41,8 @@ export default class ListingRecordUniversal extends Component {
     return (
       <form id={`${schema}-listing-form`} className={'schema-record'} onSubmit={this.handleSubmit}>
         <label>
-          ID
-          <input type={'text'} value={listing.id} disabled />
+          UUID
+          <input type={'text'} value={listing.uuid} disabled />
         </label>
         <label>
           Created

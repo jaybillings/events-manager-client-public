@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {Redirect} from 'react-router';
+import {Link} from "react-router-dom";
 import app from "../services/socketio";
 
 import Header from "../components/common/Header";
@@ -118,6 +119,7 @@ export default class SingleListingLayoutUniversal extends Component {
     return (
       <div className={'container'}>
         <Header />
+        <p><Link to={`/${this.schema}`}>&lt; Return to {this.schema}</Link></p>
         <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
         <h2>{name}</h2>
         {this.renderRecord()}

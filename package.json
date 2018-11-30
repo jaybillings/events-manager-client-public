@@ -20,14 +20,16 @@
     "eject": "react-scripts eject"
   },
   "dependencies": {
-    "@feathersjs/client": "^3.4.5",
-    "moment": "^2.22.1",
-    "react": "^16.3.2",
-    "react-dom": "^16.3.2",
+    "@feathersjs/client": "^3.7.5",
+    "ajv": "^6.6.1",
+    "moment": "^2.22.2",
+    "react": "^16.6.3",
+    "react-dom": "^16.6.3",
     "react-js-pagination": "^3.0.2",
     "react-router": "latest",
-    "react-router-dom": "^4.2.2",
+    "react-router-dom": "^4.3.1",
     "react-scripts": "1.1.4",
-    "socket.io-client": "^2.1.0"
+    "socket.io-client": "^2.2.0",
+    "uuid": "^3.3.2"
   }
 }

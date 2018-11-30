@@ -31,6 +31,7 @@ export default class PendingListingsModule extends Component {
     this.updateColSort = this.updateColSort.bind(this);
     this.updatePageSize = this.updatePageSize.bind(this);
     this.updateCurrentPage = this.updateCurrentPage.bind(this);
+    this.queryForLive = this.queryForLive.bind(this);
     this.queryForSimilar = this.queryForSimilar.bind(this);
     this.toggleModuleVisibility = this.toggleModuleVisibility.bind(this);
     this.handleListingSelect = this.handleListingSelect.bind(this);
@@ -44,20 +45,19 @@ export default class PendingListingsModule extends Component {
 
     this.pendingListingsService
       .on('created', message => {
-        this.props.updateMessageList({status: 'success', details: `Added ${message.name} as pending ${this.schema.slice(0, -1)} #${message.id}`});
+        this.props.updateMessageList({status: 'success', details: `Added "${message.name}" as new pending ${this.schema.slice(0, -1)}`});
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('updated', message => {
-        // Message already formatted properly by server code TODO: Make fit other format
         this.props.updateMessageList(message);
-        this.fetchAllData();
+        this.fetchAllData({status: 'info', details: message.details});
       })
       .on('patched', message => {
-        this.props.updateMessageList({status: 'success', details: `Updated ${message.name} (pending ${this.schema.slice(0, -1)} #${message.id})`});
+        this.props.updateMessageList({status: 'success', details: `Updated pending ${this.schema.slice(0, -1)} "${message.name}"`});
         this.fetchAllData();
       })
       .on('removed', message => {
-        this.props.updateMessageList({status: 'info', details: `Discarded ${message.name} (pending ${this.schema.slice(0, -1)} #${message.id})`});
+        this.props.updateMessageList({status: 'info', details: `Discarded pending ${this.schema.slice(0, -1)} "${message.name}"`});
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       });
   }
@@ -90,11 +90,14 @@ export default class PendingListingsModule extends Component {
 
     this.pendingListingsService.find(findTerms).then(resultSet => {
       resultSet.data.forEach(listing => {
-        if (listing.target_id) {
-          this.updateLiveListing(listing);
-        } else {
-          this.createLiveListing(listing);
-        }
+        this.queryForLive(listing).then(message => {
+          console.log(message);
+          if (message.total) {
+            this.updateLiveListing(listing, message.data[0].id);
+          } else {
+            this.createLiveListing(listing);
+          }
+        });
       });
     }, err => {
       console.log(`error publishing ${this.schema}: ${err}`);
@@ -121,15 +124,13 @@ export default class PendingListingsModule extends Component {
 
   createLiveListing(listing) {
     const id = listing.id;
-
     delete (listing.id);
-    delete (listing.target_id);
 
     this.listingsService.create(listing).then(msg => {
       console.log(`creating ${this.schema}`, msg);
       this.props.updateMessageList({
         status: 'success',
-        details: `Published ${msg.name} as new ${this.schema.slice(0, -1)} #${msg.id}`
+        details: `Published ${msg.name} as new ${this.schema.slice(0, -1)}`
       });
       this.discardListing(id);
     }, err => {
@@ -138,24 +139,25 @@ export default class PendingListingsModule extends Component {
     });
   }
 
-  updateLiveListing(listing) {
+  updateLiveListing(listing, targetID) {
     const id = listing.id;
-    const target_id = listing.target_id;
-
     delete (listing.id);
-    delete (listing.target_id);
 
-    this.listingsService.update(target_id, listing).then(msg => {
+    this.listingsService.update(targetID, listing).then(msg => {
       console.log(`updating ${this.schema}`, msg);
       this.props.updateMessageList({
         status: 'success',
-        details: `Published ${listing.name} as update to ${this.schema.slice(0, -1)} #${msg.id}`
+        details: `Published ${listing.name} as update to ${listing.name}`
       });
       this.discardListing(id);
     }, err => {
       console.log(`error updating ${this.schema}`, err);
       this.props.updateMessageList({status: 'error', details: err.message});
     });
+  }
+
+  async queryForLive(pendingListing) {
+    return this.listingsService.find({query: { uuid: pendingListing.uuid }});
   }
 
   async queryForSimilar(pendingListing) {
@@ -232,6 +234,8 @@ export default class PendingListingsModule extends Component {
     const isVisible = this.state.moduleVisible;
     const schema = this.schema;
     const selectedListings = this.state.selectedListings;
+    const numSchemaLabel = selectedListings.length || "All";
+    const schemaLabel = selectedListings.length === 1 ? schema.slice(0, -1) : schema;
 
     return ([
       <ShowHideToggle
@@ -240,8 +244,7 @@ export default class PendingListingsModule extends Component {
       />,
       <div key={`${schema}-module-body`}>
         <SelectionControl
-          numSelected={selectedListings.length} totalCount={pendingListings.length} schema={schema}
-          selectAll={this.selectAllListings} selectNone={this.selectNoListings}
+          numSelected={selectedListings.length} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
         />
         <PaginationLayout
           key={`pending-${schema}-pagination`} schema={`pending-${schema}`}
@@ -257,12 +260,12 @@ export default class PendingListingsModule extends Component {
                 key={`${this.schema}-${listing.id}`} schema={schema} pendingListing={listing}
                 selected={this.state.selectedListings.includes(listing.id)}
                 saveChanges={this.saveChanges} discardListing={this.discardListing}
-                listingIsDup={this.queryForSimilar} handleListingSelect={this.handleListingSelect}
+                listingIsDup={this.queryForSimilar} listingIsNew={this.queryForLive} handleListingSelect={this.handleListingSelect}
               />)
           }
           </tbody>
         </table>
-        <button type={'button'} disabled={selectedListings.length === 0} onClick={this.publishListings}>Publish {schema}</button>
+        <button type={'button'} onClick={this.publishListings}>Publish {numSchemaLabel} {schemaLabel}</button>
       </div>
     ])
   }
