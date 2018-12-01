@@ -1,14 +1,14 @@
-import React, {Component} from 'react';
+import React from 'react';
 import Moment from 'moment';
 import {renderCheckboxList, renderOptionList} from '../../utilities';
 
 import '../../styles/add-form.css';
+import ListingAddForm from "../ListingAddForm";
 
-export default class EventAddForm extends Component {
+export default class EventAddForm extends ListingAddForm {
   constructor(props) {
     super(props);
 
-    this.nameInput = React.createRef();
     this.startInput = React.createRef();
     this.endInput = React.createRef();
     this.descInput = React.createRef();
@@ -23,9 +23,6 @@ export default class EventAddForm extends Component {
     this.ongoingInput = React.createRef();
     this.venueList = React.createRef();
     this.orgList = React.createRef();
-
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.clearForm = this.clearForm.bind(this);
   }
 
   handleSubmit(e) {

@@ -1,11 +1,11 @@
-import React, {Component} from 'react';
+import React from 'react';
 import {renderOptionList} from '../../utilities';
+import ListingAddForm from "../ListingAddForm";
 
-export default class VenueAddForm extends Component {
+export default class VenueAddForm extends ListingAddForm {
   constructor(props) {
     super(props);
 
-    this.nameInput = React.createRef();
     this.hoodList = React.createRef();
     this.descInput = React.createRef();
     this.emailInput = React.createRef();
@@ -15,9 +15,6 @@ export default class VenueAddForm extends Component {
     this.cityInput = React.createRef();
     this.stateInput = React.createRef();
     this.zipInput = React.createRef();
-
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.clearForm = this.clearForm.bind(this);
   }
 
   handleSubmit(e) {
