@@ -4,10 +4,6 @@ import Moment from 'moment';
 import ListingRecordUniversal from "../ListingRecordUniversal";
 
 export default class PendingTagRecord extends ListingRecordUniversal {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     const pendingTag = this.props.listing;
     const tagId = pendingTag.target_id || 'N/A';
@@ -32,7 +28,8 @@ export default class PendingTagRecord extends ListingRecordUniversal {
           Name
           <input type={'text'} ref={this.nameInput} defaultValue={pendingTag.name} required maxLength={100} />
         </label>
-        <div className={'block-warning'} title={'Caution: This tag is pending. It must be pushed live before it is visible on the site.'}>
+        <div className={'block-warning'}
+             title={'Caution: This tag is pending. It must be pushed live before it is visible on the site.'}>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
           <button type={'button'} onClick={this.handleClickDelete}>Discard Tag</button>
         </div>

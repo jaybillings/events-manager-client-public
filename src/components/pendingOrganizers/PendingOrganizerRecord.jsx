@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React from 'react';
 import Moment from 'moment';
 
 import '../../styles/schema-record.css';
@@ -64,7 +64,8 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
           Phone #
           <input type={'tel'} ref={this.phoneInput} defaultValue={listing.phone} maxLength={20} />
         </label>
-        <div className={'block-warning'} title={'Caution: This organizer is pending. It must be pushed live before it is visible on the site.'}>
+        <div className={'block-warning'}
+             title={'Caution: This organizer is pending. It must be pushed live before it is visible on the site.'}>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
           <button type={'button'} onClick={this.handleClickDelete}>Discard Organizer</button>
         </div>

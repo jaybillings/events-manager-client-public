@@ -1,6 +1,5 @@
-import React, {Component} from 'react';
+import React from 'react';
 import {Redirect} from 'react-router';
-import app from "../../services/socketio";
 
 import Header from "../../components/common/Header";
 import PendingOrganizerRecord from "../../components/pendingOrganizers/PendingOrganizerRecord";
