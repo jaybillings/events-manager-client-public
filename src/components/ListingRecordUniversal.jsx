@@ -57,8 +57,8 @@ export default class ListingRecordUniversal extends Component {
           <input type={'text'} ref={this.nameInput} defaultValue={listing.name} required maxLength={100} />
         </label>
         <div>
-          <button type={'button'} onClick={this.handleClickDelete}>Delete {titleCaseSchema}</button>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
+          <button type={'button'} onClick={this.handleClickDelete}>Delete {titleCaseSchema.slice(0, -1)}</button>
         </div>
       </form>
     );

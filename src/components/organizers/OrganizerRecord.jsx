@@ -32,8 +32,10 @@ export default class OrganizerRecord extends Component {
     };
 
     // Only add non-required if they have a value
-    (this.urlInput.current.value !== org.url) && (newData.url = this.urlInput.current.value.trim());
-    (this.phoneInput.current.value !== org.phone) && (newData.phone = this.phoneInput.current.value.trim());
+    this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value.trim());
+    this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value.trim());
+
+    console.log(newData);
 
     this.props.saveOrg(id, newData);
   }

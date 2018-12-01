@@ -14,9 +14,7 @@ export default class SingleListingLayoutUniversal extends Component {
     this.schema = schema;
 
     this.state = {
-      messages: [], messagePanelVisible: false,
-      listing: {}, listingLoaded: false,
-      hasDeleted: false, notFound: false
+      messages: [], messagePanelVisible: false, listing: {}, listingLoaded: false, hasDeleted: false, notFound: false
     };
 
     this.listingsService = app.service(this.schema);

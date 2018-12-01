@@ -178,7 +178,7 @@ export default class ListingsLayout extends Component {
     const listings = this.state.listings;
     const schema = this.schema;
 
-    return <ListingAddForm tags={listings} schema={schema} createListing={this.createListing} />;
+    return <ListingAddForm listings={listings} schema={schema} createListing={this.createListing} />;
   }
 
   render() {
@@ -192,7 +192,7 @@ export default class ListingsLayout extends Component {
         <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
         <h2>All {titleCaseSchema}</h2>
         {this.renderTable()}
-        <h3>Add New {titleCaseSchema}</h3>
+        <h3>Add New {titleCaseSchema.slice(0, -1)}</h3>
         {this.renderAddForm()}
       </div>
     );
