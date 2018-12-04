@@ -38,10 +38,7 @@ export default class VenuesTable extends ListingsTable {
           venues.map(venue =>
             <VenueRow
               key={venue.id} listing={venue}
-              hood={hoods.find(n => {
-                return n.id === venue.hood_id
-              })}
-              hoods={hoods}
+              hood={hoods.find(n => {return n.id === venue.hood_id})} hoods={hoods}
               saveChanges={this.handleSaveChanges} deleteListing={this.handleDeleteListing}
             />
           )

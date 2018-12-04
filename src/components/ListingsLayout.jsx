@@ -1,13 +1,12 @@
 import React, {Component} from "react";
 import {buildColumnSort, buildSortQuery, makeTitleCase} from "../utilities";
 import app from "../services/socketio";
+import uuid from "uuid/v1";
 
 import Header from "./common/Header";
 import ListingsTable from "./ListingsTable";
 import ListingAddForm from "./ListingAddForm";
 import MessagePanel from "./common/MessagePanel";
-
-import uuid from "uuid/v1";
 
 export default class ListingsLayout extends Component {
   constructor(props, schema) {
@@ -60,10 +59,7 @@ export default class ListingsLayout extends Component {
       })
       .on('removed', message => {
         console.log(`${schema} removed`, message);
-        this.updateMessagePanel({
-          status: 'success',
-          details: `Permanently deleted ${schema.slice(0, -1)} "${message.name}"`
-        });
+        this.updateMessagePanel({status: 'success', details: `Permanently deleted ${schema.slice(0, -1)} "${message.name}"`});
         this.setState({currentPage: 1}, () => this.fetchAllData());
       })
       .on('error', error => {
@@ -118,8 +114,7 @@ export default class ListingsLayout extends Component {
   }
 
   deleteListing(id) {
-    const schema = this.schema;
-    this.listingsService.remove(id).then(message => console.log(`removing ${schema}`, message));
+    this.listingsService.remove(id).then(message => console.log(`removing ${this.schema}`, message));
   }
 
   saveListing(id, newData) {
@@ -129,7 +124,7 @@ export default class ListingsLayout extends Component {
       console.log(`patching ${schema}`, message);
     }, err => {
       console.log(`error patching ${schema}`, err);
-      this.updateMessagePanel(err);
+      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
 
@@ -143,7 +138,8 @@ export default class ListingsLayout extends Component {
       console.log(`creating ${schema}`);
     }, err => {
       console.log(`error creating ${schema}`, err);
-      this.updateMessagePanel(err);
+      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+
     });
   }
 
@@ -175,10 +171,7 @@ export default class ListingsLayout extends Component {
       return <p>Data is loading... Please be patient...</p>;
     }
 
-    const listings = this.state.listings;
-    const schema = this.schema;
-
-    return <ListingAddForm listings={listings} schema={schema} createListing={this.createListing} />;
+    return <ListingAddForm schema={this.schema} createListing={this.createListing} />;
   }
 
   render() {

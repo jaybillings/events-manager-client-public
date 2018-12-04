@@ -35,20 +35,20 @@ export default class PendingVenueRecord extends Component {
     };
 
     // Only add non-required if they have value
-    (this.emailInput.current.value !== pendingVenue.email) && (newData.email = this.emailInput.current.value.trim());
-    (this.urlInput.current.value !== pendingVenue.url) && (newData.url = this.urlInput.current.value.trim());
-    (this.phoneInput.current.value !== pendingVenue.phone) && (newData.phone = this.phoneInput.current.value.trim());
-    (this.streetInput.current.value !== pendingVenue.address_street) && (newData.address_street = this.streetInput.current.value.trim());
-    (this.cityInput.current.value !== pendingVenue.address_city) && (newData.address_city = this.cityInput.current.value.trim());
-    (this.stateInput.current.value !== pendingVenue.address_state) && (newData.address_state = this.stateInput.current.value.trim());
-    (this.zipInput.current.value !== pendingVenue.address_zip) && (newData.address_zip = this.zipInput.current.value.trim());
+    this.emailInput.current.value !== '' && (newData.email = this.emailInput.current.value.trim());
+    this.urlInput.current.value !=='' && (newData.url = this.urlInput.current.value.trim());
+    this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value.trim());
+    this.streetInput.current.value !== '' && (newData.address_street = this.streetInput.current.value.trim());
+    this.cityInput.current.value !==  '' && (newData.address_city = this.cityInput.current.value.trim());
+    this.stateInput.current.value !== '' && (newData.address_state = this.stateInput.current.value.trim());
+    this.zipInput.current.value !== '' && (newData.address_zip = this.zipInput.current.value.trim());
 
-    this.props.saveVenue(id, newData);
+    this.props.saveListing(id, newData);
   }
 
   handleClickDelete() {
     const id = this.props.pendingVenue.id;
-    this.props.deleteVenue(id);
+    this.props.deleteListing(id);
   }
 
   render() {

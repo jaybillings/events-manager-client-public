@@ -24,6 +24,7 @@ export default class ListingRecordUniversal extends Component {
 
     const listing = this.props.listing;
     const newData = {
+      uuid: this.state.listing.uuid,
       name: this.nameInput.current.value.trim()
     };
 

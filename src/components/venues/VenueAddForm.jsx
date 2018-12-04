@@ -26,15 +26,16 @@ export default class VenueAddForm extends ListingAddForm {
       description: this.descInput.current.value.trim()
     };
 
-    venueObj.email = this.emailInput.current.value.trim();
-    venueObj.url = this.urlInput.current.value.trim();
-    venueObj.phone = this.phoneInput.current.value.trim();
-    venueObj.address_street = this.streetInput.current.value.trim();
-    venueObj.address_city = this.cityInput.current.value.trim();
-    venueObj.address_state = this.stateInput.current.value.trim();
-    venueObj.address_zip = this.zipInput.current.value.trim();
+    this.emailInput.current.value !== '' && (venueObj.email = this.emailInput.current.value.trim());
+    this.urlInput.current.value !== '' && (venueObj.url = this.urlInput.current.value.trim());
+    this.phoneInput.current.value !== '' && (venueObj.phone = this.phoneInput.current.value.trim());
+    this.streetInput.current.value !== '' && (venueObj.address_street = this.streetInput.current.value.trim());
+    this.cityInput.current.value !== '' && (venueObj.address_city = this.cityInput.current.value.trim());
+    this.stateInput.current.value !== '' && (venueObj.address_state = this.stateInput.current.value.trim());
+    this.zipInput.current.value !== '' && (venueObj.address_zip = this.zipInput.current.value.trim());
 
-    this.props.createVenue(venueObj);
+    this.props.createListing(venueObj);
+    this.clearForm();
   }
 
   clearForm() {
@@ -45,8 +46,8 @@ export default class VenueAddForm extends ListingAddForm {
     this.urlInput.current.value = '';
     this.phoneInput.current.value = '';
     this.streetInput.current.value = '';
-    this.cityInput.current.value = '';
-    this.stateInput.current.value = '';
+    this.cityInput.current.value = 'Seattle';
+    this.stateInput.current.value = 'Washington';
     this.zipInput.current.value = '';
   }
 
@@ -97,7 +98,7 @@ export default class VenueAddForm extends ListingAddForm {
         </label>
         <div>
           <button type={'button'} onClick={this.clearForm}>Reset</button>
-          <button type={'submit'} className={'button-primary'}>Publish Venue</button>
+          <button type={'submit'} className={'button-primary'}>Add Venue</button>
         </div>
       </form>
     );

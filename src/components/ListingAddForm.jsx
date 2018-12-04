@@ -17,6 +17,7 @@ export default class ListingAddForm extends Component {
     e.preventDefault();
 
     const listingObj = {name: this.nameInput.current.value.trim()};
+
     this.props.createListing(listingObj);
     this.clearForm();
   }
