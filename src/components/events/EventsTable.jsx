@@ -50,7 +50,7 @@ export default class EventsTable extends ListingsTable {
                 return o.id === event.org_id
               })}
               venues={venues} orgs={orgs}
-              saveChanges={this.handleSaveChanges} deleteListing={this.handleDeleteListing}
+              saveListing={this.handleSaveChanges} deleteListing={this.handleDeleteListing}
             />
           )
         }

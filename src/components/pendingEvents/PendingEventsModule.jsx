@@ -16,11 +16,10 @@ export default class PendingEventsModule extends PendingListingsModule {
     this.tagLookupService = app.service('events-tags-lookup');
 
     this.removeTagAssociations = this.removeTagAssociations.bind(this);
-    this.addTagAssociations = this.addTagAssociations.bind(this);
+    this.copyTagAssociations = this.copyTagAssociations.bind(this);
   }
 
   removeListing(id) {
-    console.log(`in discardEvent id ${id}`);
     // TODO: Remove tags as well
     this.pendingListingsService.remove(id).then(message => {
       console.log('removing pending event', message);
@@ -45,7 +44,7 @@ export default class PendingEventsModule extends PendingListingsModule {
         status: 'success',
         details: `Published ${result.name} as new event #${result.id}`
       });
-      this.addTagAssociations(id, result.id);
+      this.copyTagAssociations(id, result.id);
       this.removeListing(id);
     }, err => {
       console.log('error creating event', err);
@@ -66,15 +65,15 @@ export default class PendingEventsModule extends PendingListingsModule {
         details: `Published ${msg.name} as an update to ${target.name}`
       });
       this.removeListing(id);
-      this.removeTagAssociations(id, listing.id).then(this.addTagAssociations(id, listing.id));
+      this.removeTagAssociations(id, listing.id).then(this.copyTagAssociations(id, listing.id));
     }, err => {
       console.log('error updating event', err);
       this.props.updateMessageList({status: 'error', details: err.message});
     });
   }
 
-  addTagAssociations(pendingID, liveID) {
-    console.log('in addTagAssociations');
+  copyTagAssociations(pendingID, liveID) {
+    console.log('in copyTagAssociations');
     this.pendingTagLookupService.find({query: {pending_event_id: pendingID}}).then(resultSet => {
       const tagAssociations = [];
 

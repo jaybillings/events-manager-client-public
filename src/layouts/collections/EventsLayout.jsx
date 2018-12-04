@@ -1,70 +1,63 @@
-import React, {Component} from 'react';
-import {buildColumnSort, buildSortQuery} from "../../utilities";
+import React from 'react';
+import {buildSortQuery} from "../../utilities";
 import app from '../../services/socketio';
+import uuid from "uuid/v1";
 
 import Header from '../../components/common/Header';
 import Filters from '../../components/common/Filters';
 import EventsTable from '../../components/events/EventsTable';
 import EventAddForm from '../../components/events/EventAddForm';
 import MessagePanel from "../../components/common/MessagePanel";
+import ListingsLayout from "../../components/ListingsLayout";
 
-export default class EventsLayout extends Component {
+export default class EventsLayout extends ListingsLayout {
   constructor(props) {
-    super(props);
+    super(props, 'events');
 
-    this.defaultPageSize = 5;
-    this.defaultTableSort = ['updated_at', -1];
     this.defaultQuery = {$sort: {name: 1}, $select: ['name'], $limit: 100};
 
     this.state = {
-      events: [], venues: [], orgs: [], tags: [], eventsTotal: 0,
-      eventsLoaded: false, venuesLoaded: false, orgsLoaded: false, tagsLoaded: false,
-      pageSize: this.defaultPageSize, currentPage: 1, sort: this.defaultTableSort, filter: {},
+      listings: [], venues: [], orgs: [], tags: [], listingsTotal: 0,
+      listingsLoaded: false, venuesLoaded: false, orgsLoaded: false, tagsLoaded: false,
+      pageSize: this.defaultPageSize, currentPage: 1, sort: this.defaultTableSort,
       messagePanelVisible: false, messages: []
     };
 
-    this.eventsService = app.service('events');
     this.venuesService = app.service('venues');
     this.orgsSerivce = app.service('organizers');
     this.tagsService = app.service('tags');
     this.tagsLookupService = app.service('events-tags-lookup');
+    this.liveEventService = app.service('events-live');
+    this.droppedEventService = app.service('events-dropped');
 
-    this.fetchAllData = this.fetchAllData.bind(this);
-    this.fetchEvents = this.fetchEvents.bind(this);
+    this.fetchListings = this.fetchListings.bind(this);
     this.fetchVenues = this.fetchVenues.bind(this);
     this.fetchOrgs = this.fetchOrgs.bind(this);
     this.fetchTags = this.fetchTags.bind(this);
 
-    this.updatePageSize = this.updatePageSize.bind(this);
-    this.updateCurrentPage = this.updateCurrentPage.bind(this);
     this.updateFilters = this.updateFilters.bind(this);
-    this.updateColumnSort = this.updateColumnSort.bind(this);
-    this.updateMessagePanel = this.updateMessagePanel.bind(this);
-    this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
-
-    this.deleteEvent = this.deleteEvent.bind(this);
-    this.saveEvent = this.saveEvent.bind(this);
-    this.createEvent = this.createEvent.bind(this);
-    this.saveEventTags = this.saveEventTags.bind(this);
-
-    this.renderTable = this.renderTable.bind(this);
-    this.renderAddForm = this.renderAddForm.bind(this);
+    this.createTagAssociations = this.createTagAssociations.bind(this);
+    this.removeTagAssociations = this.removeTagAssociations.bind(this);
+    this.addToLiveList = this.addToLiveList.bind(this);
+    this.addToDropList = this.addToDropList.bind(this);
+    this.removeFromLiveList = this.removeFromLiveList.bind(this);
+    this.removeFromDropList = this.removeFromDropList.bind(this);
   }
 
   componentDidMount() {
     this.fetchAllData();
 
     // Register listeners
-    this.eventsService
+    this.listingsService
       .on('created', message => {
         console.log('event created', message);
         this.updateMessagePanel({status: 'success', details: `Created event #${message.id} - ${message.name}`});
-        this.setState({currentPage: 1}, () => this.fetchEvents());
+        this.setState({currentPage: 1}, () => this.fetchListings());
       })
       .on('patched', message => {
         console.log('event patched', message);
         this.updateMessagePanel({status: 'success', details: `Updated event #${message.id} - ${message.name}`});
-        this.fetchEvents();
+        this.fetchListings();
       })
       .on('removed', message => {
         console.log('event removed', message);
@@ -72,7 +65,7 @@ export default class EventsLayout extends Component {
           status: 'success',
           details: `Permanently deleted event #${message.id} - ${message.name}`
         });
-        this.setState({currentPage: 1}, () => this.fetchEvents());
+        this.setState({currentPage: 1}, () => this.fetchListings());
       })
       .on('error', error => {
         console.log('event error', error);
@@ -123,7 +116,7 @@ export default class EventsLayout extends Component {
   }
 
   componentWillUnmount() {
-    this.eventsService
+    this.listingsService
       .removeAllListeners('created')
       .removeAllListeners('patched')
       .removeAllListeners('removed');
@@ -145,13 +138,13 @@ export default class EventsLayout extends Component {
   }
 
   fetchAllData() {
-    this.fetchEvents();
+    this.fetchListings();
     this.fetchVenues();
     this.fetchOrgs();
     this.fetchTags();
   }
 
-  fetchEvents() {
+  fetchListings() {
     const sort = this.state.sort;
     const pageSize = this.state.pageSize;
     const currentPage = this.state.currentPage;
@@ -164,7 +157,7 @@ export default class EventsLayout extends Component {
     };
     Object.assign(query, filter);
 
-    this.eventsService.find({query: query}).then(message => {
+    this.listingsService.find({query: query}).then(message => {
       this.setState({events: message.data, eventsTotal: message.total, eventsLoaded: true});
     });
   }
@@ -187,14 +180,6 @@ export default class EventsLayout extends Component {
     });
   }
 
-  updatePageSize(e) {
-    this.setState({pageSize: parseInt(e.target.value, 10), currentPage: 1}, () => this.fetchEvents());
-  }
-
-  updateCurrentPage(page) {
-    this.setState({currentPage: parseInt(page, 10)}, () => this.fetchEvents());
-  }
-
   updateFilters(filterType) {
     let filter = {};
 
@@ -212,59 +197,72 @@ export default class EventsLayout extends Component {
         filter = {};
     }
 
-    this.setState({currentPage: 1, filter: filter}, () => this.fetchEvents());
+    this.setState({currentPage: 1, filter: filter}, () => this.fetchListings());
   }
 
-  updateColumnSort(e) {
-    const colSortState = buildColumnSort(e.target, this.state.sort);
-    this.setState({sort: colSortState}, () => this.fetchEvents());
+  deleteListing(id) {
+    this.listingsService.remove(id).then(message => {
+      console.log('removing event', message);
+      this.removeTagAssociations(id);
+    });
+    // TODO: Remove from live or dropped list(s)
   }
 
-  updateMessagePanel(msg) {
-    const messageList = this.state.messages;
-    this.setState({messages: messageList.concat([msg]), messagePanelVisible: true});
-  }
-
-  dismissMessagePanel() {
-    this.setState({messages: [], messagePanelVisible: false});
-  }
-
-  deleteEvent(id) {
-    this.eventsService.remove(id).then(message => console.log('removing event', message));
-    // Remove tags?
-  }
-
-  saveEvent(id, newData) {
-    this.eventsService.patch(id, newData).then(message => {
+  saveListing(id, newData) {
+    // TODO: Save tags
+    this.listingsService.patch(id, newData).then(message => {
       console.log('patching event', message);
     }, err => {
       console.log('error patching event', err);
       this.updateMessagePanel(err);
     });
+    // TODO: Modify live/dropped lists
   }
 
-  createEvent(eventObj, tagData) {
-    this.eventsService.create(eventObj).then(message => {
+  createListing(eventObj, tagsToSave) {
+    eventObj.uuid = uuid();
+
+    this.listingsService.create(eventObj).then(message => {
       console.log('creating event', message);
-      this.saveEventTags(message.id, tagData);
+      this.createTagAssociations(message.id, tagsToSave);
+      // TODO: Add as live if admin, as pending if not
+      this.addToLiveList(message.id);
     }, err => {
       console.log('error creating event', err);
       this.updateMessagePanel(err);
     });
+    // TODO: Add to live list
   }
 
-  saveEventTags(id, tagData) {
+  createTagAssociations(id, tagList) {
     let tagsToSave = [];
 
-    tagData.forEach(tagId => tagsToSave.push({event_id: id, tag_id: tagId}));
+    tagList.forEach(tagId => tagsToSave.push({event_id: id, tag_id: tagId}));
 
     this.tagsLookupService.create(tagsToSave).then(message => {
+      this.updateMessageList({status: 'info', details: `Saved tags associated with event #${id}`});
       console.log('tag-lookup creating', message);
     }, err => {
       console.log('tag-lookup error', err);
-      this.updateMessagePanel(err);
+      const details = `Could not save tags associated with event # ${id}. Please re-save listing on its idividual page.`;
+      this.updateMessagePanel({status: 'error', details: details});
     });
   }
+
+  removeTagAssociations(id) {
+    console.log('in removeTagAssociations');
+    this.tagsLookupService.remove(null, {query: {event_id: id}})
+      .then(result => console.log('tag lookup removed', result),
+      err => console.log('error removing tag associations', err));
+  }
+
+  addToLiveList() {}
+
+  removeFromLiveList() {}
+
+  addToDropList() {}
+
+  removeFromDropList() {}
 
   renderTable() {
     if (!(this.state.eventsLoaded && this.state.venuesLoaded && this.state.orgsLoaded)) {
@@ -286,7 +284,7 @@ export default class EventsLayout extends Component {
       listings={events} listingsTotal={total} venues={venues} orgs={orgs}
       pageSize={pageSize} currentPage={currentPage} sort={sort}
       updateColumnSort={this.updateColumnSort} updatePageSize={this.updatePageSize}
-      updateCurrentPage={this.updateCurrentPage} deleteListing={this.deleteEvent} saveListing={this.saveEvent}
+      updateCurrentPage={this.updateCurrentPage} deleteListing={this.deleteListing} saveListing={this.saveListing}
     />;
   }
 
@@ -299,7 +297,7 @@ export default class EventsLayout extends Component {
     const orgs = this.state.orgs;
     const tags = this.state.tags;
 
-    return <EventAddForm venues={venues} orgs={orgs} tags={tags} createEvent={this.createEvent} />;
+    return <EventAddForm venues={venues} orgs={orgs} tags={tags} createListing={this.createListing} />;
   }
 
   render() {

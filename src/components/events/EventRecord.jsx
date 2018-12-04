@@ -59,13 +59,13 @@ export default class EventRecord extends Component {
     };
 
     // Only add non-required if they have a value
-    (this.emailInput.current.value !== event.email) && (newData.email = this.emailInput.current.value.trim());
-    (this.urlInput.current.value !== event.url) && (newData.url = this.urlInput.current.value.trim());
-    (this.phoneInput.current.value !== event.phone) && (newData.phone = this.phoneInput.current.value.trim());
-    (this.hoursInput.current.value !== event.hours) && (newData.hours = this.hoursInput.current.value.trim());
-    (this.ticketUrlInput.current.value !== event.ticket_url) && (newData.ticket_url = this.ticketUrlInput.current.value.trim());
-    (this.ticketPhoneInput.current.value !== event.ticket_phone) && (newData.ticket_phone = this.ticketPhoneInput.current.value.trim());
-    (this.ticketPricesInput.current.value !== event.ticket_prices) && (newData.ticket_prices = this.ticketPricesInput.current.value.trim());
+    this.emailInput.current.value !== '' && (newData.email = this.emailInput.current.value.trim());
+    this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value.trim());
+    this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value.trim());
+    this.hoursInput.current.value !== '' && (newData.hours = this.hoursInput.current.value.trim());
+    this.ticketUrlInput.current.value !== '' && (newData.ticket_url = this.ticketUrlInput.current.value.trim());
+    this.ticketPhoneInput.current.value !== '' && (newData.ticket_phone = this.ticketPhoneInput.current.value.trim());
+    this.ticketPricesInput.current.value !== '' && (newData.ticket_prices = this.ticketPricesInput.current.value.trim());
 
     // Tag data
     checkedBoxes.forEach(input => {
