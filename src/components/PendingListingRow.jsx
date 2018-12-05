@@ -27,19 +27,22 @@ export default class PendingListingRow extends Component {
     this.checkIfNew(this.props.pendingListing);
   }
 
-  startEdit() {
+  startEdit(e) {
     this.setState({editable: true});
+    e.stopPropagation();
   }
 
-  cancelEdit() {
+  cancelEdit(e) {
     this.setState({editable: false});
+    e.stopPropagation();
   }
 
-  handleDeleteClick() {
+  handleDeleteClick(e) {
     this.props.removeListing(this.props.pendingListing.id);
+    e.stopPropagation();
   }
 
-  handleSaveClick() {
+  handleSaveClick(e) {
     const id = this.props.pendingListing.id;
     const newData = { name: this.nameInput.current.value.trim() };
 
@@ -49,6 +52,8 @@ export default class PendingListingRow extends Component {
         this.setState({editable: false});
       });
     });
+
+    e.stopPropagation();
   }
 
   handleRowClick() {

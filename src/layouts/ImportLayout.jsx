@@ -15,8 +15,8 @@ export default class ImportLayout extends Component {
     super(props);
 
     this.state = {
-      messages: [], messagePanelVisible: false, venues: [], orgs: [], hoods: [], tags: [],
-      eventsLoaded: false, venuesLoaded: false, orgsLoaded: false, hoodsLoaded: false, tagsLoaded: false
+      messages: [], messagePanelVisible: false, venues: [], orgs: [], tags: [],
+      eventsLoaded: false, venuesLoaded: false, orgsLoaded: false, tagsLoaded: false
     };
 
     this.API_URI = 'http://localhost:3030/importer';
@@ -35,13 +35,11 @@ export default class ImportLayout extends Component {
     this.importerService = app.service('importer');
     this.venuesService = app.service('venues');
     this.orgsService = app.service('organizers');
-    this.hoodsService = app.service('neighborhoods');
     this.tagsService = app.service('tags');
 
     this.fetchLiveData = this.fetchLiveData.bind(this);
     this.fetchVenues = this.fetchVenues.bind(this);
     this.fetchOrgs = this.fetchOrgs.bind(this);
-    this.fetchHoods = this.fetchHoods.bind(this);
     this.fetchTags = this.fetchTags.bind(this);
     this.importData = this.importData.bind(this);
     this.publishListings = this.publishListings.bind(this);
@@ -72,14 +70,12 @@ export default class ImportLayout extends Component {
     const liveServices = new Map([
       ['venues', this.venuesService],
       ['orgs', this.orgsService],
-      ['hoods', this.hoodsService],
       ['tags', this.tagsService]
     ]);
 
     const fetchCallbacks = {
       venues: this.fetchVenues,
       orgs: this.fetchOrgs,
-      hoods: this.fetchHoods,
       tags: this.fetchTags
     };
 
@@ -109,7 +105,6 @@ export default class ImportLayout extends Component {
     const liveServices = new Map([
       ['venues', this.venuesService],
       ['orgs', this.orgsService],
-      ['hoods', this.hoodsService],
       ['tags', this.tagsService]
     ]);
 
@@ -125,7 +120,6 @@ export default class ImportLayout extends Component {
   fetchLiveData() {
     this.fetchVenues();
     this.fetchOrgs();
-    this.fetchHoods();
     this.fetchTags();
   }
 
@@ -138,12 +132,6 @@ export default class ImportLayout extends Component {
   fetchOrgs() {
     this.orgsService.find({query: this.liveSchemaQuery}).then(message => {
       this.setState({orgs: message.data, orgsLoaded: true});
-    });
-  }
-
-  fetchHoods() {
-    this.hoodsService.find({query: this.liveSchemaQuery}).then(message => {
-      this.setState({hoods: message.data, hoodsLoaded: true});
     });
   }
 
@@ -207,8 +195,6 @@ export default class ImportLayout extends Component {
     const venuesLoaded = this.state.venuesLoaded;
     const orgs = this.state.orgs;
     const orgsLoaded = this.state.orgsLoaded;
-    const hoods = this.state.hoods;
-    const hoodsLoaded = this.state.hoodsLoaded;
     const tags = this.state.tags;
     const tagsLoaded = this.state.tagsLoaded;
 
@@ -227,7 +213,7 @@ export default class ImportLayout extends Component {
           updateMessageList={this.updateMessageList}
         />
         <PendingVenuesModule
-          ref={this.venuesModule} hoods={hoods} hoodsLoaded={hoodsLoaded}
+          ref={this.venuesModule}
           defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
           updateMessageList={this.updateMessageList}
         />

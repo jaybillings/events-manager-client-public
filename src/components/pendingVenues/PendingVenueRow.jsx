@@ -11,17 +11,37 @@ export default class PendingVenueRow extends PendingListingRow {
     super(props);
 
     this.hoodList = React.createRef();
+
+    PendingVenueRow.renderHoodLink = PendingVenueRow.renderHoodLink.bind(this);
   }
 
   handleSaveClick() {
     const id = this.props.pendingListing.id;
     const newData = {
       name: this.nameInput.current.value.trim(),
-      hood_id: this.hoodList.current.value
+      hood_uuid: this.hoodList.current.value
     };
 
-    this.props.saveChanges(id, newData);
-    this.setState({editable: false});
+    this.props.saveChanges(id, newData).then(result => {
+      // noinspection JSCheckFunctionSignatures
+      Promise.all([this.checkIfDup(result), this.checkIfNew(result)]).then(() => {
+        this.setState({editable: false});
+      });
+    });
+  }
+
+  static renderHoodLink(hood) {
+    let linkString;
+
+    if (hood.source === 'pending') {
+      linkString = `/pendingNeighborhoods/${hood.uuid}`;
+    } else if (hood.source === 'live') {
+      linkString = `/neighborhoods/${hood.uuid}`;
+    } else {
+      linkString = '/404';
+    }
+
+    return <Link to={linkString}>{hood.name}</Link>;
   }
 
   render() {
@@ -31,11 +51,7 @@ export default class PendingVenueRow extends PendingListingRow {
     const isDup = this.state.is_dup;
     const isNew = this.state.is_new;
     const selectClass = selected ? ' is-selected' : '';
-
     const hoods = this.props.hoods;
-    const hoodLink = this.props.hood
-      ? <Link to={`/pendingNeighborhoods/${this.props.hood.id}`}>{this.props.hood.name}</Link>
-      : 'NO NEIGHBORHOOD';
 
     if (this.state.editable) {
       return (
@@ -44,9 +60,7 @@ export default class PendingVenueRow extends PendingListingRow {
             <button type={'button'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
-          <td>
-            <input type={'text'} ref={this.nameInput} defaultValue={pendingListing.name} />
-          </td>
+          <td><input type={'text'} ref={this.nameInput} defaultValue={pendingListing.name} /></td>
           <td>
             <select ref={this.hoodList} defaultValue={pendingListing.hood_id || ''} required>
               {renderOptionList(hoods)}
@@ -58,13 +72,15 @@ export default class PendingVenueRow extends PendingListingRow {
       );
     }
 
+    const hoodLink = this.props.hood ? PendingVenueRow.renderHoodLink(this.props.hood) : 'NO NEIGHBORHOOD';
+
     return (
       <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
         <td>
           <button type={'button'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Discard</button>
         </td>
-        <td><Link to={`/pendingVenues/${pendingListing.id}`}>{pendingListing.name}</Link></td>
+        <td><Link to={`/pendingVenues/${pendingListing.uuid}`}>{pendingListing.name}</Link></td>
         <td>{hoodLink}</td>
         <td>{createdAt}</td>
         <td><StatusLabel isDup={isDup} isNew={isNew} schema={'venues'}/></td>

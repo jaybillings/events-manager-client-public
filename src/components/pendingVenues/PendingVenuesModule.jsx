@@ -1,5 +1,6 @@
 import React from "react";
-import {renderTableHeader} from "../../utilities";
+import {buildSortQuery, renderTableHeader} from "../../utilities";
+import app from "../../services/socketio";
 
 import PendingListingsModule from "../PendingListingsModule";
 import PaginationLayout from "../common/PaginationLayout";
@@ -10,19 +11,130 @@ import SelectionControl from "../common/SelectionControl";
 export default class PendingVenuesModule extends PendingListingsModule {
   constructor(props) {
     super(props, 'venues');
+
+    Object.assign(this.state, {hoods: [], hoodsLoaded: false});
+
+    this.defaultQuery = {$sort: {name: 1}, $limit: 100};
+
+    this.hoodsService = app.service('neighborhoods');
+    this.pendingHoodsService = app.service('pending-neighborhoods');
+
+    this.fetchVenues = this.fetchVenues.bind(this);
+    this.fetchAllHoods = this.fetchAllHoods.bind(this);
+    this.fetchHoods = this.fetchHoods.bind(this);
+    this.fetchPendingHoods = this.fetchPendingHoods.bind(this);
+  }
+
+  componentDidMount() {
+    this.fetchAllData();
+
+    this.pendingListingsService
+      .on('created', message => {
+        this.props.updateMessageList({status: 'success', details: `Added "${message.name}" as new pending ${this.schema.slice(0, -1)}`});
+        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchVenues());
+      })
+      .on('updated', message => {
+        this.props.updateMessageList({status: 'info', details: message.details});
+        this.fetchVenues();
+      })
+      .on('patched', message => {
+        this.props.updateMessageList({status: 'success', details: `Updated pending ${this.schema.slice(0, -1)} "${message.name}"`});
+        this.fetchVenues();
+      })
+      .on('removed', message => {
+        this.props.updateMessageList({status: 'info', details: `Discarded pending ${this.schema.slice(0, -1)} "${message.name}"`});
+        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchVenues());
+      });
+
+    // TODO: Only fetch what is needed
+    this.hoodsService
+      .on('created', () => this.fetchHoods())
+      .on('updated', () => this.fetchHoods())
+      .on('patched', () => this.fetchHoods())
+      .on('removed', () => this.fetchHoods());
+
+    this.pendingHoodsService
+      .on('created', () => this.fetchPendingHoods())
+      .on('updated', () => this.fetchPendingHoods())
+      .on('patched', () => this.fetchPendingHoods())
+      .on('removed', () => this.fetchPendingHoods());
+  }
+
+  componentWillUnmount() {
+    this.pendingListingsService
+      .removeAllListeners('created')
+      .removeAllListeners('updated')
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
+
+    this.hoodsService
+      .removeAllListeners('created')
+      .removeAllListeners('updated')
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
+
+    this.pendingHoodsService
+      .removeAllListeners('created')
+      .removeAllListeners('updated')
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
+  }
+
+  fetchAllData() {
+    this.fetchVenues();
+    this.fetchAllHoods();
+  }
+
+  fetchVenues() {
+    this.pendingListingsService.find({
+      query: {
+        $sort: buildSortQuery(this.state.sort),
+        $limit: this.state.pageSize,
+        $skip: this.state.pageSize * (this.state.currentPage - 1)
+      }
+    }).then(message => {
+      this.setState({pendingListings: message.data, pendingListingsCount: message.total,
+        listingsLoaded: true, selectedListings: []});
+    });
+  }
+
+  fetchAllHoods() {
+    Promise.all([
+      this.hoodsService.find({query: this.defaultQuery}),
+      this.pendingHoodsService.find({query: this.defaultQuery})
+    ]).then(resultSet => {
+      const hoods = resultSet[0].data.map(h => Object.assign(h, {source: 'live'}));
+      const pendingHoods = resultSet[1].data.map(h => Object.assign(h, {source: 'pending'}));
+      const allHoods = hoods.concat(pendingHoods);
+      const uniqueHoods = [...new Set(allHoods)];
+
+      this.setState({hoods: uniqueHoods, hoodsLoaded: true});
+    });
+  }
+
+  fetchHoods() {
+    this.hoodsService.find({query: this.defaultQuery}).then(results => {
+      this.setState(prevState => ({hoods: Object.assign(prevState.hoods, results.data)}));
+    });
+  }
+
+  fetchPendingHoods() {
+    this.pendingHoodsService.find({query: this.defaultQuery}).then(results => {
+      this.setState(prevState => ({hoods: Object.assign(prevState, results.data)}));
+    });
   }
 
   renderTable() {
     const pendingVenuesCount = this.state.pendingListingsCount;
 
-    if (!(this.state.listingsLoaded && this.props.hoodsLoaded)) {
+    if (!(this.state.listingsLoaded && this.state.hoodsLoaded)) {
       return <p>Data is loading... Please be patient...</p>;
     } else if (pendingVenuesCount === 0) {
       return <p>No pending venues to list.</p>;
     }
 
     const pendingVenues = this.state.pendingListings;
-    const hoods = this.props.hoods;
+    const hoods = this.state.hoods;
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
       ['name', 'Name'],
@@ -35,6 +147,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
     const currentPage = this.state.currentPage;
     const isVisible = this.state.moduleVisible;
     const selectedVenues = this.state.selectedListings;
+    const numSchemaLabel = selectedVenues.length || "All";
+    const schemaLabel = selectedVenues.length === 1 ? 'venue' : 'venues';
 
     return ([
       <ShowHideToggle
@@ -43,32 +157,30 @@ export default class PendingVenuesModule extends PendingListingsModule {
       />,
       <div key={'venues-module-body'}>
         <SelectionControl
-          numSelected={selectedVenues.length} totalCount={pendingVenues.length} schema={'venues'}
+          numSelected={selectedVenues.length}
           selectAll={this.selectAllListings} selectNone={this.selectNoListings}
         />
         <PaginationLayout
-          key={'pending-venues-pagination'} pageSize={pageSize} activePage={currentPage}
-          total={pendingVenuesCount} schema={'pending-venues'}
+          key={'pending-venues-pagination'} schema={'pending-venues'}
+          total={pendingVenuesCount} pageSize={pageSize} activePage={currentPage}
           updatePageSize={this.updatePageSize} updateCurrentPage={this.handleUpdateCurrentPage}
         />
         <table className={'schema-table'} key={'pending-venues-table'}>
-          <thead>{renderTableHeader(titleMap, sort, this.handleUpdateSort)}</thead>
+          <thead>{renderTableHeader(titleMap, sort, this.updateColSort)}</thead>
           <tbody>
           {
             pendingVenues.map(venue =>
               <PendingVenueRow
-                key={`venue-${venue.id}`} pendingListing={venue}
-                hood={hoods.find(h => {
-                  return h.id === venue.hood_id
-                })}
-                hoods={hoods} selected={selectedVenues.includes(venue.id)}
-                saveChanges={this.saveChanges} discardListing={this.removeListing}
-                listingIsDup={this.queryForSimilar} handleListingSelect={this.handleListingSelect}
+                key={`venue-${venue.id}`} pendingListing={venue} selected={selectedVenues.includes(venue.id)}
+                hood={hoods.find(h => {return h.uuid === venue.hood_uuid})} hoods={hoods}
+                saveChanges={this.saveChanges} removeListing={this.removeListing} selectListing={this.handleListingSelect}
+                listingIsDup={this.queryForSimilar} listingIsNew={this.queryForLive} pendingOrLive={this.pendingOrLive}
               />)
           }
           </tbody>
         </table>
-        <button type={'button'} disabled={selectedVenues.length === 0} onClick={this.publishListings}>Publish Venues</button>
+        <button type={'button'} onClick={this.publishListings}>Publish {numSchemaLabel} {schemaLabel}</button>
+        <button type={'button'} onClick={this.discardListings}>Discard {numSchemaLabel} {schemaLabel}</button>
       </div>
     ])
   }

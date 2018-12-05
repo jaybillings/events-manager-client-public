@@ -5,18 +5,18 @@ import app from '../services/socketio';
 import PaginationLayout from "./common/PaginationLayout";
 import PendingListingRow from "./PendingListingRow";
 import ShowHideToggle from "./common/ShowHideToggle";
+import SelectionControl from "./common/SelectionControl";
 
 import '../styles/schema-module.css';
 import '../styles/schema-table.css';
-import SelectionControl from "./common/SelectionControl";
 
 export default class PendingListingsModule extends Component {
   constructor(props, schema) {
     super(props);
 
     this.state = {
-      moduleVisible: true, pendingListings: [], pendingListingsCount: 0, selectedListings: [],
-      listingsLoaded: false, pageSize: this.props.defaultPageSize, currentPage: 1, sort: this.props.defaultSortOrder
+      moduleVisible: true, pendingListings: [], pendingListingsCount: 0, listingsLoaded: false, selectedListings: [],
+      pageSize: this.props.defaultPageSize, currentPage: 1, sort: this.props.defaultSortOrder
     };
 
     this.schema = schema;
@@ -81,7 +81,8 @@ export default class PendingListingsModule extends Component {
         $skip: this.state.pageSize * (this.state.currentPage - 1)
       }
     }).then(message => {
-      this.setState({pendingListings: message.data, pendingListingsCount: message.total, listingsLoaded: true, selectedListings: []});
+      this.setState({pendingListings: message.data, pendingListingsCount: message.total,
+        listingsLoaded: true, selectedListings: []});
     });
   }
 
@@ -147,6 +148,7 @@ export default class PendingListingsModule extends Component {
         status: 'success',
         details: `Published ${msg.name} as new ${this.schema.slice(0, -1)}`
       });
+      // TODO: Look for schema that use this and update
       this.removeListing(id);
     }, err => {
       console.log(`error creating ${this.schema}`, err);
@@ -253,7 +255,8 @@ export default class PendingListingsModule extends Component {
       />,
       <div key={`${schema}-module-body`}>
         <SelectionControl
-          numSelected={selectedListings.length} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
+          numSelected={selectedListings.length}
+          selectAll={this.selectAllListings} selectNone={this.selectNoListings}
         />
         <PaginationLayout
           key={`pending-${schema}-pagination`} schema={`pending-${schema}`}

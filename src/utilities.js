@@ -5,7 +5,7 @@ const renderOptionList = function (schema) {
   let optionsList = [];
 
   schema.forEach(record => {
-    optionsList.push(<option key={record.id} value={record.id}>{record.name}</option>);
+    optionsList.push(<option key={record.uuid} value={record.uuid}>{record.name}</option>);
   });
 
   return optionsList;
@@ -18,7 +18,7 @@ const renderCheckboxList = function (schema, selectedIds) {
     chkbxList.push(
       <li key={record.id}>
         <label>
-          <input type={'checkbox'} className={'js-checkbox'} value={record.id}
+          <input type={'checkbox'} className={'js-checkbox'} value={record.uuid}
                  defaultChecked={selectedIds.includes(record.id)} />
           {record.name}
         </label>
