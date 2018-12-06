@@ -12,33 +12,147 @@ export default class PendingEventsModule extends PendingListingsModule {
   constructor(props) {
     super(props, 'events');
 
-    this.pendingTagLookupService = app.service('pending-events-tags-lookup');
-    this.tagLookupService = app.service('events-tags-lookup');
+    Object.assign(this.state, {
+      orgs: [], orgsLoaded: false, pendingOrgs: [], pendingOrgsLoaded: false,
+      venues: [], venuesLoaded: false, pendingVenues: [], pendingVenuesLoaded: false
+    });
 
-    this.removeTagAssociations = this.removeTagAssociations.bind(this);
+    this.venuesService = app.service('venues');
+    this.pendingVenuesService = app.service('pending-venues');
+    this.orgsService = app.service('organizers');
+    this.pendingOrgsService = app.service('pending-organizers');
+
+    this.pendingTagsLookupService = app.service('pending-events-tags-lookup');
+    this.tagsLookupService = app.service('events-tags-lookup');
+
+    this.fetchOrgs = this.fetchOrgs.bind(this);
+    this.fetchPendingOrgs = this.fetchPendingOrgs.bind(this);
+    this.fetchVenues = this.fetchVenues.bind(this);
+    this.fetchPendingVenues = this.fetchPendingVenues.bind(this);
+
+    this.removePendingTagAssociations = this.removePendingTagAssociations.bind(this);
     this.copyTagAssociations = this.copyTagAssociations.bind(this);
   }
 
-  removeListing(id) {
-    // TODO: Remove tags as well
-    this.pendingListingsService.remove(id).then(message => {
-      console.log('removing pending event', message);
-      this.removeTagAssociations(id);
-    }, err => {
-      console.log(`error removing pending event`, err);
-      this.props.updateMessageList({status: 'error', details: err.message});
+  componentDidMount() {
+    this.fetchAllData();
+
+    this.pendingListingsService
+      .on('created', message => {
+        this.props.updateMessageList({
+          status: 'success',
+          details: `Added "${message.name}" as new pending event.`
+        });
+        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchPendingListings());
+      })
+      .on('updated', message => {
+        this.props.updateMessageList({status: 'info', details: message.details});
+        this.fetchPendingListings();
+      })
+      .on('patched', message => {
+        this.props.updateMessageList({
+          status: 'success',
+          details: `Updated pending event "${message.name}"`
+        });
+        this.fetchPendingListings();
+      })
+      .on('removed', message => {
+        this.props.updateMessageList({
+          status: 'info',
+          details: `Discarded pending event "${message.name}"`
+        });
+        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchPendingListings());
+      });
+
+    const services = new Map([
+      [this.orgsService, this.fetchOrgs],
+      [this.pendingOrgsService, this.fetchPendingOrgs],
+      [this.venuesService, this.fetchVenues],
+      [this.pendingVenuesService, this.fetchPendingVenues]
+    ]);
+
+    for (let [service, dataFetcher] of services) {
+      service
+        .on('created', () => dataFetcher())
+        .on('updated', () => dataFetcher())
+        .on('patched', () => dataFetcher())
+        .on('removed', () => dataFetcher());
+    }
+  }
+
+  componentWillUnmount() {
+    const services = [
+      this.pendingListingsService,
+      this.orgsService,
+      this.pendingOrgsService,
+      this.venuesService,
+      this.pendingVenuesService
+    ];
+
+    services.forEach(service => {
+      service
+        .removeAllListeners('created')
+        .removeAllListeners('updated')
+        .removeAllListeners('patched')
+        .removeAllListeners('removed');
     });
   }
 
-  createLiveListing(listing) {
+  fetchAllData() {
+    this.fetchPendingListings();
+    this.fetchOrgs();
+    this.fetchPendingOrgs();
+    this.fetchVenues();
+    this.fetchPendingVenues();
+  }
+
+  fetchOrgs() {
+    this.orgsService.find({query: this.defaultQuery}).then(message => {
+      this.setState({orgs: message.data, orgsLoaded: true});
+    });
+  }
+
+  fetchPendingOrgs() {
+    this.pendingOrgsService.find({query: this.defaultQuery}).then(message => {
+      this.setState({pendingOrgs: message.data, pendingOrgsLoaded: true});
+    });
+  }
+
+  fetchVenues() {
+    this.venuesService.find({query: this.defaultQuery}).then(message => {
+      this.setState({venues: message.data, venuesLoaded: true});
+    });
+  }
+
+  fetchPendingVenues() {
+    this.pendingVenuesService.find({query: this.defaultQuery}).then(message => {
+      this.setState({pendingVenues: message.data, pendingVenuesLoaded: true});
+    });
+  }
+
+  queryForExisting(pendingListing) {
+    return this.listingsService.find({
+      query: {
+        $or: [{uuid: pendingListing.uuid}, {description: pendingListing.description}, {name: pendingListing.name, start_date: pendingListing.start_date, end_date: pendingListing.end_date}],
+        $select: ['uuid']
+      }
+    });
+  }
+
+  /**
+   * Creates a new live event. Used when publishing events.
+   *
+   * @override
+   * @param {object} pendingListing
+   */
+  createLiveListing(pendingListing) {
     // On create, copy tags lookup to live table
-    const id = listing.id;
+    const id = pendingListing.id;
 
-    delete (listing.id);
-    delete (listing.target_id);
-    listing.is_published = 1;
+    delete (pendingListing.id);
+    pendingListing.is_published = 1;
 
-    this.listingsService.create(listing).then(result => {
+    this.listingsService.create(pendingListing).then(result => {
       console.log('creating event', result);
       this.props.updateMessageList({
         status: 'success',
@@ -52,37 +166,72 @@ export default class PendingEventsModule extends PendingListingsModule {
     });
   }
 
-  updateLiveListing(listing, target) {
-    const id = listing.id;
+  /**
+   * Updates the matching live event with the pending event's data. Used when publishing listings.
+   * @param {object} pendingListing
+   * @param {object} target
+   */
+  updateLiveListing(pendingListing, target) {
+    const id = pendingListing.id;
 
-    delete (listing.id);
-    listing.is_published = 1;
+    delete (pendingListing.id);
+    pendingListing.is_published = 1;
 
-    this.listingsService.update(target.id, listing).then(msg => {
-      console.log('updating event', msg);
+    this.listingsService.update(target.id, pendingListing).then(result => {
+      console.log('updating event', result);
       this.props.updateMessageList({
         status: 'success',
-        details: `Published ${msg.name} as an update to ${target.name}`
+        details: `Published ${result.name} as an update to ${target.name}`
       });
+      this.copyTagAssociations(id, pendingListing.id);
       this.removeListing(id);
-      this.removeTagAssociations(id, listing.id).then(this.copyTagAssociations(id, listing.id));
     }, err => {
       console.log('error updating event', err);
       this.props.updateMessageList({status: 'error', details: err.message});
     });
   }
 
-  copyTagAssociations(pendingID, liveID) {
+  discardListings() {
+    const query = this.state.selectedListings.length === 0 ? {} : {id: {$in: this.state.selectedListings}};
+    let searchOptions = {paginate: false};
+
+    if (query) searchOptions.query = query;
+
+    this.pendingListingsService.remove(null, searchOptions).then(results => {
+      console.log(results);
+      results.forEach(listing => {
+        this.removePendingTagAssociations(listing.id);
+      });
+    }, err => {
+      this.props.updateMessageList({status: 'error', details: err});
+      console.log('error publishing events', JSON.stringify(err));
+    });
+  }
+
+  removeListing(id) {
+    // TODO: Remove tags as well
+    this.pendingListingsService.remove(id).then(() => {
+      this.removePendingTagAssociations(id);
+    }, err => {
+      console.log(`error removing pending event`, JSON.stringify(err));
+      this.props.updateMessageList({status: 'error', details: err.message});
+    });
+  }
+
+  copyTagAssociations(pendingId, liveID) {
     console.log('in copyTagAssociations');
-    this.pendingTagLookupService.find({query: {pending_event_id: pendingID}}).then(resultSet => {
+    this.pendingTagsLookupService.find({query: {pending_event_id: pendingId}}).then(resultSet => {
       const tagAssociations = [];
 
       resultSet.data.forEach(lookupRow => {
-        tagAssociations.push({event_id: liveID, tag_id: lookupRow.tag_id});
+        tagAssociations.push({event_id: liveID, tag_uuid: lookupRow.tag_uuid});
       });
 
-      this.tagLookupService.create(tagAssociations).then(() => {
-        this.props.updateMessageList({status: 'info', details: `Associated tags with ${this.schema.slice(0, -1)} #${liveID}`});
+      this.tagsLookupService.create(tagAssociations).then(() => {
+        this.props.updateMessageList({
+          status: 'info',
+          details: `Associated tags with ${this.schema.slice(0, -1)} #${liveID}`
+        });
       }, err => {
         const details = `Could not associate tags with ${this.schema.slice(0, -1)} #${liveID}. Please re-save listing by going to its listing page.`;
         this.props.updateMessageList({status: 'error', details: details});
@@ -91,27 +240,18 @@ export default class PendingEventsModule extends PendingListingsModule {
     }, err => console.log('error looking up pending tag associations', err));
   }
 
-  removeTagAssociations(id) {
+  removePendingTagAssociations(pendingID) {
     console.log('in removeTagAssociations');
-    this.pendingTagLookupService.remove(null, {query: {pending_event_id: id}})
+    this.pendingTagsLookupService.remove(null, {query: {pending_event_id: pendingID}})
       .then(result => console.log('pending tag lookups removed', result),
         err => console.log('error removing pending tag associations', err));
-  }
-
-  queryForSimilar(pendingListing) {
-    return this.listingsService.find({
-      query: {
-        name: pendingListing.name,
-        start_date: pendingListing.start_date,
-        end_date: pendingListing.end_date
-      }
-    });
   }
 
   renderTable() {
     const pendingEventsCount = this.state.pendingListingsCount;
 
-    if (!(this.state.listingsLoaded && this.props.venuesLoaded && this.props.orgsLoaded && this.props.tagsLoaded)) {
+    if (!(this.state.listingsLoaded && this.state.venuesLoaded && this.state.pendingVenuesLoaded &&
+      this.state.orgsLoaded && this.state.pendingOrgsLoaded)) {
       return <p>Data is loading... Please be patient...</p>;
     } else if (pendingEventsCount === 0) {
       return <p>No pending events to list.</p>
@@ -135,16 +275,15 @@ export default class PendingEventsModule extends PendingListingsModule {
     const currentPage = this.state.currentPage;
     const isVisible = this.state.moduleVisible;
     const selectedEvents = this.state.selectedListings;
+    const numSchemaLabel = selectedEvents.length || "All";
+    const schemaLabel = selectedEvents.length === 1 ? 'event' : 'events';
+
 
     return ([
-      <ShowHideToggle
-        key={'events-module-showhide'} isVisible={isVisible}
-        changeVisibility={this.toggleModuleVisibility}
-      />,
+      <ShowHideToggle key={'events-module-showhide'} isVisible={isVisible} changeVisibility={this.toggleModuleVisibility} />,
       <div key={'events-module-body'}>
         <SelectionControl
-          numSelected={selectedEvents.length} totalCount={pendingEvents.length} schema={'events'}
-          selectAll={this.selectAllListings} selectNone={this.selectNoListings}
+          numSelected={selectedEvents.length} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
         />
         <PaginationLayout
           key={'pending-events-pagination'} schema={'pending-events'}
@@ -157,21 +296,17 @@ export default class PendingEventsModule extends PendingListingsModule {
           {
             pendingEvents.map(event =>
               <PendingEventRow
-                key={`event-${event.id}`} pendingListing={event}
-                venue={venues.find(v => {
-                  return v.id === event.venue_id
-                })}
-                org={orgs.find(o => {
-                  return o.id === event.org_id
-                })}
-                venues={venues} orgs={orgs} selected={selectedEvents.includes(event.id)}
-                saveChanges={this.saveChanges} discardListing={this.removeListing}
-                listingIsDup={this.queryForSimilar} handleListingSelect={this.handleListingSelect}
+                key={`event-${event.id}`} pendingListing={event} selected={selectedEvents.includes(event.id)}
+                venue={venues.find(v => {return v.id === event.venue_id})} venues={venues}
+                org={orgs.find(o => {return o.id === event.org_id})} orgs={orgs}
+                saveChanges={this.saveChanges} removeListing={this.removeListing}
+                selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}
               />)
           }
           </tbody>
         </table>
-        <button type={'button'} disabled={selectedEvents.length === 0} onClick={this.publishListings}>Publish Events</button>
+        <button type={'button'} onClick={this.publishListings}>Publish {numSchemaLabel} {schemaLabel}</button>
+        <button type={'button'} onClick={this.discardListings}>Discard {numSchemaLabel} {schemaLabel}</button>
       </div>
     ])
   }
