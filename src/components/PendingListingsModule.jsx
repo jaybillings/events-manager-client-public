@@ -24,6 +24,12 @@ export default class PendingListingsModule extends Component {
     this.listingsService = app.service(this.schema);
 
     this.fetchAllData = this.fetchAllData.bind(this);
+    this.queryForExisting = this.queryForExisting.bind(this);
+    this.queryForExact = this.queryForExact.bind(this);
+
+    this.createLiveListing = this.createLiveListing.bind(this);
+    this.updateLiveListing = this.updateLiveListing.bind(this);
+
     this.publishListings = this.publishListings.bind(this);
     this.discardListings = this.discardListings.bind(this);
     this.saveChanges = this.saveChanges.bind(this);
@@ -32,9 +38,6 @@ export default class PendingListingsModule extends Component {
     this.updateColSort = this.updateColSort.bind(this);
     this.updatePageSize = this.updatePageSize.bind(this);
     this.updateCurrentPage = this.updateCurrentPage.bind(this);
-
-    this.queryForLive = this.queryForLive.bind(this);
-    this.queryForSimilar = this.queryForSimilar.bind(this);
 
     this.toggleModuleVisibility = this.toggleModuleVisibility.bind(this);
     this.handleListingSelect = this.handleListingSelect.bind(this);
@@ -48,7 +51,10 @@ export default class PendingListingsModule extends Component {
 
     this.pendingListingsService
       .on('created', message => {
-        this.props.updateMessageList({status: 'success', details: `Added "${message.name}" as new pending ${this.schema.slice(0, -1)}`});
+        this.props.updateMessageList({
+          status: 'success',
+          details: `Added "${message.name}" as new pending ${this.schema.slice(0, -1)}`
+        });
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('updated', message => {
@@ -56,11 +62,17 @@ export default class PendingListingsModule extends Component {
         this.fetchAllData();
       })
       .on('patched', message => {
-        this.props.updateMessageList({status: 'success', details: `Updated pending ${this.schema.slice(0, -1)} "${message.name}"`});
+        this.props.updateMessageList({
+          status: 'success',
+          details: `Updated pending ${this.schema.slice(0, -1)} "${message.name}"`
+        });
         this.fetchAllData();
       })
       .on('removed', message => {
-        this.props.updateMessageList({status: 'info', details: `Discarded pending ${this.schema.slice(0, -1)} "${message.name}"`});
+        this.props.updateMessageList({
+          status: 'info',
+          details: `Discarded pending ${this.schema.slice(0, -1)} "${message.name}"`
+        });
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       });
   }
@@ -81,62 +93,27 @@ export default class PendingListingsModule extends Component {
         $skip: this.state.pageSize * (this.state.currentPage - 1)
       }
     }).then(message => {
-      this.setState({pendingListings: message.data, pendingListingsCount: message.total,
-        listingsLoaded: true, selectedListings: []});
-    });
-  }
-
-  publishListings() {
-    const query = this.state.selectedListings.length === 0 ? {} : {id: {$in: this.state.selectedListings}};
-    let searchOptions = {paginate: false};
-
-    if (query) searchOptions.query = query;
-
-    this.pendingListingsService.find(searchOptions).then(resultSet => {
-      resultSet.data.forEach(listing => {
-        this.queryForLive(listing).then(message => {
-          console.log(message);
-          if (message.total) {
-            this.updateLiveListing(listing, message.data[0]);
-          } else {
-            this.createLiveListing(listing);
-          }
-        }, err => {
-          console.log(`Error querying for live event: ${err}`);
-        });
+      this.setState({
+        pendingListings: message.data, pendingListingsCount: message.total,
+        listingsLoaded: true, selectedListings: []
       });
-    }, err => {
-      this.props.updateMessageList({status: 'error', details: err});
-      console.log(`error publishing ${this.schema}: ${err}`);
     });
   }
 
-  discardListings() {
-    const query = this.state.selectedListings.length === 0 ? {} : { id: {$in: this.state.selectedListings}};
-    let searchOptions = {paginate: false};
-
-    if (query) searchOptions.query = query;
-
-    this.pendingListingsService.remove(null, searchOptions).then(message => {
-      console.log(message);
-    }, err => {
-      this.props.updateMessageList({status: 'error', details: err});
-      console.log(`error publishing ${this.schema}: ${err}`);
+  queryForExisting(pendingListing) {
+    return this.listingsService.find({
+      query: {
+        $or: [{uuid: pendingListing.uuid}, {name: pendingListing.name}, {description: pendingListing.description}],
+        $select: ['uuid']
+      }
     });
   }
 
-  removeListing(id) {
-    this.pendingListingsService.remove(id).then(message => {
-      console.log(`removing ${this.schema}`, message);
-    }, err => {
-      console.log(`error removing ${this.schema} error`, err);
-      this.props.updateMessageList({status: 'error', details: err.message});
+  queryForExact(pendingListing) {
+    return this.listingsService.find({
+      query: {uuid: pendingListing.uuid}
     });
-  }
-
-  async saveChanges(id, newData) {
-    return this.pendingListingsService.patch(id, newData);
-  }
+  };
 
   createLiveListing(listing) {
     const id = listing.id;
@@ -168,17 +145,60 @@ export default class PendingListingsModule extends Component {
       });
       this.removeListing(id);
     }, err => {
-      console.log(`error updating ${this.schema}`, err);
-      this.props.updateMessageList({status: 'error', details: err.message});
+      console.log(`error updating ${this.schema}`, JSON.stringify(err));
+      this.props.updateMessageList({status: 'error', details: err[0].message});
     });
   }
 
-  async queryForLive(pendingListing) {
-    return this.listingsService.find({query: { uuid: pendingListing.uuid }});
+  publishListings() {
+    const query = this.state.selectedListings.length === 0 ? {} : {id: {$in: this.state.selectedListings}};
+    let searchOptions = {paginate: false};
+
+    if (query) searchOptions.query = query;
+
+    this.pendingListingsService.find(searchOptions).then(resultSet => {
+      resultSet.data.forEach(listing => {
+        this.queryForExact(listing).then(result => {
+          if (result.total) {
+            this.updateLiveListing(listing, result.data[0]);
+          } else {
+            this.createLiveListing(listing);
+          }
+        }, err => {
+          console.log(`Error querying for live event: ${err}`);
+        });
+      });
+    }, err => {
+      this.props.updateMessageList({status: 'error', details: err});
+      console.log(`error publishing ${this.schema}: ${err}`);
+    });
   }
 
-  async queryForSimilar(pendingListing) {
-    return this.listingsService.find({query: { name: pendingListing.name }});
+  discardListings() {
+    const query = this.state.selectedListings.length === 0 ? {} : {id: {$in: this.state.selectedListings}};
+    let searchOptions = {paginate: false};
+
+    if (query) searchOptions.query = query;
+
+    this.pendingListingsService.remove(null, searchOptions).then(message => {
+      console.log(message);
+    }, err => {
+      this.props.updateMessageList({status: 'error', details: err});
+      console.log(`error publishing ${this.schema}: ${err}`);
+    });
+  }
+
+  async saveChanges(id, newData) {
+    return this.pendingListingsService.patch(id, newData);
+  }
+
+  removeListing(id) {
+    this.pendingListingsService.remove(id).then(message => {
+      console.log(`removing ${this.schema}`, message);
+    }, err => {
+      console.log(`error removing ${this.schema} error`, err);
+      this.props.updateMessageList({status: 'error', details: err.message});
+    });
   }
 
   updateColSort(e) {
@@ -272,8 +292,7 @@ export default class PendingListingsModule extends Component {
                 key={`${this.schema}-${listing.id}`} schema={schema} pendingListing={listing}
                 selected={this.state.selectedListings.includes(listing.id)}
                 saveChanges={this.saveChanges} removeListing={this.removeListing}
-                selectListing={this.handleListingSelect}
-                listingIsDup={this.queryForSimilar} listingIsNew={this.queryForLive}
+                selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}
               />)
           }
           </tbody>

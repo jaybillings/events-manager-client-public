@@ -30,7 +30,10 @@ export default class PendingVenuesModule extends PendingListingsModule {
 
     this.pendingListingsService
       .on('created', message => {
-        this.props.updateMessageList({status: 'success', details: `Added "${message.name}" as new pending ${this.schema.slice(0, -1)}`});
+        this.props.updateMessageList({
+          status: 'success',
+          details: `Added "${message.name}" as new pending ${this.schema.slice(0, -1)}`
+        });
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchVenues());
       })
       .on('updated', message => {
@@ -38,15 +41,20 @@ export default class PendingVenuesModule extends PendingListingsModule {
         this.fetchVenues();
       })
       .on('patched', message => {
-        this.props.updateMessageList({status: 'success', details: `Updated pending ${this.schema.slice(0, -1)} "${message.name}"`});
+        this.props.updateMessageList({
+          status: 'success',
+          details: `Updated pending ${this.schema.slice(0, -1)} "${message.name}"`
+        });
         this.fetchVenues();
       })
       .on('removed', message => {
-        this.props.updateMessageList({status: 'info', details: `Discarded pending ${this.schema.slice(0, -1)} "${message.name}"`});
+        this.props.updateMessageList({
+          status: 'info',
+          details: `Discarded pending ${this.schema.slice(0, -1)} "${message.name}"`
+        });
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchVenues());
       });
 
-    // TODO: Only fetch what is needed
     this.hoodsService
       .on('created', () => this.fetchHoods())
       .on('updated', () => this.fetchHoods())
@@ -93,12 +101,15 @@ export default class PendingVenuesModule extends PendingListingsModule {
         $skip: this.state.pageSize * (this.state.currentPage - 1)
       }
     }).then(message => {
-      this.setState({pendingListings: message.data, pendingListingsCount: message.total,
-        listingsLoaded: true, selectedListings: []});
+      this.setState({
+        pendingListings: message.data, pendingListingsCount: message.total,
+        listingsLoaded: true, selectedListings: []
+      });
     });
   }
 
   fetchAllHoods() {
+    // noinspection JSCheckFunctionSignatures
     Promise.all([
       this.hoodsService.find({query: this.defaultQuery}),
       this.pendingHoodsService.find({query: this.defaultQuery})
@@ -114,13 +125,15 @@ export default class PendingVenuesModule extends PendingListingsModule {
 
   fetchHoods() {
     this.hoodsService.find({query: this.defaultQuery}).then(results => {
-      this.setState(prevState => ({hoods: Object.assign(prevState.hoods, results.data)}));
+      const hoods = results.data.map(h => Object.assign(h, {source: 'live'}));
+      this.setState(prevState => ({hoods: Object.assign(prevState.hoods, hoods)}));
     });
   }
 
   fetchPendingHoods() {
     this.pendingHoodsService.find({query: this.defaultQuery}).then(results => {
-      this.setState(prevState => ({hoods: Object.assign(prevState, results.data)}));
+      const pendingHoods = results.data.map(h => Object.assign(h, {source: 'pending'}));
+      this.setState(prevState => ({hoods: Object.assign(prevState, pendingHoods)}));
     });
   }
 
@@ -163,7 +176,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
         <PaginationLayout
           key={'pending-venues-pagination'} schema={'pending-venues'}
           total={pendingVenuesCount} pageSize={pageSize} activePage={currentPage}
-          updatePageSize={this.updatePageSize} updateCurrentPage={this.handleUpdateCurrentPage}
+          updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
         />
         <table className={'schema-table'} key={'pending-venues-table'}>
           <thead>{renderTableHeader(titleMap, sort, this.updateColSort)}</thead>
@@ -173,8 +186,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
               <PendingVenueRow
                 key={`venue-${venue.id}`} pendingListing={venue} selected={selectedVenues.includes(venue.id)}
                 hood={hoods.find(h => {return h.uuid === venue.hood_uuid})} hoods={hoods}
-                saveChanges={this.saveChanges} removeListing={this.removeListing} selectListing={this.handleListingSelect}
-                listingIsDup={this.queryForSimilar} listingIsNew={this.queryForLive} pendingOrLive={this.pendingOrLive}
+                saveChanges={this.saveChanges} removeListing={this.removeListing}
+                selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}
               />)
           }
           </tbody>

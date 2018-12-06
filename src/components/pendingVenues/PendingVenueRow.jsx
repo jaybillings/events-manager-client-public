@@ -1,7 +1,7 @@
 import React from 'react';
 import Moment from 'moment';
 import {Link} from 'react-router-dom';
-import {renderOptionList} from "../../utilities";
+import {renderOptionList, renderSchemaLink} from "../../utilities";
 
 import PendingListingRow from "../PendingListingRow";
 import StatusLabel from "../common/StatusLabel";
@@ -11,11 +11,11 @@ export default class PendingVenueRow extends PendingListingRow {
     super(props);
 
     this.hoodList = React.createRef();
-
-    PendingVenueRow.renderHoodLink = PendingVenueRow.renderHoodLink.bind(this);
   }
 
-  handleSaveClick() {
+  handleSaveClick(e) {
+    e.stopPropagation();
+
     const id = this.props.pendingListing.id;
     const newData = {
       name: this.nameInput.current.value.trim(),
@@ -23,33 +23,16 @@ export default class PendingVenueRow extends PendingListingRow {
     };
 
     this.props.saveChanges(id, newData).then(result => {
-      // noinspection JSCheckFunctionSignatures
-      Promise.all([this.checkIfDup(result), this.checkIfNew(result)]).then(() => {
-        this.setState({editable: false});
-      });
+      this.checkWriteStatus(result);
+      this.setState({editable: false});
     });
-  }
-
-  static renderHoodLink(hood) {
-    let linkString;
-
-    if (hood.source === 'pending') {
-      linkString = `/pendingNeighborhoods/${hood.uuid}`;
-    } else if (hood.source === 'live') {
-      linkString = `/neighborhoods/${hood.uuid}`;
-    } else {
-      linkString = '/404';
-    }
-
-    return <Link to={linkString}>{hood.name}</Link>;
   }
 
   render() {
     const pendingListing = this.props.pendingListing;
     const createdAt = Moment(pendingListing.created_at).calendar();
     const selected = this.props.selected;
-    const isDup = this.state.is_dup;
-    const isNew = this.state.is_new;
+    const writeStatus = this.state.write_status;
     const selectClass = selected ? ' is-selected' : '';
     const hoods = this.props.hoods;
 
@@ -67,12 +50,12 @@ export default class PendingVenueRow extends PendingListingRow {
             </select>
           </td>
           <td>{createdAt}</td>
-          <td><StatusLabel isDup={isDup} isNew={isNew} schema={'venues'}/></td>
+          <td><StatusLabel writeStatus={writeStatus} schema={'venues'} /></td>
         </tr>
       );
     }
 
-    const hoodLink = this.props.hood ? PendingVenueRow.renderHoodLink(this.props.hood) : 'NO NEIGHBORHOOD';
+    const hoodLink = this.props.hood ? renderSchemaLink(this.props.hood, 'neighborhoods') : 'NO NEIGHBORHOOD';
 
     return (
       <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
@@ -83,7 +66,7 @@ export default class PendingVenueRow extends PendingListingRow {
         <td><Link to={`/pendingVenues/${pendingListing.uuid}`}>{pendingListing.name}</Link></td>
         <td>{hoodLink}</td>
         <td>{createdAt}</td>
-        <td><StatusLabel isDup={isDup} isNew={isNew} schema={'venues'}/></td>
+        <td><StatusLabel writeStatus={writeStatus} schema={'venues'} /></td>
       </tr>
     );
   }

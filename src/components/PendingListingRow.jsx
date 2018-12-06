@@ -3,57 +3,54 @@ import Moment from 'moment';
 import {makeTitleCase} from "../utilities";
 import {Link} from "react-router-dom";
 
-import "../styles/schema-row.css";
 import StatusLabel from "./common/StatusLabel";
+
+import "../styles/schema-row.css";
 
 export default class PendingListingRow extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {editable: false, is_new: true, is_dup: false};
+    this.state = {editable: false, write_status: ''};
     this.nameInput = React.createRef();
 
     this.startEdit = this.startEdit.bind(this);
     this.cancelEdit = this.cancelEdit.bind(this);
-    this.checkIfDup = this.checkIfDup.bind(this);
-    this.checkIfNew = this.checkIfNew.bind(this);
+    this.checkWriteStatus = this.checkWriteStatus.bind(this);
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
     this.handleSaveClick = this.handleSaveClick.bind(this);
     this.handleRowClick = this.handleRowClick.bind(this);
   }
 
   componentDidMount() {
-    this.checkIfDup(this.props.pendingListing);
-    this.checkIfNew(this.props.pendingListing);
+    this.checkWriteStatus(this.props.pendingListing);
   }
 
   startEdit(e) {
-    this.setState({editable: true});
     e.stopPropagation();
+    this.setState({editable: true});
   }
 
   cancelEdit(e) {
-    this.setState({editable: false});
     e.stopPropagation();
+    this.setState({editable: false});
   }
 
   handleDeleteClick(e) {
-    this.props.removeListing(this.props.pendingListing.id);
     e.stopPropagation();
+    this.props.removeListing(this.props.pendingListing.id);
   }
 
   handleSaveClick(e) {
-    const id = this.props.pendingListing.id;
-    const newData = { name: this.nameInput.current.value.trim() };
-
-    this.props.saveChanges(id, newData).then((result) => {
-      // noinspection JSCheckFunctionSignatures
-      Promise.all([this.checkIfDup(result), this.checkIfNew(result)]).then(() => {
-        this.setState({editable: false});
-      });
-    });
-
     e.stopPropagation();
+
+    const id = this.props.pendingListing.id;
+    const newData = {name: this.nameInput.current.value.trim()};
+
+    this.props.saveChanges(id, newData).then(result => {
+      this.checkWriteStatus(result);
+      this.setState({editable: false});
+    });
   }
 
   handleRowClick() {
@@ -61,28 +58,33 @@ export default class PendingListingRow extends Component {
     this.props.selectListing(this.props.pendingListing.id, selected);
   }
 
-  checkIfDup(listing) {
-    // TODO: Attach to data for filtering/paging
-    this.props.listingIsDup(listing).then(result => {
-      this.setState({is_dup: !!(result.total && result.total > 0)});
-    }, err => console.log('error in checkIfDup()', err));
-  }
+  checkWriteStatus(listing) {
+    this.props.queryForExisting(listing).then(result => {
+      let writeStatus;
 
-  checkIfNew(listing) {
-    this.props.listingIsNew(listing).then(result => {
-      this.setState({is_new: !(result.total && result.total > 0)});
-    }, err => console.log('error in checkIfNew()', err));
+      if (!result.total) {
+        writeStatus = 'new';
+      } else {
+        const uuids = result.data.map(row => row.uuid);
+        if (uuids.includes(this.props.pendingListing.uuid)) {
+          writeStatus = 'update';
+        } else {
+          writeStatus = 'duplicate';
+        }
+      }
+
+      this.setState({write_status: writeStatus});
+    });
   }
 
   render() {
     const pendingListing = this.props.pendingListing;
     const createdAt = Moment(pendingListing.created_at).calendar();
     const selected = this.props.selected;
-    const isDup = this.state.is_dup;
-    const isNew = this.state.is_new;
+    const writeStatus = this.state.write_status;
+    const selectClass = selected ? ' is-selected' : '';
     const schema = this.props.schema;
     const titleCaseSchema = makeTitleCase(this.props.schema);
-    const selectClass = selected ? ' is-selected' : '';
 
     if (this.state.editable) {
       return (
@@ -93,7 +95,7 @@ export default class PendingListingRow extends Component {
           </td>
           <td><input type={'text'} ref={this.nameInput} defaultValue={pendingListing.name} /></td>
           <td>{createdAt}</td>
-          <td><StatusLabel isNew={isNew} isDup={isDup} schema={schema}/></td>
+          <td><StatusLabel writeStatus={writeStatus} schema={schema} /></td>
         </tr>
       );
     }
@@ -106,7 +108,7 @@ export default class PendingListingRow extends Component {
         </td>
         <td><Link to={`/pending${titleCaseSchema}/${pendingListing.uuid}`}>{pendingListing.name}</Link></td>
         <td>{createdAt}</td>
-        <td><StatusLabel isNew={isNew} isDup={isDup} schema={schema}/></td>
+        <td><StatusLabel writeStatus={writeStatus} schema={schema} /></td>
       </tr>
     );
   }

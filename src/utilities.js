@@ -1,5 +1,6 @@
 import React from 'react';
 import SortIndicator from "./components/common/SortIndicator";
+import {Link} from "react-router-dom";
 
 const renderOptionList = function (schema) {
   let optionsList = [];
@@ -56,6 +57,20 @@ const renderTableHeader = function (headerMap, sortState, clickHandler) {
   return <tr>{headersList}</tr>;
 };
 
+const renderSchemaLink = function (listing, schema) {
+  let linkString;
+
+  if (listing.source === 'pending') {
+    linkString = `/pending${makeTitleCase(schema)}/${listing.uuid}`;
+  } else if (listing.source === 'live') {
+    linkString = `/${schema}/${listing.uuid}`;
+  } else {
+    linkString = '/404';
+  }
+
+  return <Link to={linkString}>{listing.name}</Link>;
+};
+
 const buildSortQuery = function (sortState) {
   if (sortState[0] === 'name') {
     return {'name': sortState[1]};
@@ -87,6 +102,7 @@ export {
   renderOptionList,
   renderCheckboxList,
   renderTableHeader,
+  renderSchemaLink,
   buildSortQuery,
   buildColumnSort,
   makeTitleCase
