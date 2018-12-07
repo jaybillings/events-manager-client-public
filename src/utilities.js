@@ -71,6 +71,22 @@ const renderSchemaLink = function (listing, schema) {
   return <Link to={linkString}>{listing.name}</Link>;
 };
 
+const uniqueListingsOnly = function (schema, pendingSchema) {
+  let uniqueSchema = schema;
+  let schemaUUIDs = uniqueSchema.map(x => x.uuid);
+  let schemaNames = uniqueSchema.map(x => x.name);
+
+  pendingSchema.forEach(listing => {
+    if ((!schemaUUIDs.includes(listing.uuid) && !schemaNames.includes(listing.name))) {
+      uniqueSchema.push(listing);
+      schemaUUIDs.push(listing.uuid);
+      schemaNames.push(listing.name);
+    }
+  });
+
+  return uniqueSchema;
+};
+
 const buildSortQuery = function (sortState) {
   if (sortState[0] === 'name') {
     return {'name': sortState[1]};
@@ -103,6 +119,7 @@ export {
   renderCheckboxList,
   renderTableHeader,
   renderSchemaLink,
+  uniqueListingsOnly,
   buildSortQuery,
   buildColumnSort,
   makeTitleCase

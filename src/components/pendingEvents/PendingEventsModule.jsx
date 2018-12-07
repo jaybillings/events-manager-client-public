@@ -1,5 +1,5 @@
 import React from "react";
-import {renderTableHeader} from "../../utilities";
+import {renderTableHeader, uniqueListingsOnly} from "../../utilities";
 import app from '../../services/socketio';
 
 import PendingListingsModule from "../PendingListingsModule";
@@ -133,7 +133,11 @@ export default class PendingEventsModule extends PendingListingsModule {
   queryForExisting(pendingListing) {
     return this.listingsService.find({
       query: {
-        $or: [{uuid: pendingListing.uuid}, {description: pendingListing.description}, {name: pendingListing.name, start_date: pendingListing.start_date, end_date: pendingListing.end_date}],
+        $or: [{uuid: pendingListing.uuid}, {description: pendingListing.description}, {
+          name: pendingListing.name,
+          start_date: pendingListing.start_date,
+          end_date: pendingListing.end_date
+        }],
         $select: ['uuid']
       }
     });
@@ -148,9 +152,7 @@ export default class PendingEventsModule extends PendingListingsModule {
   createLiveListing(pendingListing) {
     // On create, copy tags lookup to live table
     const id = pendingListing.id;
-
     delete (pendingListing.id);
-    pendingListing.is_published = 1;
 
     this.listingsService.create(pendingListing).then(result => {
       console.log('creating event', result);
@@ -161,8 +163,8 @@ export default class PendingEventsModule extends PendingListingsModule {
       this.copyTagAssociations(id, result.id);
       this.removeListing(id);
     }, err => {
-      console.log('error creating event', err);
-      this.props.updateMessageList({status: 'error', details: err.message});
+      console.log('error creating event', JSON.stringify(err));
+      this.props.updateMessageList({status: 'error', details: JSON.stringify(err)});
     });
   }
 
@@ -173,9 +175,7 @@ export default class PendingEventsModule extends PendingListingsModule {
    */
   updateLiveListing(pendingListing, target) {
     const id = pendingListing.id;
-
     delete (pendingListing.id);
-    pendingListing.is_published = 1;
 
     this.listingsService.update(target.id, pendingListing).then(result => {
       console.log('updating event', result);
@@ -257,6 +257,8 @@ export default class PendingEventsModule extends PendingListingsModule {
       return <p>No pending events to list.</p>
     }
 
+
+    const pendingEvents = this.state.pendingListings;
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
       ['name', 'Name'],
@@ -267,9 +269,8 @@ export default class PendingEventsModule extends PendingListingsModule {
       ['created_at', 'Imported On'],
       ['status_NOSORT', 'Status']
     ]);
-    const pendingEvents = this.state.pendingListings;
-    const venues = this.props.venues;
-    const orgs = this.props.orgs;
+    const uniqueVenues = uniqueListingsOnly(this.state.venues, this.state.pendingVenues);
+    const uniqueOrgs = uniqueListingsOnly(this.state.orgs, this.state.pendingOrgs);
     const sort = this.state.sort;
     const pageSize = this.state.pageSize;
     const currentPage = this.state.currentPage;
@@ -280,7 +281,8 @@ export default class PendingEventsModule extends PendingListingsModule {
 
 
     return ([
-      <ShowHideToggle key={'events-module-showhide'} isVisible={isVisible} changeVisibility={this.toggleModuleVisibility} />,
+      <ShowHideToggle key={'events-module-showhide'} isVisible={isVisible}
+                      changeVisibility={this.toggleModuleVisibility} />,
       <div key={'events-module-body'}>
         <SelectionControl
           numSelected={selectedEvents.length} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
@@ -297,8 +299,8 @@ export default class PendingEventsModule extends PendingListingsModule {
             pendingEvents.map(event =>
               <PendingEventRow
                 key={`event-${event.id}`} pendingListing={event} selected={selectedEvents.includes(event.id)}
-                venue={venues.find(v => {return v.id === event.venue_id})} venues={venues}
-                org={orgs.find(o => {return o.id === event.org_id})} orgs={orgs}
+                venue={uniqueVenues.find(v => {return v.uuid === event.venue_uuid})} venues={uniqueVenues}
+                org={uniqueOrgs.find(o => {return o.uuid === event.org_uuid})} orgs={uniqueOrgs}
                 saveChanges={this.saveChanges} removeListing={this.removeListing}
                 selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}
               />)
