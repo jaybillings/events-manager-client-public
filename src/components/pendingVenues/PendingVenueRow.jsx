@@ -45,7 +45,7 @@ export default class PendingVenueRow extends PendingListingRow {
           </td>
           <td><input type={'text'} ref={this.nameInput} defaultValue={pendingListing.name} /></td>
           <td>
-            <select ref={this.hoodList} defaultValue={pendingListing.hood_id || ''} required>
+            <select ref={this.hoodList} defaultValue={pendingListing.hood_uuid || ''} required>
               {renderOptionList(hoods)}
             </select>
           </td>

@@ -21,6 +21,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
 
     this.fetchHoods = this.fetchHoods.bind(this);
     this.fetchPendingHoods = this.fetchPendingHoods.bind(this);
+    this.getUniqueHoods = this.getUniqueHoods.bind(this);
   }
 
   componentDidMount() {
@@ -100,6 +101,22 @@ export default class PendingVenuesModule extends PendingListingsModule {
     });
   }
 
+  getUniqueHoods() {
+    let uniqueHoods = this.state.hoods;
+    let hoodUUIDs = uniqueHoods.map(h => h.uuid);
+    let hoodNames = uniqueHoods.map(h => h.name);
+
+    this.state.pendingHoods.forEach(hood => {
+      if (!hoodUUIDs.includes(hood.uuid) && !hoodNames.includes(hood.name)) {
+        uniqueHoods.push(hood);
+        hoodUUIDs.push(hood.uuid);
+        hoodNames.push(hood.name);
+      }
+    });
+
+    return uniqueHoods;
+  }
+
   renderTable() {
     const pendingVenuesCount = this.state.pendingListingsCount;
 
@@ -110,9 +127,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
     }
 
     const pendingVenues = this.state.pendingListings;
-    const hoods = this.state.hoods;
-    const pendingHoods = this.state.pendingHoods;
-    const uniqueHoods = Array.from(new Set(hoods.concat(pendingHoods)));
+    const uniqueHoods =  this.getUniqueHoods();
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
       ['name', 'Name'],
@@ -147,7 +162,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
             pendingVenues.map(venue =>
               <PendingVenueRow
                 key={`venue-${venue.id}`} pendingListing={venue} selected={selectedVenues.includes(venue.id)}
-                hood={(hoods.find(h => {return h.uuid === venue.hood_uuid}))} hoods={uniqueHoods}
+                hood={(uniqueHoods.find(h => {return h.uuid === venue.hood_uuid}))} hoods={uniqueHoods}
                 saveChanges={this.saveChanges} removeListing={this.removeListing}
                 selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}
               />)

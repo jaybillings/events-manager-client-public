@@ -171,8 +171,8 @@ export default class PendingListingsModule extends Component {
       // TODO: Look for schema that use this and update
       this.removeListing(id);
     }, err => {
-      console.log(`error creating ${this.schema}`, err);
       this.props.updateMessageList({status: 'error', details: err.message});
+      console.log(`error in createLiveListing for ${this.schema}`, err);
     });
   }
 
@@ -195,8 +195,8 @@ export default class PendingListingsModule extends Component {
       });
       this.removeListing(id);
     }, err => {
-      console.log(`error updating ${this.schema}`, JSON.stringify(err));
       this.props.updateMessageList({status: 'error', details: err[0].message});
+      console.log(`error in updateLiveListing for ${this.schema}`, JSON.stringify(err));
     });
   }
 
