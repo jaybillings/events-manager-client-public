@@ -21,15 +21,15 @@ export default class PendingEventsModule extends PendingListingsModule {
     this.pendingVenuesService = app.service('pending-venues');
     this.orgsService = app.service('organizers');
     this.pendingOrgsService = app.service('pending-organizers');
-
+    this.tagsService = app.service('tags');
     this.pendingTagsLookupService = app.service('pending-events-tags-lookup');
     this.tagsLookupService = app.service('events-tags-lookup');
+    this.liveEventsService = app.service('events-live');
 
     this.fetchOrgs = this.fetchOrgs.bind(this);
     this.fetchPendingOrgs = this.fetchPendingOrgs.bind(this);
     this.fetchVenues = this.fetchVenues.bind(this);
     this.fetchPendingVenues = this.fetchPendingVenues.bind(this);
-
     this.removePendingTagAssociations = this.removePendingTagAssociations.bind(this);
     this.copyTagAssociations = this.copyTagAssociations.bind(this);
   }
@@ -155,12 +155,12 @@ export default class PendingEventsModule extends PendingListingsModule {
     delete (pendingListing.id);
 
     this.listingsService.create(pendingListing).then(result => {
-      console.log('creating event', result);
       this.props.updateMessageList({
         status: 'success',
         details: `Published ${result.name} as new event #${result.id}`
       });
       this.copyTagAssociations(id, result.id);
+      this.registerLiveListing(result.id, result.name);
       this.removeListing(id);
     }, err => {
       console.log('error creating event', JSON.stringify(err));
@@ -170,6 +170,7 @@ export default class PendingEventsModule extends PendingListingsModule {
 
   /**
    * Updates the matching live event with the pending event's data. Used when publishing listings.
+   *
    * @param {object} pendingListing
    * @param {object} target
    */
@@ -178,7 +179,6 @@ export default class PendingEventsModule extends PendingListingsModule {
     delete (pendingListing.id);
 
     this.listingsService.update(target.id, pendingListing).then(result => {
-      console.log('updating event', result);
       this.props.updateMessageList({
         status: 'success',
         details: `Published ${result.name} as an update to ${target.name}`
@@ -198,7 +198,6 @@ export default class PendingEventsModule extends PendingListingsModule {
     if (query) searchOptions.query = query;
 
     this.pendingListingsService.remove(null, searchOptions).then(results => {
-      console.log(results);
       results.forEach(listing => {
         this.removePendingTagAssociations(listing.id);
       });
@@ -219,32 +218,45 @@ export default class PendingEventsModule extends PendingListingsModule {
   }
 
   copyTagAssociations(pendingId, liveID) {
-    console.log('in copyTagAssociations');
-    this.pendingTagsLookupService.find({query: {pending_event_id: pendingId}}).then(resultSet => {
+    this.pendingTagsLookupService.find({query: {pending_event_id: pendingId}}).then(results => {
       const tagAssociations = [];
+      const fetchers = [];
 
-      resultSet.data.forEach(lookupRow => {
-        tagAssociations.push({event_id: liveID, tag_uuid: lookupRow.tag_uuid});
+      results.data.forEach(lookupRow => {
+        fetchers.push(this.tagsService.find({query: {uuid: lookupRow.tag_uuid}}));
       });
 
-      this.tagsLookupService.create(tagAssociations).then(() => {
-        this.props.updateMessageList({
-          status: 'info',
-          details: `Associated tags with ${this.schema.slice(0, -1)} #${liveID}`
+      Promise.all(fetchers).then(resultSet => {
+        resultSet.forEach(result => {
+          if (result.total) tagAssociations.push({event_id: liveID, tag_id: result.data[0].id});
+        });
+
+        this.tagsLookupService.create(tagAssociations).then(() => {
+          this.props.updateMessageList({status: 'info', details: `Associated tags with event #${liveID}`});
+        }, err => {
+          const details = `Could not associate tags with event #${liveID}. To recover, delete this event and re-import, or manually add events.`;
+          this.props.updateMessageList({status: 'error', details: details});
+          console.log('error in events-tags-lookup create', JSON.stringify(err));
         });
       }, err => {
-        const details = `Could not associate tags with ${this.schema.slice(0, -1)} #${liveID}. Please re-save listing by going to its listing page.`;
-        this.props.updateMessageList({status: 'error', details: details});
-        console.log('error creating tag lookups', err);
+        console.log('error in multi tags find', JSON.stringify(err));
       });
-    }, err => console.log('error looking up pending tag associations', err));
+    }, err => console.log('error looking up pending tag associations', JSON.stringify(err)));
   }
 
   removePendingTagAssociations(pendingID) {
-    console.log('in removeTagAssociations');
     this.pendingTagsLookupService.remove(null, {query: {pending_event_id: pendingID}})
       .then(result => console.log('pending tag lookups removed', result),
         err => console.log('error removing pending tag associations', err));
+  }
+
+  registerLiveListing(eventID, eventName) {
+    this.liveEventsService.create({event_id: eventID}).then(() => {
+      this.props.updateMessagePanel({status: 'info', message: `${eventName} registered as live`});
+    }, err => {
+      console.log('error in events-live create', JSON.stringify(err));
+      this.props.updateMessagePanel({status: 'error', message: `${eventName} could not be registered as live. Go to the listing's page to resolve manually.`})
+    });
   }
 
   renderTable() {
@@ -256,7 +268,6 @@ export default class PendingEventsModule extends PendingListingsModule {
     } else if (pendingEventsCount === 0) {
       return <p>No pending events to list.</p>
     }
-
 
     const pendingEvents = this.state.pendingListings;
     const titleMap = new Map([
