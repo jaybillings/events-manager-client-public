@@ -351,20 +351,19 @@ export default class PendingListingsModule extends Component {
       return <p>No pending {this.schema} to list.</p>
     }
 
+    const pendingListings = this.state.pendingListings;
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
       ['name', 'Name'],
       ['created_at', 'Imported On'],
       ['status_NOSORT', 'Status']
     ]);
-    const pendingListings = this.state.pendingListings;
     const sort = this.state.sort;
     const pageSize = this.state.pageSize;
     const currentPage = this.state.currentPage;
     const isVisible = this.state.moduleVisible;
     const schema = this.schema;
     const selectedListings = this.state.selectedListings;
-    const numSchemaLabel = selectedListings.length || "All";
     const schemaLabel = selectedListings.length === 1 ? schema.slice(0, -1) : schema;
 
     return ([
@@ -395,8 +394,12 @@ export default class PendingListingsModule extends Component {
           }
           </tbody>
         </table>
-        <button type={'button'} onClick={this.publishListings}>Publish {numSchemaLabel} {schemaLabel}</button>
-        <button type={'button'} onClick={this.discardListings}>Discard {numSchemaLabel} {schemaLabel}</button>
+        <button type={'button'} className={'button-primary'} onClick={this.publishListings} disabled={selectedListings.length === 0}>
+          Publish {selectedListings.length || ''} {schemaLabel}
+        </button>
+        <button type={'button'} onClick={this.discardListings} disabled={selectedListings.length === 0}>
+          Discard {selectedListings.length || ''} {schemaLabel}
+        </button>
       </div>
     ])
   }

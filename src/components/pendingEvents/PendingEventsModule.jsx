@@ -287,9 +287,7 @@ export default class PendingEventsModule extends PendingListingsModule {
     const currentPage = this.state.currentPage;
     const isVisible = this.state.moduleVisible;
     const selectedEvents = this.state.selectedListings;
-    const numSchemaLabel = selectedEvents.length || "All";
     const schemaLabel = selectedEvents.length === 1 ? 'event' : 'events';
-
 
     return ([
       <ShowHideToggle key={'events-module-showhide'} isVisible={isVisible}
@@ -318,8 +316,12 @@ export default class PendingEventsModule extends PendingListingsModule {
           }
           </tbody>
         </table>
-        <button type={'button'} onClick={this.publishListings}>Publish {numSchemaLabel} {schemaLabel}</button>
-        <button type={'button'} onClick={this.discardListings}>Discard {numSchemaLabel} {schemaLabel}</button>
+        <button type={'button'} className={'button-primary'} onClick={this.publishListings} disabled={selectedEvents.length === 0}>
+          Publish {selectedEvents.length || ''} {schemaLabel}
+        </button>
+        <button type={'button'} onClick={this.discardListings} disabled={selectedEvents.length === 0}>
+          Discard {selectedEvents.length || ''} {schemaLabel}
+        </button>
       </div>
     ])
   }

@@ -123,7 +123,6 @@ export default class PendingVenuesModule extends PendingListingsModule {
     const currentPage = this.state.currentPage;
     const isVisible = this.state.moduleVisible;
     const selectedVenues = this.state.selectedListings;
-    const numSchemaLabel = selectedVenues.length || "All";
     const schemaLabel = selectedVenues.length === 1 ? 'venue' : 'venues';
 
     return ([
@@ -152,8 +151,12 @@ export default class PendingVenuesModule extends PendingListingsModule {
           }
           </tbody>
         </table>
-        <button type={'button'} onClick={this.publishListings}>Publish {numSchemaLabel} {schemaLabel}</button>
-        <button type={'button'} onClick={this.discardListings}>Discard {numSchemaLabel} {schemaLabel}</button>
+        <button type={'button'} className={'button-primary'} onClick={this.publishListings} disabled={selectedVenues.length === 0}>
+          Publish {selectedVenues.length || ''} {schemaLabel}
+        </button>
+        <button type={'button'} onClick={this.discardListings} disabled={selectedVenues.length === 0}>
+          Discard {selectedVenues.length || ''} {schemaLabel}
+        </button>
       </div>
     ])
   }
