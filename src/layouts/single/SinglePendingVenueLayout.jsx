@@ -30,12 +30,12 @@ export default class SinglePendingVenueLayout extends Component {
   componentDidMount() {
     this.fetchAllData();
 
-    this.setState({venueLoaded: false});
+    this.setState({listingLoaded: false});
 
     // Register listeners
     this.pendingVenuesService
       .on('patched', message => {
-        this.setState({pendingVenue: message, venueLoaded: true});
+        this.setState({pendingVenue: message, listingLoaded: true});
         this.updateMessagePanel({status: 'success', details: 'Changes saved'});
       })
       .on('removed', () => {
@@ -46,16 +46,16 @@ export default class SinglePendingVenueLayout extends Component {
 
   componentWillUnmount() {
     this.pendingVenuesService
-      .removeListener('patched')
-      .removeListener('removed')
-      .removeListener('error');
+      .removeAllListeners('patched')
+      .removeAllListeners('removed')
+      .removeAllListeners('error');
   }
 
   fetchAllData() {
     const id = this.props.match.params.id;
 
     this.pendingVenuesService.get(id).then(message => {
-      this.setState({pendingVenue: message, venueLoaded: true});
+      this.setState({pendingVenue: message, listingLoaded: true});
     }, message => {
       console.log('error', message);
       this.setState({notFound: true});

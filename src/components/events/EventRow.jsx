@@ -26,7 +26,7 @@ export default class EventRow extends ListingRow {
       is_published: this.liveToggle.current.checked
     };
 
-    this.props.saveChanges(this.props.listing.id, newData);
+    this.props.saveListing(this.props.listing.id, newData);
     this.setState({editable: false});
   }
 

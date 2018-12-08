@@ -7,6 +7,7 @@
   --white: #efefef;
   --true-white: #fff;
   --true-blue: #33c3f0;
+  --pale-blue: #c2edfa;
   --dull-orange: #dd6e42;
   --bright-pink: #fc2e53;
   --bright-yellow: #ffc22e;
@@ -55,13 +56,13 @@ h2:first-of-type {
   padding-top: 0;
 }
 
+a.current {
+  color: var(--current-link-color);
+}
+
 /* Override to parent theme */
 .container {
   max-width: 1200px;
-}
-
-a.current {
-  color: var(--current-link-color);
 }
 
 .hidden {
@@ -92,4 +93,12 @@ a.current {
   color: var(--text-color);
   padding: 0 0.5em;
   margin: 0;
+}
+
+button.button-publish {
+  display: block;
+  height: auto;
+  margin: 0 auto 2rem;
+  padding: 1rem 2rem;
+  font-size: 1.5rem;
 }

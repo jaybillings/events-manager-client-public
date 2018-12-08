@@ -28,7 +28,7 @@ export default class ListingRow extends Component {
   }
 
   handleDeleteClick() {
-    this.props.handleDeleteClick(this.props.listing.id);
+    this.props.deleteListing(this.props.listing.id);
   }
 
   handleSaveClick() {
@@ -62,7 +62,7 @@ export default class ListingRow extends Component {
           <button type={'button'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button>
         </td>
-        <td><Link to={`/${schema}/${listing.id}`}>{listing.name}</Link></td>
+        <td><Link to={`/${schema}/${listing.uuid}`}>{listing.name}</Link></td>
         <td>{updatedAt}</td>
       </tr>
     );

@@ -51,9 +51,8 @@ export default class SinglePendingEventLayout extends Component {
 
   componentWillUnmount() {
     this.pendingEventsService
-      .removeListener('patched')
-      .removeListener('removed')
-      .removeListener('error');
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
   }
 
   fetchAllData() {
@@ -85,7 +84,14 @@ export default class SinglePendingEventLayout extends Component {
   }
 
   deleteEvent(id) {
-    this.pendingEventsService.remove(id).then(this.setState({hasDeleted: true}));
+    // TODO: Remove tag lookup
+    this.pendingEventsService.remove(id).then(eventMsg => {
+      console.log('removed', eventMsg);
+      this.pendingTagsLookupService.remove(null, {query: {pending_event_id: id}}).then(lookupMsg => {
+        console.log('lookup row removed', lookupMsg);
+        this.setState({hasDeleted: true});
+      });
+    });
   }
 
   saveEvent(id, eventData, tagData) {
@@ -94,7 +100,7 @@ export default class SinglePendingEventLayout extends Component {
       this.saveTags(id, tagData);
     }, err => {
       console.log('error', err);
-      this.updateMessagePanel(err);
+      this.updateMessagePanel({status: 'error', details: `Error code ${err.code} - ${err.message}`});
     });
   }
 

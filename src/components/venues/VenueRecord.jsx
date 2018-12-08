@@ -1,14 +1,12 @@
-import React, {Component} from "react";
+import React from "react";
 import Moment from "moment";
 import {renderOptionList} from "../../utilities";
+import ListingRecordUniversal from "../ListingRecordUniversal";
 
-import '../../styles/schema-record.css';
-
-export default class VenueRecord extends Component {
+export default class VenueRecord extends ListingRecordUniversal {
   constructor(props) {
     super(props);
 
-    this.nameInput = React.createRef();
     this.hoodList = React.createRef();
     this.descInput = React.createRef();
     this.emailInput = React.createRef();
@@ -18,41 +16,33 @@ export default class VenueRecord extends Component {
     this.cityInput = React.createRef();
     this.stateInput = React.createRef();
     this.zipInput = React.createRef();
-
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleClickDelete = this.handleClickDelete.bind(this);
-  }
-
-  handleClickDelete() {
-    const id = this.props.venue.id;
-    this.props.deleteListing(id);
   }
 
   handleSubmit(e) {
     e.preventDefault();
 
-    const venue = this.props.venue;
-    const id = venue.id;
+    const venue = this.props.listing;
     const newData = {
+      uuid: this.props.listing.uuid,
       name: this.nameInput.current.value.trim(),
       hood_id: this.hoodList.current.value,
-      description: this.descInput.current.value.trim()
+      description: this.descInput.current.value.trim( )
     };
 
-    // Only add non-required if they have a value
-    (this.emailInput.current.value !== venue.email) && (newData.email = this.emailInput.current.value);
-    (this.urlInput.current.value !== venue.url) && (newData.url = this.urlInput.current.value);
-    (this.phoneInput.current.value !== venue.phone) && (newData.phone = this.phoneInput.current.value);
-    (this.streetInput.current.value !== venue.address_street) && (newData.address_street = this.streetInput.current.value);
-    (this.cityInput.current.value !== venue.address_city) && (newData.address_city = this.cityInput.current.value);
-    (this.stateInput.current.value !== venue.address_state) && (newData.address_state = this.stateInput.current.value);
-    (this.zipInput.current.value !== venue.address_zip) && (newData.address_zip = this.zipInput.current.value);
+    // Optional parameters
+    this.emailInput.current.value !== '' && (newData.email = this.emailInput.current.value);
+    this.urlInput.current.value !== ''  && (newData.url = this.urlInput.current.value);
+    this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value);
+    this.streetInput.current.value !== '' && (newData.address_street = this.streetInput.current.value);
+    this.cityInput.current.value !== '' && (newData.address_city = this.cityInput.current.value);
+    this.stateInput.current.value !== '' && (newData.address_state = this.stateInput.current.value);
+    this.zipInput.current.value !== '' && (newData.address_zip = this.zipInput.current.value);
 
-    this.props.saveVenue(id, newData);
+    this.props.saveListing(venue.id, newData);
   }
 
   render() {
-    const venue = this.props.venue;
+    const venue = this.props.listing;
     const hoods = this.props.hoods;
     const createdAt = Moment(venue['created_at']).calendar();
     const updatedAt = Moment(venue['updated_at']).calendar();
@@ -60,8 +50,8 @@ export default class VenueRecord extends Component {
     return (
       <form id={'venue-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
         <label>
-          ID
-          <input type={'text'} value={venue.id} disabled />
+          UUID
+          <input type={'text'} value={venue.uuid} disabled />
         </label>
         <label>
           Created
@@ -112,8 +102,8 @@ export default class VenueRecord extends Component {
           <input type={'text'} ref={this.zipInput} defaultValue={venue.address_zip} maxLength={20}/>
         </label>
         <div>
-          <button type={'button'} onClick={this.handleClickDelete}>Delete Venue</button>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
+          <button type={'button'} onClick={this.handleClickDelete}>Delete Venue</button>
         </div>
       </form>
     );

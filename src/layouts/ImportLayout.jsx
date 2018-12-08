@@ -1,6 +1,5 @@
 import React, {Component} from "react";
 import app from "../services/socketio";
-import {buildColumnSort} from "../utilities";
 
 import Header from "../components/common/Header";
 import ImportForm from "../components/importer/ImportForm";
@@ -15,79 +14,40 @@ export default class ImportLayout extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      messages: [], messagePanelVisible: false,
-      pendingEvents: [], pendingEventCount: 0,
-      venues: [], orgs: [], hoods: [], tags: [],
-      defaultPageSize: 5, defaultSortOrder: ['created_at', -1]
-    };
+    this.state = {messages: [], messagePanelVisible: false};
 
     this.API_URI = 'http://localhost:3030/importer';
+    this.defaultPageSize = 5;
+    this.defaultSortOrder = ['created_at', -1];
 
     this.fileInput = React.createRef();
     this.schemaSelect = React.createRef();
+    this.eventsModule = React.createRef();
+    this.venuesModule = React.createRef();
+    this.orgsModule = React.createRef();
+    this.hoodsModule = React.createRef();
+    this.tagsModule = React.createRef();
 
     this.importerService = app.service('importer');
-    this.venuesService = app.service('venues');
-    this.orgsService = app.service('organizers');
-    this.hoodsService = app.service('neighborhoods');
-    this.tagsService = app.service('tags');
 
-    this.fetchInitialData = this.fetchInitialData.bind(this);
     this.importData = this.importData.bind(this);
+    this.publishListings = this.publishListings.bind(this);
     this.updateMessageList = this.updateMessageList.bind(this);
     this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
   }
 
   componentDidMount() {
-    this.fetchInitialData();
-
     // Register listeners
-    this.importerService
-      .on('status', message => {
-        let messageList = this.state.messages;
-        this.setState({
-          messages: messageList.concat([message]),
-          messagePanelVisible: true
-        });
-      })
-      .on('error', error => {
-        let messageList = this.state.messages;
-        this.setState({
-          messages: messageList.concat([{status: 'error', details: error.message}]),
-          messagePanelVisible: true
-        });
-      });
+    this.importerService.on('status', message => {
+      this.updateMessageList({status: 'info', details: message.details});
+    });
   }
 
   componentWillUnmount() {
-    this.importerService
-      .removeListener('status')
-      .removeListener('error');
-  }
-
-  fetchInitialData() {
-    const otherSchemaQuery = {$sort: {name: 1}};
-
-    this.venuesService.find({query: otherSchemaQuery}).then(message => {
-      this.setState({venues: message.data});
-    });
-
-    this.orgsService.find({query: otherSchemaQuery}).then(message => {
-      this.setState({orgs: message.data});
-    });
-
-    this.hoodsService.find({query: otherSchemaQuery}).then(message => {
-      this.setState({hoods: message.data});
-    });
-
-    this.tagsService.find({query: otherSchemaQuery}).then(message => {
-      this.setState({tags: message.data});
-    });
+    this.importerService.removeAllListeners('status');
   }
 
   importData(e) {
-    // TODO: Handle multiple files
     e.preventDefault();
 
     const importUrl = `${this.API_URI}?schema=${this.schemaSelect.current.value}`;
@@ -108,6 +68,18 @@ export default class ImportLayout extends Component {
     });
   }
 
+  publishListings() {
+    Promise
+      .all([
+        this.hoodsModule.current.publishListings(),
+        this.tagsModule.current.publishListings(),
+        this.orgsModule.current.publishListings()
+      ])
+      .then(this.venuesModule.current.publishListings())
+      .then(this.eventsModule.current.publishListings())
+      .catch((err) => console.log(err));
+  }
+
   updateMessageList(newMessage) {
     this.setState(prevState => ({
       messages: [newMessage, ...prevState.messages],
@@ -117,19 +89,6 @@ export default class ImportLayout extends Component {
 
   dismissMessagePanel() {
     this.setState({messages: [], messagePanelVisible: false});
-  }
-
-  childUpdateColumnSort(e) {
-    const columnSortState = buildColumnSort(e.target, this.state.sort);
-    this.setState(columnSortState, () => this.fetchAllData());
-  }
-
-  childUpdatePageSize(e) {
-    this.setState({pageSize: parseInt(e.target.value, 10), currentPage: 1}, () => this.fetchAllData());
-  }
-
-  childUpdateCurrentPage(page) {
-    this.setState({currentPage: parseInt(page, 10)}, () => this.fetchAllData());
   }
 
   render() {
@@ -144,33 +103,28 @@ export default class ImportLayout extends Component {
         <ImportForm fileInputRef={this.fileInput} schemaSelectRef={this.schemaSelect} handleSubmit={this.importData} />
         <h2>Review Unpublished Data</h2>
         <PendingEventsModule
-          venues={this.state.venues} orgs={this.state.orgs} tags={this.state.tags}
-          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
-          updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
-          updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+          ref={this.eventsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
+          updateMessageList={this.updateMessageList}
         />
         <PendingVenuesModule
-          hoods={this.state.hoods}
-          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
-          updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
-          updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+          ref={this.venuesModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
+          updateMessageList={this.updateMessageList}
         />
         <PendingOrganizersModule
-          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
-          updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
-          updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+          ref={this.orgsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
+          updateMessageList={this.updateMessageList}
         />
         <PendingNeighborhoodsModule
-          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
-          updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
-          updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+          ref={this.hoodsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
+          updateMessageList={this.updateMessageList}
         />
         <PendingTagsModule
-          defaultPageSize={this.state.defaultPageSize} defaultSortOrder={this.state.defaultSortOrder}
-          updateMessageList={this.updateMessageList} updateColumnSort={this.childUpdateColumnSort}
-          updatePageSize={this.childUpdatePageSize} updateCurrentPage={this.childUpdateCurrentPage}
+          ref={this.tagsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
+          updateMessageList={this.updateMessageList}
         />
-        <button type={'submit'}>Publish All Pending Listings</button>
+        <button type={'button'} className={'button-primary button-publish'} onClick={this.publishListings}>
+          Publish All Pending Listings
+        </button>
       </div>
     );
   }

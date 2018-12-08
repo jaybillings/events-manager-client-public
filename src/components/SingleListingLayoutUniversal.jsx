@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {Redirect} from 'react-router';
+import {Link} from "react-router-dom";
 import app from "../services/socketio";
 
 import Header from "../components/common/Header";
@@ -14,8 +15,7 @@ export default class SingleListingLayoutUniversal extends Component {
 
     this.state = {
       messages: [], messagePanelVisible: false,
-      listing: {}, listingLoaded: false,
-      hasDeleted: false, notFound: false
+      listing: {}, listingLoaded: false, hasDeleted: false, notFound: false
     };
 
     this.listingsService = app.service(this.schema);
@@ -41,41 +41,36 @@ export default class SingleListingLayoutUniversal extends Component {
       })
       .on('removed', () => {
         this.setState({hasDeleted: true});
-      })
-      .on('error', () => {
-        console.log("Error handler triggered. Should post to message panel.");
       });
   }
 
   componentWillUnmount() {
     this.listingsService
-      .removeListener('patched')
-      .removeListener('removed')
-      .removeListener('error');
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
   }
 
   fetchAllData() {
-    const id = this.props.match.params.id;
+    const uuid = this.props.match.params.id;
 
-    this.listingsService.get(id).then(message => {
-      this.setState({listing: message, listingLoaded: true});
-    }, message => {
-      console.log('error', message);
+    this.listingsService.find({query: { uuid: uuid}}).then(message => {
+      this.setState({listing: message.data[0], listingLoaded: true});
+    }, err => {
+      console.log('error', err);
       this.setState({notFound: true});
     });
   }
 
   deleteListing(id) {
-    this.listingsService.remove(id).then(this.setStatus({hasDeleted: true}));
+    this.listingsService.remove(id).then(() => this.setState({hasDeleted: true}));
   }
 
   saveListing(id, listingData) {
-    //this.setState({eventLoaded: false});
     this.listingsService.patch(id, listingData).then(message => {
       console.log('patching', message);
     }, err => {
       console.log('error', err);
-      this.updateMessagePanel(err);
+      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
 
@@ -93,10 +88,9 @@ export default class SingleListingLayoutUniversal extends Component {
       return <p>Data is loading... Please be patient...</p>
     }
 
-    const schema = this.schema;
-
     return <ListingRecordUniversal
-      listing={this.state.listing} schema={schema} saveListing={this.saveListing} deleteListing={this.deleteListing}
+      listing={this.state.listing} schema={this.schema}
+      saveListing={this.saveListing} deleteListing={this.deleteListing}
     />
   }
 
@@ -118,6 +112,7 @@ export default class SingleListingLayoutUniversal extends Component {
     return (
       <div className={'container'}>
         <Header />
+        <p><Link to={`/${this.schema}`}>&lt; Return to {this.schema}</Link></p>
         <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
         <h2>{name}</h2>
         {this.renderRecord()}

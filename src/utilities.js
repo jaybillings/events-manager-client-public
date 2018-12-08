@@ -1,11 +1,12 @@
 import React from 'react';
 import SortIndicator from "./components/common/SortIndicator";
+import {Link} from "react-router-dom";
 
 const renderOptionList = function (schema) {
   let optionsList = [];
 
   schema.forEach(record => {
-    optionsList.push(<option key={record.id} value={record.id}>{record.name}</option>);
+    optionsList.push(<option key={record.uuid} value={record.uuid}>{record.name}</option>);
   });
 
   return optionsList;
@@ -18,7 +19,7 @@ const renderCheckboxList = function (schema, selectedIds) {
     chkbxList.push(
       <li key={record.id}>
         <label>
-          <input type={'checkbox'} className={'js-checkbox'} value={record.id}
+          <input type={'checkbox'} className={'js-checkbox'} value={record.uuid}
                  defaultChecked={selectedIds.includes(record.id)} />
           {record.name}
         </label>
@@ -56,13 +57,34 @@ const renderTableHeader = function (headerMap, sortState, clickHandler) {
   return <tr>{headersList}</tr>;
 };
 
-const renderUpdateStatus = function (isDup, isNew, schema) {
-  if (isDup) {
-    return <span className={'alert-dup'} key={`${schema}-is-dup`}>Duplicate</span>;
-  } else if (isNew) {
-    return <span className={'muted'} key={`${schema}-is-new`}>New</span>;
+const renderSchemaLink = function (listing, schema) {
+  let linkString;
+
+  if (listing.source === 'pending') {
+    linkString = `/pending${makeTitleCase(schema)}/${listing.uuid}`;
+  } else if (listing.source === 'live') {
+    linkString = `/${schema}/${listing.uuid}`;
+  } else {
+    linkString = '/404';
   }
-  return <span className={'alert-change'} key={`${schema}-is-updated`}>Update</span>;
+
+  return <Link to={linkString}>{listing.name}</Link>;
+};
+
+const uniqueListingsOnly = function (schema, pendingSchema) {
+  let uniqueSchema = schema;
+  let schemaUUIDs = uniqueSchema.map(x => x.uuid);
+  let schemaNames = uniqueSchema.map(x => x.name);
+
+  pendingSchema.forEach(listing => {
+    if ((!schemaUUIDs.includes(listing.uuid) && !schemaNames.includes(listing.name))) {
+      uniqueSchema.push(listing);
+      schemaUUIDs.push(listing.uuid);
+      schemaNames.push(listing.name);
+    }
+  });
+
+  return uniqueSchema;
 };
 
 const buildSortQuery = function (sortState) {
@@ -77,7 +99,7 @@ const buildColumnSort = function (clickTarget, sortState) {
   const column = target.dataset.sortType;
   const direction = column === sortState[0] ? -(parseInt(sortState[1], 10)) : 1;
 
-  return {sort: [column, direction]};
+  return [column, direction];
 };
 
 /**
@@ -96,7 +118,8 @@ export {
   renderOptionList,
   renderCheckboxList,
   renderTableHeader,
-  renderUpdateStatus,
+  renderSchemaLink,
+  uniqueListingsOnly,
   buildSortQuery,
   buildColumnSort,
   makeTitleCase

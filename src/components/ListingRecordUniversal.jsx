@@ -24,6 +24,7 @@ export default class ListingRecordUniversal extends Component {
 
     const listing = this.props.listing;
     const newData = {
+      uuid: this.state.listing.uuid,
       name: this.nameInput.current.value.trim()
     };
 
@@ -31,6 +32,7 @@ export default class ListingRecordUniversal extends Component {
   }
 
   render() {
+    // TODO: Needs to be a way to select UUID for copy
     const listing = this.props.listing;
     const schema = this.props.schema;
     const titleCaseSchema = makeTitleCase(schema);
@@ -40,8 +42,8 @@ export default class ListingRecordUniversal extends Component {
     return (
       <form id={`${schema}-listing-form`} className={'schema-record'} onSubmit={this.handleSubmit}>
         <label>
-          ID
-          <input type={'text'} value={listing.id} disabled />
+          UUID
+          <input type={'text'} value={listing.uuid} disabled />
         </label>
         <label>
           Created
@@ -56,8 +58,8 @@ export default class ListingRecordUniversal extends Component {
           <input type={'text'} ref={this.nameInput} defaultValue={listing.name} required maxLength={100} />
         </label>
         <div>
-          <button type={'button'} onClick={this.handleClickDelete}>Delete {titleCaseSchema}</button>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
+          <button type={'button'} onClick={this.handleClickDelete}>Delete {titleCaseSchema.slice(0, -1)}</button>
         </div>
       </form>
     );

@@ -48,13 +48,13 @@ export default class PendingEventRecord extends Component {
     let uncheckedBoxes = document.querySelectorAll('.js-checkbox:not(:checked)');
 
     // Add non-required only if it has changed
-    (this.emailInput.current.value !== pendingEvent.email) && (newData.email = this.emailInput.current.value.trim());
-    (this.urlInput.current.value !== pendingEvent.url) && (newData.url = this.urlInput.current.value.trim());
-    (this.phoneInput.current.value !== pendingEvent.phone) && (newData.phone = this.phoneInput.current.value.trim());
-    (this.hoursInput.current.value !== pendingEvent.hours) && (newData.hours = this.hoursInput.current.value.trim());
-    (this.ticketUrlInput.current.value !== pendingEvent.ticket_url) && (newData.ticket_url = this.ticketUrlInput.current.value.trim());
-    (this.ticketPhoneInput.current.value !== pendingEvent.ticket_phone) && (newData.ticket_phone = this.ticketPhoneInput.current.value.trim());
-    (this.ticketPricesInput.current.value !== pendingEvent.ticket_prices) && (newData.ticket_prices = this.ticketPricesInput.current.value.trim());
+    this.emailInput.current.value !== '' && (newData.email = this.emailInput.current.value.trim());
+    this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value.trim());
+    this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value.trim());
+    this.hoursInput.current.value !== '' && (newData.hours = this.hoursInput.current.value.trim());
+    this.ticketUrlInput.current.value !== '' && (newData.ticket_url = this.ticketUrlInput.current.value.trim());
+    this.ticketPhoneInput.current.value !== '' && (newData.ticket_phone = this.ticketPhoneInput.current.value.trim());
+    this.ticketPricesInput.current.value !== '' && (newData.ticket_prices = this.ticketPricesInput.current.value.trim());
 
     // Tag data
     checkedBoxes.forEach(input => {

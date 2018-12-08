@@ -1,14 +1,14 @@
-import React, {Component} from 'react';
+import React from 'react';
 import Moment from 'moment';
 import {renderCheckboxList, renderOptionList} from '../../utilities';
 
 import '../../styles/add-form.css';
+import ListingAddForm from "../ListingAddForm";
 
-export default class EventAddForm extends Component {
+export default class EventAddForm extends ListingAddForm {
   constructor(props) {
     super(props);
 
-    this.nameInput = React.createRef();
     this.startInput = React.createRef();
     this.endInput = React.createRef();
     this.descInput = React.createRef();
@@ -23,9 +23,6 @@ export default class EventAddForm extends Component {
     this.ongoingInput = React.createRef();
     this.venueList = React.createRef();
     this.orgList = React.createRef();
-
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.clearForm = this.clearForm.bind(this);
   }
 
   handleSubmit(e) {
@@ -43,20 +40,21 @@ export default class EventAddForm extends Component {
     const checkedBoxes = document.querySelectorAll('.js-checkbox:checked');
     let tagsToSave = [];
 
-    eventObj.email = this.emailInput.current.value.trim();
-    eventObj.url = this.urlInput.current.value.trim();
-    eventObj.phone = this.phoneInput.current.value.trim();
-    eventObj.hours = this.hoursInput.current.value.trim();
-    eventObj.ticket_url = this.ticketUrlInput.current.value.trim();
-    eventObj.ticket_phone = this.ticketPhoneInput.current.value.trim();
-    eventObj.ticket_prices = this.ticketPricesInput.current.value.trim();
+    // Optional data
+    this.emailInput.current.value !== '' && (eventObj.email = this.emailInput.current.value.trim());
+    this.urlInput.current.value !== '' && (eventObj.url = this.urlInput.current.value.trim());
+    this.phoneInput.current.value !== '' && (eventObj.phone = this.phoneInput.current.value.trim());
+    this.hoursInput.current.value !== '' && (eventObj.hours = this.hoursInput.current.value.trim());
+    this.ticketUrlInput.current.value !== '' && (eventObj.ticket_url = this.ticketUrlInput.current.value.trim());
+    this.ticketPhoneInput.current.value !== '' && (eventObj.ticket_phone = this.ticketPhoneInput.current.value.trim());
+    this.ticketPricesInput.current.value !== '' && (eventObj.ticket_prices = this.ticketPricesInput.current.value.trim());
 
     // Tag data
     checkedBoxes.forEach(input => {
       tagsToSave.push(input.value);
     });
 
-    this.props.createEvent(eventObj, tagsToSave);
+    this.props.createListing(eventObj, tagsToSave);
   }
 
   clearForm() {

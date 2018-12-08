@@ -43,9 +43,9 @@ export default class SingleOrganizerLayout extends Component {
 
   componentWillUnmount() {
     this.orgsService
-      .removeListener('patched')
-      .removeListener('removed')
-      .removeListener('error');
+      .removeAllListeners('patched')
+      .removeAllListeners('removed')
+      .removeAllListeners('error');
   }
 
   fetchAllData() {
@@ -62,15 +62,15 @@ export default class SingleOrganizerLayout extends Component {
   }
 
   deleteOrg(id) {
-    this.orgsService.remove(id).then(this.setState({hasDeleted: true}));
+    this.orgsService.remove(id).then(() => this.setState({hasDeleted: true}));
   }
 
   saveOrg(id, newData) {
     this.orgsService.patch(id, newData).then(message => {
       console.log('patch', message);
     }, err => {
-      console.log('error', err);
-      this.updateMessagePanel(err);
+      console.log('error', JSON.stringify(err));
+      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
 

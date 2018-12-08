@@ -17,7 +17,9 @@ export default class ListingAddForm extends Component {
     e.preventDefault();
 
     const listingObj = {name: this.nameInput.current.value.trim()};
+
     this.props.createListing(listingObj);
+    this.clearForm();
   }
 
   clearForm() {
@@ -36,7 +38,7 @@ export default class ListingAddForm extends Component {
         </label>
         <div>
           <button type={'button'} onClick={this.clearForm}>Reset</button>
-          <button type={'submit'} className={'button-primary'}>Publish {titleCaseSchema}</button>
+          <button type={'submit'} className={'button-primary'}>Add {titleCaseSchema.slice(0, -1)}</button>
         </div>
       </form>
     );

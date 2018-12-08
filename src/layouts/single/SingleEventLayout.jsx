@@ -17,7 +17,7 @@ export default class SingleEventLayout extends Component {
       hasDeleted: false, notFound: false
     };
 
-    this.eventsService = app.service('events');
+    this.listingsService = app.service('events');
     this.venuesService = app.service('venues');
     this.orgsService = app.service('organizers');
     this.tagsService = app.service('tags');
@@ -38,7 +38,7 @@ export default class SingleEventLayout extends Component {
     this.setState({eventLoaded: false, venuesLoaded: false, orgsLoaded: false, tagsLoaded: false});
 
     // Register listeners
-    this.eventsService
+    this.listingsService
       .on('patched', message => {
         this.setState({event: message, eventLoaded: true});
         this.updateMessagePanel({'status': 'success', 'details': 'Changes saved.'});
@@ -52,10 +52,9 @@ export default class SingleEventLayout extends Component {
   }
 
   componentWillUnmount() {
-    this.eventsService
-      .removeListener('patched')
-      .removeListener('removed')
-      .removeListener('error');
+    this.listingsService
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
   }
 
   fetchAllData() {
@@ -64,7 +63,7 @@ export default class SingleEventLayout extends Component {
 
     //this.setState({eventLoaded: false, venuesLoaded: false, orgsLoaded: false, tagsLoaded: false});
 
-    this.eventsService.get(id).then(message => {
+    this.listingsService.get(id).then(message => {
       this.setState({event: message, eventLoaded: true});
     }, message => {
       console.log('error', message);
@@ -89,12 +88,12 @@ export default class SingleEventLayout extends Component {
   }
 
   deleteEvent(id) {
-    this.eventsService.remove(id).then(this.setStatus({hasDeleted: true}));
+    this.listingsService.remove(id).then(this.setStatus({hasDeleted: true}));
   }
 
   saveEvent(id, eventData, tagData) {
     //this.setState({eventLoaded: false});
-    this.eventsService.patch(id, eventData).then(message => {
+    this.listingsService.patch(id, eventData).then(message => {
       console.log('patching', message);
       this.saveTags(id, tagData);
     }, err => {

@@ -1,6 +1,7 @@
 import React, {Component} from "react";
 import {buildColumnSort, buildSortQuery, makeTitleCase} from "../utilities";
 import app from "../services/socketio";
+import uuid from "uuid/v1";
 
 import Header from "./common/Header";
 import ListingsTable from "./ListingsTable";
@@ -48,20 +49,17 @@ export default class ListingsLayout extends Component {
     this.listingsService
       .on('created', message => {
         console.log(`${schema} created`, message);
-        this.updateMessagePanel({status: 'success', details: `Created ${schema} #${message.id} - ${message.name}`});
+        this.updateMessagePanel({status: 'success', details: `Created new ${schema.slice(0, -1)} "${message.name}"`});
         this.setState({currentPage: 1}, () => this.fetchAllData());
       })
       .on('patched', message => {
         console.log(`${schema} patched`, message);
-        this.updateMessagePanel({status: 'success', details: `Updated ${schema} #${message.id} - ${message.name}`});
+        this.updateMessagePanel({status: 'success', details: `Updated ${schema.slice(0, -1)} "${message.name}"`});
         this.fetchAllData();
       })
       .on('removed', message => {
         console.log(`${schema} removed`, message);
-        this.updateMessagePanel({
-          status: 'success',
-          details: `Permanently deleted ${schema} #${message.id} - ${message.name}`
-        });
+        this.updateMessagePanel({status: 'success', details: `Permanently deleted ${schema.slice(0, -1)} "${message.name}"`});
         this.setState({currentPage: 1}, () => this.fetchAllData());
       })
       .on('error', error => {
@@ -72,10 +70,9 @@ export default class ListingsLayout extends Component {
 
   componentWillUnmount() {
     this.listingsService
-      .removeListener('created')
-      .removeListener('patched')
-      .removeListener('removed')
-      .removeListener('error');
+      .removeAllListeners('created')
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
   }
 
   fetchAllData() {
@@ -104,7 +101,7 @@ export default class ListingsLayout extends Component {
 
   updateColumnSort(e) {
     const colSortState = buildColumnSort(e.target, this.state.sort);
-    this.setState(colSortState, () => this.fetchAllData());
+    this.setState({sort: colSortState}, () => this.fetchAllData());
   }
 
   updateMessagePanel(msg) {
@@ -117,8 +114,7 @@ export default class ListingsLayout extends Component {
   }
 
   deleteListing(id) {
-    const schema = this.schema;
-    this.listingsService.remove(id).then(message => console.log(`removing ${schema}`, message));
+    this.listingsService.remove(id).then(message => console.log(`removing ${this.schema}`, message));
   }
 
   saveListing(id, newData) {
@@ -128,18 +124,22 @@ export default class ListingsLayout extends Component {
       console.log(`patching ${schema}`, message);
     }, err => {
       console.log(`error patching ${schema}`, err);
-      this.updateMessagePanel(err);
+      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
 
   createListing(newData) {
     const schema = this.schema;
 
+    // Give the new listing a UUID
+    newData.uuid = uuid();
+
     this.listingsService.create(newData).then(() => {
       console.log(`creating ${schema}`);
     }, err => {
       console.log(`error creating ${schema}`, err);
-      this.updateMessagePanel(err);
+      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+
     });
   }
 
@@ -171,10 +171,7 @@ export default class ListingsLayout extends Component {
       return <p>Data is loading... Please be patient...</p>;
     }
 
-    const listings = this.state.listings;
-    const schema = this.schema;
-
-    return <ListingAddForm tags={listings} schema={schema} createTag={this.createListing} />;
+    return <ListingAddForm schema={this.schema} createListing={this.createListing} />;
   }
 
   render() {
@@ -188,7 +185,7 @@ export default class ListingsLayout extends Component {
         <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
         <h2>All {titleCaseSchema}</h2>
         {this.renderTable()}
-        <h3>Add New {titleCaseSchema}</h3>
+        <h3>Add New {titleCaseSchema.slice(0, -1)}</h3>
         {this.renderAddForm()}
       </div>
     );
