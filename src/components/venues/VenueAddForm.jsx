@@ -22,7 +22,7 @@ export default class VenueAddForm extends ListingAddForm {
 
     const venueObj = {
       name: this.nameInput.current.value.trim(),
-      hood_id: this.hoodList.current.value,
+      hood_uuid: this.hoodList.current.value,
       description: this.descInput.current.value.trim()
     };
 

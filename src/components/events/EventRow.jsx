@@ -23,8 +23,7 @@ export default class EventRow extends ListingRow {
       start_date: Moment(this.startInput.current.value).valueOf(),
       end_date: Moment(this.endInput.current.value).valueOf(),
       venue_uuid: this.venueList.current.value,
-      org_uuid: this.orgList.current.value,
-      is_published: this.liveToggle.current.checked
+      org_uuid: this.orgList.current.value
     };
 
     this.props.saveListing(this.props.listing.id, newData);
@@ -41,6 +40,8 @@ export default class EventRow extends ListingRow {
     const endDate = Moment(event.end_date).format('MM/DD/YYYY');
     const endDateVal = Moment(event.end_date).format('YYYY-MM-DD');
     const updatedAt = Moment(event.updated_at).calendar();
+    const defaultVenue = typeof(this.props.venue) !== 'undefined' ? this.props.venue.uuid : this.props.venues[0].uuid;
+    const defaultOrg = typeof(this.props.org) !== 'undefined' ? this.props.org.uuid : this.props.orgs[0].uuid;
 
     const venueLink = this.props.venue ?
       <Link to={`/venues/${event.venue_id}`}>{this.props.venue.name}</Link> : 'NO VENUE';
@@ -59,8 +60,8 @@ export default class EventRow extends ListingRow {
           <td><input type={'text'} ref={this.nameInput} defaultValue={event.name} /></td>
           <td><input type={'date'} ref={this.startInput} defaultValue={startDateVal} /></td>
           <td><input type={'date'} ref={this.endInput} defaultValue={endDateVal} /></td>
-          <td><select ref={this.venueList} defaultValue={this.props.venue.uuid || ''}>{renderOptionList(venues)}</select></td>
-          <td><select ref={this.orgList} defaultValue={this.props.org.uuid || ''}>{renderOptionList(orgs)}</select></td>
+          <td><select ref={this.venueList} defaultValue={defaultVenue}>{renderOptionList(venues)}</select></td>
+          <td><select ref={this.orgList} defaultValue={defaultOrg}>{renderOptionList(orgs)}</select></td>
           <td>{updatedAt}</td>
           <td>
             <input id={'toggle-' + event.id} ref={this.liveToggle} className={'toggle'} type={'checkbox'}

@@ -42,7 +42,7 @@ export default class EventsTable extends ListingsTable {
         {
           events.map(event =>
             <EventRow
-              key={event.id} listing={event}
+              key={event.uuid} listing={event}
               venue={venues.find(v => {
                 return v.id === event.venue_id
               })}

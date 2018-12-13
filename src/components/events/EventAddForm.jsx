@@ -32,8 +32,8 @@ export default class EventAddForm extends ListingAddForm {
       name: this.nameInput.current.value.trim(),
       start_date: Moment(this.startInput.current.value).valueOf(),
       end_date: Moment(this.endInput.current.value).valueOf(),
-      venue_id: this.venueList.current.value,
-      org_id: this.orgList.current.value,
+      venue_uuid: this.venueList.current.value,
+      org_uuid: this.orgList.current.value,
       description: this.descInput.current.value.trim(),
       flag_ongoing: this.ongoingInput.current.checked
     };

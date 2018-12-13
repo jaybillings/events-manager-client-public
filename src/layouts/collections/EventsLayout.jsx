@@ -14,7 +14,7 @@ export default class EventsLayout extends ListingsLayout {
   constructor(props) {
     super(props, 'events');
 
-    this.defaultQuery = {$sort: {name: 1}, $select: ['name'], $limit: 100};
+    this.defaultQuery = {$sort: {name: 1}, $select: ['name', 'uuid'], $limit: 100};
 
     this.state = {
       listings: [], venues: [], orgs: [], tags: [], listingsTotal: 0,
@@ -214,7 +214,7 @@ export default class EventsLayout extends ListingsLayout {
       console.log('patching event', message);
     }, err => {
       console.log('error patching event', err);
-      this.updateMessagePanel(err);
+      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
     // TODO: Modify live/dropped lists
   }
@@ -229,7 +229,7 @@ export default class EventsLayout extends ListingsLayout {
       this.addToLiveList(message.id);
     }, err => {
       console.log('error creating event', err);
-      this.updateMessagePanel(err);
+      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
     // TODO: Add to live list
   }

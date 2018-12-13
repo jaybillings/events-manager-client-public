@@ -107,6 +107,7 @@ export default class ListingsLayout extends Component {
   }
 
   createListing(newData) {
+    // TODO: Clear contents, but only if save was successful
     const schema = this.schema;
 
     // Give the new listing a UUID
@@ -117,7 +118,6 @@ export default class ListingsLayout extends Component {
     }, err => {
       console.log(`error creating ${schema}`, err);
       this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-
     });
   }
 

@@ -27,6 +27,8 @@ export default class VenueRow extends ListingRow {
     const venue = this.props.listing;
     const hoods = this.props.hoods;
     const updatedAt = Moment(venue['updated_at']).calendar();
+
+    const defaultHood = typeof(this.props.hood) !== 'undefined' ? this.props.hood.uuid : this.props.hoods[0].uuid;
     const hoodNameLink = this.props.hood ? <Link to={`/neighborhoods/${venue.hood_id}`}>{ this.props.hood.name }</Link> : 'NO NEIGHBORHOOD';
 
     if (this.state.editable) {
@@ -37,7 +39,7 @@ export default class VenueRow extends ListingRow {
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
           <td><input type={'text'} ref={this.nameInput} defaultValue={venue.name} /></td>
-          <td><select ref={this.hoodList} defaultValue={this.props.hood.uuid || ''}>{renderOptionList(hoods)}</select></td>
+          <td><select ref={this.hoodList} defaultValue={defaultHood}>{renderOptionList(hoods)}</select></td>
           <td>{updatedAt}</td>
         </tr>
       );
