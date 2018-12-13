@@ -23,13 +23,14 @@ export default class PendingListingsModule extends Component {
   constructor(props, schema) {
     super(props);
 
+    this.schema = schema;
+    this.defaultQuery = {$sort: {name: 1}, $limit: 100};
+
     this.state = {
-      moduleVisible: true, pendingListings: [], pendingListingsCount: 0, listingsLoaded: false, selectedListings: [],
+      moduleVisible: true, pendingListings: [], pendingListingsTotal: 0, listingsLoaded: false, selectedListings: [],
       pageSize: this.props.defaultPageSize, currentPage: 1, sort: this.props.defaultSortOrder
     };
 
-    this.schema = schema;
-    this.defaultQuery = {$sort: {name: 1}, $limit: 100};
     this.pendingListingsService = app.service(`pending-${this.schema}`);
     this.listingsService = app.service(this.schema);
 
@@ -61,13 +62,15 @@ export default class PendingListingsModule extends Component {
    * Code to run one component is mounted.
    */
   componentDidMount() {
+    const schemaSingular = this.schema.slice(0, -1);
+
     this.fetchAllData();
 
     this.pendingListingsService
       .on('created', message => {
         this.props.updateMessageList({
           status: 'success',
-          details: `Added "${message.name}" as new pending ${this.schema.slice(0, -1)}`
+          details: `Added "${message.name}" as new pending ${schemaSingular}`
         });
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
@@ -78,14 +81,14 @@ export default class PendingListingsModule extends Component {
       .on('patched', message => {
         this.props.updateMessageList({
           status: 'success',
-          details: `Updated pending ${this.schema.slice(0, -1)} "${message.name}"`
+          details: `Updated pending ${schemaSingular} "${message.name}"`
         });
         this.fetchAllData();
       })
       .on('removed', message => {
         this.props.updateMessageList({
           status: 'info',
-          details: `Discarded pending ${this.schema.slice(0, -1)} "${message.name}"`
+          details: `Discarded pending ${schemaSingular} "${message.name}"`
         });
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       });
@@ -121,7 +124,7 @@ export default class PendingListingsModule extends Component {
       }
     }).then(message => {
       this.setState({
-        pendingListings: message.data, pendingListingsCount: message.total,
+        pendingListings: message.data, pendingListingsTotal: message.total,
         listingsLoaded: true, selectedListings: []
       });
     });
@@ -240,7 +243,7 @@ export default class PendingListingsModule extends Component {
       console.log(message);
     }, err => {
       this.props.updateMessageList({status: 'error', details: err});
-      console.log(`error publishing ${this.schema}: ${err}`);
+      console.log(`error deleting ${this.schema}: ${err}`);
     });
   }
 
@@ -343,11 +346,11 @@ export default class PendingListingsModule extends Component {
    * @returns {[*]}
    */
   renderTable() {
-    const pendingListingsCount = this.state.pendingListingsCount;
+    const pendingListingsTotal = this.state.pendingListingsTotal;
 
     if (!this.state.listingsLoaded) {
       return <p>Data is loading... Please be patient...</p>;
-    } else if (pendingListingsCount === 0) {
+    } else if (pendingListingsTotal === 0) {
       return <p>No pending {this.schema} to list.</p>
     }
 
@@ -377,7 +380,7 @@ export default class PendingListingsModule extends Component {
         />
         <PaginationLayout
           key={`pending-${schema}-pagination`} schema={`pending-${schema}`}
-          total={pendingListingsCount} pageSize={pageSize} activePage={currentPage}
+          total={pendingListingsTotal} pageSize={pageSize} activePage={currentPage}
           updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
         />
         <table className={'schema-table'} key={`pending-${schema}-table`}>

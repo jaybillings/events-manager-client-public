@@ -101,7 +101,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
   }
 
   renderTable() {
-    const pendingVenuesCount = this.state.pendingListingsCount;
+    const pendingVenuesCount = this.state.pendingListingsTotal;
 
     if (!(this.state.listingsLoaded && this.state.hoodsLoaded)) {
       return <p>Data is loading... Please be patient...</p>;

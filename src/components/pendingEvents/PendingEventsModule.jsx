@@ -260,7 +260,7 @@ export default class PendingEventsModule extends PendingListingsModule {
   }
 
   renderTable() {
-    const pendingEventsCount = this.state.pendingListingsCount;
+    const pendingEventsCount = this.state.pendingListingsTotal;
 
     if (!(this.state.listingsLoaded && this.state.venuesLoaded && this.state.pendingVenuesLoaded &&
       this.state.orgsLoaded && this.state.pendingOrgsLoaded)) {

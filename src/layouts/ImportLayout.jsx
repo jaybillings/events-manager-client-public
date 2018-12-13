@@ -80,11 +80,8 @@ export default class ImportLayout extends Component {
       .catch((err) => console.log(err));
   }
 
-  updateMessageList(newMessage) {
-    this.setState(prevState => ({
-      messages: [newMessage, ...prevState.messages],
-      messagePanelVisible: true
-    }));
+  updateMessageList(newMsg) {
+    this.setState(prevState => ({messages: [newMsg, ...prevState.messages], messagePanelVisible: true}));
   }
 
   dismissMessagePanel() {
