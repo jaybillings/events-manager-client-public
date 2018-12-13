@@ -32,7 +32,7 @@ export default class ListingRow extends Component {
   }
 
   handleSaveClick() {
-    const newData = {name: this.nameInput.current.value.trim()};
+    const newData = {uuid: this.props.listing.uuid, name: this.nameInput.current.value.trim()};
 
     this.props.saveChanges(this.props.listing.id, newData);
     this.setState({editable: false});

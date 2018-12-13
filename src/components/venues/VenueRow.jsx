@@ -14,8 +14,9 @@ export default class VenueRow extends ListingRow {
 
   handleSaveClick() {
     const newData = {
+      uuid: this.props.listing.uuid,
       name: this.nameInput.current.value.trim(),
-      hood_id: this.hoodList.current.value
+      hood_uuid: this.hoodList.current.value
     };
 
     this.props.saveChanges(this.props.listing.id, newData);
@@ -36,7 +37,7 @@ export default class VenueRow extends ListingRow {
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
           <td><input type={'text'} ref={this.nameInput} defaultValue={venue.name} /></td>
-          <td><select ref={this.hoodList} defaultValue={venue.hood_id || ''}>{renderOptionList(hoods)}</select></td>
+          <td><select ref={this.hoodList} defaultValue={this.props.hood.uuid || ''}>{renderOptionList(hoods)}</select></td>
           <td>{updatedAt}</td>
         </tr>
       );

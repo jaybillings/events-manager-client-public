@@ -18,11 +18,12 @@ export default class EventRow extends ListingRow {
 
   handleSaveClick() {
     const newData = {
+      uuid: this.props.listing.uuid,
       name: this.nameInput.current.value.trim(),
       start_date: Moment(this.startInput.current.value).valueOf(),
       end_date: Moment(this.endInput.current.value).valueOf(),
-      venue_id: this.venueList.current.value,
-      org_id: this.orgList.current.value,
+      venue_uuid: this.venueList.current.value,
+      org_uuid: this.orgList.current.value,
       is_published: this.liveToggle.current.checked
     };
 
@@ -58,8 +59,8 @@ export default class EventRow extends ListingRow {
           <td><input type={'text'} ref={this.nameInput} defaultValue={event.name} /></td>
           <td><input type={'date'} ref={this.startInput} defaultValue={startDateVal} /></td>
           <td><input type={'date'} ref={this.endInput} defaultValue={endDateVal} /></td>
-          <td><select ref={this.venueList} defaultValue={event.venue_id || ''}>{renderOptionList(venues)}</select></td>
-          <td><select ref={this.orgList} defaultValue={event.org_id || ''}>{renderOptionList(orgs)}</select></td>
+          <td><select ref={this.venueList} defaultValue={this.props.venue.uuid || ''}>{renderOptionList(venues)}</select></td>
+          <td><select ref={this.orgList} defaultValue={this.props.org.uuid || ''}>{renderOptionList(orgs)}</select></td>
           <td>{updatedAt}</td>
           <td>
             <input id={'toggle-' + event.id} ref={this.liveToggle} className={'toggle'} type={'checkbox'}

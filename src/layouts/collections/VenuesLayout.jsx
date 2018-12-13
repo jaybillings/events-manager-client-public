@@ -12,7 +12,7 @@ export default class VenuesLayout extends ListingsLayout {
   constructor(props) {
     super(props, 'venues');
 
-    this.defaultQuery = {$sort: {name: 1}, $select: ['name'], $limit: 100};
+    this.defaultQuery = {$sort: {name: 1}, $select: ['name', 'uuid'], $limit: 100};
 
     this.state = {
       listings: [], hoods: [], listingsTotal: 0, listingsLoaded: false, hoodsLoaded: false,
@@ -102,7 +102,7 @@ export default class VenuesLayout extends ListingsLayout {
   fetchHoods() {
     this.hoodsService.find({query: this.defaultQuery}).then(message => {
       this.setState({hoods: message.data, hoodsLoaded: true});
-    })
+    });
   }
 
   renderTable() {
