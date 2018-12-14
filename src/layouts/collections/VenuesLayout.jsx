@@ -124,7 +124,8 @@ export default class VenuesLayout extends ListingsLayout {
       listings={venues} listingsTotal={total} hoods={hoods}
       pageSize={pageSize} currentPage={currentPage} sort={sort}
       updateColumnSort={this.updateColumnSort} updatePageSize={this.updatePageSize}
-      updateCurrentPage={this.updateCurrentPage} deleteListing={this.deleteListing} saveListing={this.saveListing}
+      updateCurrentPage={this.updateCurrentPage}
+      updateListing={this.updateListing} deleteListing={this.deleteListing}
     />;
   }
 

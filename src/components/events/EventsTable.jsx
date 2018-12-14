@@ -34,23 +34,20 @@ export default class EventsTable extends ListingsTable {
     return ([
       <PaginationLayout
         key={'events-pagination'} schema={'events'} total={eventsTotal} pageSize={pageSize} activePage={currentPage}
-        updatePageSize={this.handleUpdatePageSize} updateCurrentPage={this.handleUpdateCurrentPage}
+        updatePageSize={this.props.updatePageSize} updateCurrentPage={this.props.updateCurrentPage}
       />,
       <table key={'events-table'} className={'schema-table'}>
-        <thead>{renderTableHeader(titleMap, sort, this.handleUpdateSort)}</thead>
+        <thead>{renderTableHeader(titleMap, sort, this.props.updateColumnSort)}</thead>
         <tbody>
         {
           events.map(event =>
             <EventRow
               key={event.uuid} listing={event}
-              venue={venues.find(v => {
-                return v.id === event.venue_id
-              })}
-              org={orgs.find(o => {
-                return o.id === event.org_id
-              })}
-              venues={venues} orgs={orgs}
-              saveListing={this.handleSaveChanges} deleteListing={this.handleDeleteListing}
+              venue={venues.find(v => {return v.id === event.venue_id})} venues={venues}
+              org={orgs.find(o => {return o.id === event.org_id})} orgs={orgs}
+              updateListing={this.props.updateListing} deleteListing={this.props.deleteListing}
+              registerEventLive={this.props.registerEventLive} registerEventDropped={this.registerEventDropped}
+              checkForLive={this.props.checkForLive}
             />
           )
         }

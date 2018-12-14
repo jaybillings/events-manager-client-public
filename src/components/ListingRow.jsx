@@ -15,8 +15,8 @@ export default class ListingRow extends Component {
 
     this.startEdit = this.startEdit.bind(this);
     this.cancelEdit = this.cancelEdit.bind(this);
-    this.handleDeleteClick = this.handleDeleteClick.bind(this);
     this.handleSaveClick = this.handleSaveClick.bind(this);
+    this.handleDeleteClick = this.handleDeleteClick.bind(this);
   }
 
   startEdit() {
@@ -27,15 +27,16 @@ export default class ListingRow extends Component {
     this.setState({editable: false});
   }
 
-  handleDeleteClick() {
-    this.props.deleteListing(this.props.listing.id);
-  }
-
   handleSaveClick() {
     const newData = {uuid: this.props.listing.uuid, name: this.nameInput.current.value.trim()};
 
-    this.props.saveChanges(this.props.listing.id, newData);
-    this.setState({editable: false});
+    this.props.updateListing(this.props.listing.id, newData).then(() => {
+      this.setState({editable: false});
+    });
+  }
+
+  handleDeleteClick() {
+    this.props.deleteListing(this.props.listing.id);
   }
 
   render() {

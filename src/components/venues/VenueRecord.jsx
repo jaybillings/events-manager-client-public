@@ -38,7 +38,7 @@ export default class VenueRecord extends ListingRecordUniversal {
     this.stateInput.current.value !== '' && (newData.address_state = this.stateInput.current.value);
     this.zipInput.current.value !== '' && (newData.address_zip = this.zipInput.current.value);
 
-    this.props.saveListing(venue.id, newData);
+    this.props.updateListing(venue.id, newData);
   }
 
   render() {

@@ -75,7 +75,7 @@ export default class EventRecord extends Component {
     });
     uncheckedBoxes.forEach(input => tagsToDelete.push(input.value));
 
-    this.props.saveListing(id, newData, {to_save: tagsToSave, to_delete: tagsToDelete});
+    this.props.updateListing(id, newData, {to_save: tagsToSave, to_delete: tagsToDelete});
   }
 
   toggleStatus() {

@@ -9,32 +9,6 @@ import '../styles/schema-table.css';
 export default class ListingsTable extends Component {
   constructor(props) {
     super(props);
-
-    this.handleSaveChanges = this.handleSaveChanges.bind(this);
-    this.handleDeleteListing = this.handleDeleteListing.bind(this);
-    this.handleUpdatePageSize = this.handleUpdatePageSize.bind(this);
-    this.handleUpdateCurrentPage = this.handleUpdateCurrentPage.bind(this);
-    this.handleUpdateSort = this.handleUpdateSort.bind(this);
-  }
-
-  handleDeleteListing(id) {
-    this.props.deleteListing(id);
-  }
-
-  handleSaveChanges(id, newData) {
-    this.props.saveListing(id, newData);
-  }
-
-  handleUpdatePageSize(e) {
-    this.props.updatePageSize(e);
-  }
-
-  handleUpdateCurrentPage(page) {
-    this.props.updateCurrentPage(page);
-  }
-
-  handleUpdateSort(e) {
-    this.props.updateColumnSort(e);
   }
 
   render() {
@@ -55,16 +29,16 @@ export default class ListingsTable extends Component {
     return ([
       <PaginationLayout
         key={`${schema}-pagination`} schema={schema} total={listingsTotal} pageSize={pageSize} activePage={currentPage}
-        updatePageSize={this.handleUpdatePageSize} updateCurrentPage={this.handleUpdateCurrentPage}
+        updatePageSize={this.props.updatePageSize} updateCurrentPage={this.props.updateCurrentPage}
       />,
       <table key={`${schema}-table`} className={'schema-table'}>
-        <thead>{renderTableHeader(titleMap, sort, this.handleUpdateSort)}</thead>
+        <thead>{renderTableHeader(titleMap, sort, this.props.updateColumnSort)}</thead>
         <tbody>
         {
           listings.map(listing =>
             <ListingRow
               key={listing.id} schema={schema} listing={listing}
-              saveChanges={this.handleSaveChanges} deleteListing={this.handleDeleteListing}
+              updateListing={this.props.updateListing} deleteListing={this.props.deleteListing}
             />
           )
         }

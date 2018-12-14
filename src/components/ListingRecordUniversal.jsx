@@ -28,7 +28,7 @@ export default class ListingRecordUniversal extends Component {
       name: this.nameInput.current.value.trim()
     };
 
-    this.props.saveListing(listing.id, newData);
+    this.props.updateListing(listing.id, newData);
   }
 
   render() {

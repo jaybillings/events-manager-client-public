@@ -27,7 +27,7 @@ export default class ListingsLayout extends Component {
     this.fetchAllData = this.fetchAllData.bind(this);
 
     this.deleteListing = this.deleteListing.bind(this);
-    this.saveListing = this.saveListing.bind(this);
+    this.updateListing = this.updateListing.bind(this);
     this.createListing = this.createListing.bind(this);
 
     this.updatePageSize = this.updatePageSize.bind(this);
@@ -95,7 +95,7 @@ export default class ListingsLayout extends Component {
     });
   }
 
-  saveListing(id, newData) {
+  updateListing(id, newData) {
     const schema = this.schema;
 
     this.listingsService.patch(id, newData).then(message => {
@@ -161,7 +161,8 @@ export default class ListingsLayout extends Component {
       listings={listings} listingsTotal={total} schema={schema}
       pageSize={pageSize} currentPage={currentPage} sort={sort}
       updateColumnSort={this.updateColumnSort} updatePageSize={this.updatePageSize}
-      updateCurrentPage={this.updateCurrentPage} deleteListing={this.deleteListing} saveListing={this.saveListing}
+      updateCurrentPage={this.updateCurrentPage}
+      updateListing={this.updateListing} deleteListing={this.deleteListing}
     />;
   }
 

@@ -9,11 +9,21 @@ export default class EventRow extends ListingRow {
   constructor(props) {
     super(props);
 
+    this.state = {is_published: false};
+
     this.startInput = React.createRef();
     this.endInput = React.createRef();
     this.venueList = React.createRef();
     this.orgList = React.createRef();
     this.liveToggle = React.createRef();
+  }
+
+  componentDidMount() {
+    this.props.checkForLive(this.props.listing.id).then(results => {
+      this.setState({is_published: results.total > 0});
+    }, err => {
+      console.log('error in checking for live', JSON.stringify(err));
+    });
   }
 
   handleSaveClick() {
@@ -26,14 +36,32 @@ export default class EventRow extends ListingRow {
       org_uuid: this.orgList.current.value
     };
 
-    this.props.saveListing(this.props.listing.id, newData);
-    this.setState({editable: false});
+    // Save changes
+    this.props.updateListing(this.props.listing.id, newData).then(() => {
+      this.setState({editable: false});
+    });
+
+    // Publish/drop
+    if (this.liveToggle.current.value) {
+      this.props.registerEventLive(this.props.listing.id);
+    } else {
+      this.props.registerEventDropped(this.props.listing.id);
+    }
+  }
+
+  handleDeleteClick() {
+    // Delete
+    this.props.deleteListing(this.props.listing.id);
+
+    // Drop
+    this.props.registerEventDropped(this.props.listing.id);
   }
 
   render() {
     const event = this.props.listing;
     const venues = this.props.venues;
     const orgs = this.props.orgs;
+    const is_published = this.state.is_published;
 
     const startDate = Moment(event.start_date).format('MM/DD/YYYY');
     const startDateVal = Moment(event.start_date).format('YYYY-MM-DD');
@@ -42,13 +70,6 @@ export default class EventRow extends ListingRow {
     const updatedAt = Moment(event.updated_at).calendar();
     const defaultVenue = typeof(this.props.venue) !== 'undefined' ? this.props.venue.uuid : this.props.venues[0].uuid;
     const defaultOrg = typeof(this.props.org) !== 'undefined' ? this.props.org.uuid : this.props.orgs[0].uuid;
-
-    const venueLink = this.props.venue ?
-      <Link to={`/venues/${event.venue_id}`}>{this.props.venue.name}</Link> : 'NO VENUE';
-    const orgLink = this.props.org ?
-      <Link to={`/organizers/${event.org_id}`}>{this.props.org.name}</Link> : 'NO ORGANIZER';
-    const eventStatus = event.is_published ? <span className="bolded">Published</span> :
-      <span className="muted">Dropped</span>;
 
     if (this.state.editable) {
       return (
@@ -65,12 +86,19 @@ export default class EventRow extends ListingRow {
           <td>{updatedAt}</td>
           <td>
             <input id={'toggle-' + event.id} ref={this.liveToggle} className={'toggle'} type={'checkbox'}
-                   defaultChecked={event.is_published} />
+                   defaultChecked={is_published} />
             <label className={'toggle-switch'} htmlFor={'toggle-' + event.id} />
           </td>
         </tr>
       );
     }
+
+    const venueLink = this.props.venue ?
+      <Link to={`/venues/${event.venue_id}`}>{this.props.venue.name}</Link> : 'NO VENUE';
+    const orgLink = this.props.org ?
+      <Link to={`/organizers/${event.org_id}`}>{this.props.org.name}</Link> : 'NO ORGANIZER';
+    const eventStatus = is_published ? <span className="bolded">Published</span> :
+      <span className="muted">Dropped</span>;
 
     return (
       <tr className={'schema-row'}>
