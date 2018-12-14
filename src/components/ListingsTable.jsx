@@ -7,10 +7,6 @@ import PaginationLayout from "./common/PaginationLayout";
 import '../styles/schema-table.css';
 
 export default class ListingsTable extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],

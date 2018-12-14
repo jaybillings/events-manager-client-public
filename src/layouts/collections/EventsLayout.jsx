@@ -1,5 +1,5 @@
 import React from 'react';
-import {buildSortQuery} from "../../utilities";
+import {arrayUnique, buildSortQuery} from "../../utilities";
 import app from '../../services/socketio';
 import uuid from "uuid/v1";
 
@@ -19,7 +19,7 @@ export default class EventsLayout extends ListingsLayout {
     this.state = {
       listings: [], venues: [], orgs: [], tags: [], listingsTotal: 0,
       listingsLoaded: false, venuesLoaded: false, orgsLoaded: false, tagsLoaded: false,
-      pageSize: this.defaultPageSize, currentPage: 1, sort: this.defaultTableSort,
+      pageSize: this.defaultPageSize, currentPage: 1, sort: this.defaultTableSort, filter: {},
       messagePanelVisible: false, messages: []
     };
 
@@ -34,9 +34,11 @@ export default class EventsLayout extends ListingsLayout {
     this.fetchVenues = this.fetchVenues.bind(this);
     this.fetchOrgs = this.fetchOrgs.bind(this);
     this.fetchTags = this.fetchTags.bind(this);
+    this.fetchLiveListings = this.fetchLiveListings.bind(this);
     this.checkForLive = this.checkForLive.bind(this);
 
     this.updateFilters = this.updateFilters.bind(this);
+    this.updateListing = this.updateListing.bind(this);
 
     this.createTagAssociations = this.createTagAssociations.bind(this);
     this.removeTagAssociations = this.removeTagAssociations.bind(this);
@@ -148,17 +150,16 @@ export default class EventsLayout extends ListingsLayout {
     const sort = this.state.sort;
     const pageSize = this.state.pageSize;
     const currentPage = this.state.currentPage;
-    const filter = this.state.filter;
-
     let query = {
       $sort: buildSortQuery(sort),
       $limit: pageSize,
       $skip: pageSize * (currentPage - 1)
     };
-    Object.assign(query, filter);
+
+    if (this.state.filter) Object.assign(query, this.state.filter);
 
     this.listingsService.find({query: query}).then(message => {
-      this.setState({events: message.data, eventsTotal: message.total, eventsLoaded: true});
+      this.setState({listings: message.data, listingsTotal: message.total, listingsLoaded: true});
     });
   }
 
@@ -180,28 +181,39 @@ export default class EventsLayout extends ListingsLayout {
     });
   }
 
+  async fetchLiveListings() {
+    return this.liveEventService.find({query: {$limit: 1000}});
+  }
+
   async checkForLive(id) {
     return this.liveEventService.find({query: {event_id: id}});
   }
 
   updateFilters(filterType) {
-    let filter = {};
-
     switch (filterType) {
       case 'dropped':
-        filter = {'is_published': 0};
+        this.fetchLiveListings().then(result => {
+          const uniqueIDs = arrayUnique(result.data.map(row => row.event_id));
+          this.setState({currentPage: 1, filter: {id: {$nin: uniqueIDs}}}, () => this.fetchListings());
+        });
         break;
       case 'stale':
-        filter = {'is_published': 1, 'end_date': {$lt: new Date().valueOf()}};
+        this.fetchLiveListings().then(result => {
+          const uniqueIDs = arrayUnique(result.data.map(row => row.event_id));
+          this.setState({currentPage: 1, filter: {id: {$in: uniqueIDs}, end_date: {$lt: new Date().valueOf()}}},
+            () => this.fetchListings());
+        });
         break;
       case 'live':
-        filter = {'is_published': 1, 'end_date': {$gte: new Date().valueOf()}};
+        this.fetchLiveListings().then(result => {
+          const uniqueIDs = arrayUnique(result.data.map(row => row.event_id));
+          this.setState({currentPage: 1, filter: {id: {$in: uniqueIDs}, end_date: {$lt: new Date().valueOf()}}},
+            () => this.fetchListings());
+        });
         break;
       default:
-        filter = {};
+        this.setState({currentPage: 1, filter: {}}, () => this.fetchListings());
     }
-
-    this.setState({currentPage: 1, filter: filter}, () => this.fetchListings());
   }
 
   createListing(eventObj, tagsToSave) {
@@ -221,7 +233,7 @@ export default class EventsLayout extends ListingsLayout {
 
   updateListing(id, newData) {
     // Save changes
-    this.listingsService.patch(id, newData).then(message => {
+    return this.listingsService.patch(id, newData).then(message => {
       console.log('patching event', message);
     }, err => {
       console.log('error patching event', err);
@@ -271,7 +283,10 @@ export default class EventsLayout extends ListingsLayout {
       console.log('event registered as live', resultSet);
       this.updateMessagePanel({status: 'info', details: `Published event #${id}`});
     }, err => {
-      this.updateMessagePanel({status: 'error', details: `Failed to register event #${id} as live. ${JSON.stringify(err)}`});
+      this.updateMessagePanel({
+        status: 'error',
+        details: `Failed to register event #${id} as live. ${JSON.stringify(err)}`
+      });
     });
   }
 
@@ -284,24 +299,27 @@ export default class EventsLayout extends ListingsLayout {
       console.log('event registered as dropped', resultSet);
       this.updateMessagePanel({status: 'info', details: `Dropped event #${id}`});
     }, err => {
-      this.updateMessagePanel({status: 'error', details: `Failed to register event #${id} as dropped. ${JSON.stringify(err)}`});
+      this.updateMessagePanel({
+        status: 'error',
+        details: `Failed to register event #${id} as dropped. ${JSON.stringify(err)}`
+      });
     });
   }
 
   renderTable() {
-    if (!(this.state.eventsLoaded && this.state.venuesLoaded && this.state.orgsLoaded)) {
+    if (!(this.state.listingsLoaded && this.state.venuesLoaded && this.state.orgsLoaded)) {
       return <p>Data is loading... Please be patient...</p>;
-    } else if (this.state.eventsTotal === 0) {
+    } else if (this.state.listingsTotal === 0) {
       return <p>No events to list.</p>;
     }
 
-    const events = this.state.events;
+    const events = this.state.listings;
     const venues = this.state.venues;
     const orgs = this.state.orgs;
 
     const pageSize = this.state.pageSize;
     const currentPage = this.state.currentPage;
-    const total = this.state.eventsTotal;
+    const total = this.state.listingsTotal;
     const sort = this.state.sort;
 
     return <EventsTable

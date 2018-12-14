@@ -114,6 +114,10 @@ const makeTitleCase = function(string) {
   return tmpStr.join(' ');
 };
 
+const arrayUnique = function(arr) {
+  return [...new Set(arr)];
+}
+
 export {
   renderOptionList,
   renderCheckboxList,
@@ -122,5 +126,6 @@ export {
   uniqueListingsOnly,
   buildSortQuery,
   buildColumnSort,
-  makeTitleCase
+  makeTitleCase,
+  arrayUnique
 };

@@ -9,13 +9,15 @@ export default class EventRow extends ListingRow {
   constructor(props) {
     super(props);
 
-    this.state = {is_published: false};
+    const event = this.props.listing;
+    const venueUUID = typeof this.props.venue === 'undefined' ? '' : this.props.venue.uuid;
+    const orgUUID = typeof this.props.org === 'undefined' ? '' : this.props.org.uuid;
+    this.state = {
+      eventName: event.name, eventStart: event.start_date, eventEnd: event.end_date,
+      eventVenue: venueUUID, eventOrg: orgUUID, is_published: false, editable: false
+    };
 
-    this.startInput = React.createRef();
-    this.endInput = React.createRef();
-    this.venueList = React.createRef();
-    this.orgList = React.createRef();
-    this.liveToggle = React.createRef();
+    this.handleInputChange = this.handleInputChange.bind(this);
   }
 
   componentDidMount() {
@@ -26,78 +28,84 @@ export default class EventRow extends ListingRow {
     });
   }
 
+  handleInputChange(e) {
+    const newState = {};
+
+    if (e.target.name === 'is_published') {
+      this.setState(prevState => ({is_published: !prevState.is_published}));
+    } else {
+      newState[e.target.name] = e.target.value.trim();
+      this.setState(newState);
+    }
+  }
+
   handleSaveClick() {
+    const id = this.props.listing.id;
     const newData = {
       uuid: this.props.listing.uuid,
-      name: this.nameInput.current.value.trim(),
-      start_date: Moment(this.startInput.current.value).valueOf(),
-      end_date: Moment(this.endInput.current.value).valueOf(),
-      venue_uuid: this.venueList.current.value,
-      org_uuid: this.orgList.current.value
+      name: this.state.eventName,
+      start_date: Moment(this.state.eventStart).valueOf(),
+      end_date: Moment(this.state.eventStart).valueOf(),
+      venue_uuid: this.state.eventVenue,
+      org_uuid: this.state.eventOrg
     };
 
     // Save changes
-    this.props.updateListing(this.props.listing.id, newData).then(() => {
+    this.props.updateListing(id, newData).then(() => {
       this.setState({editable: false});
     });
 
     // Publish/drop
-    if (this.liveToggle.current.value) {
-      this.props.registerEventLive(this.props.listing.id);
+    if (this.state.is_published) {
+      this.props.registerEventLive(id);
     } else {
-      this.props.registerEventDropped(this.props.listing.id);
+      this.props.registerEventDropped(id);
     }
   }
 
   handleDeleteClick() {
-    // Delete
-    this.props.deleteListing(this.props.listing.id);
+    const id = this.props.listing.id;
 
-    // Drop
-    this.props.registerEventDropped(this.props.listing.id);
+    this.props.deleteListing(id);
+    this.props.registerEventDropped(id);
   }
 
   render() {
-    const event = this.props.listing;
-    const venues = this.props.venues;
-    const orgs = this.props.orgs;
-    const is_published = this.state.is_published;
-
-    const startDate = Moment(event.start_date).format('MM/DD/YYYY');
-    const startDateVal = Moment(event.start_date).format('YYYY-MM-DD');
-    const endDate = Moment(event.end_date).format('MM/DD/YYYY');
-    const endDateVal = Moment(event.end_date).format('YYYY-MM-DD');
-    const updatedAt = Moment(event.updated_at).calendar();
-    const defaultVenue = typeof(this.props.venue) !== 'undefined' ? this.props.venue.uuid : this.props.venues[0].uuid;
-    const defaultOrg = typeof(this.props.org) !== 'undefined' ? this.props.org.uuid : this.props.orgs[0].uuid;
+    const startDate = Moment(this.state.eventStart).format('MM/DD/YYYY');
+    const startDateVal = Moment(this.state.eventStart).format('YYYY-MM-DD');
+    const endDate = Moment(this.state.eventEnd).format('MM/DD/YYYY');
+    const endDateVal = Moment(this.state.eventEnd).format('YYYY-MM-DD');
+    const updatedAt = Moment(this.props.listing.updated_at).calendar();
+    const defaultVenue = this.state.eventVenue || this.props.venues[0].uuid;
+    const defaultOrg = this.state.eventOrg || this.props.orgs[0].uuid;
 
     if (this.state.editable) {
       return (
         <tr className={'schema-row'}>
           <td>
-            <button type={'button'} onClick={this.handleSaveClick}>Save</button>
+            <button type={'submit'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
-          <td><input type={'text'} ref={this.nameInput} defaultValue={event.name} /></td>
-          <td><input type={'date'} ref={this.startInput} defaultValue={startDateVal} /></td>
-          <td><input type={'date'} ref={this.endInput} defaultValue={endDateVal} /></td>
-          <td><select ref={this.venueList} defaultValue={defaultVenue}>{renderOptionList(venues)}</select></td>
-          <td><select ref={this.orgList} defaultValue={defaultOrg}>{renderOptionList(orgs)}</select></td>
+          <td><input type={'text'} name={'eventName'} value={this.state.eventName} onChange={this.handleInputChange}/></td>
+          <td><input type={'date'} name={'eventStart'} value={startDateVal} onChange={this.handleInputChange}/></td>
+          <td><input type={'date'} name={'eventEnd'} value={endDateVal} onChange={this.handleInputChange}/></td>
+          <td><select value={defaultVenue} name={'eventVenue'} onChange={this.handleInputChange}>{renderOptionList(this.props.venues)}</select></td>
+          <td><select value={defaultOrg} name={'eventOrg'} onChange={this.handleInputChange}>{renderOptionList(this.props.orgs)}</select></td>
           <td>{updatedAt}</td>
           <td>
-            <input id={'toggle-' + event.id} ref={this.liveToggle} className={'toggle'} type={'checkbox'}
-                   defaultChecked={is_published} />
-            <label className={'toggle-switch'} htmlFor={'toggle-' + event.id} />
+            <input id={'toggle-' + this.props.listing.id} name={'is_published'} type={'checkbox'} className={'toggle'}
+                   checked={this.state.is_published} onChange={this.handleInputChange}/>
+            <label className={'toggle-switch'} htmlFor={'toggle-' + this.props.listing.id} />
           </td>
         </tr>
       );
     }
 
     const venueLink = this.props.venue ?
-      <Link to={`/venues/${event.venue_id}`}>{this.props.venue.name}</Link> : 'NO VENUE';
+      <Link to={`/venues/${this.props.venue.id}`}>{this.props.venue.name}</Link> : 'NO VENUE';
     const orgLink = this.props.org ?
-      <Link to={`/organizers/${event.org_id}`}>{this.props.org.name}</Link> : 'NO ORGANIZER';
-    const eventStatus = is_published ? <span className="bolded">Published</span> :
+      <Link to={`/organizers/${this.props.org.id}`}>{this.props.org.name}</Link> : 'NO ORGANIZER';
+    const eventStatus = this.state.is_published ? <span className="bolded">Published</span> :
       <span className="muted">Dropped</span>;
 
     return (
@@ -106,7 +114,7 @@ export default class EventRow extends ListingRow {
           <button type={'button'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button>
         </td>
-        <td><Link to={`/events/${event.id}`}>{event.name}</Link></td>
+        <td><Link to={`/events/${this.props.listing.id}`}>{this.props.listing.name}</Link></td>
         <td>{startDate}</td>
         <td>{endDate}</td>
         <td>{venueLink}</td>

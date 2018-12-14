@@ -19,7 +19,7 @@ export default class EventsTable extends ListingsTable {
       ['fk_venue', 'Venue'],
       ['fk_org', 'Organizer'],
       ['updated_at', 'Last Modified'],
-      ['is_published', 'Status']
+      ['is_published_NOSORT', 'Status']
     ]);
 
     const events = this.props.listings;
@@ -46,7 +46,7 @@ export default class EventsTable extends ListingsTable {
               venue={venues.find(v => {return v.id === event.venue_id})} venues={venues}
               org={orgs.find(o => {return o.id === event.org_id})} orgs={orgs}
               updateListing={this.props.updateListing} deleteListing={this.props.deleteListing}
-              registerEventLive={this.props.registerEventLive} registerEventDropped={this.registerEventDropped}
+              registerEventLive={this.props.registerEventLive} registerEventDropped={this.props.registerEventDropped}
               checkForLive={this.props.checkForLive}
             />
           )
