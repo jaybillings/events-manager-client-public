@@ -9,18 +9,21 @@ export default class VenueRow extends ListingRow {
   constructor(props) {
     super(props);
 
-    this.hoodList = React.createRef();
+    const hoodUUID = typeof this.props.hood === 'undefined' ? '' : this.props.hood.uuid;
+
+    this.state = {venueName: this.props.listing.name, venueHood: hoodUUID, editable: false}
   }
 
   handleSaveClick() {
     const newData = {
       uuid: this.props.listing.uuid,
-      name: this.nameInput.current.value.trim(),
-      hood_uuid: this.hoodList.current.value
+      name: this.state.venueName,
+      hood_uuid: this.venueHood
     };
 
-    this.props.saveChanges(this.props.listing.id, newData);
-    this.setState({editable: false});
+    this.props.saveChanges(this.props.listing.id, newData).then(() => {
+      this.setState({editable: false});
+    });
   }
 
   render() {

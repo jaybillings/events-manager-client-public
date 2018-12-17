@@ -25,10 +25,11 @@ export default class ListingsLayout extends Component {
     this.listingsService = app.service(this.schema);
 
     this.fetchAllData = this.fetchAllData.bind(this);
+    this.fetchListings = this.fetchListings.bind(this);
 
-    this.deleteListing = this.deleteListing.bind(this);
-    this.updateListing = this.updateListing.bind(this);
     this.createListing = this.createListing.bind(this);
+    this.updateListing = this.updateListing.bind(this);
+    this.deleteListing = this.deleteListing.bind(this);
 
     this.updatePageSize = this.updatePageSize.bind(this);
     this.updateCurrentPage = this.updateCurrentPage.bind(this);
@@ -42,27 +43,27 @@ export default class ListingsLayout extends Component {
 
   componentDidMount() {
     const schemaSingular = this.schema.slice(0, -1);
-    const onChangeCallback = () => { this.setState({currentPage: 1}, () => this.fetchAllData())};
+    const reloadData = () => { this.setState({currentPage: 1}, () => this.fetchAllData())};
 
     this.fetchAllData();
 
     // Register listeners
     this.listingsService
       .on('created', message => {
-        this.updateMessagePanel({status: 'success', details: `Created new ${schemaSingular} "${message.name}"`});
-        onChangeCallback();
+        this.updateMessagePanel({status: 'success', details: `Created ${schemaSingular} #${message.id} - "${message.name}"`});
+        reloadData();
       })
       .on('updated', message => {
-        this.updateMessagePanel({status: 'success', details: `Updated ${schemaSingular} "${message.name}"`});
-        onChangeCallback();
+        this.updateMessagePanel({status: 'success', details: `Updated ${schemaSingular} #${message.id} - "${message.name}"`});
+        reloadData();
       })
       .on('patched', message => {
-        this.updateMessagePanel({status: 'success', details: `Updated ${schemaSingular} "${message.name}"`});
-        onChangeCallback();
+        this.updateMessagePanel({status: 'success', details: `Updated ${schemaSingular} #${message.id} - "${message.name}"`});
+        reloadData();
       })
       .on('removed', message => {
-        this.updateMessagePanel({status: 'success', details: `Permanently deleted ${schemaSingular} "${message.name}"`});
-        onChangeCallback();
+        this.updateMessagePanel({status: 'success', details: `Permanently deleted ${schemaSingular} #${message.id} - "${message.name}"`});
+        reloadData();
       });
   }
 
@@ -75,6 +76,10 @@ export default class ListingsLayout extends Component {
   }
 
   fetchAllData() {
+    this.fetchListings();
+  }
+
+  fetchListings() {
     this.listingsService.find({
       query: {
         $sort: buildSortQuery(this.state.sort),
@@ -83,55 +88,43 @@ export default class ListingsLayout extends Component {
       }
     }).then(message => {
       this.setState({listings: message.data, listingsTotal: message.total, listingsLoaded: true});
-    });
-  }
-
-  deleteListing(id) {
-    this.listingsService.remove(id).then(message => {
-      console.log(`removing ${this.schema}`, message)
     }, err => {
-      this.props.updateMessageList({status: 'error', details: JSON.stringify(err)});
-      console.log(`error deleting ${this.schema}: ${err}`);
-    });
-  }
-
-  updateListing(id, newData) {
-    const schema = this.schema;
-
-    this.listingsService.patch(id, newData).then(message => {
-      console.log(`patching ${schema}`, message);
-    }, err => {
-      console.log(`error patching ${schema}`, err);
-      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      console.log('could not fetch listings', err);
     });
   }
 
   createListing(newData) {
-    // TODO: Clear contents, but only if save was successful
-    const schema = this.schema;
-
     // Give the new listing a UUID
     newData.uuid = uuid();
 
-    this.listingsService.create(newData).then(() => {
-      console.log(`creating ${schema}`);
-    }, err => {
-      console.log(`error creating ${schema}`, err);
+    return this.listingsService.create(newData).catch(err => {
       this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
 
+  updateListing(id, newData) {
+    this.listingsService.patch(id, newData).catch(err => {
+      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+    });
+  }
+
+  deleteListing(id) {
+    this.listingsService.remove(id).catch(err => {
+      this.props.updateMessageList({status: 'error', details: JSON.stringify(err)});
+    });
+  }
+
   updatePageSize(e) {
-    this.setState({pageSize: parseInt(e.target.value, 10), currentPage: 1}, () => this.fetchAllData());
+    this.setState({pageSize: parseInt(e.target.value, 10), currentPage: 1}, () => this.fetchListings());
   }
 
   updateCurrentPage(page) {
-    this.setState({currentPage: parseInt(page, 10)}, () => this.fetchAllData());
+    this.setState({currentPage: parseInt(page, 10)}, () => this.fetchListings());
   }
 
   updateColumnSort(e) {
     const colSortState = buildColumnSort(e.target, this.state.sort);
-    this.setState({sort: colSortState}, () => this.fetchAllData());
+    this.setState({sort: colSortState}, () => this.fetchListings());
   }
 
   updateMessagePanel(newMsg) {

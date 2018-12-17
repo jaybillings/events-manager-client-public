@@ -22,46 +22,47 @@ export default class VenuesLayout extends ListingsLayout {
 
     this.hoodsService = app.service('neighborhoods');
 
-    this.fetchVenues = this.fetchVenues.bind(this);
+    this.fetchListings = this.fetchListings.bind(this);
     this.fetchHoods = this.fetchHoods.bind(this);
   }
 
   componentDidMount() {
+    const reloadVenues = () => {
+      this.setState({currentPage: 1}, () => this.fetchListings())
+    };
+
     this.fetchAllData();
 
     // Register listeners
     this.listingsService
       .on('created', message => {
-        console.log('venue created', message);
-        this.updateMessagePanel({status: 'success', details: `Created new venue "${message.name}"`});
-        this.setState({currentPage: 1}, () => this.fetchVenues());
+        this.updateMessagePanel({status: 'success', details: `Created venue #${message.id} - "${message.name}"`});
+        reloadVenues();
       })
       .on('patched', message => {
-        console.log('venue patched', message);
-        this.updateMessagePanel({status: 'success', details: `Updated venue "${message.name}"`});
-        this.fetchVenues();
+        this.updateMessagePanel({status: 'success', details: `Updated venue #${message.id} - "${message.name}"`});
+        reloadVenues();
+      })
+      .on('updated', message => {
+        this.updateMessagePanel({status: 'success', details: `Updated venue #${message.id} - "${message.name}"`});
+        reloadVenues();
       })
       .on('removed', message => {
-        console.log('venue removed', message);
-        this.updateMessagePanel({status: 'success', details: `Permanently deleted venue "${message.name}"`});
-        this.setState({currentPage: 1}, () => this.fetchVenues());
-      })
-      .on('error', error => {
-        console.log('venue error', error);
-        this.updateMessagePanel({status: 'error', details: error.message});
+        this.updateMessagePanel({
+          status: 'success',
+          details: `Permanently deleted venue #${message.id} - "${message.name}"`
+        });
+        reloadVenues();
       });
 
     this.hoodsService
-      .on('created', message => {
-        console.log('hood created', message);
+      .on('created', () => {
         this.fetchHoods();
       })
-      .on('patched', message => {
-        console.log('hood patched', message);
+      .on('patched', () => {
         this.fetchHoods();
       })
-      .on('removed', message => {
-        console.log('hood removed', message);
+      .on('removed', () => {
         this.fetchHoods();
       });
   }
@@ -69,6 +70,7 @@ export default class VenuesLayout extends ListingsLayout {
   componentWillUnmount() {
     this.listingsService
       .removeAllListeners('created')
+      .removeAllListeners('updated')
       .removeAllListeners('patched')
       .removeAllListeners('removed');
 
@@ -79,11 +81,11 @@ export default class VenuesLayout extends ListingsLayout {
   }
 
   fetchAllData() {
-    this.fetchVenues();
+    this.fetchListings();
     this.fetchHoods();
   }
 
-  fetchVenues() {
+  fetchListings() {
     const sort = this.state.sort;
     const pageSize = this.state.pageSize;
     const currentPage = this.state.currentPage;
@@ -134,7 +136,9 @@ export default class VenuesLayout extends ListingsLayout {
       return <p>Data is loading... Please be patient...</p>;
     }
 
-    return <VenueAddForm hoods={this.state.hoods} createListing={this.createListing}/>;
+    const hoods = this.state.hoods;
+
+    return <VenueAddForm hoods={hoods} createListing={this.createListing} />;
   }
 
   render() {

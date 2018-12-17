@@ -34,8 +34,7 @@ export default class VenueAddForm extends ListingAddForm {
     this.stateInput.current.value !== '' && (venueObj.address_state = this.stateInput.current.value.trim());
     this.zipInput.current.value !== '' && (venueObj.address_zip = this.zipInput.current.value.trim());
 
-    this.props.createListing(venueObj);
-    this.clearForm();
+    this.props.createListing(venueObj).then(() => this.clearForm());
   }
 
   clearForm() {

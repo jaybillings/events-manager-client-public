@@ -12,12 +12,11 @@ export default class EventRow extends ListingRow {
     const event = this.props.listing;
     const venueUUID = typeof this.props.venue === 'undefined' ? '' : this.props.venue.uuid;
     const orgUUID = typeof this.props.org === 'undefined' ? '' : this.props.org.uuid;
+
     this.state = {
       eventName: event.name, eventStart: event.start_date, eventEnd: event.end_date,
       eventVenue: venueUUID, eventOrg: orgUUID, is_published: false, editable: false
     };
-
-    this.handleInputChange = this.handleInputChange.bind(this);
   }
 
   componentDidMount() {
@@ -29,18 +28,14 @@ export default class EventRow extends ListingRow {
   }
 
   handleInputChange(e) {
-    const newState = {};
-
     if (e.target.name === 'is_published') {
       this.setState(prevState => ({is_published: !prevState.is_published}));
     } else {
-      newState[e.target.name] = e.target.value.trim();
-      this.setState(newState);
+      this.setState({[e.target.name]: e.target.value.trim()});
     }
   }
 
   handleSaveClick() {
-    const id = this.props.listing.id;
     const newData = {
       uuid: this.props.listing.uuid,
       name: this.state.eventName,
@@ -51,26 +46,18 @@ export default class EventRow extends ListingRow {
     };
 
     // Save changes
-    this.props.updateListing(id, newData).then(() => {
+    this.props.updateListing(this.props.listing.id, newData, this.state.is_published).then(() => {
       this.setState({editable: false});
     });
-
-    // Publish/drop
-    if (this.state.is_published) {
-      this.props.registerEventLive(id);
-    } else {
-      this.props.registerEventDropped(id);
-    }
-  }
-
-  handleDeleteClick() {
-    const id = this.props.listing.id;
-
-    this.props.deleteListing(id);
-    this.props.registerEventDropped(id);
   }
 
   render() {
+    const id = this.props.listing.id;
+    const name = this.state.eventName;
+    const venues = this.props.venues;
+    const orgs = this.props.orgs;
+    const isPublished = this.state.is_published;
+
     const startDate = Moment(this.state.eventStart).format('MM/DD/YYYY');
     const startDateVal = Moment(this.state.eventStart).format('YYYY-MM-DD');
     const endDate = Moment(this.state.eventEnd).format('MM/DD/YYYY');
@@ -86,16 +73,16 @@ export default class EventRow extends ListingRow {
             <button type={'submit'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
-          <td><input type={'text'} name={'eventName'} value={this.state.eventName} onChange={this.handleInputChange}/></td>
+          <td><input type={'text'} name={'eventName'} value={name} onChange={this.handleInputChange}/></td>
           <td><input type={'date'} name={'eventStart'} value={startDateVal} onChange={this.handleInputChange}/></td>
           <td><input type={'date'} name={'eventEnd'} value={endDateVal} onChange={this.handleInputChange}/></td>
-          <td><select value={defaultVenue} name={'eventVenue'} onChange={this.handleInputChange}>{renderOptionList(this.props.venues)}</select></td>
-          <td><select value={defaultOrg} name={'eventOrg'} onChange={this.handleInputChange}>{renderOptionList(this.props.orgs)}</select></td>
+          <td><select name={'eventVenue'} value={defaultVenue} onChange={this.handleInputChange}>{renderOptionList(venues)}</select></td>
+          <td><select name={'eventOrg'} value={defaultOrg} onChange={this.handleInputChange}>{renderOptionList(orgs)}</select></td>
           <td>{updatedAt}</td>
           <td>
-            <input id={'toggle-' + this.props.listing.id} name={'is_published'} type={'checkbox'} className={'toggle'}
-                   checked={this.state.is_published} onChange={this.handleInputChange}/>
-            <label className={'toggle-switch'} htmlFor={'toggle-' + this.props.listing.id} />
+            <input id={'toggle-' + id} name={'is_published'} type={'checkbox'} className={'toggle'}
+                   checked={isPublished} onChange={this.handleInputChange}/>
+            <label className={'toggle-switch'} htmlFor={'toggle-' + id} />
           </td>
         </tr>
       );
@@ -114,7 +101,7 @@ export default class EventRow extends ListingRow {
           <button type={'button'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button>
         </td>
-        <td><Link to={`/events/${this.props.listing.id}`}>{this.props.listing.name}</Link></td>
+        <td><Link to={`/events/${id}`}>{name}</Link></td>
         <td>{startDate}</td>
         <td>{endDate}</td>
         <td>{venueLink}</td>

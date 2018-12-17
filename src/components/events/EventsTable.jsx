@@ -6,10 +6,6 @@ import EventRow from "./EventRow";
 import PaginationLayout from "../common/PaginationLayout";
 
 export default class EventsTable extends ListingsTable {
-  constructor(props) {
-    super(props, 'events');
-  }
-
   render() {
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
@@ -46,7 +42,6 @@ export default class EventsTable extends ListingsTable {
               venue={venues.find(v => {return v.id === event.venue_id})} venues={venues}
               org={orgs.find(o => {return o.id === event.org_id})} orgs={orgs}
               updateListing={this.props.updateListing} deleteListing={this.props.deleteListing}
-              registerEventLive={this.props.registerEventLive} registerEventDropped={this.props.registerEventDropped}
               checkForLive={this.props.checkForLive}
             />
           )

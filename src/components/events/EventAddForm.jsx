@@ -1,8 +1,6 @@
 import React from 'react';
 import Moment from 'moment';
 import {renderCheckboxList, renderOptionList} from '../../utilities';
-
-import '../../styles/add-form.css';
 import ListingAddForm from "../ListingAddForm";
 
 export default class EventAddForm extends ListingAddForm {
@@ -54,7 +52,7 @@ export default class EventAddForm extends ListingAddForm {
       tagsToSave.push(input.value);
     });
 
-    this.props.createListing(eventObj, tagsToSave);
+    this.props.createListing(eventObj, tagsToSave).then(() => this.clearForm());
   }
 
   clearForm() {

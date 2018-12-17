@@ -6,10 +6,6 @@ import VenueRow from './VenueRow';
 import PaginationLayout from "../common/PaginationLayout";
 
 export default class VenuesTable extends ListingsTable {
-  constructor(props) {
-    super(props, 'venues');
-  }
-
   render() {
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],

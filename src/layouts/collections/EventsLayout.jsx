@@ -47,79 +47,96 @@ export default class EventsLayout extends ListingsLayout {
   }
 
   componentDidMount() {
+    const reloadEvents = () => {
+      this.setState({currentPage: 1}, () => this.fetchListings())
+    };
+
     this.fetchAllData();
 
     // Register listeners
     this.listingsService
       .on('created', message => {
-        console.log('event created', message);
         this.updateMessagePanel({status: 'success', details: `Created event #${message.id} - ${message.name}`});
-        this.setState({currentPage: 1}, () => this.fetchListings());
+        reloadEvents();
+      })
+      .on('updated', message => {
+        this.updateMessagePanel({status: 'success', details: `Updated event #${message.id} - ${message.name}`});
+        reloadEvents();
       })
       .on('patched', message => {
-        console.log('event patched', message);
         this.updateMessagePanel({status: 'success', details: `Updated event #${message.id} - ${message.name}`});
-        this.fetchListings();
+        reloadEvents();
       })
       .on('removed', message => {
-        console.log('event removed', message);
         this.updateMessagePanel({
           status: 'success',
           details: `Permanently deleted event #${message.id} - ${message.name}`
         });
-        this.setState({currentPage: 1}, () => this.fetchListings());
-      })
-      .on('error', error => {
-        console.log('event error', error);
-        this.updateMessagePanel({status: 'error', details: error.message});
+        reloadEvents();
       });
 
     this.venuesService
-      .on('created', message => {
-        console.log('venue created', message);
+      .on('created', () => {
         this.fetchVenues();
       })
-      .on('patched', message => {
-        console.log('venue patched', message);
+      .on('patched', () => {
         this.fetchVenues();
       })
-      .on('removed', message => {
-        console.log('venue removed', message);
+      .on('removed', () => {
         this.fetchVenues();
       });
 
     this.orgsSerivce
-      .on('created', message => {
-        console.log('org created', message);
+      .on('created', () => {
         this.fetchOrgs();
       })
-      .on('patched', message => {
-        console.log('org patched', message);
+      .on('patched', () => {
         this.fetchOrgs();
       })
-      .on('removed', message => {
-        console.log('org removed', message);
+      .on('removed', () => {
         this.fetchOrgs();
       });
 
     this.tagsService
-      .on('created', message => {
-        console.log('tag created', message);
+      .on('created', () => {
         this.fetchTags();
       })
-      .on('patched', message => {
-        console.log('tag patched', message);
+      .on('patched', () => {
         this.fetchTags();
+      })
+      .on('removed', () => {
+        this.fetchTags();
+      });
+
+    this.liveEventService
+      .on('created', message => {
+        this.updateMessagePanel({status: 'info', details: `Event #${message.id} added to live list.`});
       })
       .on('removed', message => {
-        console.log('tag removed', message);
-        this.fetchTags();
+        this.updateMessagePanel({status: 'info', details: `Event #${message.id} removed from live list.`});
+      });
+
+    this.droppedEventService
+      .on('created', message => {
+        this.updateMessagePanel({status: 'info', details: `Event #${message.id} added to dropped list.`});
+      })
+      .on('removed', message => {
+        this.updateMessagePanel({status: 'info', details: `Event #${message.id} removed from dropped list.`});
+      });
+
+    this.tagsLookupService
+      .on('created', message => {
+        this.updateMessagePanel({status: 'info', details: `Saved tags associated with event #${message.id}`});
+      })
+      .on('removed', message => {
+        this.updateMessagePanel({status: 'info', details: `Removed tags associated with event #${message.id}`});
       });
   }
 
   componentWillUnmount() {
     this.listingsService
       .removeAllListeners('created')
+      .removeAllListeners('updated')
       .removeAllListeners('patched')
       .removeAllListeners('removed');
 
@@ -136,6 +153,18 @@ export default class EventsLayout extends ListingsLayout {
     this.tagsService
       .removeAllListeners('created')
       .removeAllListeners('patched')
+      .removeAllListeners('removed');
+
+    this.liveEventService
+      .removeAllListeners('created')
+      .removeAllListeners('removed');
+
+    this.droppedEventService
+      .removeAllListeners('created')
+      .removeAllListeners('removed');
+
+    this.tagsLookupService
+      .removeAllListeners('created')
       .removeAllListeners('removed');
   }
 
@@ -181,11 +210,11 @@ export default class EventsLayout extends ListingsLayout {
     });
   }
 
-  async fetchLiveListings() {
+  fetchLiveListings() {
     return this.liveEventService.find({query: {$limit: 1000}});
   }
 
-  async checkForLive(id) {
+  checkForLive(id) {
     return this.liveEventService.find({query: {event_id: id}});
   }
 
@@ -207,7 +236,7 @@ export default class EventsLayout extends ListingsLayout {
       case 'live':
         this.fetchLiveListings().then(result => {
           const uniqueIDs = arrayUnique(result.data.map(row => row.event_id));
-          this.setState({currentPage: 1, filter: {id: {$in: uniqueIDs}, end_date: {$lt: new Date().valueOf()}}},
+          this.setState({currentPage: 1, filter: {id: {$in: uniqueIDs}, end_date: {$gte: new Date().valueOf()}}},
             () => this.fetchListings());
         });
         break;
@@ -217,34 +246,39 @@ export default class EventsLayout extends ListingsLayout {
   }
 
   createListing(eventObj, tagsToSave) {
+    // Give new listing a UUID
     eventObj.uuid = uuid();
 
-    this.listingsService.create(eventObj).then(message => {
-      console.log('creating event', message);
+    return this.listingsService.create(eventObj).then(message => {
       this.createTagAssociations(message.id, tagsToSave);
       // TODO: Add as live if admin, as pending if not
       this.registerEventLive(message.id);
     }, err => {
-      console.log('error creating event', err);
       this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
 
-  updateListing(id, newData) {
+  updateListing(id, newData, doPublish) {
     // Save changes
     return this.listingsService.patch(id, newData).then(message => {
-      console.log('patching event', message);
+      if (doPublish) {
+        console.log('publishing event');
+        this.registerEventLive(id);
+      } else {
+        console.log('dropping event');
+        this.registerEventDropped(id);
+      }
     }, err => {
-      console.log('error patching event', err);
       this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
 
   deleteListing(id) {
     this.listingsService.remove(id).then(message => {
-      console.log('removing event', message);
       this.removeTagAssociations(id);
       this.registerEventDropped(id);
+    }, err => {
+      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
 
@@ -253,22 +287,17 @@ export default class EventsLayout extends ListingsLayout {
 
     tagList.forEach(tagId => tagsToSave.push({event_id: id, tag_id: tagId}));
 
-    this.tagsLookupService.create(tagsToSave).then(message => {
-      this.updateMessageList({status: 'info', details: `Saved tags associated with event #${id}`});
-      console.log('tag-lookup creating', message);
-    }, err => {
-      console.log('tag-lookup error', err);
-      const details = `Could not save tags associated with event #${id}. Please re-save listing on its individual page. Error is: ${JSON.stringify(err)}`;
+    this.tagsLookupService.create(tagsToSave).catch(err => {
+      const details = `Could not save tags associated with event #${id}.`
+        + `Please re-save listing on its individual page. Error is: ${JSON.stringify(err)}`;
       this.updateMessagePanel({status: 'error', details: details});
     });
   }
 
   removeTagAssociations(id) {
-    console.log('in removeTagAssociations');
-    this.tagsLookupService.remove(null, {query: {event_id: id}}).then(result => {
-      console.log('tag lookup removed', result)
-    }, err => {
-      const details = `Could remove tags associated with event #${id}. Please re-save listing on its individual page. Error is: ${JSON.stringify(err)}`;
+    this.tagsLookupService.remove(null, {query: {event_id: id}}).catch(err => {
+      const details = `Could remove tags associated with event #${id}.`
+        + `Please re-save listing on its individual page. Error is: ${JSON.stringify(err)}`;
       this.updateMessagePanel({status: 'error', details: details});
     });
   }
@@ -278,10 +307,7 @@ export default class EventsLayout extends ListingsLayout {
     Promise.all([
       this.liveEventService.create({event_id: id}),
       this.droppedEventService.remove(null, {query: {event_id: id}})
-    ]).then(resultSet => {
-      console.log('event registered as live', resultSet);
-      this.updateMessagePanel({status: 'info', details: `Published event #${id}`});
-    }, err => {
+    ]).catch(err => {
       this.updateMessagePanel({
         status: 'error',
         details: `Failed to register event #${id} as live. ${JSON.stringify(err)}`
@@ -294,10 +320,7 @@ export default class EventsLayout extends ListingsLayout {
     Promise.all([
       this.droppedEventService.create({event_id: id}),
       this.liveEventService.remove(null, {query: {event_id: id}})
-    ]).then(resultSet => {
-      console.log('event registered as dropped', resultSet);
-      this.updateMessagePanel({status: 'info', details: `Dropped event #${id}`});
-    }, err => {
+    ]).catch(err => {
       this.updateMessagePanel({
         status: 'error',
         details: `Failed to register event #${id} as dropped. ${JSON.stringify(err)}`
@@ -326,9 +349,7 @@ export default class EventsLayout extends ListingsLayout {
       pageSize={pageSize} currentPage={currentPage} sort={sort}
       updateColumnSort={this.updateColumnSort} updatePageSize={this.updatePageSize}
       updateCurrentPage={this.updateCurrentPage}
-      updateListing={this.updateListing} deleteListing={this.deleteListing}
-      registerEventLive={this.registerEventLive} registerEventDropped={this.registerEventDropped}
-      checkForLive={this.checkForLive}
+      updateListing={this.updateListing} deleteListing={this.deleteListing} checkForLive={this.checkForLive}
     />;
   }
 
