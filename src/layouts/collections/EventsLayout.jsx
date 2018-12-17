@@ -223,12 +223,11 @@ export default class EventsLayout extends ListingsLayout {
       console.log('creating event', message);
       this.createTagAssociations(message.id, tagsToSave);
       // TODO: Add as live if admin, as pending if not
-      this.addToLiveList(message.id);
+      this.registerEventLive(message.id);
     }, err => {
       console.log('error creating event', err);
       this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
-    // TODO: Add to live list
   }
 
   updateListing(id, newData) {
@@ -245,8 +244,8 @@ export default class EventsLayout extends ListingsLayout {
     this.listingsService.remove(id).then(message => {
       console.log('removing event', message);
       this.removeTagAssociations(id);
+      this.registerEventDropped(id);
     });
-    // TODO: Remove from live or dropped list(s)
   }
 
   createTagAssociations(id, tagList) {
