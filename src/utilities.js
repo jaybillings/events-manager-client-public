@@ -2,25 +2,29 @@ import React from 'react';
 import SortIndicator from "./components/common/SortIndicator";
 import {Link} from "react-router-dom";
 
-const renderOptionList = function (schema) {
+const renderOptionList = function (schema, keyType = 'id') {
   let optionsList = [];
 
   schema.forEach(record => {
-    optionsList.push(<option key={record.uuid} value={record.uuid}>{record.name}</option>);
+    const optionValue = keyType === 'uuid' ? record.uuid : record.id;
+    optionsList.push(<option key={record.id} value={optionValue}>{record.name}</option>);
   });
 
   return optionsList;
 };
 
-const renderCheckboxList = function (schema, selectedIds) {
+const renderCheckboxList = function (schema, selectedIds, keyType = 'id') {
   let chkbxList = [];
 
   schema.forEach(record => {
+    const inputValue = keyType === 'uuid' ? record.uuid : record.id;
     chkbxList.push(
-      <li key={record.id}>
+      <li key={record.uuid}>
         <label>
-          <input type={'checkbox'} className={'js-checkbox'} value={record.uuid}
-                 defaultChecked={selectedIds.includes(record.id)} />
+          <input
+            type={'checkbox'} className={'js-checkbox'} value={inputValue}
+            defaultChecked={selectedIds.includes(record.id)}
+          />
           {record.name}
         </label>
       </li>
@@ -106,7 +110,7 @@ const buildColumnSort = function (clickTarget, sortState) {
  * From https://gomakethings.com/converting-a-string-to-title-case-with-vanilla-javascript/
  * @param string
  */
-const makeTitleCase = function(string) {
+const makeTitleCase = function (string) {
   const tmpStr = string.toLocaleLowerCase().split(' ');
   tmpStr.forEach((word, i, arr) => {
     arr[i] = word.charAt(0).toLocaleUpperCase() + word.slice(1);
@@ -114,9 +118,13 @@ const makeTitleCase = function(string) {
   return tmpStr.join(' ');
 };
 
-const arrayUnique = function(arr) {
+const makeSingular = function (string) {
+  return string.slice(0, -1);
+};
+
+const arrayUnique = function (arr) {
   return [...new Set(arr)];
-}
+};
 
 export {
   renderOptionList,
@@ -127,5 +135,6 @@ export {
   buildSortQuery,
   buildColumnSort,
   makeTitleCase,
+  makeSingular,
   arrayUnique
 };

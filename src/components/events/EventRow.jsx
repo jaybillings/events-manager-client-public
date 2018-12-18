@@ -5,6 +5,8 @@ import {renderOptionList} from "../../utilities";
 
 import ListingRow from "../ListingRow";
 
+import "../../styles/toggle.css";
+
 export default class EventRow extends ListingRow {
   constructor(props) {
     super(props);

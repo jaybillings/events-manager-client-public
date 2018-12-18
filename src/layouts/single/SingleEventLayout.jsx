@@ -15,7 +15,7 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
     this.state = {
       listing: {}, venues: [], orgs: [], tags: [], tagsForListing: [],
       listingLoaded: false, venuesLoaded: false, orgsLoaded: false, tagsLoaded: false,
-      isPublished: false, hasDeleted: false, notFound: false, messages: [], messagePanelVisible: false,
+      hasDeleted: false, notFound: false, messages: [], messagePanelVisible: false,
     };
 
     this.venuesService = app.service('venues');
@@ -41,31 +41,31 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
     super.componentDidMount();
 
     this.venuesService
-      .on('created', this.fetchVenues())
-      .on('patched', this.fetchVenues())
-      .on('removed', this.fetchVenues());
+      .on('created', this.fetchVenues)
+      .on('patched', this.fetchVenues)
+      .on('removed', this.fetchVenues);
 
     this.orgsService
-      .on('created', this.fetchOrgs())
-      .on('patched', this.fetchOrgs())
-      .on('removed', this.fetchOrgs());
+      .on('created', this.fetchOrgs)
+      .on('patched', this.fetchOrgs)
+      .on('removed', this.fetchOrgs);
 
     this.tagsService
-      .on('created', this.fetchOrgs())
-      .on('patched', this.fetchOrgs())
-      .on('removed', this.fetchOrgs());
+      .on('created', this.fetchOrgs)
+      .on('patched', this.fetchOrgs)
+      .on('removed', this.fetchOrgs);
 
     this.liveEventService
-      .on('created', this.updateMessagePanel({status: 'info', details: 'Event added to live list.'}))
-      .on('removed', this.updateMessagePanel({status: 'info', details: 'Event removed from live list.'}));
+      .on('created', () => this.updateMessagePanel({status: 'info', details: 'Event added to live list.'}))
+      .on('removed', () => this.updateMessagePanel({status: 'info', details: 'Event removed from live list.'}));
 
     this.droppedEventService
-      .on('created', this.updateMessagePanel({status: 'info', details: 'Event added to dropped list.'}))
-      .on('removed', this.updateMessagePanel({status: 'info', details: 'Event removed from dropped list'}));
+      .on('created', () => this.updateMessagePanel({status: 'info', details: 'Event added to dropped list.'}))
+      .on('removed', () => this.updateMessagePanel({status: 'info', details: 'Event removed from dropped list'}));
 
     this.tagsLookupService
-      .on('created', this.updateMessagePanel({status: 'info', details: 'Saved tags associated with event.'}))
-      .on('removed', this.updateMessagePanel({status: 'info', details: 'Removed tags associated with event.'}));
+      .on('created', () => this.updateMessagePanel({status: 'info', details: 'Saved tag associated with event.'}))
+      .on('removed', () => this.updateMessagePanel({status: 'info', details: 'Removed tag associated with event.'}));
   }
 
   componentWillUnmount() {
@@ -104,6 +104,7 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
     this.fetchVenues();
     this.fetchOrgs();
     this.fetchTags();
+    this.fetchTagAssociations();
   }
 
   fetchListing() {
@@ -144,6 +145,7 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
 
   fetchTagAssociations() {
     this.tagsLookupService.find({query: {event_id: this.state.listing.id}}).then(message => {
+      console.log("+++++++++++++" + JSON.stringify(message));
       this.setState({tagsForListing: message.data.map(row => row.tag_id)});
     }, err => {
       console.log('find tags-lookup error', JSON.stringify(err));
@@ -151,19 +153,23 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
   }
 
   checkForLive() {
-    this.liveEventService.find({query: {event_id: this.state.listing.id}}).then(message => {
-      this.setState({isPublished: message.total > 0});
-    }, err => {
-      console.log('find matching live event error', JSON.stringify(err));
-    });
+    return this.liveEventService.find({query: {event_id: this.state.listing.id}});
   }
 
-  updateListing(eventData, tagData, doPublish) {
+  updateListing(eventData, tagData, publishState) {
     this.listingsService.patch(this.state.listing.id, eventData).then(() => {
-      this.removeTagAssociations().then(this.createTagAssociations(tagData));
-      if (doPublish) {
+      console.log('in updatelisting');
+      if (tagData.toSave) {
+        this.createTagAssociations(tagData.toSave);
+      }
+      if (tagData.toRemove) {
+        this.removeTagAssociations(tagData.toRemove);
+      }
+
+
+      if (publishState === 'publish') {
         this.registerEventLive();
-      } else {
+      } else if (publishState === 'drop') {
         this.registerEventDropped();
       }
     }, err => {
@@ -185,22 +191,15 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
     });
   }
 
-  createTagAssociations(tagList) {
-    const id = this.state.listing.id;
-    let tagsToSave = [];
-
-    tagList.forEach(tagId => tagsToSave.push({event_id: id, tag_id: tagId}));
-
+  createTagAssociations(tagsToSave) {
     this.tagsLookupService.create(tagsToSave).catch(err => {
       const details = `Could not associate tags with event. Please re-save listing. Error is: ${JSON.stringify(err)}`;
       this.updateMessagePanel({status: 'error', details: details});
     });
   }
 
-  removeTagAssociations() {
-    const id = this.state.listing.id;
-
-    this.tagsLookupService.remove(null, {query: {event_id: id}}).catch(err => {
+  removeTagAssociations(tagsToRemove) {
+    return this.tagsLookupService.remove(null, {query: {event_id: {$in: tagsToRemove}}}).catch(err => {
       const details = `Could not de-associate tags from event. Please re-save listing. Error is: ${JSON.stringify(err)}`;
       this.updateMessagePanel({status: 'error', details: details});
     });
@@ -241,11 +240,10 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
       return <p>Data is loading... Please be patient...</p>;
     }
 
-    return <EventRecord
-      listing={this.state.listing} venues={this.state.venues} orgs={this.state.orgs}
-      tags={this.state.tags} tagsForListing={this.state.tagsForListing} isPublished={this.state.isPublished}
-      updateListing={this.updateListing} deleteListing={this.deleteListing}
-    />;
+    return <EventRecord listing={this.state.listing} venues={this.state.venues} orgs={this.state.orgs}
+                        tags={this.state.tags} tagsForListing={this.state.tagsForListing}
+                        updateListing={this.updateListing} deleteListing={this.deleteListing}
+                        checkForLive={this.checkForLive} />;
   }
 
   render() {

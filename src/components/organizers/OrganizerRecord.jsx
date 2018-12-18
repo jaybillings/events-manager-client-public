@@ -1,55 +1,40 @@
-import React, {Component} from 'react';
+import React from 'react';
 import Moment from 'moment';
 
-import '../../styles/schema-record.css';
+import ListingRecordUniversal from "../ListingRecordUniversal";
 
-export default class OrganizerRecord extends Component {
+export default class OrganizerRecord extends ListingRecordUniversal {
   constructor(props) {
     super(props);
 
-    this.nameInput = React.createRef();
     this.descInput = React.createRef();
     this.urlInput = React.createRef();
     this.phoneInput = React.createRef();
-
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleClickDelete = this.handleClickDelete.bind(this);
-  }
-
-  handleClickDelete() {
-    const id = this.props.org.id;
-    this.props.deleteOrg(id);
   }
 
   handleSubmit(e) {
     e.preventDefault(e);
 
-    const org = this.props.org;
-    const id = org.id;
     const newData = {
-      name: this.nameInput.current.value.trim(),
-      description: this.descInput.current.value.trim()
+      name: this.nameInput.current.value,
+      description: this.descInput.current.value,
+      url: this.urlInput.current.value,
+      phone: this.phoneInput.current.value
     };
 
-    // Only add non-required if they have a value
-    this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value.trim());
-    this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value.trim());
-
-    console.log(newData);
-
-    this.props.saveOrg(id, newData);
+    this.props.updateListing(this.props.listing.id, newData);
   }
 
   render() {
-    const org = this.props.org;
-    const createdAt = Moment(org['created_at']).calendar();
-    const updatedAt = Moment(org['updated_at']).calendar();
+    const org = this.props.listing;
+    const createdAt = Moment(org.created_at).calendar();
+    const updatedAt = Moment(org.updated_at).calendar();
 
     return (
       <form id={'organizer-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
         <label>
-          ID
-          <input type={'text'} value={org.id} disabled />
+          UUID
+          <input type={'text'} value={org.uuid} readOnly />
         </label>
         <label>
           Created
@@ -65,19 +50,19 @@ export default class OrganizerRecord extends Component {
         </label>
         <label className={'required'}>
           Description
-          <textarea ref={this.descInput} defaultValue={org.description} required />
+          <textarea ref={this.descInput} defaultValue={org.description} required maxLength={500} />
         </label>
         <label>
           URL
-          <input type={'url'} ref={this.urlInput} defaultValue={org.url} />
+          <input type={'text'} ref={this.urlInput} defaultValue={org.url} maxLength={100} />
         </label>
         <label>
           Phone Number
-          <input type={'tel'} ref={this.phoneInput} defaultValue={org.phone} />
+          <input type={'text'} ref={this.phoneInput} defaultValue={org.phone} maxLength={20} />
         </label>
         <div>
-          <button type={'button'} onClick={this.handleClickDelete}>Delete Organizer</button>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
+          <button type={'button'} onClick={this.handleDeleteClick}>Delete Organizer</button>
         </div>
       </form>
     );

@@ -1,5 +1,5 @@
-import React, {Component} from 'react';
-import {Redirect} from 'react-router';
+import React, {Component} from "react";
+import {Redirect} from "react-router";
 import {Link} from "react-router-dom";
 import app from "../services/socketio";
 
@@ -39,10 +39,10 @@ export default class SingleListingLayoutUniversal extends Component {
     // Register listeners
     this.listingsService
       .on('patched', message => {
-        this.updateMessagePanel({status: 'success', details: `Saved changes to ${message.name}`});
+        this.updateMessagePanel({status: 'success', details: `Saved changes to "${message.name}"`});
       })
       .on('updated', message => {
-        this.updateMessagePanel({status: 'success', details: `Saved changes to ${message.name}`});
+        this.updateMessagePanel({status: 'success', details: `Saved changes to "${message.name}"`});
       });
   }
 
@@ -69,7 +69,7 @@ export default class SingleListingLayoutUniversal extends Component {
     this.listingsService.patch(id, listingData).then(message => {
       this.setState({listing: message, listingLoaded: true});
     }, err => {
-      console.log('error', err);
+      console.log('error', JSON.stringify(err));
       this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }

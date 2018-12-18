@@ -3,7 +3,6 @@ import Moment from "moment";
 import {Link} from "react-router-dom";
 
 import "../styles/schema-row.css";
-import "../styles/toggle.css";
 
 export default class ListingRow extends Component {
   constructor(props) {

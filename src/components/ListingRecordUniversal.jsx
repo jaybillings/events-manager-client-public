@@ -1,9 +1,8 @@
 import React, {Component} from 'react';
 import Moment from 'moment';
-import {makeTitleCase} from "../utilities";
+import {makeSingular, makeTitleCase} from "../utilities";
 
 import '../styles/schema-record.css';
-import '../styles/toggle.css';
 
 export default class ListingRecordUniversal extends Component {
   constructor(props) {
@@ -12,30 +11,23 @@ export default class ListingRecordUniversal extends Component {
     this.nameInput = React.createRef();
 
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleClickDelete = this.handleClickDelete.bind(this);
-  }
-
-  handleClickDelete() {
-    this.props.deleteListing(this.props.listing.id);
+    this.handleDeleteClick = this.handleDeleteClick.bind(this);
   }
 
   handleSubmit(e) {
     e.preventDefault(e);
 
-    const listing = this.props.listing;
-    const newData = {
-      uuid: this.state.listing.uuid,
-      name: this.nameInput.current.value.trim()
-    };
+    this.props.updateListing(this.props.listing.id, { name: this.nameInput.current.value});
+  }
 
-    this.props.updateListing(listing.id, newData);
+  handleDeleteClick() {
+    this.props.deleteListing(this.props.listing.id);
   }
 
   render() {
-    // TODO: Needs to be a way to select UUID for copy
     const listing = this.props.listing;
     const schema = this.props.schema;
-    const titleCaseSchema = makeTitleCase(schema);
+    const singularTitleCaseSchema = makeSingular(makeTitleCase(schema));
     const createdAt = Moment(listing.created_at).calendar();
     const updatedAt = Moment(listing.updated_at).calendar();
 
@@ -43,7 +35,7 @@ export default class ListingRecordUniversal extends Component {
       <form id={`${schema}-listing-form`} className={'schema-record'} onSubmit={this.handleSubmit}>
         <label>
           UUID
-          <input type={'text'} value={listing.uuid} disabled />
+          <input type={'text'} value={listing.uuid} readOnly />
         </label>
         <label>
           Created
@@ -59,7 +51,7 @@ export default class ListingRecordUniversal extends Component {
         </label>
         <div>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
-          <button type={'button'} onClick={this.handleClickDelete}>Delete {titleCaseSchema.slice(0, -1)}</button>
+          <button type={'button'} onClick={this.handleDeleteClick}>Delete {singularTitleCaseSchema}</button>
         </div>
       </form>
     );

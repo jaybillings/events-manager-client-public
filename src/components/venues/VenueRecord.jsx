@@ -1,6 +1,7 @@
 import React from "react";
 import Moment from "moment";
 import {renderOptionList} from "../../utilities";
+
 import ListingRecordUniversal from "../ListingRecordUniversal";
 
 export default class VenueRecord extends ListingRecordUniversal {
@@ -21,31 +22,27 @@ export default class VenueRecord extends ListingRecordUniversal {
   handleSubmit(e) {
     e.preventDefault();
 
-    const venue = this.props.listing;
     const newData = {
-      uuid: this.props.listing.uuid,
-      name: this.nameInput.current.value.trim(),
-      hood_id: this.hoodList.current.value,
-      description: this.descInput.current.value.trim( )
+      name: this.nameInput.current.value,
+      hood_id: parseInt(this.hoodList.current.value, 10),
+      description: this.descInput.current.value,
+      email: this.emailInput.current.value,
+      url: this.urlInput.current.value,
+      phone: this.phoneInput.current.value,
+      address_street: this.streetInput.current.value,
+      address_city: this.cityInput.current.value,
+      address_state: this.stateInput.current.value,
+      address_zip: this.zipInput.current.value
     };
 
-    // Optional parameters
-    this.emailInput.current.value !== '' && (newData.email = this.emailInput.current.value);
-    this.urlInput.current.value !== ''  && (newData.url = this.urlInput.current.value);
-    this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value);
-    this.streetInput.current.value !== '' && (newData.address_street = this.streetInput.current.value);
-    this.cityInput.current.value !== '' && (newData.address_city = this.cityInput.current.value);
-    this.stateInput.current.value !== '' && (newData.address_state = this.stateInput.current.value);
-    this.zipInput.current.value !== '' && (newData.address_zip = this.zipInput.current.value);
-
-    this.props.updateListing(venue.id, newData);
+    this.props.updateListing(this.props.listing.id, newData);
   }
 
   render() {
     const venue = this.props.listing;
     const hoods = this.props.hoods;
-    const createdAt = Moment(venue['created_at']).calendar();
-    const updatedAt = Moment(venue['updated_at']).calendar();
+    const createdAt = Moment(venue.created_at).calendar();
+    const updatedAt = Moment(venue.updated_at).calendar();
 
     return (
       <form id={'venue-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
@@ -63,7 +60,7 @@ export default class VenueRecord extends ListingRecordUniversal {
         </label>
         <label className={'required'}>
           Name
-          <input type={'text'} ref={this.nameInput} defaultValue={venue.name} required maxLength={100}/>
+          <input type={'text'} ref={this.nameInput} defaultValue={venue.name} required maxLength={100} />
         </label>
         <label className={'required'}>
           Neighborhood
@@ -71,15 +68,15 @@ export default class VenueRecord extends ListingRecordUniversal {
         </label>
         <label className={'required'}>
           Description
-          <textarea ref={this.descInput} defaultValue={venue.description} required maxLength={500}/>
+          <textarea ref={this.descInput} defaultValue={venue.description} required maxLength={500} />
         </label>
         <label>
           Email
-          <input type={'email'} ref={this.emailInput} defaultValue={venue.email} maxLength={100}/>
+          <input type={'email'} ref={this.emailInput} defaultValue={venue.email} maxLength={50} />
         </label>
         <label>
           URL
-          <input type={'url'} ref={this.urlInput} defaultValue={venue.url} maxLength={100}/>
+          <input type={'url'} ref={this.urlInput} defaultValue={venue.url} maxLength={100} />
         </label>
         <label>
           Phone Number
@@ -91,19 +88,19 @@ export default class VenueRecord extends ListingRecordUniversal {
         </label>
         <label>
           City
-          <input type={'text'} ref={this.cityInput} defaultValue={venue.address_city} maxLength={50}/>
+          <input type={'text'} ref={this.cityInput} defaultValue={venue.address_city} maxLength={50} />
         </label>
         <label>
           State
-          <input type={'text'} ref={this.stateInput} defaultValue={venue.address_state} maxLength={50}/>
+          <input type={'text'} ref={this.stateInput} defaultValue={venue.address_state} maxLength={50} />
         </label>
         <label>
           Zip Code
-          <input type={'text'} ref={this.zipInput} defaultValue={venue.address_zip} maxLength={20}/>
+          <input type={'text'} ref={this.zipInput} defaultValue={venue.address_zip} maxLength={20} />
         </label>
         <div>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
-          <button type={'button'} onClick={this.handleClickDelete}>Delete Venue</button>
+          <button type={'button'} onClick={this.handleDeleteClick}>Delete Venue</button>
         </div>
       </form>
     );

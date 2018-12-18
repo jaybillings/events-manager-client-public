@@ -58,10 +58,13 @@ export default class PendingEventRow extends PendingListingRow {
           <td><input type={'text'} ref={this.nameInput} defaultValue={pendingListing.name} /></td>
           <td><input type={'date'} ref={this.startInput} defaultValue={startDateVal} /></td>
           <td><input type={'date'} ref={this.endInput} defaultValue={endDateVal} /></td>
-          <td><select ref={this.venueList}
-                      defaultValue={pendingListing.venue_id || ''}>{renderOptionList(venues)}</select></td>
+          <td>
+            <select ref={this.venueList} defaultValue={pendingListing.venue_id || ''}>
+              {renderOptionList(venues, 'uuid')}
+            </select>
+          </td>
           <td><select ref={this.orgList} defaultValue={pendingListing.org_id || ''} required>
-            {renderOptionList(orgs)}
+            {renderOptionList(orgs, 'uuid')}
           </select>
           </td>
           <td>{createdAt}</td>

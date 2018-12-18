@@ -54,7 +54,7 @@ export default class VenueRow extends ListingRow {
           <button type={'button'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button>
         </td>
-        <td><Link to={`/venues/${venue.uuid}`}>{venue.name}</Link></td>
+        <td><Link to={`/venues/${venue.id}`}>{venue.name}</Link></td>
         <td>{hoodNameLink}</td>
         <td>{updatedAt}</td>
       </tr>
