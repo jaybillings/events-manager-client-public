@@ -1,5 +1,5 @@
-import React from 'react';
-import {Redirect} from 'react-router';
+import React from "react";
+import {Redirect} from "react-router";
 import {Link} from "react-router-dom";
 import app from "../../services/socketio";
 
@@ -13,27 +13,51 @@ export default class SingleVenueLayout extends SingleListingLayoutUniversal {
     super(props, 'venues');
 
     this.state = {
-      messages: [], messagePanelVisible: false,
       listing: {}, listingLoaded: false, hoods: [], hoodsLoaded: false,
-      hasDeleted: false, notFound: false
+      hasDeleted: false, notFound: false, messages: [], messagePanelVisible: false
     };
 
     this.hoodsService = app.service('neighborhoods');
+
+    this.fetchHoods = this.fetchHoods.bind(this);
+  }
+
+  componentDidMount() {
+    super.componentDidMount();
+
+    this.hoodsService
+      .on('created', this.fetchHoods())
+      .on('patched', this.fetchHoods())
+      .on('updated', this.fetchHoods())
+      .on('removed', this.fetchHoods());
+  }
+
+  componentWillUnmount() {
+    super.componentWillUnmount();
+
+    this.hoodsService
+      .removeAllListeners('created')
+      .removeAllListeners('updated')
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
   }
 
   fetchAllData() {
-    const uuid = this.props.match.params.id;
+    this.fetchListing();
+    this.fetchHoods();
+  }
 
-    //this.setState({listingLoaded: false, hoodsLoaded: false});
-
-    this.listingsService.find({query: {uuid: uuid}}).then(message => {
-      this.setState({listing: message.data[0], listingLoaded: true});
+  fetchListing() {
+    this.listingsService.get(this.props.match.params.id).then(message => {
+      this.setState({listing: message, listingLoaded: true});
     }, err => {
-      console.log('error', err);
+      console.log('fetch venue error', JSON.stringify(err));
       this.setState({notFound: true});
     });
+  }
 
-    this.hoodsService.find({query: {$sort: {name: 1}}}).then(message => {
+  fetchHoods() {
+    this.hoodsService.find({query: this.defaultQuery}).then(message => {
       this.setState({hoods: message.data, hoodsLoaded: true});
     });
   }
@@ -45,7 +69,7 @@ export default class SingleVenueLayout extends SingleListingLayoutUniversal {
 
     return <VenueRecord
       listing={this.state.listing} hoods={this.state.hoods}
-      saveListing={this.saveListing} deleteListing={this.deleteListing}
+      updateListing={this.updateListing} deleteListing={this.deleteListing}
     />
   }
 

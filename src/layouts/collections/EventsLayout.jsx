@@ -76,37 +76,19 @@ export default class EventsLayout extends ListingsLayout {
       });
 
     this.venuesService
-      .on('created', () => {
-        this.fetchVenues();
-      })
-      .on('patched', () => {
-        this.fetchVenues();
-      })
-      .on('removed', () => {
-        this.fetchVenues();
-      });
+      .on('created', this.fetchVenues())
+      .on('patched', this.fetchVenues())
+      .on('removed', this.fetchVenues());
 
     this.orgsSerivce
-      .on('created', () => {
-        this.fetchOrgs();
-      })
-      .on('patched', () => {
-        this.fetchOrgs();
-      })
-      .on('removed', () => {
-        this.fetchOrgs();
-      });
+      .on('created', this.fetchOrgs())
+      .on('patched', this.fetchOrgs())
+      .on('removed', this.fetchOrgs());
 
     this.tagsService
-      .on('created', () => {
-        this.fetchTags();
-      })
-      .on('patched', () => {
-        this.fetchTags();
-      })
-      .on('removed', () => {
-        this.fetchTags();
-      });
+      .on('created', this.fetchTags())
+      .on('patched', this.fetchTags())
+      .on('removed', this.fetchTags());
 
     this.liveEventService
       .on('created', message => {
@@ -189,24 +171,36 @@ export default class EventsLayout extends ListingsLayout {
 
     this.listingsService.find({query: query}).then(message => {
       this.setState({listings: message.data, listingsTotal: message.total, listingsLoaded: true});
+    }, err => {
+      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      this.setState({listingsLoaded: false});
     });
   }
 
   fetchVenues() {
     this.venuesService.find({query: this.defaultQuery}).then(message => {
       this.setState({venues: message.data, venuesLoaded: true});
+    }, err => {
+      console.log('find venue error', JSON.stringify(err));
+      this.setState({venuesLoaded: false});
     });
   }
 
   fetchOrgs() {
     this.orgsSerivce.find({query: this.defaultQuery}).then(message => {
       this.setState({orgs: message.data, orgsLoaded: true});
+    }, err => {
+      console.log('find org error', JSON.stringify(err));
+      this.setState({orgsLoaded: false});
     });
   }
 
   fetchTags() {
     this.tagsService.find({query: this.defaultQuery}).then(message => {
       this.setState({tags: message.data, tagsLoaded: true});
+    }, err => {
+      console.log('find tags error', JSON.stringify(err));
+      this.setState({tagsLoaded: false});
     });
   }
 
@@ -260,7 +254,7 @@ export default class EventsLayout extends ListingsLayout {
 
   updateListing(id, newData, doPublish) {
     // Save changes
-    return this.listingsService.patch(id, newData).then(message => {
+    return this.listingsService.patch(id, newData).then(() => {
       if (doPublish) {
         console.log('publishing event');
         this.registerEventLive(id);
@@ -274,7 +268,7 @@ export default class EventsLayout extends ListingsLayout {
   }
 
   deleteListing(id) {
-    this.listingsService.remove(id).then(message => {
+    this.listingsService.remove(id).then(() => {
       this.removeTagAssociations(id);
       this.registerEventDropped(id);
     }, err => {

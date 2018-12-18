@@ -56,15 +56,10 @@ export default class VenuesLayout extends ListingsLayout {
       });
 
     this.hoodsService
-      .on('created', () => {
-        this.fetchHoods();
-      })
-      .on('patched', () => {
-        this.fetchHoods();
-      })
-      .on('removed', () => {
-        this.fetchHoods();
-      });
+      .on('created', () => {this.fetchHoods()})
+      .on('updated', () => {this.fetchHoods()})
+      .on('patched', () => {this.fetchHoods()})
+      .on('removed', () => {this.fetchHoods()});
   }
 
   componentWillUnmount() {
@@ -76,6 +71,7 @@ export default class VenuesLayout extends ListingsLayout {
 
     this.hoodsService
       .removeAllListeners('created')
+      .removeAllListeners('updated')
       .removeAllListeners('patched')
       .removeAllListeners('removed');
   }

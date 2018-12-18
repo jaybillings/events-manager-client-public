@@ -12,75 +12,83 @@ export default class SingleListingLayoutUniversal extends Component {
     super(props);
 
     this.schema = schema;
+    this.defaultQuery = {$sort: {name: 1}, $select: ['name', 'uuid'], $limit: 100};
 
     this.state = {
-      messages: [], messagePanelVisible: false,
-      listing: {}, listingLoaded: false, hasDeleted: false, notFound: false
+      listing: {}, listingLoaded: false,
+      hasDeleted: false, notFound: false, messages: [], messagePanelVisible: false
     };
 
     this.listingsService = app.service(this.schema);
 
     this.fetchAllData = this.fetchAllData.bind(this);
-    this.renderRecord = this.renderRecord.bind(this);
-    this.saveListing = this.saveListing.bind(this);
+    this.fetchListing = this.fetchListing.bind(this);
+
+    this.updateListing = this.updateListing.bind(this);
     this.deleteListing = this.deleteListing.bind(this);
+
     this.updateMessagePanel = this.updateMessagePanel.bind(this);
     this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
+
+    this.renderRecord = this.renderRecord.bind(this);
   }
 
   componentDidMount() {
     this.fetchAllData();
 
-    this.setState({listingLoaded: false});
-
     // Register listeners
     this.listingsService
       .on('patched', message => {
-        this.setState({listing: message, listingLoaded: true});
-        this.updateMessagePanel({status: 'success', details: 'Changes saved'});
+        this.updateMessagePanel({status: 'success', details: `Saved changes to ${message.name}`});
       })
-      .on('removed', () => {
-        this.setState({hasDeleted: true});
+      .on('updated', message => {
+        this.updateMessagePanel({status: 'success', details: `Saved changes to ${message.name}`});
       });
   }
 
   componentWillUnmount() {
     this.listingsService
       .removeAllListeners('patched')
-      .removeAllListeners('removed');
+      .removeAllListeners('updated');
   }
 
   fetchAllData() {
-    const uuid = this.props.match.params.id;
+    this.fetchListing();
+  }
 
-    this.listingsService.find({query: { uuid: uuid}}).then(message => {
-      this.setState({listing: message.data[0], listingLoaded: true});
+  fetchListing() {
+    this.listingsService.get(this.props.match.params.id).then(message => {
+      this.setState({listing: message, listingLoaded: true});
     }, err => {
-      console.log('error', err);
       this.setState({notFound: true});
+      console.log(`fetch ${this.schema} error`, JSON.stringify(err));
     });
   }
 
-  deleteListing(id) {
-    this.listingsService.remove(id).then(() => this.setState({hasDeleted: true}));
-  }
-
-  saveListing(id, listingData) {
+  updateListing(id, listingData) {
     this.listingsService.patch(id, listingData).then(message => {
-      console.log('patching', message);
+      this.setState({listing: message, listingLoaded: true});
     }, err => {
       console.log('error', err);
       this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
 
-  updateMessagePanel(msg) {
-    const messageList = this.state.messages;
-    this.setState({messages: [msg, ...messageList], messagePanelVisible: true});
+  deleteListing(id) {
+    this.listingsService.remove(id).then(() => {
+      this.setState({hasDeleted: true})
+    }, err => {
+      console.log('event delete error', JSON.stringify(err));
+      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+    });
+  }
+
+  updateMessagePanel(newMsg) {
+    this.setState(prevState => ({messages: [newMsg, ...prevState.messages], messagePanelVisible: true}));
   }
 
   dismissMessagePanel() {
-    this.setState({messages: [], messagePanelVisible: true});
+    this.setState({messages: [], messagePanelVisible: false});
   }
 
   renderRecord() {
@@ -90,7 +98,7 @@ export default class SingleListingLayoutUniversal extends Component {
 
     return <ListingRecordUniversal
       listing={this.state.listing} schema={this.schema}
-      saveListing={this.saveListing} deleteListing={this.deleteListing}
+      updateListing={this.updateListing} deleteListing={this.deleteListing}
     />
   }
 

@@ -9,7 +9,7 @@ export default class EventRecord extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {tmpStatus: this.props.event.is_published};
+    this.state = {tmpStatus: this.props.isPublished};
 
     this.nameInput = React.createRef();
     this.startInput = React.createRef();
