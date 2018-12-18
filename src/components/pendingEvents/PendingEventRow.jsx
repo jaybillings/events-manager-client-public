@@ -79,7 +79,7 @@ export default class PendingEventRow extends PendingListingRow {
           <button type={'button'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Discard</button>
         </td>
-        <td><Link to={`/pendingEvents/${pendingListing.uuid}`}>{pendingListing.name}</Link></td>
+        <td><Link to={`/pendingEvents/${pendingListing.id}`}>{pendingListing.name}</Link></td>
         <td>{startDate}</td>
         <td>{endDate}</td>
         <td>{venueLink}</td>

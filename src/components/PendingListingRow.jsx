@@ -106,7 +106,7 @@ export default class PendingListingRow extends Component {
           <button type={'button'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Discard</button>
         </td>
-        <td><Link to={`/pending${titleCaseSchema}/${pendingListing.uuid}`}>{pendingListing.name}</Link></td>
+        <td><Link to={`/pending${titleCaseSchema}/${pendingListing.id}`}>{pendingListing.name}</Link></td>
         <td>{createdAt}</td>
         <td><StatusLabel writeStatus={writeStatus} schema={schema} /></td>
       </tr>

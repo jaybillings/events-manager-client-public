@@ -63,7 +63,7 @@ export default class PendingVenueRow extends PendingListingRow {
           <button type={'button'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Discard</button>
         </td>
-        <td><Link to={`/pendingVenues/${pendingListing.uuid}`}>{pendingListing.name}</Link></td>
+        <td><Link to={`/pendingVenues/${pendingListing.id}`}>{pendingListing.name}</Link></td>
         <td>{hoodLink}</td>
         <td>{createdAt}</td>
         <td><StatusLabel writeStatus={writeStatus} schema={'venues'} /></td>
