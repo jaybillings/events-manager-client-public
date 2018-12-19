@@ -45,7 +45,7 @@ export default class PendingListingsModule extends Component {
     this.publishListings = this.publishListings.bind(this);
     this.discardListings = this.discardListings.bind(this);
     this.saveChanges = this.saveChanges.bind(this);
-    this.removeListing = this.removeListing.bind(this);
+    this.removePendingListing = this.removePendingListing.bind(this);
 
     this.updateColSort = this.updateColSort.bind(this);
     this.updatePageSize = this.updatePageSize.bind(this);
@@ -68,25 +68,25 @@ export default class PendingListingsModule extends Component {
 
     this.pendingListingsService
       .on('created', message => {
-        this.props.updateMessageList({
+        this.props.updateMessagePanel({
           status: 'success',
           details: `Added "${message.name}" as new pending ${schemaSingular}`
         });
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
       .on('updated', message => {
-        this.props.updateMessageList({status: 'info', details: message.details});
+        this.props.updateMessagePanel({status: 'info', details: message.details});
         this.fetchAllData();
       })
       .on('patched', message => {
-        this.props.updateMessageList({
+        this.props.updateMessagePanel({
           status: 'success',
           details: `Updated pending ${schemaSingular} "${message.name}"`
         });
         this.fetchAllData();
       })
       .on('removed', message => {
-        this.props.updateMessageList({
+        this.props.updateMessagePanel({
           status: 'info',
           details: `Discarded pending ${schemaSingular} "${message.name}"`
         });
@@ -167,14 +167,14 @@ export default class PendingListingsModule extends Component {
 
     this.listingsService.create(pendingListing).then(msg => {
       console.log(`creating ${this.schema}`, msg);
-      this.props.updateMessageList({
+      this.props.updateMessagePanel({
         status: 'success',
         details: `Published ${msg.name} as new ${this.schema.slice(0, -1)}`
       });
       // TODO: Look for schema that use this and update
-      this.removeListing(id);
+      this.removePendingListing(id);
     }, err => {
-      this.props.updateMessageList({status: 'error', details: err.message});
+      this.props.updateMessagePanel({status: 'error', details: err.message});
       console.log(`error in createLiveListing for ${this.schema}`, err);
     });
   }
@@ -192,13 +192,13 @@ export default class PendingListingsModule extends Component {
 
     this.listingsService.update(target.id, pendingListing).then(msg => {
       console.log(`updating ${this.schema}`, msg);
-      this.props.updateMessageList({
+      this.props.updateMessagePanel({
         status: 'success',
         details: `Published ${msg.name} as update to ${target.name}`
       });
-      this.removeListing(id);
+      this.removePendingListing(id);
     }, err => {
-      this.props.updateMessageList({status: 'error', details: err[0].message});
+      this.props.updateMessagePanel({status: 'error', details: err[0].message});
       console.log(`error in updateLiveListing for ${this.schema}`, JSON.stringify(err));
     });
   }
@@ -225,7 +225,7 @@ export default class PendingListingsModule extends Component {
         });
       });
     }, err => {
-      this.props.updateMessageList({status: 'error', details: err});
+      this.props.updateMessagePanel({status: 'error', details: err});
       console.log(`error publishing ${this.schema}: ${err}`);
     });
   }
@@ -242,7 +242,7 @@ export default class PendingListingsModule extends Component {
     this.pendingListingsService.remove(null, searchOptions).then(message => {
       console.log(message);
     }, err => {
-      this.props.updateMessageList({status: 'error', details: err});
+      this.props.updateMessagePanel({status: 'error', details: err});
       console.log(`error deleting ${this.schema}: ${err}`);
     });
   }
@@ -262,12 +262,12 @@ export default class PendingListingsModule extends Component {
    * Removes single main schema listing from the database.
    * @param {int} id
    */
-  removeListing(id) {
+  removePendingListing(id) {
     this.pendingListingsService.remove(id).then(message => {
       console.log(`removing ${this.schema}`, message);
     }, err => {
       console.log(`error removing ${this.schema} error`, err);
-      this.props.updateMessageList({status: 'error', details: err.message});
+      this.props.updateMessagePanel({status: 'error', details: err.message});
     });
   }
 
@@ -391,7 +391,7 @@ export default class PendingListingsModule extends Component {
               <PendingListingRow
                 key={`${this.schema}-${listing.id}`} schema={schema} pendingListing={listing}
                 selected={selectedListings.includes(listing.id)}
-                saveChanges={this.saveChanges} removeListing={this.removeListing}
+                saveChanges={this.saveChanges} removeListing={this.removePendingListing}
                 selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}
               />)
           }

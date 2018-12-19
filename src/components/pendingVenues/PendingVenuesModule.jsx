@@ -28,25 +28,25 @@ export default class PendingVenuesModule extends PendingListingsModule {
 
     this.pendingListingsService
       .on('created', message => {
-        this.props.updateMessageList({
+        this.props.updateMessagePanel({
           status: 'success',
           details: `Added "${message.name}" as new pending venue`
         });
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchPendingListings());
       })
       .on('updated', message => {
-        this.props.updateMessageList({status: 'info', details: message.details});
+        this.props.updateMessagePanel({status: 'info', details: message.details});
         this.fetchPendingListings();
       })
       .on('patched', message => {
-        this.props.updateMessageList({
+        this.props.updateMessagePanel({
           status: 'success',
           details: `Updated pending ${this.schema.slice(0, -1)} "${message.name}"`
         });
         this.fetchPendingListings();
       })
       .on('removed', message => {
-        this.props.updateMessageList({
+        this.props.updateMessagePanel({
           status: 'info',
           details: `Discarded pending ${this.schema.slice(0, -1)} "${message.name}"`
         });
@@ -145,7 +145,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
               <PendingVenueRow
                 key={`venue-${venue.id}`} pendingListing={venue} selected={selectedVenues.includes(venue.id)}
                 hood={(uniqueHoods.find(h => {return h.uuid === venue.hood_uuid}))} hoods={uniqueHoods}
-                saveChanges={this.saveChanges} removeListing={this.removeListing}
+                saveChanges={this.saveChanges} removeListing={this.removePendingListing}
                 selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}
               />)
           }

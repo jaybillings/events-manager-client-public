@@ -38,7 +38,7 @@ export default class PendingListingRow extends Component {
 
   handleDeleteClick(e) {
     e.stopPropagation();
-    this.props.removeListing(this.props.pendingListing.id);
+    this.props.removePendingListing(this.props.pendingListing.id);
   }
 
   handleSaveClick(e) {

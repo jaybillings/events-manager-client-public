@@ -110,7 +110,7 @@ export default class ListingsLayout extends Component {
 
   deleteListing(id) {
     this.listingsService.remove(id).catch(err => {
-      this.props.updateMessageList({status: 'error', details: JSON.stringify(err)});
+      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
 

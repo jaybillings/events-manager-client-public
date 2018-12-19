@@ -145,7 +145,6 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
 
   fetchTagAssociations() {
     this.tagsLookupService.find({query: {event_id: this.state.listing.id}}).then(message => {
-      console.log("+++++++++++++" + JSON.stringify(message));
       this.setState({tagsForListing: message.data.map(row => row.tag_id)});
     }, err => {
       console.log('find tags-lookup error', JSON.stringify(err));
@@ -165,7 +164,6 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
       if (tagData.toRemove) {
         this.removeTagAssociations(tagData.toRemove);
       }
-
 
       if (publishState === 'publish') {
         this.registerEventLive();
