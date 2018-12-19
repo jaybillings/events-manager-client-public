@@ -2,13 +2,28 @@ import React, {Component} from 'react';
 
 import "../../styles/message-panel.css";
 
+/**
+ * The MessagePanel component displays a list of informational messages to the user.
+ * @class
+ */
 export default class MessagePanel extends Component {
+  /**
+   * The class's constructor.
+   *
+   * @constructor
+   * @param props
+   */
   constructor(props) {
     super(props);
 
     this.renderMessages = this.renderMessages.bind(this);
   }
 
+  /**
+   * Renders the list of messages.
+   *
+   * @returns {*}
+   */
   renderMessages() {
     const messages = this.props.messages;
 
@@ -20,6 +35,12 @@ export default class MessagePanel extends Component {
     );
   }
 
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @returns {*}
+   */
   render() {
     const visibleClass = this.props.isVisible ? 'visible' : 'hidden';
 
