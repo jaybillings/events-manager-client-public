@@ -8,7 +8,16 @@ import PendingVenueRow from "./PendingVenueRow";
 import ShowHideToggle from "../common/ShowHideToggle";
 import SelectionControl from "../common/SelectionControl";
 
+/**
+ * The PendingVenuesModule component displays pending venues as a module within another page.
+ * @class
+ */
 export default class PendingVenuesModule extends PendingListingsModule {
+    /**
+     * The class's constructor.
+     * @constructor
+     * @param {object} props
+     */
   constructor(props) {
     super(props, 'venues');
 
@@ -23,6 +32,9 @@ export default class PendingVenuesModule extends PendingListingsModule {
     this.fetchPendingHoods = this.fetchPendingHoods.bind(this);
   }
 
+    /**
+     * Runs once the component is mounted. Fetches all data and registers listeners.
+     */
   componentDidMount() {
     this.fetchAllData();
 
@@ -66,6 +78,9 @@ export default class PendingVenuesModule extends PendingListingsModule {
       .on('removed', () => this.fetchPendingHoods());
   }
 
+    /**
+     * Runs before the component unmounts. Removes listeners.
+     */
   componentWillUnmount() {
     const services = [
       this.pendingListingsService,
@@ -82,24 +97,39 @@ export default class PendingVenuesModule extends PendingListingsModule {
     });
   }
 
+    /**
+     * Fetches all data for the page.
+     */
   fetchAllData() {
     this.fetchPendingListings();
     this.fetchHoods();
     this.fetchPendingHoods();
   }
 
+    /**
+     * Fetches published neighborhoods.
+     */
   fetchHoods() {
     this.hoodsService.find({query: this.defaultQuery}).then(message => {
       this.setState({hoods: message.data, hoodsLoaded: true});
     });
   }
 
+    /**
+     * Fetches pending neighborhoods.
+     */
   fetchPendingHoods() {
     this.pendingHoodsService.find({query: this.defaultQuery}).then(message => {
       this.setState({pendingHoods: message.data, pendingHoodsLoaded: true});
     });
   }
 
+    /**
+     * Renders the table of listings.
+     *
+     * @override
+     * @returns {*}
+     */
   renderTable() {
     const pendingVenuesCount = this.state.pendingListingsTotal;
 
@@ -161,6 +191,12 @@ export default class PendingVenuesModule extends PendingListingsModule {
     ])
   }
 
+    /**
+     * Renders the component.
+     *
+     * @render
+     * @returns {*}
+     */
   render() {
     const visibility = this.state.moduleVisible ? 'visible' : 'hidden';
 

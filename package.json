@@ -20,11 +20,11 @@
     "eject": "react-scripts eject"
   },
   "dependencies": {
-    "@feathersjs/client": "^3.7.5",
-    "ajv": "^6.6.1",
-    "moment": "^2.22.2",
-    "react": "^16.6.3",
-    "react-dom": "^16.6.3",
+    "@feathersjs/client": "^3.7.7",
+    "ajv": "^6.6.2",
+    "moment": "^2.23.0",
+    "react": "^16.7.0",
+    "react-dom": "^16.7.0",
     "react-js-pagination": "^3.0.2",
     "react-router": "latest",
     "react-router-dom": "^4.3.1",
