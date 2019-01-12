@@ -8,7 +8,17 @@ import ListingsTable from "./ListingsTable";
 import ListingAddForm from "./ListingAddForm";
 import MessagePanel from "./common/MessagePanel";
 
+/**
+ * ListingsLayout is a generic component that lays out a listing collection page.
+ * @class
+ * @parent
+ */
 export default class ListingsLayout extends Component {
+  /**
+   * The class's constructor.
+   * @param props
+   * @param {string} schema - The collection's schema.
+   */
   constructor(props, schema) {
     super(props);
 
@@ -41,6 +51,9 @@ export default class ListingsLayout extends Component {
     this.renderAddForm = this.renderAddForm.bind(this);
   }
 
+  /**
+   * Runs when the component mounts. Fetches data and registers data service listeners.
+   */
   componentDidMount() {
     const schemaSingular = this.schema.slice(0, -1);
     const reloadData = () => { this.setState({currentPage: 1}, () => this.fetchAllData())};
@@ -67,6 +80,9 @@ export default class ListingsLayout extends Component {
       });
   }
 
+  /**
+   * Runs before the component unmounts. Unregisters data service listeners.
+   */
   componentWillUnmount() {
     this.listingsService
       .removeAllListeners('created')
@@ -75,10 +91,17 @@ export default class ListingsLayout extends Component {
       .removeAllListeners('removed');
   }
 
+  /**
+   * Fetches all data required for the page.
+   * @note This function pattern exists to cut down on extraneous requests for components with linked schema.
+   */
   fetchAllData() {
     this.fetchListings();
   }
 
+  /**
+   * Fetches data for all the published listings for a given schema. Handles filtering, sorting, and page skipping.
+   */
   fetchListings() {
     this.listingsService.find({
       query: {
@@ -93,6 +116,12 @@ export default class ListingsLayout extends Component {
     });
   }
 
+  /**
+   * Creates a new listing by generating a new UUID and calling the service's CREATE method with passed-in data.
+   *
+   * @param {object} newData - Data for the new listing.
+   * @returns {Promise}
+   */
   createListing(newData) {
     // Give the new listing a UUID
     newData.uuid = uuid();
@@ -102,39 +131,78 @@ export default class ListingsLayout extends Component {
     });
   }
 
+  /**
+   * Updates a given listing by calling the service's PATCH method with passed-in data.
+   *
+   * @param {int} id
+   * @param {object} newData - The listing's new data.
+   */
   updateListing(id, newData) {
     this.listingsService.patch(id, newData).catch(err => {
       this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
 
+  /**
+   * Delete's a given listing by calling the service's REMOVE method.
+   *
+   * @param {int} id
+   */
   deleteListing(id) {
     this.listingsService.remove(id).catch(err => {
       this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
 
+  /**
+   * Updates the component's page size, then fetches new listings.
+   *
+   * @param {Event} e
+   */
   updatePageSize(e) {
     this.setState({pageSize: parseInt(e.target.value, 10), currentPage: 1}, () => this.fetchListings());
   }
 
+  /**
+   * Updates the component's current page, then fetches new listings.
+   *
+   * @param {string} page
+   */
   updateCurrentPage(page) {
     this.setState({currentPage: parseInt(page, 10)}, () => this.fetchListings());
   }
 
+  /**
+   * Updates the component's column sorting, then fetches new listings.
+   *
+   * @param {Event} e
+   */
   updateColumnSort(e) {
     const colSortState = buildColumnSort(e.target, this.state.sort);
     this.setState({sort: colSortState}, () => this.fetchListings());
   }
 
+  /**
+   * Adds a message to the message panel.
+   *
+   * @param {object} newMsg
+   */
   updateMessagePanel(newMsg) {
     this.setState(prevState => ({messages: [newMsg, ...prevState.messages], messagePanelVisible: true}));
   }
 
+  /**
+   * Prepares the message panel for dismissal by removing all messages and setting its visible state to false.
+   */
   dismissMessagePanel() {
     this.setState({messages: [], messagePanelVisible: false});
   }
 
+  /**
+   * Renders the listing collection table.
+   *
+   * @returns {*}
+   */
   renderTable() {
     const schema = this.schema;
 
@@ -159,6 +227,11 @@ export default class ListingsLayout extends Component {
     />;
   }
 
+  /**
+   * Renders the form for adding a new listing.
+   *
+   * @returns {*}
+   */
   renderAddForm() {
     if (!this.state.listingsLoaded) {
       return <p>Data is loading... Please be patient...</p>;
@@ -167,6 +240,12 @@ export default class ListingsLayout extends Component {
     return <ListingAddForm schema={this.schema} createListing={this.createListing} />;
   }
 
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @returns {*}
+   */
   render() {
     const showMessagePanel = this.state.messagePanelVisible;
     const messages = this.state.messages;

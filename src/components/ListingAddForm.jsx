@@ -3,7 +3,19 @@ import {makeTitleCase} from "../utilities";
 
 import '../styles/add-form.css';
 
+/**
+ * ListingAddForm is a generic component that displays a form for adding new listings.
+ *
+ * @parent
+ * @class
+ */
 export default class ListingAddForm extends Component {
+  /**
+   * The class's constructor.
+   *
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
 
@@ -13,6 +25,11 @@ export default class ListingAddForm extends Component {
     this.clearForm = this.clearForm.bind(this);
   }
 
+  /**
+   * Handles the submit event by parsing data and calling a function to create a new listing.
+   *
+   * @param {Event} e
+   */
   handleSubmit(e) {
     e.preventDefault();
 
@@ -21,10 +38,19 @@ export default class ListingAddForm extends Component {
     this.props.createListing(listingObj).then(() => this.clearForm());
   }
 
+  /**
+   * Clears the form by setting its value to an empty string.
+   */
   clearForm() {
     this.nameInput.current.value = '';
   }
 
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @returns {*}
+   */
   render() {
     const schema = this.props.schema;
     const titleCaseSchema = makeTitleCase(schema);

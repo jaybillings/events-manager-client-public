@@ -7,7 +7,17 @@ import Header from "../components/common/Header";
 import ListingRecordUniversal from "../components/ListingRecordUniversal";
 import MessagePanel from "../components/common/MessagePanel";
 
+/**
+ * SingleListingLayoutUniversal is a generic component to lay out a single listing page.
+ * @class
+ * @parent
+ */
 export default class SingleListingLayoutUniversal extends Component {
+  /**
+   * The class's constructor.
+   * @param props
+   * @param schema
+   */
   constructor(props, schema) {
     super(props);
 
@@ -33,6 +43,9 @@ export default class SingleListingLayoutUniversal extends Component {
     this.renderRecord = this.renderRecord.bind(this);
   }
 
+  /**
+   * Runs once the component mounts. Registers data service listeners.
+   */
   componentDidMount() {
     this.fetchAllData();
 
@@ -46,16 +59,26 @@ export default class SingleListingLayoutUniversal extends Component {
       });
   }
 
+  /**
+   * Runs before the component unmounts. Unregisters data service listeners.
+   */
   componentWillUnmount() {
     this.listingsService
       .removeAllListeners('patched')
       .removeAllListeners('updated');
   }
 
+  /**
+   * Fetches all data required for the page.
+   * @note This function pattern exists to cut down on extraneous requests for components with linked schema.
+   */
   fetchAllData() {
     this.fetchListing();
   }
 
+  /**
+   * Fetches data for the single listing.
+   */
   fetchListing() {
     this.listingsService.get(this.props.match.params.id).then(message => {
       this.setState({listing: message, listingLoaded: true});
@@ -65,6 +88,11 @@ export default class SingleListingLayoutUniversal extends Component {
     });
   }
 
+  /**
+   * Updates the listing's data by calling the service's PATCH method.
+   * @param {int} id
+   * @param {object} listingData
+   */
   updateListing(id, listingData) {
     this.listingsService.patch(id, listingData).then(message => {
       this.setState({listing: message, listingLoaded: true});
@@ -74,6 +102,10 @@ export default class SingleListingLayoutUniversal extends Component {
     });
   }
 
+  /**
+   * Removes the listing from the database by calling the service's REMOVE method.
+   * @param {int} id
+   */
   deleteListing(id) {
     this.listingsService.remove(id).then(() => {
       this.setState({hasDeleted: true})
@@ -83,14 +115,26 @@ export default class SingleListingLayoutUniversal extends Component {
     });
   }
 
+  /**
+   * Adds a message to the message panel.
+   * @param {object} newMsg
+   */
   updateMessagePanel(newMsg) {
     this.setState(prevState => ({messages: [newMsg, ...prevState.messages], messagePanelVisible: true}));
   }
 
+  /**
+   * Prepares the message panel for dismissal by removing all messages and setting its visible state to false.
+   */
   dismissMessagePanel() {
     this.setState({messages: [], messagePanelVisible: false});
   }
 
+  /**
+   * Renders the single listing's record.
+   *
+   * @returns {*}
+   */
   renderRecord() {
     if (!this.state.listingLoaded) {
       return <p>Data is loading... Please be patient...</p>
@@ -102,6 +146,11 @@ export default class SingleListingLayoutUniversal extends Component {
     />
   }
 
+  /**
+   * Renders the component.
+   * @render
+   * @returns {*}
+   */
   render() {
     const schema = this.schema;
 

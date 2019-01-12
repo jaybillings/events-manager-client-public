@@ -6,13 +6,31 @@ import {renderOptionList, renderSchemaLink} from "../../utilities";
 import PendingListingRow from "../PendingListingRow";
 import StatusLabel from "../common/StatusLabel";
 
+/**
+ * PendingVenueRow is a component which displays a single row from a pending venues table.
+ *
+ * @class
+ * @child
+ */
 export default class PendingVenueRow extends PendingListingRow {
+  /**
+   * The component's constructor.
+   *
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
 
     this.hoodList = React.createRef();
   }
 
+  /**
+   * Handles the save button click by parsing new data and triggering a function to update the venue.
+   *
+   * @override
+   * @param {Event} e
+   */
   handleSaveClick(e) {
     e.stopPropagation();
 
@@ -28,6 +46,15 @@ export default class PendingVenueRow extends PendingListingRow {
     });
   }
 
+  /**
+   * Renders the component.
+   *
+   * @note The render has two different paths depending on whether the row can be edited.
+   *
+   * @override
+   * @render
+   * @returns {*}
+   */
   render() {
     const pendingListing = this.props.pendingListing;
     const createdAt = Moment(pendingListing.created_at).calendar();
@@ -55,6 +82,7 @@ export default class PendingVenueRow extends PendingListingRow {
       );
     }
 
+    /** @var {object} this.props.hood */
     const hoodLink = this.props.hood ? renderSchemaLink(this.props.hood, 'neighborhoods') : 'NO NEIGHBORHOOD';
 
     return (

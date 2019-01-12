@@ -3,7 +3,19 @@ import Moment from 'moment';
 
 import ListingRecordUniversal from "../ListingRecordUniversal";
 
+/**
+ * PendingNeighborhoodRecord is a component to display a single pending neighborhood's record.
+ *
+ * @class
+ * @child
+ */
 export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
+  /**
+   * The class's constructor.
+   *
+   * @constructor
+   * @param {Event} props
+   */
   constructor(props) {
     super(props);
 
@@ -13,6 +25,12 @@ export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
     this.handleClickDelete = this.handleClickDelete.bind(this);
   }
 
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @returns {*}
+   */
   render() {
     const pendingHood = this.props.pendingListing;
     const hoodId = pendingHood.target_id || 'N/A';

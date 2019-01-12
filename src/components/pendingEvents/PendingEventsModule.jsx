@@ -277,6 +277,7 @@ export default class PendingEventsModule extends PendingListingsModule {
         // Find the live tag IDs that match the UUIDs
         const tagUUIDs = [];
 
+        /** @var {string} pendingTagLookupRow.tag_uuid */
         results.data.forEach(pendingTagLookupRow => {
           tagUUIDs.push(pendingTagLookupRow.tag_uuid)
         });
@@ -398,7 +399,7 @@ export default class PendingEventsModule extends PendingListingsModule {
                 org={uniqueOrgs.find(o => {
                   return o.uuid === event.org_uuid
                 })} orgs={uniqueOrgs}
-                saveChanges={this.saveChanges} removeListing={this.removePendingListing}
+                updateListing={this.saveChanges} removeListing={this.removePendingListing}
                 selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}
               />)
           }

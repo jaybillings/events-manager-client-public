@@ -3,7 +3,19 @@ import Moment from 'moment';
 
 import ListingRecordUniversal from "../ListingRecordUniversal";
 
+/**
+ * OrganizerRecord is a component which displays a single organizer's records.
+ *
+ * @class
+ * @child
+ */
 export default class OrganizerRecord extends ListingRecordUniversal {
+  /**
+   * The class's constructor.
+   *
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
 
@@ -12,8 +24,13 @@ export default class OrganizerRecord extends ListingRecordUniversal {
     this.phoneInput = React.createRef();
   }
 
+  /**
+   * Handles the submit action by parsing new data and calling a function to create a new organizer.
+   *
+   * @param {Event} e
+   */
   handleSubmit(e) {
-    e.preventDefault(e);
+    e.preventDefault();
 
     const newData = {
       name: this.nameInput.current.value,
@@ -25,6 +42,12 @@ export default class OrganizerRecord extends ListingRecordUniversal {
     this.props.updateListing(this.props.listing.id, newData);
   }
 
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @returns {*}
+   */
   render() {
     const org = this.props.listing;
     const createdAt = Moment(org.created_at).calendar();

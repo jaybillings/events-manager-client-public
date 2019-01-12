@@ -4,7 +4,19 @@ import Moment from 'moment';
 import '../../styles/schema-record.css';
 import ListingRecordUniversal from "../ListingRecordUniversal";
 
+/**
+ * PendingOrganizerRecord is a component to display a single pending organizer's record.
+ *
+ * @class
+ * @child
+ */
 export default class PendingOrganizerRecord extends ListingRecordUniversal {
+  /**
+   * The class's constructor.
+   *
+   * @constructor
+   * @param {Event} props
+   */
   constructor(props) {
     super(props);
 
@@ -13,6 +25,11 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
     this.phoneInput = React.createRef();
   }
 
+  /**
+   * Handles the submit action by parsing new data and calling a function to create a new pending organizer.
+   *
+   * @param {Event} e
+   */
   handleSubmit(e) {
     e.preventDefault();
 
@@ -29,7 +46,14 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
     this.props.saveListing(listing.id, newData);
   }
 
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @returns {*}
+   */
   render() {
+    /** @var {object} this.props.pendingOrg */
     const listing = this.props.pendingOrg;
     const createdAt = Moment(listing.created_at).calendar();
     const updatedAt = Moment(listing.updated_at).calendar();
@@ -67,7 +91,7 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
         <div className={'block-warning'}
              title={'Caution: This organizer is pending. It must be pushed live before it is visible on the site.'}>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
-          <button type={'button'} onClick={this.handleClickDelete}>Discard Organizer</button>
+          <button type={'button'} onClick={this.handleDeleteClick}>Discard Organizer</button>
         </div>
       </form>
     )

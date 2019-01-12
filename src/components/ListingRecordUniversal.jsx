@@ -1,10 +1,22 @@
-import React, {Component} from 'react';
-import Moment from 'moment';
+import React, {Component} from "react";
+import Moment from "moment";
 import {makeSingular, makeTitleCase} from "../utilities";
 
-import '../styles/schema-record.css';
+import "../styles/schema-record.css";
 
+/**
+ * ListingRecordUniversal is a generic component which displays single listing records.
+ *
+ * @class
+ * @parent
+ */
 export default class ListingRecordUniversal extends Component {
+  /**
+   * The class's constructor.
+   *
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
 
@@ -14,21 +26,37 @@ export default class ListingRecordUniversal extends Component {
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
   }
 
+  /**
+   * Handles the submit action by parsing new data and calling a function to create a new listing.
+   *
+   * @param {Event} e
+   */
   handleSubmit(e) {
-    e.preventDefault(e);
+    e.preventDefault();
 
-    this.props.updateListing(this.props.listing.id, { name: this.nameInput.current.value});
+    this.props.updateListing(this.props.listing.id, {name: this.nameInput.current.value});
   }
 
+  /**
+   * Handles the delete button click by calling a function to delete the listing.
+   */
   handleDeleteClick() {
     this.props.deleteListing(this.props.listing.id);
   }
 
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @returns {*}
+   */
   render() {
     const listing = this.props.listing;
     const schema = this.props.schema;
     const singularTitleCaseSchema = makeSingular(makeTitleCase(schema));
+    /** @var {string} pendingListing.created_at */
     const createdAt = Moment(listing.created_at).calendar();
+    /** @var {string} listing.updated_at */
     const updatedAt = Moment(listing.updated_at).calendar();
 
     return (

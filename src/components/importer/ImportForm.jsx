@@ -32,6 +32,7 @@ export default class ImportForm extends Component {
       selectOptions.push(<option key={schema} value={schema}>{schema}</option>);
     });
 
+    /** @var {object} this.props.schemaSelectRef */
     return (
       <select id={'schema-select'} ref={this.props.schemaSelectRef} required>
         {selectOptions}
@@ -46,6 +47,7 @@ export default class ImportForm extends Component {
    * @returns {*}
    */
   render() {
+    /** @var {object} this.props.fileInputRef */
     return (
       <form id={'import-from-csv-form'} className={'import-form'} onSubmit={this.props.handleSubmit}>
         <div>

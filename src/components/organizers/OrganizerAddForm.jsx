@@ -1,7 +1,19 @@
 import React from 'react';
 import ListingAddForm from "../ListingAddForm";
 
+/**
+ * OrganizerAddForm is a component that displays a form for adding new organizers.
+ *
+ * @class
+ * @child
+ */
 export default class OrganizerAddForm extends ListingAddForm {
+  /**
+   * The class's constructor.
+   *
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
 
@@ -10,6 +22,11 @@ export default class OrganizerAddForm extends ListingAddForm {
     this.descInput = React.createRef();
   }
 
+  /**
+   * Handles the submit event by parsing data and calling a function to create a new event.
+   *
+   * @param {Event} e
+   */
   handleSubmit(e) {
     e.preventDefault();
 
@@ -21,12 +38,13 @@ export default class OrganizerAddForm extends ListingAddForm {
     this.phoneInput.current.value !== '' && (listingObj.phone = this.phoneInput.current.value.trim());
     this.urlInput.current.value !== '' && (listingObj.url = this.urlInput.current.value.trim());
 
-    console.log(listingObj);
-
     this.props.createListing(listingObj);
     this.clearForm();
   }
 
+  /**
+   * Clears the form by setting all values to their empty value.
+   */
   clearForm() {
     this.nameInput.current.value = '';
     this.phoneInput.current.value = '';
@@ -34,6 +52,12 @@ export default class OrganizerAddForm extends ListingAddForm {
     this.descInput.current.value = '';
   }
 
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @returns {*}
+   */
   render() {
     return (
       <form id={'organizers-add-form'} className={'add-form'} onSubmit={this.handleSubmit}>

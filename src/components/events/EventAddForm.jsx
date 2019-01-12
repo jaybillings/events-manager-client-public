@@ -3,7 +3,18 @@ import Moment from 'moment';
 import {renderCheckboxList, renderOptionList} from '../../utilities';
 import ListingAddForm from "../ListingAddForm";
 
+/**
+ * EventAddForm is a component that displays a form for adding new events.
+ * @class
+ * @child
+ */
 export default class EventAddForm extends ListingAddForm {
+  /**
+   * The class's constructor.
+   *
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
 
@@ -23,6 +34,12 @@ export default class EventAddForm extends ListingAddForm {
     this.orgList = React.createRef();
   }
 
+  /**
+   * Handles the submit event by parsing data and calling a function to create a new event. Also parses data for
+   * associating preexisting tags with this event.
+   *
+   * @param {Event} e
+   */
   handleSubmit(e) {
     e.preventDefault();
 
@@ -55,6 +72,9 @@ export default class EventAddForm extends ListingAddForm {
     this.props.createListing(eventObj, tagsToSave).then(() => this.clearForm());
   }
 
+  /**
+   * Clears the form by setting all values to their empty value.
+   */
   clearForm() {
     this.nameInput.current.value = '';
     this.startInput.current.valueAsDate = new Date();
@@ -73,6 +93,12 @@ export default class EventAddForm extends ListingAddForm {
     document.querySelectorAll('.js-checkbox:checked').forEach(chkbx => chkbx.checked = false);
   }
 
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @returns {*}
+   */
   render() {
     const venues = this.props.venues;
     const orgs = this.props.orgs;

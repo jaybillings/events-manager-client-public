@@ -18,7 +18,7 @@ export default class ImportLayout extends Component {
   /**
    * The class's constructor.
    * @constructor
-   * @param props
+   * @param {object} props
    */
   constructor(props) {
     super(props);

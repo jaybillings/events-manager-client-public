@@ -2,7 +2,17 @@ import React from 'react';
 import {renderOptionList} from '../../utilities';
 import ListingAddForm from "../ListingAddForm";
 
+/**
+ * VenueAddForm displays a form for adding new venues.
+ * @class
+ * @child
+ */
 export default class VenueAddForm extends ListingAddForm {
+    /**
+     * The class's constructor.
+     * @constructor
+     * @param props
+     */
   constructor(props) {
     super(props);
 
@@ -17,6 +27,10 @@ export default class VenueAddForm extends ListingAddForm {
     this.zipInput = React.createRef();
   }
 
+    /**
+     * Handles the submit event by parsing data and calling a function to create a new listing.
+     * @param {Event} e
+     */
   handleSubmit(e) {
     e.preventDefault();
 
@@ -37,6 +51,9 @@ export default class VenueAddForm extends ListingAddForm {
     this.props.createListing(venueObj).then(() => this.clearForm());
   }
 
+    /**
+     * Clears the form by setting all fields to a default or empty value.
+     */
   clearForm() {
     this.nameInput.current.value = '';
     this.hoodList.current.value = this.hoodList.current.firstChild.value;
@@ -50,6 +67,12 @@ export default class VenueAddForm extends ListingAddForm {
     this.zipInput.current.value = '';
   }
 
+    /**
+     * Renders the component.
+     *
+     * @render
+     * @returns {*}
+     */
   render() {
     const hoods = this.props.hoods;
 

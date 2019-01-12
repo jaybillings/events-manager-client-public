@@ -7,12 +7,26 @@ import ListingRow from "../ListingRow";
 
 import "../../styles/toggle.css";
 
+/**
+ * EventRow is a component that displays a single row for a live event table.
+ *
+ * @class
+ * @child
+ */
 export default class EventRow extends ListingRow {
+  /**
+   * The component's constructor.
+   *
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
 
     const event = this.props.listing;
+    /** @var {object} this.props.venue */
     const venueUUID = typeof this.props.venue === 'undefined' ? '' : this.props.venue.uuid;
+    /** @var {object} this.props.org */
     const orgUUID = typeof this.props.org === 'undefined' ? '' : this.props.org.uuid;
 
     this.state = {
@@ -21,6 +35,9 @@ export default class EventRow extends ListingRow {
     };
   }
 
+  /**
+   * Runs once the component mounts. Checks the live status of the listing.
+   */
   componentDidMount() {
     this.props.checkForLive(this.props.listing.id).then(results => {
       this.setState({is_published: results.total > 0});
@@ -29,6 +46,11 @@ export default class EventRow extends ListingRow {
     });
   }
 
+  /**
+   * Handles a change to the rows input by setting the appropriate state.
+   *
+   * @param {Event} e
+   */
   handleInputChange(e) {
     if (e.target.name === 'is_published') {
       this.setState(prevState => ({is_published: !prevState.is_published}));
@@ -37,7 +59,14 @@ export default class EventRow extends ListingRow {
     }
   }
 
-  handleSaveClick() {
+  /**
+   * Handles the save button click by parsing new data and triggering a function to update the event.
+   *
+   * @param {Event} e
+   */
+  handleSaveClick(e) {
+    e.preventDefault();
+
     const newData = {
       uuid: this.props.listing.uuid,
       name: this.state.eventName,
@@ -47,12 +76,18 @@ export default class EventRow extends ListingRow {
       org_uuid: this.state.eventOrg
     };
 
-    // Save changes
     this.props.updateListing(this.props.listing.id, newData, this.state.is_published).then(() => {
       this.setState({editable: false});
     });
   }
 
+  /**
+   * Renders the component.
+   *
+   * @note The render has two different paths depending on whether the row can be edited.
+   * @render
+   * @returns {*}
+   */
   render() {
     const id = this.props.listing.id;
     const name = this.state.eventName;
@@ -75,15 +110,17 @@ export default class EventRow extends ListingRow {
             <button type={'submit'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
-          <td><input type={'text'} name={'eventName'} value={name} onChange={this.handleInputChange}/></td>
-          <td><input type={'date'} name={'eventStart'} value={startDateVal} onChange={this.handleInputChange}/></td>
-          <td><input type={'date'} name={'eventEnd'} value={endDateVal} onChange={this.handleInputChange}/></td>
-          <td><select name={'eventVenue'} value={defaultVenue} onChange={this.handleInputChange}>{renderOptionList(venues)}</select></td>
-          <td><select name={'eventOrg'} value={defaultOrg} onChange={this.handleInputChange}>{renderOptionList(orgs)}</select></td>
+          <td><input type={'text'} name={'eventName'} value={name} onChange={this.handleInputChange} /></td>
+          <td><input type={'date'} name={'eventStart'} value={startDateVal} onChange={this.handleInputChange} /></td>
+          <td><input type={'date'} name={'eventEnd'} value={endDateVal} onChange={this.handleInputChange} /></td>
+          <td><select name={'eventVenue'} value={defaultVenue}
+                      onChange={this.handleInputChange}>{renderOptionList(venues)}</select></td>
+          <td><select name={'eventOrg'} value={defaultOrg}
+                      onChange={this.handleInputChange}>{renderOptionList(orgs)}</select></td>
           <td>{updatedAt}</td>
           <td>
             <input id={'toggle-' + id} name={'is_published'} type={'checkbox'} className={'toggle'}
-                   checked={isPublished} onChange={this.handleInputChange}/>
+                   checked={isPublished} onChange={this.handleInputChange} />
             <label className={'toggle-switch'} htmlFor={'toggle-' + id} />
           </td>
         </tr>

@@ -1,14 +1,25 @@
-import React, {Component} from "react";
+import React from "react";
 import Moment from "moment";
 import {renderOptionList} from "../../utilities";
 
-import '../../styles/schema-record.css';
+import ListingRecordUniversal from "../ListingRecordUniversal";
 
-export default class PendingVenueRecord extends Component {
+/**
+ * PendingVenueRecord is a component which displays a single pending venue's record.
+ *
+ * @class
+ * @child
+ */
+export default class PendingVenueRecord extends ListingRecordUniversal {
+  /**
+   * The class's constructor.
+   *
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
 
-    this.nameInput = React.createRef();
     this.hoodInput = React.createRef();
     this.descInput = React.createRef();
     this.emailInput = React.createRef();
@@ -18,11 +29,14 @@ export default class PendingVenueRecord extends Component {
     this.cityInput = React.createRef();
     this.stateInput = React.createRef();
     this.zipInput = React.createRef();
-
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleClickDelete = this.handleClickDelete.bind(this);
   }
 
+  /**
+   * Handles the submit action by parsing new data and calling a function to create a new pending venue.
+   *
+   * @override
+   * @param {Event} e
+   */
   handleSubmit(e) {
     e.preventDefault();
 
@@ -46,11 +60,13 @@ export default class PendingVenueRecord extends Component {
     this.props.saveListing(id, newData);
   }
 
-  handleClickDelete() {
-    const id = this.props.pendingVenue.id;
-    this.props.deleteListing(id);
-  }
-
+  /**
+   * Renders the component.
+   *
+   * @override
+   * @render
+   * @returns {*}
+   */
   render() {
     const pendingVenue = this.props.pendingVenue;
     const venueId = pendingVenue.target_id || 'N/A';
@@ -117,7 +133,7 @@ export default class PendingVenueRecord extends Component {
         <div className={'block-warning'}
              title={'Caution: This venue is pending. It must be pushed live before it is visible on the site.'}>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
-          <button type={'button'} onClick={this.handleClickDelete}>Discard Venue</button>
+          <button type={'button'} onClick={this.handleDeleteClick}>Discard Venue</button>
         </div>
       </form>
     );

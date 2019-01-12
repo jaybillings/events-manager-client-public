@@ -1,11 +1,24 @@
-import React, {Component} from 'react';
+import React from 'react';
 import Moment from 'moment';
 import {renderOptionList, renderCheckboxList} from "../../utilities";
 
-import '../../styles/schema-record.css';
 import '../../styles/toggle.css';
 
-export default class PendingEventRecord extends Component {
+import ListingRecordUniversal from "../ListingRecordUniversal";
+
+/**
+ * PendingEventRecord is a component which displays a single pending event's record.
+ *
+ * @class
+ * @child
+ */
+export default class PendingEventRecord extends ListingRecordUniversal {
+  /**
+   * The class's constructor.
+   *
+   * @constructor
+   * @param {Event} props
+   */
   constructor(props) {
     super(props);
 
@@ -24,11 +37,14 @@ export default class PendingEventRecord extends Component {
     this.ongoingInput = React.createRef();
     this.venueInput = React.createRef();
     this.orgInput = React.createRef();
-
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleClickDelete = this.handleClickDelete.bind(this);
   }
 
+  /**
+   * Handles the submit action by parsing new data and calling a function to create a new pending organizer. Also
+   * modifies associations between the pending event and its tags.
+   *
+   * @param {Event} e
+   */
   handleSubmit(e) {
     e.preventDefault();
 
@@ -64,16 +80,19 @@ export default class PendingEventRecord extends Component {
     });
     uncheckedBoxes.forEach(input => tagsToDelete.push(input.value));
 
+    /** @var {Function} this.props.saveListing */
     this.props.saveListing(id, newData, {to_save: tagsToSave, to_delete: tagsToDelete});
   }
 
-  handleClickDelete() {
-    const id = this.props.pendingEvent.id;
-    this.props.deleteListing(id);
-  }
-
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @returns {*}
+   */
   render() {
     const pendingEvent = this.props.pendingEvent;
+    /** @var {string} this.props.pendingEvent.target_id */
     const eventId = this.props.pendingEvent.target_id || 'N/A';
     const venues = this.props.venues;
     const orgs = this.props.orgs;
@@ -165,7 +184,7 @@ export default class PendingEventRecord extends Component {
         <div className={'block-warning'}
              title={'Caution: This event is pending. It must be pushed live before it is visible on the site.'}>
           <button type="submit" className="button-primary">Save Changes</button>
-          <button type="button" onClick={this.handleClickDelete}>Discard Event</button>
+          <button type="button" onClick={this.handleDeleteClick}>Discard Event</button>
         </div>
       </form>
     );

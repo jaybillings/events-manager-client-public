@@ -5,7 +5,21 @@ import ListingsTable from "../ListingsTable";
 import EventRow from "./EventRow";
 import PaginationLayout from "../common/PaginationLayout";
 
+/**
+ * EventsTable is a component that displays a table representing a collection of events, and that table's controls.
+ *
+ * @note This is a stateless module that should only render. Data manipulation should occur in the EventsRow class
+ * and display should occur in the EventsLayout class.
+ *
+ * @class
+ * @child
+ */
 export default class EventsTable extends ListingsTable {
+  /**
+   * Renders the component.
+   *
+   * @returns {*[]}
+   */
   render() {
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
@@ -39,8 +53,12 @@ export default class EventsTable extends ListingsTable {
           events.map(event =>
             <EventRow
               key={event.uuid} listing={event}
-              venue={venues.find(v => {return v.id === event.venue_id})} venues={venues}
-              org={orgs.find(o => {return o.id === event.org_id})} orgs={orgs}
+              venue={venues.find(v => {
+                return v.id === event.venue_id
+              })} venues={venues}
+              org={orgs.find(o => {
+                return o.id === event.org_id
+              })} orgs={orgs}
               updateListing={this.props.updateListing} deleteListing={this.props.deleteListing}
               checkForLive={this.props.checkForLive}
             />

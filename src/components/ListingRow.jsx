@@ -4,7 +4,17 @@ import {Link} from "react-router-dom";
 
 import "../styles/schema-row.css";
 
+/**
+ * ListingRow is a generic component that displays a single row from a live listings table.
+ * @class
+ * @parent
+ */
 export default class ListingRow extends Component {
+  /**
+   * The component's constructor.
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
 
@@ -17,19 +27,41 @@ export default class ListingRow extends Component {
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
   }
 
-  startEdit() {
+  /**
+   * Marks the row as editable to trigger a UI change.
+   *
+   * @param {Event} e
+   */
+  startEdit(e) {
+    e.stopPropagation();
     this.setState({editable: true});
   }
 
-  cancelEdit() {
+  /**
+   * Marks the row as not editable to trigger a UI change.
+   *
+   * @param {Event} e
+   */
+  cancelEdit(e) {
+    e.stopPropagation();
     this.setState({editable: false});
   }
 
+  /**
+   * Handles changes to input blocks by saving the data as a state parameter.
+   * @param e
+   */
   handleInputChange(e) {
     this.setState({[e.target.name]: e.target.value.trim()});
   }
 
-  handleSaveClick() {
+  /**
+   * Handles the save button click by parsing new data and triggering a function to update the listing.
+   * @param {Event} e
+   */
+  handleSaveClick(e) {
+    e.stopPropagation();
+
     const newData = {uuid: this.props.listing.uuid, name: this.state.listingName};
 
     this.props.updateListing(this.props.listing.id, newData).then(() => {
@@ -37,10 +69,18 @@ export default class ListingRow extends Component {
     });
   }
 
+  /**
+   * Handles the delete button click by triggering a function to delete the listing.
+   */
   handleDeleteClick() {
     this.props.deleteListing(this.props.listing.id);
   }
 
+  /**
+   * Renders the component.
+   * @render
+   * @returns {*}
+   */
   render() {
     const schema = this.props.schema;
     const id = this.props.listing.id;
@@ -54,7 +94,7 @@ export default class ListingRow extends Component {
             <button type={'button'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
-          <td><input type={'text'} name={'listingName'} value={name} onChange={this.handleInputChange}/></td>
+          <td><input type={'text'} name={'listingName'} value={name} onChange={this.handleInputChange} /></td>
           <td>{updatedAt}</td>
         </tr>
       );

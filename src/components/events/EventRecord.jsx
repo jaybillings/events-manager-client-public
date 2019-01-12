@@ -6,7 +6,19 @@ import "../../styles/toggle.css";
 
 import ListingRecordUniversal from "../ListingRecordUniversal";
 
+/**
+ * EventRecord is a component to display a single event's record.
+ *
+ * @class
+ * @child
+ */
 export default class EventRecord extends ListingRecordUniversal {
+  /**
+   * The class's constructor.
+   *
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
 
@@ -29,10 +41,13 @@ export default class EventRecord extends ListingRecordUniversal {
     this.orgInput = React.createRef();
     this.liveToggle = React.createRef();
 
-    this.checkShouldPublish = this.checkShouldPublish.bind(this);
+    this.checkPublishOrDrop = this.checkPublishOrDrop.bind(this);
     this.toggleStatus = this.toggleStatus.bind(this);
   }
 
+  /**
+   * Runs once the component mounts. Checks for the event's publish/live status.
+   */
   componentDidMount() {
     this.props.checkForLive().then(results => {
       const publishState = results.total > 0;
@@ -42,16 +57,16 @@ export default class EventRecord extends ListingRecordUniversal {
     });
   }
 
-  checkShouldPublish() {
-    if (this.state.defaultPublish === this.state.newPublish) return '';
-    if (this.state.newPublish) return 'publish';
-    if (!this.state.newPublish) return 'drop';
-  }
-
+  /**
+   * Handles the submit action by parsing new data and calling a function to create a new event. Also modifies
+   * associations between the event and its tags.
+   *
+   * @param {Event} e
+   */
   handleSubmit(e) {
     e.preventDefault();
 
-    const doPublish = this.checkShouldPublish();
+    const doPublish = this.checkPublishOrDrop();
     const newData = {
       name: this.nameInput.current.value.trim(),
       venue_id: parseInt(this.venueInput.current.value, 10),
@@ -88,10 +103,30 @@ export default class EventRecord extends ListingRecordUniversal {
     this.props.updateListing(newData, {toSave: tagsToSave, toRemove: tagsToRemove}, doPublish);
   }
 
+  /**
+   * Flips the publish/live status of the event.
+   */
   toggleStatus() {
     this.setState(prevStatus => ({newPublish: !prevStatus.newPublish}));
   }
 
+  /**
+   * Determines whether the event should be published or dropped.
+   *
+   * @returns {string}
+   */
+  checkPublishOrDrop() {
+    if (this.state.defaultPublish === this.state.newPublish) return '';
+    if (this.state.newPublish) return 'publish';
+    if (!this.state.newPublish) return 'drop';
+  }
+
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @returns {*}
+   */
   render() {
     const event = this.props.listing;
     const venues = this.props.venues;

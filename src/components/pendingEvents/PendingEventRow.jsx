@@ -6,7 +6,18 @@ import {renderOptionList, renderSchemaLink} from "../../utilities";
 import PendingListingRow from '../PendingListingRow';
 import StatusLabel from "../common/StatusLabel";
 
+/**
+ * PendingEventRow is a component which displays a single row for a pending event table.
+ *
+ * @class
+ * @child
+ */
 export default class PendingEventRow extends PendingListingRow {
+  /**
+   * The component's constructor.
+   *
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
 
@@ -16,10 +27,14 @@ export default class PendingEventRow extends PendingListingRow {
     this.orgList = React.createRef();
   }
 
+  /**
+   * Handles the save button click by parsing new data and triggering a function to update the pending event.
+   *
+   * @param {Event} e
+   */
   handleSaveClick(e) {
     e.stopPropagation();
 
-    const id = this.props.pendingListing.id;
     const newData = {
       name: this.nameInput.current.value.trim(),
       start_date: Moment(this.startInput.current.value).valueOf(),
@@ -28,12 +43,19 @@ export default class PendingEventRow extends PendingListingRow {
       org_uuid: this.orgList.current.value
     };
 
-    this.props.saveChanges(id, newData).then(result => {
+    this.props.updateListing(this.props.pendingListing.id, newData).then(result => {
       this.checkWriteStatus(result);
       this.setState({editable: false});
     });
   }
 
+  /**
+   * Renders the component.
+   *
+   * @note The render has two different paths depending on whether the row can be edited.
+   * @render
+   * @returns {*}
+   */
   render() {
     const pendingListing = this.props.pendingListing;
     const createdAt = Moment(pendingListing.created_at).calendar();

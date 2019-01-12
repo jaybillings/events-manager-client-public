@@ -2,7 +2,16 @@ import React, {Component} from 'react';
 
 import "../../styles/filters.css";
 
+/**
+ * The Filters component displays filtering for event tables.
+ * @class
+ */
 export default class Filters extends Component {
+  /**
+   * The class's constructor.
+   * @constructor
+   * @param props
+   */
   constructor(props) {
     super(props);
 
@@ -11,21 +20,37 @@ export default class Filters extends Component {
     this.handleSelection = this.handleSelection.bind(this);
   }
 
+  /**
+   * Handles filter selection by setting the current filter type.
+   * @param {Event} e
+   */
   handleSelection(e) {
     const tmpFilter = e.target.dataset.filterType;
     const filter = (this.state.currentFilter === tmpFilter) ? 'none' : tmpFilter;
-
-    console.log('filter', filter);
 
     this.setState({'currentFilter': filter});
     this.props.updateFilters(filter);
   }
 
+  /**
+   * Renders a filter button.
+   *
+   * @param {string} type
+   * @param {string} text
+   * @param {bool} isActive
+   * @returns {*}
+   */
   renderButton(type, text, isActive) {
     let activeClass = isActive ? 'button-primary' : '';
     return <button key={`${type}-${isActive}`} type={'button'} data-filter-type={type} className={activeClass} onClick={this.handleSelection}>{text}</button>
   }
 
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @returns {*}
+   */
   render() {
     const currentFilter = this.state.currentFilter;
     let filterType = currentFilter === 'none' ? 'All' : currentFilter;

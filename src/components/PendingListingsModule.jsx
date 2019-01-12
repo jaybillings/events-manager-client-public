@@ -11,11 +11,15 @@ import '../styles/schema-module.css';
 import '../styles/schema-table.css';
 
 /**
- * Generic module to display pending listings as a module.
+ * PendingListingsModule is a generic component to display pending listings as a module.
+ *
+ * @class
+ * @parent
  */
 export default class PendingListingsModule extends Component {
   /**
    * Constructor for PendingListingsModule
+   *
    * @constructor
    * @param {object} props
    * @param {string} schema
@@ -66,6 +70,7 @@ export default class PendingListingsModule extends Component {
 
     this.fetchAllData();
 
+    /** @var {Function} this.pendingListingsService.on */
     this.pendingListingsService
       .on('created', message => {
         this.props.updateMessagePanel({
@@ -98,6 +103,7 @@ export default class PendingListingsModule extends Component {
    * Code to run before component is unmounted.
    */
   componentWillUnmount() {
+    /** @var {Function} this.pendingListingsService.removeAllListeners */
     this.pendingListingsService
       .removeAllListeners('created')
       .removeAllListeners('updated')
@@ -255,6 +261,7 @@ export default class PendingListingsModule extends Component {
    * @returns {Promise<*>}
    */
   async saveChanges(id, newData) {
+    /** @var {Function} this.pendingListingsService.patch */
     return this.pendingListingsService.patch(id, newData);
   }
 
@@ -285,13 +292,14 @@ export default class PendingListingsModule extends Component {
    * @param {Event} e
    */
   updatePageSize(e) {
-    this.setState({pageSize: parseInt(e.target.value, 10), currentPage: 1}, () => this.fetchAllData());
+    const pageSize = e.target.value;
+    this.setState({pageSize: parseInt(pageSize, 10), currentPage: 1}, () => this.fetchAllData());
   }
 
   /**
    * Updates the module's current table page.
    *
-   * @param {int} page
+   * @param {string} page
    */
   updateCurrentPage(page) {
     this.setState({currentPage: parseInt(page, 10)}, () => this.fetchAllData());
@@ -335,7 +343,7 @@ export default class PendingListingsModule extends Component {
   }
 
   /**
-   * De-selectes all listings.
+   * De-selects all listings.
    */
   selectNoListings() {
     this.setState({selectedListings: []});
@@ -408,7 +416,8 @@ export default class PendingListingsModule extends Component {
   }
 
   /**
-   *
+   * Renders the component.
+   * @render
    * @returns {*}
    */
   render() {
