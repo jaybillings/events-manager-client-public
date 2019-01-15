@@ -6,11 +6,29 @@ import PendingNeighborhoodRecord from '../../components/pendingNeighborhoods/Pen
 import MessagePanel from '../../components/common/MessagePanel';
 import SingleListingLayoutUniversal from "../../components/SingleListingLayoutUniversal";
 
+/**
+ * SinglePendingNeighborhoodLayout is a component which lays out a single neighborhood page.
+ *
+ * @class
+ * @child
+ */
 export default class SinglePendingNeighborhoodLayout extends SingleListingLayoutUniversal {
+  /**
+   * The class's constructor.
+   *
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
     super(props, 'pending-neighborhoods');
   }
 
+  /**
+   * Renders the neighborhood's record.
+   *
+   * @override
+   * @returns {*}
+   */
   renderRecord() {
     if (!this.state.listingLoaded) {
       return <p>Data is loading... Please be patient...</p>
@@ -21,6 +39,12 @@ export default class SinglePendingNeighborhoodLayout extends SingleListingLayout
     />;
   }
 
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @returns {*}
+   */
   render() {
     if (this.state.notFound) {
       return <Redirect to={'/404'} />

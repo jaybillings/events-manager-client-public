@@ -4,7 +4,18 @@ import {renderOptionList} from "../../utilities";
 
 import ListingRecordUniversal from "../ListingRecordUniversal";
 
+/**
+ * VenueRecord is a component that displays a single venue's record.
+ * @class
+ * @child
+ */
 export default class VenueRecord extends ListingRecordUniversal {
+  /**
+   * The class's constructor.
+   *
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
 
@@ -19,6 +30,12 @@ export default class VenueRecord extends ListingRecordUniversal {
     this.zipInput = React.createRef();
   }
 
+  /**
+   * Handles the submit action by parsing new data and calling a function to create a new venue.
+   *
+   * @override
+   * @param {Event} e
+   */
   handleSubmit(e) {
     e.preventDefault();
 
@@ -38,6 +55,12 @@ export default class VenueRecord extends ListingRecordUniversal {
     this.props.updateListing(this.props.listing.id, newData);
   }
 
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @returns {*}
+   */
   render() {
     const venue = this.props.listing;
     const hoods = this.props.hoods;

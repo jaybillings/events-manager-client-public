@@ -5,7 +5,19 @@ import {renderOptionList} from "../../utilities";
 
 import ListingRow from "../ListingRow";
 
+/**
+ * VenueROw is a component that displays a single row for a live venue table.
+ *
+ * @class
+ * @child
+ */
 export default class VenueRow extends ListingRow {
+  /**
+   * The component's constructor.
+   *
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
 
@@ -14,7 +26,14 @@ export default class VenueRow extends ListingRow {
     this.state = {venueName: this.props.listing.name, venueHood: hoodUUID, editable: false}
   }
 
-  handleSaveClick() {
+  /**
+   * Handles the save button click by parsing new data and triggering a function to update the event.
+   *
+   * @param {Event} e
+   */
+  handleSaveClick(e) {
+    e.preventDefault();
+
     const newData = {
       uuid: this.props.listing.uuid,
       name: this.state.venueName,
@@ -26,6 +45,13 @@ export default class VenueRow extends ListingRow {
     });
   }
 
+  /**
+   * Renders the component.
+   * @note The render has two different paths depending on whether the row can be edited.
+   *
+   * @render
+   * @returns {*}
+   */
   render() {
     const venue = this.props.listing;
     const hoods = this.props.hoods;

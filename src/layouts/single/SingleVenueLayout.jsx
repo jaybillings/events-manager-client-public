@@ -4,7 +4,19 @@ import app from "../../services/socketio";
 import VenueRecord from "../../components/venues/VenueRecord";
 import SingleListingLayoutUniversal from "../../components/SingleListingLayoutUniversal";
 
+/**
+ * SingleVenueLayout is a component which lays out a single venue page.
+ *
+ * @class
+ * @child
+ */
 export default class SingleVenueLayout extends SingleListingLayoutUniversal {
+  /**
+   * The class's constructor.
+   *
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
     super(props, 'venues');
 
@@ -18,6 +30,11 @@ export default class SingleVenueLayout extends SingleListingLayoutUniversal {
     this.fetchHoods = this.fetchHoods.bind(this);
   }
 
+  /**
+   * Runs once the component mounts. Registers data service listeners.
+   *
+   * @override
+   */
   componentDidMount() {
     super.componentDidMount();
 
@@ -28,6 +45,11 @@ export default class SingleVenueLayout extends SingleListingLayoutUniversal {
       .on('removed', this.fetchHoods);
   }
 
+  /**
+   * Runs before the component unmounts. Unregisters data service listeners.
+   *
+   * @override
+   */
   componentWillUnmount() {
     super.componentWillUnmount();
 
@@ -38,17 +60,30 @@ export default class SingleVenueLayout extends SingleListingLayoutUniversal {
       .removeAllListeners('removed');
   }
 
+  /**
+   * Fetches all data required for the page.
+   *
+   * @override
+   */
   fetchAllData() {
     this.fetchListing();
     this.fetchHoods();
   }
 
+  /**
+   * Fetches data for linked neighborhoods.
+   */
   fetchHoods() {
     this.hoodsService.find({query: this.defaultQuery}).then(message => {
       this.setState({hoods: message.data, hoodsLoaded: true});
     });
   }
 
+  /**
+   * Renders the venue's record.
+   *
+   * @returns {*}
+   */
   renderRecord() {
     if (!(this.state.listingLoaded && this.state.hoodsLoaded)) {
       return <p>Data is loading... Pleased be patient...</p>

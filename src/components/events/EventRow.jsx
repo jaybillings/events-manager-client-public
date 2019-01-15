@@ -83,8 +83,8 @@ export default class EventRow extends ListingRow {
 
   /**
    * Renders the component.
-   *
    * @note The render has two different paths depending on whether the row can be edited.
+   *
    * @render
    * @returns {*}
    */

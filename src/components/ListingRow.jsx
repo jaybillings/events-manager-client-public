@@ -6,12 +6,14 @@ import "../styles/schema-row.css";
 
 /**
  * ListingRow is a generic component that displays a single row from a live listings table.
+ *
  * @class
  * @parent
  */
 export default class ListingRow extends Component {
   /**
    * The component's constructor.
+   *
    * @constructor
    * @param {object} props
    */
@@ -49,7 +51,8 @@ export default class ListingRow extends Component {
 
   /**
    * Handles changes to input blocks by saving the data as a state parameter.
-   * @param e
+   *
+   * @param {Event} e
    */
   handleInputChange(e) {
     this.setState({[e.target.name]: e.target.value.trim()});
@@ -57,6 +60,7 @@ export default class ListingRow extends Component {
 
   /**
    * Handles the save button click by parsing new data and triggering a function to update the listing.
+   *
    * @param {Event} e
    */
   handleSaveClick(e) {
@@ -78,6 +82,7 @@ export default class ListingRow extends Component {
 
   /**
    * Renders the component.
+   *
    * @render
    * @returns {*}
    */
