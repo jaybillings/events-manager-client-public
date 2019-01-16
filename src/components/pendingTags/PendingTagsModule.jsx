@@ -1,7 +1,7 @@
 import PendingListingsModule from "../PendingListingsModule";
 
 /**
- * The PendingTagsModule component displays pending tags as a module within another page.
+ * PendingTagsModule is a component that displays pending tags as a module within a layout.
  *
  * @class
  * @child

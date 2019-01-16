@@ -5,6 +5,7 @@ import "../../styles/header.css";
 
 /**
  * The Header component displays the page header and main navigation.
+ *
  * @class
  */
 export default class Header extends Component {

@@ -1,13 +1,16 @@
 import React, {Component} from 'react';
+
 import '../../styles/selection-control.css';
 
 /**
  * The SelectionControl component displays a button for selecting all/no rows.
+ *
  * @class
  */
 export default class SelectionControl extends Component {
   /**
    * Renders the component.
+   *
    * @render
    * @returns {*}
    */
@@ -15,6 +18,7 @@ export default class SelectionControl extends Component {
     if (this.props.numSelected > 0) {
       return <button type={'button'} className={'selection-control'} onClick={this.props.selectNone}>Select None</button>;
     }
+
     return <button type={'button'} className={'selection-control'} onClick={this.props.selectAll}>Select All</button>;
   }
 };

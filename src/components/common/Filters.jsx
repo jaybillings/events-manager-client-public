@@ -4,13 +4,15 @@ import "../../styles/filters.css";
 
 /**
  * The Filters component displays filtering for event tables.
+ *
  * @class
  */
 export default class Filters extends Component {
   /**
    * The class's constructor.
+   *
    * @constructor
-   * @param props
+   * @param {object} props
    */
   constructor(props) {
     super(props);
@@ -22,6 +24,7 @@ export default class Filters extends Component {
 
   /**
    * Handles filter selection by setting the current filter type.
+   *
    * @param {Event} e
    */
   handleSelection(e) {
@@ -37,7 +40,7 @@ export default class Filters extends Component {
    *
    * @param {string} type
    * @param {string} text
-   * @param {bool} isActive
+   * @param {boolean} isActive
    * @returns {*}
    */
   renderButton(type, text, isActive) {

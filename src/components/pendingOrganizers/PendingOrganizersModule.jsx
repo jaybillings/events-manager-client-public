@@ -1,7 +1,7 @@
 import PendingListingsModule from "../PendingListingsModule";
 
 /**
- * The PendingOrganizersModule component displays pending organizers as a module within another page.
+ * PendingOrganizersModule is a component which displays pending organizers as a module within a layout.
  *
  * @class
  * @child

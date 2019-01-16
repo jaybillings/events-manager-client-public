@@ -5,11 +5,13 @@ import "../../styles/pagination.css";
 
 /**
  * The PaginationLayout component displays table pagination.
+ *
  * @class
  */
 export default class PaginationLayout extends Component {
   /**
    * The class's constructor.
+   *
    * @constructor
    * @param {object} props
    */
@@ -21,6 +23,7 @@ export default class PaginationLayout extends Component {
 
   /**
    * Renders the rows-per-page option block.
+   *
    * @returns {Array}
    */
   renderPageOptions() {
@@ -40,6 +43,7 @@ export default class PaginationLayout extends Component {
 
   /**
    * Renders the component.
+   *
    * @render
    * @returns {*}
    */
@@ -51,7 +55,8 @@ export default class PaginationLayout extends Component {
 
     return (
       <div className={'pagination-container'}>
-        <select defaultValue={this.props.pageSize} onChange={this.props.updatePageSize}>{this.renderPageOptions()}</select>
+        <select defaultValue={this.props.pageSize}
+                onChange={this.props.updatePageSize}>{this.renderPageOptions()}</select>
         <Pagination
           activePage={this.props.activePage} itemsCountPerPage={this.props.pageSize} totalItemsCount={this.props.total}
           onChange={this.props.updateCurrentPage}

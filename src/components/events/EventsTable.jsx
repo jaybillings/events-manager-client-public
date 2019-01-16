@@ -52,13 +52,9 @@ export default class EventsTable extends ListingsTable {
         {
           events.map(event =>
             <EventRow
-              key={event.uuid} listing={event}
-              venue={venues.find(v => {
-                return v.id === event.venue_id
-              })} venues={venues}
-              org={orgs.find(o => {
-                return o.id === event.org_id
-              })} orgs={orgs}
+              key={event.uuid} listing={event} venues={venues} orgs={orgs}
+              venue={venues.find(v => {return v.id === event.venue_id})}
+              org={orgs.find(o => {return o.id === event.org_id})}
               updateListing={this.props.updateListing} deleteListing={this.props.deleteListing}
               checkForLive={this.props.checkForLive}
             />

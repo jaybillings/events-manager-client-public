@@ -5,7 +5,7 @@ import {Link} from "react-router-dom";
 import "../styles/schema-row.css";
 
 /**
- * ListingRow is a generic component that displays a single row from a live listings table.
+ * ListingRow is a generic component which displays a single row from a live listings table.
  *
  * @class
  * @parent
@@ -82,6 +82,7 @@ export default class ListingRow extends Component {
 
   /**
    * Renders the component.
+   * @note The render has two different paths depending on whether the row can be edited.
    *
    * @render
    * @returns {*}

@@ -1,7 +1,7 @@
 import PendingListingsModule from "../PendingListingsModule";
 
 /**
- * The PendingNeighborhoodsModule component displays pending neighborhoods as a module within another page.
+ * PendingNeighborhoodsModule is a component which displays pending neighborhoods as a module within a layout.
  *
  * @class
  * @child

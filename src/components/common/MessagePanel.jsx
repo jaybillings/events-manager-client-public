@@ -4,6 +4,7 @@ import "../../styles/message-panel.css";
 
 /**
  * The MessagePanel component displays a list of informational messages to the user.
+ *
  * @class
  */
 export default class MessagePanel extends Component {
@@ -11,7 +12,7 @@ export default class MessagePanel extends Component {
    * The class's constructor.
    *
    * @constructor
-   * @param props
+   * @param {object} props
    */
   constructor(props) {
     super(props);
