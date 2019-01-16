@@ -3,6 +3,7 @@ import Moment from "moment";
 import {renderOptionList} from "../../utilities";
 
 import ListingRecordUniversal from "../ListingRecordUniversal";
+import StatusLabel from "../pendingEvents/PendingEventRecord";
 
 /**
  * PendingVenueRecord is a component which displays a single pending venue's record.
@@ -40,8 +41,6 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
   handleSubmit(e) {
     e.preventDefault();
 
-    const pendingVenue = this.props.pendingVenue;
-    const id = pendingVenue.id;
     const newData = {
       name: this.nameInput.current.value.trim(),
       hood_id: this.hoodInput.current.value,
@@ -57,28 +56,31 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
     this.stateInput.current.value !== '' && (newData.address_state = this.stateInput.current.value.trim());
     this.zipInput.current.value !== '' && (newData.address_zip = this.zipInput.current.value.trim());
 
-    this.props.saveListing(id, newData);
+    this.props.updateListing(newData);
   }
 
   /**
    * Renders the component.
    *
-   * @override
    * @render
    * @returns {*}
    */
   render() {
-    const pendingVenue = this.props.pendingVenue;
-    const venueId = pendingVenue.target_id || 'N/A';
+    const pendingVenue = this.props.listing;
     const hoods = this.props.hoods;
     const createdAt = Moment(pendingVenue.created_at).calendar();
     const updatedAt = Moment(pendingVenue.updated_at).calendar();
+    const writeStatus = this.props.writeStatus;
 
     return (
       <form id={'pending-venue-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
         <label>
-          Live Venue ID
-          <input type={'text'} value={venueId} disabled />
+          UUID
+          <input type={'text'} value={pendingVenue.uuid} disabled />
+        </label>
+        <label>
+          Status
+          <StatusLabel writeStatus={writeStatus} schema={'pending-events'} />
         </label>
         <label>
           Created

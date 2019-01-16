@@ -40,7 +40,7 @@ export default class PendingVenueRow extends PendingListingRow {
       hood_uuid: this.hoodList.current.value
     };
 
-    this.props.saveChanges(id, newData).then(result => {
+    this.props.updateListing(id, newData).then(result => {
       this.checkWriteStatus(result);
       this.setState({editable: false});
     });
@@ -56,7 +56,7 @@ export default class PendingVenueRow extends PendingListingRow {
    * @returns {*}
    */
   render() {
-    const pendingListing = this.props.pendingListing;
+    const pendingListing = this.props.listing;
     const createdAt = Moment(pendingListing.created_at).calendar();
     const selected = this.props.selected;
     const writeStatus = this.state.write_status;

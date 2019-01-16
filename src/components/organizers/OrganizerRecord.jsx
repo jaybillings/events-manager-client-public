@@ -39,7 +39,7 @@ export default class OrganizerRecord extends ListingRecordUniversal {
       phone: this.phoneInput.current.value
     };
 
-    this.props.updateListing(this.props.listing.id, newData);
+    this.props.updateListing(newData);
   }
 
   /**

@@ -38,8 +38,7 @@ export default class OrganizerAddForm extends ListingAddForm {
     this.phoneInput.current.value !== '' && (listingObj.phone = this.phoneInput.current.value.trim());
     this.urlInput.current.value !== '' && (listingObj.url = this.urlInput.current.value.trim());
 
-    this.props.createListing(listingObj);
-    this.clearForm();
+    this.props.createListing(listingObj).then(() => this.clearForm());
   }
 
   /**

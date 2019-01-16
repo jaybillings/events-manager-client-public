@@ -239,12 +239,12 @@ export default class EventsLayout extends ListingsLayout {
     }
   }
 
-  createListing(eventObj, tagsToSave) {
+  createListing(eventData) {
     // Give new listing a UUID
-    eventObj.uuid = uuid();
+    eventData.eventObj.uuid = uuid();
 
-    return this.listingsService.create(eventObj).then(message => {
-      this.createTagAssociations(message.id, tagsToSave);
+    return this.listingsService.create(eventData.eventObj).then(message => {
+      this.createTagAssociations(message.id, eventData.tagsToSave);
       // TODO: Add as live if admin, as pending if not
       this.registerEventLive(message.id);
     }, err => {
@@ -252,10 +252,10 @@ export default class EventsLayout extends ListingsLayout {
     });
   }
 
-  updateListing(id, newData, doPublish) {
+  updateListing(id, listingData) {
     // Save changes
-    return this.listingsService.patch(id, newData).then(() => {
-      if (doPublish) {
+    return this.listingsService.patch(id, listingData.newData).then(() => {
+      if (listingData.doPublish) {
         console.log('publishing event');
         this.registerEventLive(id);
       } else {

@@ -155,19 +155,18 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
     return this.liveEventService.find({query: {event_id: this.state.listing.id}});
   }
 
-  updateListing(eventData, tagData, publishState) {
-    this.listingsService.patch(this.state.listing.id, eventData).then(() => {
-      console.log('in updatelisting');
-      if (tagData.toSave) {
-        this.createTagAssociations(tagData.toSave);
+  updateListing(listingData) {
+    this.listingsService.patch(this.state.listing.id, listingData.eventData).then(() => {
+      if (listingData.tagsToSave) {
+        this.createTagAssociations(listingData.tagsToSave);
       }
-      if (tagData.toRemove) {
-        this.removeTagAssociations(tagData.toRemove);
+      if (listingData.tagsToRemove) {
+        this.removeTagAssociations(listingData.tagsToRemove);
       }
 
-      if (publishState === 'publish') {
+      if (listingData.publishState === 'publish') {
         this.registerEventLive();
-      } else if (publishState === 'drop') {
+      } else if (listingData.publishState === 'drop') {
         this.registerEventDropped();
       }
     }, err => {
@@ -191,14 +190,16 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
 
   createTagAssociations(tagsToSave) {
     this.tagsLookupService.create(tagsToSave).catch(err => {
-      const details = `Could not associate tags with event. Please re-save listing. Error is: ${JSON.stringify(err)}`;
+      const details = 'Could not associate tags with event. Please re-save listing. ' +
+        `Error is: ${JSON.stringify(err)}`;
       this.updateMessagePanel({status: 'error', details: details});
     });
   }
 
   removeTagAssociations(tagsToRemove) {
     return this.tagsLookupService.remove(null, {query: {event_id: {$in: tagsToRemove}}}).catch(err => {
-      const details = `Could not de-associate tags from event. Please re-save listing. Error is: ${JSON.stringify(err)}`;
+      const details = 'Could not de-associate tags from event. Please re-save listing. '
+        + `Error is: ${JSON.stringify(err)}`;
       this.updateMessagePanel({status: 'error', details: details});
     });
   }
@@ -233,17 +234,30 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
     });
   }
 
+  /**
+   * Renders the single event's record.
+   *
+   * @override
+   * @returns {*}
+   */
   renderRecord() {
     if (!(this.state.listingLoaded && this.state.venuesLoaded && this.state.orgsLoaded && this.state.tagsLoaded)) {
       return <p>Data is loading... Please be patient...</p>;
     }
 
-    return <EventRecord listing={this.state.listing} venues={this.state.venues} orgs={this.state.orgs}
-                        tags={this.state.tags} tagsForListing={this.state.tagsForListing}
-                        updateListing={this.updateListing} deleteListing={this.deleteListing}
-                        checkForLive={this.checkForLive} />;
+    return <EventRecord
+      listing={this.state.listing} venues={this.state.venues} orgs={this.state.orgs}
+      tags={this.state.tags} tagsForListing={this.state.tagsForListing}
+      updateListing={this.updateListing} deleteListing={this.deleteListing} checkForLive={this.checkForLive}
+    />;
   }
 
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @returns {*}
+   */
   render() {
     if (this.state.notFound) return <Redirect to={'/404'} />;
 

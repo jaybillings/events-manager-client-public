@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import Moment from 'moment';
-import {makeTitleCase} from "../utilities";
 import {Link} from "react-router-dom";
+import {makeTitleCase} from "../utilities";
 
 import StatusLabel from "./common/StatusLabel";
 
@@ -39,7 +39,6 @@ export default class PendingListingRow extends Component {
    * Runs once the component mounts. Checks the publish/write status of the listing.
    */
   componentDidMount() {
-    /** @var {object} this.props.pendingListing */
     this.checkWriteStatus(this.props.pendingListing);
   }
 
@@ -71,10 +70,7 @@ export default class PendingListingRow extends Component {
   handleSaveClick(e) {
     e.stopPropagation();
 
-    const id = this.props.pendingListing.id;
-    const newData = {name: this.nameInput.current.value.trim()};
-
-    this.props.saveChanges(id, newData).then(result => {
+    this.props.updateListing(this.props.listing.id, {name: this.nameInput.current.value}).then(result => {
       this.checkWriteStatus(result);
       this.setState({editable: false});
     });
@@ -87,7 +83,7 @@ export default class PendingListingRow extends Component {
    */
   handleDeleteClick(e) {
     e.stopPropagation();
-    this.props.removePendingListing(this.props.pendingListing.id);
+    this.props.removePendingListing(this.props.listing.id);
   }
 
   /**
@@ -96,7 +92,7 @@ export default class PendingListingRow extends Component {
   handleRowClick() {
     const selected = !this.props.selected;
     /** @var {Function} this.props.selectListing */
-    this.props.selectListing(this.props.pendingListing.id, selected);
+    this.props.selectListing(this.props.listing.id, selected);
   }
 
   /**
@@ -107,18 +103,16 @@ export default class PendingListingRow extends Component {
    *   - new (will make a new listing)
    *   - update (will update a preexisting listing)
    *   - duplicate (will make a new listing that might duplicate an existing listing)
-   *
-   * @param {object} listing - The listing to check.
    */
-  checkWriteStatus(listing) {
-    this.props.queryForExisting(listing).then(result => {
+  checkWriteStatus() {
+    this.props.queryForExisting(this.props.listing).then(result => {
       let writeStatus;
 
       if (!result.total) {
         writeStatus = 'new';
       } else {
         const uuids = result.data.map(row => row.uuid);
-        if (uuids.includes(this.props.pendingListing.uuid)) {
+        if (uuids.includes(this.props.listing.uuid)) {
           writeStatus = 'update';
         } else {
           writeStatus = 'duplicate';
@@ -138,7 +132,7 @@ export default class PendingListingRow extends Component {
    * @returns {*}
    */
   render() {
-    const pendingListing = this.props.pendingListing;
+    const pendingListing = this.props.listing;
     const createdAt = Moment(pendingListing.created_at).calendar();
     const selected = this.props.selected;
     const writeStatus = this.state.write_status;

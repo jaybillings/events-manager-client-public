@@ -7,7 +7,7 @@ import "../../styles/toggle.css";
 import ListingRecordUniversal from "../ListingRecordUniversal";
 
 /**
- * EventRecord is a component to display a single event's record.
+ * EventRecord is a component which displays a single event's record.
  *
  * @class
  * @child
@@ -24,7 +24,6 @@ export default class EventRecord extends ListingRecordUniversal {
 
     this.state = {defaultPublish: false, newPublish: false};
 
-    this.nameInput = React.createRef();
     this.startInput = React.createRef();
     this.endInput = React.createRef();
     this.descInput = React.createRef();
@@ -61,6 +60,7 @@ export default class EventRecord extends ListingRecordUniversal {
    * Handles the submit action by parsing new data and calling a function to create a new event. Also modifies
    * associations between the event and its tags.
    *
+   * @override
    * @param {Event} e
    */
   handleSubmit(e) {
@@ -68,7 +68,7 @@ export default class EventRecord extends ListingRecordUniversal {
 
     const doPublish = this.checkPublishOrDrop();
     const newData = {
-      name: this.nameInput.current.value.trim(),
+      name: this.nameInput.current.value,
       venue_id: parseInt(this.venueInput.current.value, 10),
       org_id: parseInt(this.orgInput.current.value, 10),
       start_date: Moment(this.startInput.current.value).valueOf(),
@@ -80,7 +80,7 @@ export default class EventRecord extends ListingRecordUniversal {
       hours: this.hoursInput.current.value || null,
       ticket_url: this.ticketUrlInput.current.value || null,
       ticket_phone: this.ticketPhoneInput.current.value || null,
-      ticket_prices: this.ticketPricesInput.current.value|| null,
+      ticket_prices: this.ticketPricesInput.current.value || null,
       flag_ongoing: this.ongoingInput.current.checked
     };
 
@@ -100,7 +100,12 @@ export default class EventRecord extends ListingRecordUniversal {
       }
     });
 
-    this.props.updateListing(newData, {toSave: tagsToSave, toRemove: tagsToRemove}, doPublish);
+    this.props.updateListing({
+      eventData: newData,
+      tagsToSave: tagsToSave,
+      tagsToRemove: tagsToRemove,
+      publishState: doPublish
+    });
   }
 
   /**
@@ -145,7 +150,7 @@ export default class EventRecord extends ListingRecordUniversal {
         <div>
           <p className={'label'}>Status - {isPublished ? 'Published' : 'Dropped'}</p>
           <input id={`toggle-${event.id}`} type={'checkbox'} ref={this.liveToggle} className={'toggle'}
-            checked={isPublished} onChange={this.toggleStatus}
+                 checked={isPublished} onChange={this.toggleStatus}
           />
           <label className={'toggle-switch'} htmlFor={'toggle-' + event.id} />
         </div>

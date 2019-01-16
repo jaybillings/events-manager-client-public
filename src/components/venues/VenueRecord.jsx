@@ -5,7 +5,8 @@ import {renderOptionList} from "../../utilities";
 import ListingRecordUniversal from "../ListingRecordUniversal";
 
 /**
- * VenueRecord is a component that displays a single venue's record.
+ * VenueRecord is a component which displays a single venue's record.
+ *
  * @class
  * @child
  */
@@ -52,7 +53,7 @@ export default class VenueRecord extends ListingRecordUniversal {
       address_zip: this.zipInput.current.value
     };
 
-    this.props.updateListing(this.props.listing.id, newData);
+    this.props.updateListing(newData);
   }
 
   /**

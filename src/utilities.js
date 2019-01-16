@@ -23,7 +23,7 @@ const renderCheckboxList = function (schema, selectedIds, keyType = 'id') {
         <label>
           <input
             type={'checkbox'} className={'js-checkbox'} value={inputValue}
-            defaultChecked={selectedIds.includes(record.id)}
+            defaultChecked={selectedIds.includes(inputValue)}
           />
           {record.name}
         </label>

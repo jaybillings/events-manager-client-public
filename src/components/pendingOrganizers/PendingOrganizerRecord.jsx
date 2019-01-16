@@ -1,11 +1,11 @@
 import React from 'react';
 import Moment from 'moment';
 
-import '../../styles/schema-record.css';
 import ListingRecordUniversal from "../ListingRecordUniversal";
+import StatusLabel from "../pendingEvents/PendingEventRecord";
 
 /**
- * PendingOrganizerRecord is a component to display a single pending organizer's record.
+ * PendingOrganizerRecord is a component which displays a single pending organizer's record.
  *
  * @class
  * @child
@@ -15,7 +15,7 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
    * The class's constructor.
    *
    * @constructor
-   * @param {Event} props
+   * @param {object} props
    */
   constructor(props) {
     super(props);
@@ -28,12 +28,12 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
   /**
    * Handles the submit action by parsing new data and calling a function to create a new pending organizer.
    *
+   * @override
    * @param {Event} e
    */
   handleSubmit(e) {
     e.preventDefault();
 
-    const listing = this.props.listing;
     const newData = {
       name: this.nameInput.current.value.trim(),
       description: this.descInput.current.value.trim()
@@ -43,7 +43,7 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
     this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value.trim());
     this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value.trim());
 
-    this.props.saveListing(listing.id, newData);
+    this.props.updateListing(newData);
   }
 
   /**
@@ -53,16 +53,20 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
    * @returns {*}
    */
   render() {
-    /** @var {object} this.props.pendingOrg */
-    const listing = this.props.pendingOrg;
-    const createdAt = Moment(listing.created_at).calendar();
-    const updatedAt = Moment(listing.updated_at).calendar();
+    const pendingOrg = this.props.listing;
+    const createdAt = Moment(pendingOrg.created_at).calendar();
+    const updatedAt = Moment(pendingOrg.updated_at).calendar();
+    const writeStatus = this.props.writeStatus;
 
     return (
       <form id={'pending-org-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
         <label>
           UUID
-          <input type={'text'} value={listing.uuid} disabled />
+          <input type={'text'} value={pendingOrg.uuid} disabled />
+        </label>
+        <label>
+          Status
+          <StatusLabel writeStatus={writeStatus} schema={'pending-events'} />
         </label>
         <label>
           Created
@@ -74,19 +78,19 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
         </label>
         <label className={'required'}>
           Name
-          <input type={'text'} ref={this.nameInput} defaultValue={listing.name} required maxLength={100} />
+          <input type={'text'} ref={this.nameInput} defaultValue={pendingOrg.name} required maxLength={100} />
         </label>
         <label className={'required'}>
           Description
-          <textarea ref={this.descInput} defaultValue={listing.description} required maxLength={500} />
+          <textarea ref={this.descInput} defaultValue={pendingOrg.description} required maxLength={500} />
         </label>
         <label>
           Url
-          <input type={'url'} ref={this.urlInput} defaultValue={listing.url} maxLength={100} />
+          <input type={'url'} ref={this.urlInput} defaultValue={pendingOrg.url} maxLength={100} />
         </label>
         <label>
           Phone #
-          <input type={'tel'} ref={this.phoneInput} defaultValue={listing.phone} maxLength={20} />
+          <input type={'tel'} ref={this.phoneInput} defaultValue={pendingOrg.phone} maxLength={20} />
         </label>
         <div className={'block-warning'}
              title={'Caution: This organizer is pending. It must be pushed live before it is visible on the site.'}>

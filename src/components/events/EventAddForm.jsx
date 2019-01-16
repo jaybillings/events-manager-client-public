@@ -1,10 +1,12 @@
 import React from 'react';
 import Moment from 'moment';
 import {renderCheckboxList, renderOptionList} from '../../utilities';
+
 import ListingAddForm from "../ListingAddForm";
 
 /**
  * EventAddForm is a component that displays a form for adding new events.
+ *
  * @class
  * @child
  */
@@ -35,8 +37,8 @@ export default class EventAddForm extends ListingAddForm {
   }
 
   /**
-   * Handles the submit event by parsing data and calling a function to create a new event. Also parses data for
-   * associating preexisting tags with this event.
+   * Handles the submit event by parsing data and calling a function to create a new event.
+   * Also associates tags with the new event.
    *
    * @param {Event} e
    */
@@ -52,8 +54,6 @@ export default class EventAddForm extends ListingAddForm {
       description: this.descInput.current.value.trim(),
       flag_ongoing: this.ongoingInput.current.checked
     };
-    const checkedBoxes = document.querySelectorAll('.js-checkbox:checked');
-    let tagsToSave = [];
 
     // Optional data
     this.emailInput.current.value !== '' && (eventObj.email = this.emailInput.current.value.trim());
@@ -65,15 +65,18 @@ export default class EventAddForm extends ListingAddForm {
     this.ticketPricesInput.current.value !== '' && (eventObj.ticket_prices = this.ticketPricesInput.current.value.trim());
 
     // Tag data
+    const checkedBoxes = document.querySelectorAll('.js-checkbox:checked');
+    let tagsToSave = [];
+
     checkedBoxes.forEach(input => {
       tagsToSave.push(input.value);
     });
 
-    this.props.createListing(eventObj, tagsToSave).then(() => this.clearForm());
+    this.props.createListing({eventObj: eventObj, tagsToSave: tagsToSave}).then(() => this.clearForm());
   }
 
   /**
-   * Clears the form by setting all values to their empty value.
+   * Clears the form by setting all values to a default or empty value.
    */
   clearForm() {
     this.nameInput.current.value = '';

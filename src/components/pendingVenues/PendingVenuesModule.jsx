@@ -9,7 +9,7 @@ import ShowHideToggle from "../common/ShowHideToggle";
 import SelectionControl from "../common/SelectionControl";
 
 /**
- * The PendingVenuesModule component displays pending venues as a module within another page.
+ * PendingVenuesModule is a component which displays pending venues as a module within a layout.
  *
  * @class
  * @child
@@ -134,16 +134,15 @@ export default class PendingVenuesModule extends PendingListingsModule {
    * @returns {*}
    */
   renderTable() {
-    const pendingVenuesCount = this.state.pendingListingsTotal;
+    const pendingVenuesTotal = this.state.pendingListingsTotal;
 
     if (!(this.state.listingsLoaded && this.state.hoodsLoaded)) {
       return <p>Data is loading... Please be patient...</p>;
-    } else if (pendingVenuesCount === 0) {
+    } else if (pendingVenuesTotal === 0) {
       return <p>No pending venues to list.</p>;
     }
 
     const pendingVenues = this.state.pendingListings;
-    const uniqueHoods = uniqueListingsOnly(this.state.hoods, this.state.pendingHoods);
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
       ['name', 'Name'],
@@ -151,6 +150,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
       ['created_at', 'Imported On'],
       ['status_NOSORT', 'Status']
     ]);
+
+    const uniqueHoods = uniqueListingsOnly(this.state.hoods, this.state.pendingHoods);
     const sort = this.state.sort;
     const pageSize = this.state.pageSize;
     const currentPage = this.state.currentPage;
@@ -159,15 +160,16 @@ export default class PendingVenuesModule extends PendingListingsModule {
     const schemaLabel = selectedVenues.length === 1 ? 'venue' : 'venues';
 
     return ([
-      <ShowHideToggle key={'venues-module-showhide'} isVisible={isVisible}
-                      changeVisibility={this.toggleModuleVisibility} />,
+      <ShowHideToggle
+        key={'venues-module-showhide'} isVisible={isVisible} changeVisibility={this.toggleModuleVisibility}
+      />,
       <div key={'venues-module-body'}>
         <SelectionControl
           numSelected={selectedVenues.length} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
         />
         <PaginationLayout
           key={'pending-venues-pagination'} schema={'pending-venues'}
-          total={pendingVenuesCount} pageSize={pageSize} activePage={currentPage}
+          total={pendingVenuesTotal} pageSize={pageSize} activePage={currentPage}
           updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
         />
         <table className={'schema-table'} key={'pending-venues-table'}>
@@ -176,11 +178,11 @@ export default class PendingVenuesModule extends PendingListingsModule {
           {
             pendingVenues.map(venue =>
               <PendingVenueRow
-                key={`venue-${venue.id}`} pendingListing={venue} selected={selectedVenues.includes(venue.id)}
+                key={`venue-${venue.id}`} listing={venue} selected={selectedVenues.includes(venue.id)}
                 hood={(uniqueHoods.find(h => {
                   return h.uuid === venue.hood_uuid
                 }))} hoods={uniqueHoods}
-                saveChanges={this.saveChanges} removeListing={this.removePendingListing}
+                updateListing={this.saveChanges} removeListing={this.removePendingListing}
                 selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}
               />)
           }

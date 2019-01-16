@@ -8,7 +8,7 @@ import ListingRow from "../ListingRow";
 import "../../styles/toggle.css";
 
 /**
- * EventRow is a component that displays a single row for a live event table.
+ * EventRow is a component which displays a single row for a live event table.
  *
  * @class
  * @child
@@ -24,9 +24,7 @@ export default class EventRow extends ListingRow {
     super(props);
 
     const event = this.props.listing;
-    /** @var {object} this.props.venue */
     const venueUUID = typeof this.props.venue === 'undefined' ? '' : this.props.venue.uuid;
-    /** @var {object} this.props.org */
     const orgUUID = typeof this.props.org === 'undefined' ? '' : this.props.org.uuid;
 
     this.state = {
@@ -47,7 +45,7 @@ export default class EventRow extends ListingRow {
   }
 
   /**
-   * Handles a change to the rows input by setting the appropriate state.
+   * Handles changes to input block by saving the data as a state parameter.
    *
    * @param {Event} e
    */
@@ -65,7 +63,7 @@ export default class EventRow extends ListingRow {
    * @param {Event} e
    */
   handleSaveClick(e) {
-    e.preventDefault();
+    e.stopPropagation();
 
     const newData = {
       uuid: this.props.listing.uuid,
@@ -76,7 +74,7 @@ export default class EventRow extends ListingRow {
       org_uuid: this.state.eventOrg
     };
 
-    this.props.updateListing(this.props.listing.id, newData, this.state.is_published).then(() => {
+    this.props.updateListing(this.props.listing.id, {newData: newData, doPublish: this.state.is_published}).then(() => {
       this.setState({editable: false});
     });
   }
@@ -127,10 +125,10 @@ export default class EventRow extends ListingRow {
       );
     }
 
-    const venueLink = this.props.venue ?
-      <Link to={`/venues/${this.props.venue.id}`}>{this.props.venue.name}</Link> : 'NO VENUE';
-    const orgLink = this.props.org ?
-      <Link to={`/organizers/${this.props.org.id}`}>{this.props.org.name}</Link> : 'NO ORGANIZER';
+    const venueLink = this.props.venue
+      ? <Link to={`/venues/${this.props.venue.id}`}>{this.props.venue.name}</Link> : 'NO VENUE';
+    const orgLink = this.props.org
+      ? <Link to={`/organizers/${this.props.org.id}`}>{this.props.org.name}</Link> : 'NO ORGANIZER';
     const eventStatus = this.state.is_published ? <span className="bolded">Published</span> :
       <span className="muted">Dropped</span>;
 

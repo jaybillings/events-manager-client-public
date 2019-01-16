@@ -5,7 +5,7 @@ import {makeSingular, makeTitleCase} from "../utilities";
 import "../styles/schema-record.css";
 
 /**
- * ListingRecordUniversal is a generic component which displays single listing records.
+ * ListingRecordUniversal is a generic component which displays a single listing record.
  *
  * @class
  * @parent
@@ -34,7 +34,7 @@ export default class ListingRecordUniversal extends Component {
   handleSubmit(e) {
     e.preventDefault();
 
-    this.props.updateListing(this.props.listing.id, {name: this.nameInput.current.value});
+    this.props.updateListing({name: this.nameInput.current.value});
   }
 
   /**
@@ -54,7 +54,7 @@ export default class ListingRecordUniversal extends Component {
     const listing = this.props.listing;
     const schema = this.props.schema;
     const singularTitleCaseSchema = makeSingular(makeTitleCase(schema));
-    /** @var {string} pendingListing.created_at */
+    /** @var {string} listing.created_at */
     const createdAt = Moment(listing.created_at).calendar();
     /** @var {string} listing.updated_at */
     const updatedAt = Moment(listing.updated_at).calendar();

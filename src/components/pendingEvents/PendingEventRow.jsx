@@ -43,7 +43,7 @@ export default class PendingEventRow extends PendingListingRow {
       org_uuid: this.orgList.current.value
     };
 
-    this.props.updateListing(this.props.pendingListing.id, newData).then(result => {
+    this.props.updateListing(this.props.listing.id, newData).then(result => {
       this.checkWriteStatus(result);
       this.setState({editable: false});
     });
@@ -57,7 +57,7 @@ export default class PendingEventRow extends PendingListingRow {
    * @returns {*}
    */
   render() {
-    const pendingListing = this.props.pendingListing;
+    const pendingListing = this.props.listing;
     const createdAt = Moment(pendingListing.created_at).calendar();
     const selected = this.props.selected;
     const writeStatus = this.state.write_status;

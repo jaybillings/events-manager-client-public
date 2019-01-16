@@ -2,29 +2,15 @@ import React from 'react';
 import Moment from 'moment';
 
 import ListingRecordUniversal from "../ListingRecordUniversal";
+import StatusLabel from "../common/StatusLabel";
 
 /**
- * PendingNeighborhoodRecord is a component to display a single pending neighborhood's record.
+ * PendingNeighborhoodRecord is a component which displays a single pending neighborhood's record.
  *
  * @class
  * @child
  */
 export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
-  /**
-   * The class's constructor.
-   *
-   * @constructor
-   * @param {Event} props
-   */
-  constructor(props) {
-    super(props);
-
-    this.nameInput = React.createRef();
-
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleClickDelete = this.handleClickDelete.bind(this);
-  }
-
   /**
    * Renders the component.
    *
@@ -32,16 +18,20 @@ export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
    * @returns {*}
    */
   render() {
-    const pendingHood = this.props.pendingListing;
-    const hoodId = pendingHood.target_id || 'N/A';
+    const pendingHood = this.props.listing;
     const createdAt = Moment(pendingHood.created_at).calendar();
     const updatedAt = Moment(pendingHood.updated_at).calendar();
+    const writeStatus = this.props.writeStatus;
 
     return (
       <form id={'pending-hood-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
         <label>
-          Live Neighborhood ID
-          <input type={'text'} value={hoodId} disabled />
+          UUID
+          <input type={'text'} value={pendingHood.uuid} disabled />
+        </label>
+        <label>
+          Status
+          <StatusLabel writeStatus={writeStatus} schema={'pending-neighborhoods'} />
         </label>
         <label>
           Created
@@ -57,7 +47,7 @@ export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
         </label>
         <div className={'block-warning'} title={'Caution: This neighborhood is pending. It must be pushed live before it is visible on the site.'}>
           <button type="submit" className={'button-primary'}>Save Changes</button>
-          <button type="button" onClick={this.handleClickDelete}>Discard Neighborhood</button>
+          <button type="button" onClick={this.handleDeleteClick}>Discard Neighborhood</button>
         </div>
       </form>
     );

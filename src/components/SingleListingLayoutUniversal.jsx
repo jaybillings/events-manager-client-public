@@ -8,15 +8,18 @@ import ListingRecordUniversal from "../components/ListingRecordUniversal";
 import MessagePanel from "../components/common/MessagePanel";
 
 /**
- * SingleListingLayoutUniversal is a generic component to lay out a single listing page.
+ * SingleListingLayoutUniversal is a generic component which lays out a single listing page.
+ *
  * @class
  * @parent
  */
 export default class SingleListingLayoutUniversal extends Component {
   /**
    * The class's constructor.
-   * @param props
-   * @param schema
+   *
+   * @constructor
+   * @param {object} props
+   * @param {string} schema - The schema being laid out.
    */
   constructor(props, schema) {
     super(props);
@@ -33,6 +36,8 @@ export default class SingleListingLayoutUniversal extends Component {
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.fetchListing = this.fetchListing.bind(this);
+    this.queryForExisting = this.queryForExisting.bind(this);
+    this.checkWriteStatus = this.checkWriteStatus.bind(this);
 
     this.updateListing = this.updateListing.bind(this);
     this.deleteListing = this.deleteListing.bind(this);
@@ -44,7 +49,7 @@ export default class SingleListingLayoutUniversal extends Component {
   }
 
   /**
-   * Runs once the component mounts. Registers data service listeners.
+   * Runs once the component mounts. Registers data service listeners and fetches data.
    */
   componentDidMount() {
     this.fetchAllData();
@@ -70,6 +75,7 @@ export default class SingleListingLayoutUniversal extends Component {
 
   /**
    * Fetches all data required for the page.
+   *
    * @note This function pattern exists to cut down on extraneous requests for components with linked schema.
    */
   fetchAllData() {
@@ -83,40 +89,85 @@ export default class SingleListingLayoutUniversal extends Component {
     this.listingsService.get(this.props.match.params.id).then(message => {
       this.setState({listing: message, listingLoaded: true});
     }, err => {
+      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
       this.setState({notFound: true});
-      console.log(`fetch ${this.schema} error`, JSON.stringify(err));
+    });
+  }
+
+  /**
+   * Determines whether the listing may duplicate an existing listing.
+   *
+   * @async
+   * @returns {Promise}
+   */
+  queryForExisting() {
+    return this.listingsService.find({
+      query: {
+        $or: [{uuid: this.state.listing.uuid}, {description: this.state.listing.description}, {
+          name: this.state.listing.name,
+          start_date: this.state.listing.start_date,
+          end_date: this.state.listing.end_date
+        }],
+        $select: ['uuid']
+      }
+    });
+  }
+
+  /**
+   * Checks the publish/write status of a single listing.
+   *
+   * checkWriteStatus checks the status of a single listing -- what will potentially happen if it's published. Possible
+   * results are:
+   *   - new (will make a new listing)
+   *   - update (will update a preexisting listing)
+   *   - duplicate (will make a new listing that might duplicate an existing listing)
+   */
+  checkWriteStatus() {
+    this.props.queryForExisting(this.state.listing).then(message => {
+      let writeStatus;
+
+      if (!message.total) {
+        writeStatus = 'new';
+      } else {
+        const uuids = message.data.map(row => row.uuid);
+        if (uuids.includes(this.props.listing.uuid)) {
+          writeStatus = 'update';
+        } else {
+          writeStatus = 'duplicate';
+        }
+      }
+
+      return writeStatus;
     });
   }
 
   /**
    * Updates the listing's data by calling the service's PATCH method.
-   * @param {int} id
-   * @param {object} listingData
+   *
+   * @param {object} newData
    */
-  updateListing(id, listingData) {
-    this.listingsService.patch(id, listingData).then(message => {
+  updateListing(newData) {
+    this.listingsService.patch(this.state.listing.id, newData).then(message => {
       this.setState({listing: message, listingLoaded: true});
     }, err => {
-      console.log('error', JSON.stringify(err));
       this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
 
   /**
    * Removes the listing from the database by calling the service's REMOVE method.
-   * @param {int} id
    */
-  deleteListing(id) {
-    this.listingsService.remove(id).then(() => {
+  deleteListing() {
+    this.listingsService.remove(this.state.listing.id).then(() => {
       this.setState({hasDeleted: true})
     }, err => {
-      console.log('event delete error', JSON.stringify(err));
       this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
 
   /**
    * Adds a message to the message panel.
+   *
    * @param {object} newMsg
    */
   updateMessagePanel(newMsg) {
@@ -143,11 +194,13 @@ export default class SingleListingLayoutUniversal extends Component {
     return <ListingRecordUniversal
       listing={this.state.listing} schema={this.schema}
       updateListing={this.updateListing} deleteListing={this.deleteListing}
+      queryForExisting={this.queryForExisting}
     />
   }
 
   /**
    * Renders the component.
+   *
    * @render
    * @returns {*}
    */

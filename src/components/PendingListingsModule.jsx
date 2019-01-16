@@ -11,14 +11,14 @@ import '../styles/schema-module.css';
 import '../styles/schema-table.css';
 
 /**
- * PendingListingsModule is a generic component to display pending listings as a module.
+ * PendingListingsModule is a generic component to display pending listings as a module within a layout.
  *
  * @class
  * @parent
  */
 export default class PendingListingsModule extends Component {
   /**
-   * Constructor for PendingListingsModule
+   * The class's constructor.
    *
    * @constructor
    * @param {object} props
@@ -63,7 +63,7 @@ export default class PendingListingsModule extends Component {
   }
 
   /**
-   * Code to run one component is mounted.
+   * Code to run one component is mounted. Fetches all data and registers listeners.
    */
   componentDidMount() {
     const schemaSingular = this.schema.slice(0, -1);
@@ -162,26 +162,22 @@ export default class PendingListingsModule extends Component {
   };
 
   /**
-   * Creates a new listing in the live schema. Used when publishing listings.
+   * Creates a new listing from the data of a pending listing. Used when publishing listings.
    *
    * @param {object} pendingListing
    */
   createLiveListing(pendingListing) {
     const id = pendingListing.id;
-
     delete (pendingListing.id);
 
-    this.listingsService.create(pendingListing).then(msg => {
-      console.log(`creating ${this.schema}`, msg);
+    this.listingsService.create(pendingListing).then(message => {
       this.props.updateMessagePanel({
         status: 'success',
-        details: `Published ${msg.name} as new ${this.schema.slice(0, -1)}`
+        details: `Published "${message.name}" as new ${this.schema.slice(0, -1)} #${message.id}`
       });
-      // TODO: Look for schema that use this and update
       this.removePendingListing(id);
     }, err => {
-      this.props.updateMessagePanel({status: 'error', details: err.message});
-      console.log(`error in createLiveListing for ${this.schema}`, err);
+      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
 
@@ -193,19 +189,16 @@ export default class PendingListingsModule extends Component {
    */
   updateLiveListing(pendingListing, target) {
     const id = pendingListing.id;
-
     delete (pendingListing.id);
 
-    this.listingsService.update(target.id, pendingListing).then(msg => {
-      console.log(`updating ${this.schema}`, msg);
+    this.listingsService.update(target.id, pendingListing).then(message => {
       this.props.updateMessagePanel({
         status: 'success',
-        details: `Published ${msg.name} as update to ${target.name}`
+        details: `Published ${message.name} as an update to ${target.name}`
       });
       this.removePendingListing(id);
     }, err => {
-      this.props.updateMessagePanel({status: 'error', details: err[0].message});
-      console.log(`error in updateLiveListing for ${this.schema}`, JSON.stringify(err));
+      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
 
@@ -248,8 +241,7 @@ export default class PendingListingsModule extends Component {
     this.pendingListingsService.remove(null, searchOptions).then(message => {
       console.log(message);
     }, err => {
-      this.props.updateMessagePanel({status: 'error', details: err});
-      console.log(`error deleting ${this.schema}: ${err}`);
+      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
 
@@ -267,19 +259,20 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Removes single main schema listing from the database.
+   *
    * @param {int} id
    */
   removePendingListing(id) {
     this.pendingListingsService.remove(id).then(message => {
       console.log(`removing ${this.schema}`, message);
     }, err => {
-      console.log(`error removing ${this.schema} error`, err);
-      this.props.updateMessagePanel({status: 'error', details: err.message});
+      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
 
   /**
    * Updates the module's table column sort.
+   *
    * @param {Event} e
    */
   updateColSort(e) {
@@ -289,6 +282,7 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Updates the modules's table page size.
+   *
    * @param {Event} e
    */
   updatePageSize(e) {
@@ -351,6 +345,7 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Renders the module's table.
+   *
    * @returns {[*]}
    */
   renderTable() {
@@ -383,8 +378,7 @@ export default class PendingListingsModule extends Component {
       />,
       <div key={`${schema}-module-body`}>
         <SelectionControl
-          numSelected={selectedListings.length}
-          selectAll={this.selectAllListings} selectNone={this.selectNoListings}
+          numSelected={selectedListings.length} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
         />
         <PaginationLayout
           key={`pending-${schema}-pagination`} schema={`pending-${schema}`}
@@ -397,15 +391,16 @@ export default class PendingListingsModule extends Component {
           {
             pendingListings.map(listing =>
               <PendingListingRow
-                key={`${this.schema}-${listing.id}`} schema={schema} pendingListing={listing}
+                key={`${this.schema}-${listing.id}`} schema={schema} listing={listing}
                 selected={selectedListings.includes(listing.id)}
-                saveChanges={this.saveChanges} removeListing={this.removePendingListing}
+                updateListing={this.saveChanges} removeListing={this.removePendingListing}
                 selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}
               />)
           }
           </tbody>
         </table>
-        <button type={'button'} className={'button-primary'} onClick={this.publishListings} disabled={selectedListings.length === 0}>
+        <button type={'button'} className={'button-primary'} onClick={this.publishListings}
+                disabled={selectedListings.length === 0}>
           Publish {selectedListings.length || ''} {schemaLabel}
         </button>
         <button type={'button'} onClick={this.discardListings} disabled={selectedListings.length === 0}>
@@ -417,6 +412,7 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Renders the component.
+   *
    * @render
    * @returns {*}
    */

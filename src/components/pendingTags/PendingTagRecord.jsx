@@ -2,6 +2,7 @@ import React from 'react';
 import Moment from 'moment';
 
 import ListingRecordUniversal from "../ListingRecordUniversal";
+import StatusLabel from "../pendingEvents/PendingEventRecord";
 
 /**
  * PendingTagRecord is a component which displays a single pending tag's record.
@@ -18,15 +19,19 @@ export default class PendingTagRecord extends ListingRecordUniversal {
    */
   render() {
     const pendingTag = this.props.listing;
-    const tagId = pendingTag.target_id || 'N/A';
     const createdAt = Moment(pendingTag.created_at).calendar();
     const updatedAt = Moment(pendingTag.updated_at).calendar();
+    const writeStatus = this.props.writeStatus;
 
     return (
       <form id={'pending-tag-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
         <label>
-          Live Tag ID
-          <input type={'text'} value={tagId} disabled />
+          UUID
+          <input type={'text'} value={pendingTag.uuid} disabled />
+        </label>
+        <label>
+          Status
+          <StatusLabel writeStatus={writeStatus} schema={'pending-events'} />
         </label>
         <label>
           Created
