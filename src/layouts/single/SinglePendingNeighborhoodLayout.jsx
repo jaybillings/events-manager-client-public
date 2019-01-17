@@ -1,7 +1,6 @@
 import React from 'react';
 
 import SingleListingLayoutUniversal from "../../components/SingleListingLayoutUniversal";
-import OrganizerRecord from "./SingleOrganizerLayout";
 import PendingNeighborhoodRecord from "../../components/pendingNeighborhoods/PendingNeighborhoodRecord";
 
 /**

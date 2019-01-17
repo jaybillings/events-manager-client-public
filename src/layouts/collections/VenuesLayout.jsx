@@ -2,10 +2,8 @@ import React from "react";
 import {buildSortQuery} from "../../utilities";
 import app from "../../services/socketio";
 
-import Header from "../../components/common/Header";
 import VenuesTable from "../../components/venues/VenuesTable";
 import VenueAddForm from "../../components/venues/VenueAddForm";
-import MessagePanel from "../../components/common/MessagePanel";
 import ListingsLayout from "../../components/ListingsLayout";
 
 /**

@@ -3,11 +3,8 @@ import {arrayUnique, buildSortQuery} from "../../utilities";
 import app from '../../services/socketio';
 import uuid from "uuid/v1";
 
-import Header from '../../components/common/Header';
-import Filters from '../../components/common/Filters';
 import EventsTable from '../../components/events/EventsTable';
 import EventAddForm from '../../components/events/EventAddForm';
-import MessagePanel from "../../components/common/MessagePanel";
 import ListingsLayout from "../../components/ListingsLayout";
 
 /**
