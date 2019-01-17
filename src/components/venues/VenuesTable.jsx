@@ -7,17 +7,14 @@ import PaginationLayout from "../common/PaginationLayout";
 
 /**
  * VenuesTable is a component that displays a table representing a collection of venues, and that table's controls.
- *
  * @note This is a stateless module that should only render. Data manipulation should occur in the VenuesRow class
  * and display should occur in the VenuesLayout class.
- *
  * @class
  * @child
  */
 export default class VenuesTable extends ListingsTable {
   /**
    * Renders the component.
-   *
    * @returns {*[]}
    */
   render() {

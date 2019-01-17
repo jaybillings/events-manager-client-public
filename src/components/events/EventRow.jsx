@@ -9,14 +9,12 @@ import "../../styles/toggle.css";
 
 /**
  * EventRow is a component which displays a single row for a live event table.
- *
  * @class
  * @child
  */
 export default class EventRow extends ListingRow {
   /**
    * The component's constructor.
-   *
    * @constructor
    * @param {object} props
    */
@@ -28,13 +26,14 @@ export default class EventRow extends ListingRow {
     const orgUUID = typeof this.props.org === 'undefined' ? '' : this.props.org.uuid;
 
     this.state = {
-      eventName: event.name, eventStart: event.start_date, eventEnd: event.end_date,
+      listingName: event.name, eventStart: event.start_date, eventEnd: event.end_date,
       eventVenue: venueUUID, eventOrg: orgUUID, is_published: false, editable: false
     };
   }
 
   /**
-   * Runs once the component mounts. Checks the live status of the listing.
+   * Runs once the component mounts. Checks the live status of the event.
+   * @override
    */
   componentDidMount() {
     this.props.checkForLive(this.props.listing.id).then(results => {
@@ -46,10 +45,12 @@ export default class EventRow extends ListingRow {
 
   /**
    * Handles changes to input block by saving the data as a state parameter.
-   *
+   * @override
    * @param {Event} e
    */
   handleInputChange(e) {
+    if (!e.target.name) return;
+
     if (e.target.name === 'is_published') {
       this.setState(prevState => ({is_published: !prevState.is_published}));
     } else {
@@ -59,7 +60,8 @@ export default class EventRow extends ListingRow {
 
   /**
    * Handles the save button click by parsing new data and triggering a function to update the event.
-   *
+   * @override
+   * @override
    * @param {Event} e
    */
   handleSaveClick(e) {
@@ -67,7 +69,7 @@ export default class EventRow extends ListingRow {
 
     const newData = {
       uuid: this.props.listing.uuid,
-      name: this.state.eventName,
+      name: this.state.listingName,
       start_date: Moment(this.state.eventStart).valueOf(),
       end_date: Moment(this.state.eventStart).valueOf(),
       venue_uuid: this.state.eventVenue,
@@ -82,13 +84,13 @@ export default class EventRow extends ListingRow {
   /**
    * Renders the component.
    * @note The render has two different paths depending on whether the row can be edited.
-   *
+   * @override
    * @render
    * @returns {*}
    */
   render() {
     const id = this.props.listing.id;
-    const name = this.state.eventName;
+    const name = this.state.listingName;
     const venues = this.props.venues;
     const orgs = this.props.orgs;
     const isPublished = this.state.is_published;
@@ -108,7 +110,7 @@ export default class EventRow extends ListingRow {
             <button type={'submit'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
-          <td><input type={'text'} name={'eventName'} value={name} onChange={this.handleInputChange} /></td>
+          <td><input type={'text'} name={'listingName'} value={name} onChange={this.handleInputChange} /></td>
           <td><input type={'date'} name={'eventStart'} value={startDateVal} onChange={this.handleInputChange} /></td>
           <td><input type={'date'} name={'eventEnd'} value={endDateVal} onChange={this.handleInputChange} /></td>
           <td><select name={'eventVenue'} value={defaultVenue}

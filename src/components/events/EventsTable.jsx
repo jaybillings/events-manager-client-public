@@ -7,17 +7,14 @@ import PaginationLayout from "../common/PaginationLayout";
 
 /**
  * EventsTable is a component that displays a table representing a collection of events, and that table's controls.
- *
  * @note This is a stateless module that should only render. Data manipulation should occur in the EventsRow class
  * and display should occur in the EventsLayout class.
- *
  * @class
  * @child
  */
 export default class EventsTable extends ListingsTable {
   /**
    * Renders the component.
-   *
    * @returns {*[]}
    */
   render() {

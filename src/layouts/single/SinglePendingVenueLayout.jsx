@@ -1,127 +1,117 @@
-import React, {Component} from 'react';
-import {Redirect} from 'react-router';
+import React from 'react';
 import app from "../../services/socketio";
 
-import Header from "../../components/common/Header";
 import PendingVenueRecord from "../../components/pendingVenues/PendingVenueRecord";
-import MessagePanel from "../../components/common/MessagePanel";
+import SingleListingLayoutUniversal from "../../components/SingleListingLayoutUniversal";
 
-export default class SinglePendingVenueLayout extends Component {
+import {uniqueListingsOnly} from "../../utilities";
+
+/**
+ * SinglePendingVenueLayout is a component which lays out a single pending venue page.
+ * @class
+ * @child
+ */
+export default class SinglePendingVenueLayout extends SingleListingLayoutUniversal {
+  /**
+   * The class's constructor.
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
-    super(props);
+    super(props, 'pending-venues');
 
-    this.state = {
-      messages: [], messagePanelVisible: false,
-      pendingVenue: {}, venueLoaded: false, hoods: [], hoodsLoaded: false,
-      hasDeleted: false, notFound: false
-    };
+    Object.assign(this.state, {hoods: [], hoodsLoaded: false});
 
-    this.pendingVenuesService = app.service('pending-venues');
     this.hoodsService = app.service('neighborhoods');
+    this.pendingHoodsService = app.service('pending-neighborhoods');
 
-    this.fetchAllData = this.fetchAllData.bind(this);
-    this.renderRecord = this.renderRecord.bind(this);
-    this.deleteVenue = this.deleteVenue.bind(this);
-    this.saveVenue = this.saveVenue.bind(this);
-    this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
-    this.updateMessagePanel = this.updateMessagePanel.bind(this);
+    this.fetchHoods = this.fetchHoods.bind(this);
+    this.fetchPendingHoods = this.fetchPendingHoods.bind(this);
   }
 
+  /**
+   * Runs once the component mounts. Registers data service listeners.
+   * @override
+   */
   componentDidMount() {
-    this.fetchAllData();
+    super.componentDidMount();
 
-    this.setState({listingLoaded: false});
+    this.hoodsService
+      .on('created', this.fetchHoods)
+      .on('patched', this.fetchHoods)
+      .on('updated', this.fetchHoods)
+      .on('removed', this.fetchHoods);
 
-    // Register listeners
-    this.pendingVenuesService
-      .on('patched', message => {
-        this.setState({pendingVenue: message, listingLoaded: true});
-        this.updateMessagePanel({status: 'success', details: 'Changes saved'});
-      })
-      .on('removed', () => {
-        this.setState({hasDeleted: true});
-      })
-      .on('error', () => console.log("Error handler triggered. Should post to messagePanel."));
+    this.pendingHoodsService
+      .on('created', this.fetchPendingHoods)
+      .on('patched', this.fetchPendingHoods)
+      .on('updated', this.fetchPendingHoods)
+      .on('removed', this.fetchPendingHoods);
   }
 
+  /**
+   * Runs before the component unmounts. Unregisters data service listeners.
+   * @override
+   */
   componentWillUnmount() {
-    this.pendingVenuesService
+    super.componentWillUnmount();
+
+    this.hoodsService
+      .removeAllListeners('created')
+      .removeAllListeners('updated')
       .removeAllListeners('patched')
-      .removeAllListeners('removed')
-      .removeAllListeners('error');
+      .removeAllListeners('removed');
+
+    this.pendingHoodsService
+      .removeAllListeners('created')
+      .removeAllListeners('updated')
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
   }
 
+  /**
+   * Fetches all data required for the page.
+   * @override
+   */
   fetchAllData() {
-    const id = this.props.match.params.id;
+    this.fetchListing();
+    this.fetchHoods();
+    this.fetchPendingHoods();
+  }
 
-    this.pendingVenuesService.get(id).then(message => {
-      this.setState({pendingVenue: message, listingLoaded: true});
-    }, message => {
-      console.log('error', message);
-      this.setState({notFound: true});
-    });
-
-    this.hoodsService.find({query: {$sort: {name: 1}}}).then(message => {
+  /**
+   * Fetches published neighborhoods.
+   */
+  fetchHoods() {
+    this.hoodsService.find({query: this.defaultQuery}).then(message => {
       this.setState({hoods: message.data, hoodsLoaded: true});
-    })
-  }
-
-  deleteVenue(id) {
-    this.pendingVenuesService.remove(id).then(this.setState({hasDeleted: true}));
-  }
-
-  saveVenue(id, newData) {
-    this.pendingVenuesService.patch(id, newData).then(message => {
-      console.log('patch', message);
-    }, err => {
-      console.log('error', err);
-      this.updateMessagePanel(err);
     });
   }
 
-  updateMessagePanel(msg) {
-    const messageList = this.state.messages;
-    this.setState({messages: messageList.concat([msg]), messagePanelVisible: true});
+  /**
+   * Fetches pending neighborhoods.
+   */
+  fetchPendingHoods() {
+    this.pendingHoodsService.find({query: this.defaultQuery}).then(message => {
+      this.setState({pendingHoods: message.data, pendingHoodsLoaded: true});
+    });
   }
 
-  dismissMessagePanel() {
-    this.setState({messages: [], messagePanelVisible: false});
-  }
-
+  /**
+   * Renders the pending venue record.
+   * @override
+   * @returns {*}
+   */
   renderRecord() {
-    if (!(this.state.venueLoaded && this.state.hoodsLoaded)) {
+    if (!(this.state.listingLoaded && this.state.hoodsLoaded && this.state.pendingHoodsLoaded)) {
       return <p>Data is loading... Please be patient...</p>
     }
 
+    const uniqueHoods = uniqueListingsOnly(this.state.hoods, this.state.pendingHoods);
+
     return <PendingVenueRecord
-      pendingVenue={this.state.pendingVenue} hoods={this.state.hoods} saveVenue={this.saveVenue}
-      deleteVenue={this.deleteVenue}
-    />
-  }
-
-  render() {
-    if (this.state.notFound) {
-      return <Redirect to={'/404'} />
-    }
-
-    if (this.state.hasDeleted) {
-      return <Redirect to={`/import`} />
-    }
-
-    const showMessagePanel = this.state.messagePanelVisible;
-    const messages = this.state.messages;
-    const name = this.state.pendingVenue.name;
-
-    return (
-      <div className={'container'}>
-        <Header />
-        <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
-        <div className={'block-warning'}
-             title={'Caution: This venue is pending. It must be pushed live before it is visible on the site.'}>
-          <h2>{name}</h2>
-        </div>
-        {this.renderRecord()}
-      </div>
-    );
+      listing={this.state.listing} hoods={uniqueHoods}
+      updateListing={this.updateListing} deleteListing={this.deleteListing} queryForExisting={this.queryForExisting}
+    />;
   }
 }

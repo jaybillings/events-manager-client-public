@@ -8,14 +8,12 @@ import StatusLabel from "../common/StatusLabel";
 
 /**
  * PendingEventRow is a component which displays a single row for a pending event table.
- *
  * @class
  * @child
  */
 export default class PendingEventRow extends PendingListingRow {
   /**
    * The component's constructor.
-   *
    * @param {object} props
    */
   constructor(props) {
@@ -29,7 +27,7 @@ export default class PendingEventRow extends PendingListingRow {
 
   /**
    * Handles the save button click by parsing new data and triggering a function to update the pending event.
-   *
+   * @override
    * @param {Event} e
    */
   handleSaveClick(e) {
@@ -43,15 +41,14 @@ export default class PendingEventRow extends PendingListingRow {
       org_uuid: this.orgList.current.value
     };
 
-    this.props.updateListing(this.props.listing.id, newData).then(result => {
-      this.checkWriteStatus(result);
+    this.props.updateListing(this.props.listing.id, newData).then(() => {
+      this.checkWriteStatus();
       this.setState({editable: false});
     });
   }
 
   /**
    * Renders the component.
-   *
    * @note The render has two different paths depending on whether the row can be edited.
    * @render
    * @returns {*}
@@ -60,7 +57,7 @@ export default class PendingEventRow extends PendingListingRow {
     const pendingListing = this.props.listing;
     const createdAt = Moment(pendingListing.created_at).calendar();
     const selected = this.props.selected;
-    const writeStatus = this.state.write_status;
+    const writeStatus = this.state.writeStatus;
     const selectClass = selected ? ' is-selected' : '';
 
     const venues = this.props.venues;

@@ -4,8 +4,7 @@ import {makeTitleCase} from "../utilities";
 import '../styles/add-form.css';
 
 /**
- * ListingAddForm is a generic component that displays a form for adding new listings.
- *
+ * ListingAddForm is a generic component which displays a form for adding new listings.
  * @parent
  * @class
  */
@@ -48,6 +47,7 @@ export default class ListingAddForm extends Component {
   /**
    * Renders the component.
    *
+   * @override
    * @render
    * @returns {*}
    */

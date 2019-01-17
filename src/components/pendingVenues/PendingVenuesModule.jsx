@@ -10,14 +10,12 @@ import SelectionControl from "../common/SelectionControl";
 
 /**
  * PendingVenuesModule is a component which displays pending venues as a module within a layout.
- *
  * @class
  * @child
  */
 export default class PendingVenuesModule extends PendingListingsModule {
   /**
    * The class's constructor.
-   *
    * @constructor
    * @param {object} props
    */
@@ -36,7 +34,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
   }
 
   /**
-   * Runs once the component is mounted. Fetches all data and registers listeners.
+   * Runs once the component is mounted. Fetches all data and registers data service listeners.
+   * @override
    */
   componentDidMount() {
     this.fetchAllData();
@@ -82,7 +81,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
   }
 
   /**
-   * Runs before the component unmounts. Removes listeners.
+   * Runs before the component unmounts. Removes data service listeners.
+   * @override
    */
   componentWillUnmount() {
     const services = [
@@ -102,6 +102,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
 
   /**
    * Fetches all data for the page.
+   * @override
    */
   fetchAllData() {
     this.fetchPendingListings();
@@ -129,7 +130,6 @@ export default class PendingVenuesModule extends PendingListingsModule {
 
   /**
    * Renders the table of listings.
-   *
    * @override
    * @returns {*}
    */
@@ -197,22 +197,5 @@ export default class PendingVenuesModule extends PendingListingsModule {
         </button>
       </div>
     ])
-  }
-
-  /**
-   * Renders the component.
-   *
-   * @render
-   * @returns {*}
-   */
-  render() {
-    const visibility = this.state.moduleVisible ? 'visible' : 'hidden';
-
-    return (
-      <div className={'schema-module'} data-visibility={visibility}>
-        <h3>Venues</h3>
-        {this.renderTable()}
-      </div>
-    );
   }
 }

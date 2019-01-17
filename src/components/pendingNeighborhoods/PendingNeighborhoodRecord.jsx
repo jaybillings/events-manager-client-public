@@ -6,14 +6,12 @@ import StatusLabel from "../common/StatusLabel";
 
 /**
  * PendingNeighborhoodRecord is a component which displays a single pending neighborhood's record.
- *
  * @class
  * @child
  */
 export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
   /**
    * Renders the component.
-   *
    * @render
    * @returns {*}
    */

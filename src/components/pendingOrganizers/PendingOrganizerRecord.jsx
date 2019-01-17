@@ -6,14 +6,12 @@ import StatusLabel from "../pendingEvents/PendingEventRecord";
 
 /**
  * PendingOrganizerRecord is a component which displays a single pending organizer's record.
- *
  * @class
  * @child
  */
 export default class PendingOrganizerRecord extends ListingRecordUniversal {
   /**
    * The class's constructor.
-   *
    * @constructor
    * @param {object} props
    */
@@ -26,8 +24,15 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
   }
 
   /**
+   * Runs when the component mounts. Checks the event's write status.
+   * @override
+   */
+  componentDidMount() {
+    this.checkWriteStatus();
+  }
+
+  /**
    * Handles the submit action by parsing new data and calling a function to create a new pending organizer.
-   *
    * @override
    * @param {Event} e
    */
@@ -43,12 +48,13 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
     this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value.trim());
     this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value.trim());
 
-    this.props.updateListing(newData);
+    this.props.updateListing(newData).then(() => {
+      this.checkWriteStatus();
+    });
   }
 
   /**
    * Renders the component.
-   *
    * @render
    * @returns {*}
    */
@@ -56,7 +62,7 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
     const pendingOrg = this.props.listing;
     const createdAt = Moment(pendingOrg.created_at).calendar();
     const updatedAt = Moment(pendingOrg.updated_at).calendar();
-    const writeStatus = this.props.writeStatus;
+    const writeStatus = this.state.writeStatus;
 
     return (
       <form id={'pending-org-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>

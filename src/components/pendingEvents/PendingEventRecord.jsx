@@ -9,14 +9,12 @@ import '../../styles/toggle.css';
 
 /**
  * PendingEventRecord is a component which displays a single pending event's record.
- *
  * @class
  * @child
  */
 export default class PendingEventRecord extends ListingRecordUniversal {
   /**
    * The class's constructor.
-   *
    * @constructor
    * @param {object} props
    */
@@ -40,9 +38,16 @@ export default class PendingEventRecord extends ListingRecordUniversal {
   }
 
   /**
+   * Runs when the component mounts. Checks the event's write status.
+   * @override
+   */
+  componentDidMount() {
+    this.checkWriteStatus();
+  }
+
+  /**
    * Handles the submit action by parsing new data and calling a function to create a new pending organizer. Also
    * modifies associations between the pending event and its tags.
-   *
    * @override
    * @param {Event} e
    */
@@ -50,41 +55,48 @@ export default class PendingEventRecord extends ListingRecordUniversal {
     e.preventDefault();
 
     const newData = {
-      name: this.nameInput.current.value.trim(),
+      name: this.nameInput.current.value,
       start_date: Moment(this.startInput.current.value).valueOf(),
       end_date: Moment(this.endInput.current.value).valueOf(),
       venue_id: this.venueInput.current.value,
       org_id: this.orgInput.current.value,
-      description: this.descInput.current.value.trim(),
+      description: this.descInput.current.value,
       flag_ongoing: this.ongoingInput.current.checked
     };
+
+    // Add non-required only if it has changed
+    this.emailInput.current.value !== '' && (newData.email = this.emailInput.current.value);
+    this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value);
+    this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value);
+    this.hoursInput.current.value !== '' && (newData.hours = this.hoursInput.current.value);
+    this.ticketUrlInput.current.value !== '' && (newData.ticket_url = this.ticketUrlInput.current.value);
+    this.ticketPhoneInput.current.value !== '' && (newData.ticket_phone = this.ticketPhoneInput.current.value);
+    this.ticketPricesInput.current.value !== '' && (newData.ticket_prices = this.ticketPricesInput.current.value);
+
+    // Tag data
     let tagsToSave = [], tagsToRemove = [];
     let checkedBoxes = document.querySelectorAll('.js-checkbox:checked');
     let uncheckedBoxes = document.querySelectorAll('.js-checkbox:not(:checked)');
 
-    // Add non-required only if it has changed
-    this.emailInput.current.value !== '' && (newData.email = this.emailInput.current.value.trim());
-    this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value.trim());
-    this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value.trim());
-    this.hoursInput.current.value !== '' && (newData.hours = this.hoursInput.current.value.trim());
-    this.ticketUrlInput.current.value !== '' && (newData.ticket_url = this.ticketUrlInput.current.value.trim());
-    this.ticketPhoneInput.current.value !== '' && (newData.ticket_phone = this.ticketPhoneInput.current.value.trim());
-    this.ticketPricesInput.current.value !== '' && (newData.ticket_prices = this.ticketPricesInput.current.value.trim());
-
-    // Tag data
     checkedBoxes.forEach(input => {
       if (!this.props.tagsForListing.includes(parseInt(input.value, 10))) {
-        tagsToSave.push({pending_event_id: this.props.listing.id, tag_id: input.value});
+        tagsToSave.push({pending_event_id: this.props.listing.id, tag_uuid: input.value});
       }
     });
-    uncheckedBoxes.forEach(input => tagsToRemove.push(input.value));
+    uncheckedBoxes.forEach(input => {
+      if (this.props.tagsForListing.includes(parseInt(input.value, 10))) {
+        tagsToRemove.push(input.value)
+      }
+    });
 
-    this.props.updateListing({eventData: newData, tagsToSave: tagsToSave, tagsToRemove: tagsToRemove});
+    this.props.updateListing({eventData: newData, tagsToSave: tagsToSave, tagsToRemove: tagsToRemove}).then(message => {
+      this.checkWriteStatus();
+    });
   }
 
   /**
    * Renders the component.
-   *
+   * @override
    * @render
    * @returns {*}
    */
@@ -94,11 +106,12 @@ export default class PendingEventRecord extends ListingRecordUniversal {
     const orgs = this.props.orgs;
     const tags = this.props.tags;
     const eventTags = this.props.tagsForListing;
+    const writeStatus = this.state.writeStatus;
+
     const startDate = Moment(pendingEvent.start_date).format('YYYY-MM-DD');
     const endDate = Moment(pendingEvent.end_date).format('YYYY-MM-DD');
     const createdAt = Moment(pendingEvent.created_at).calendar();
     const updatedAt = Moment(pendingEvent.updated_at).calendar();
-    const writeStatus = this.props.writeStatus;
 
     return (
       <form id={'pending-event-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>

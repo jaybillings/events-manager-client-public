@@ -10,14 +10,12 @@ import SelectionControl from "../common/SelectionControl";
 
 /**
  * PendingEventsModule is a component which displays pending events as a module within a layout.
- *
  * @class
  * @child
  */
 export default class PendingEventsModule extends PendingListingsModule {
   /**
    * The class's constructor.
-   *
    * @constructor
    * @param {object} props
    */
@@ -48,8 +46,7 @@ export default class PendingEventsModule extends PendingListingsModule {
   }
 
   /**
-   * Runs once the component is mounted. Fetches all data and registers listeners.
-   *
+   * Runs once the component is mounted. Fetches all data and registers data service listeners.
    * @override
    */
   componentDidMount() {
@@ -72,7 +69,8 @@ export default class PendingEventsModule extends PendingListingsModule {
   }
 
   /**
-   * Runs before the component unmounts. Removes listeners.
+   * Runs before the component unmounts. Removes data service listeners.
+   * @override
    */
   componentWillUnmount() {
     super.componentWillUnmount();
@@ -95,7 +93,6 @@ export default class PendingEventsModule extends PendingListingsModule {
 
   /**
    * Fetches all data for the page.
-   *
    * @override
    */
   fetchAllData() {
@@ -144,7 +141,6 @@ export default class PendingEventsModule extends PendingListingsModule {
 
   /**
    * Determines whether a given listing may duplicate an existing listing.
-   *
    * @async
    * @override
    * @param {object} pendingListing
@@ -165,7 +161,6 @@ export default class PendingEventsModule extends PendingListingsModule {
 
   /**
    * Creates a new live event from the data of a pending event. Used when publishing listings.
-   *
    * @override
    * @param {object} pendingListing
    */
@@ -189,7 +184,6 @@ export default class PendingEventsModule extends PendingListingsModule {
 
   /**
    * Updates the matching live event with the pending event's data. Used when publishing listings.
-   *
    * @override
    * @param {object} pendingListing
    * @param {object} target
@@ -213,7 +207,6 @@ export default class PendingEventsModule extends PendingListingsModule {
 
   /**
    * Removes a given pending listing from the database.
-   *
    * @override
    * @param {int} id
    */
@@ -227,7 +220,6 @@ export default class PendingEventsModule extends PendingListingsModule {
 
   /**
    * Removes all selected pending listings from the database. Used in row quick-edits.
-   *
    * @override
    */
   discardListings() {
@@ -247,7 +239,6 @@ export default class PendingEventsModule extends PendingListingsModule {
 
   /**
    * Copies pending tag associations to the matching live listing. Used when publishing.
-   *
    * @param {int} pendingId
    * @param {int} liveID
    */
@@ -286,7 +277,6 @@ export default class PendingEventsModule extends PendingListingsModule {
 
   /**
    * Removes pending tag associations.
-   *
    * @param {int} pendingID
    */
   removePendingTagAssociations(pendingID) {
@@ -302,7 +292,6 @@ export default class PendingEventsModule extends PendingListingsModule {
 
   /**
    * Registers a listing as live.
-   *
    * @param {int} eventID
    * @param {string} eventName
    */
@@ -320,7 +309,6 @@ export default class PendingEventsModule extends PendingListingsModule {
 
   /**
    * Renders the table of listings.
-   *
    * @override
    * @returns {[*]}
    */
@@ -396,22 +384,5 @@ export default class PendingEventsModule extends PendingListingsModule {
         </button>
       </div>
     ])
-  }
-
-  /**
-   * Renders the component.
-   *
-   * @render
-   * @returns {*}
-   */
-  render() {
-    const visibility = this.state.moduleVisible ? 'visible' : 'hidden';
-
-    return (
-      <div className={'schema-module'} data-visibility={visibility}>
-        <h3>Events</h3>
-        {this.renderTable()}
-      </div>
-    )
   }
 }

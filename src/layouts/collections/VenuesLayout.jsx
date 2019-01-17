@@ -8,24 +8,32 @@ import VenueAddForm from "../../components/venues/VenueAddForm";
 import MessagePanel from "../../components/common/MessagePanel";
 import ListingsLayout from "../../components/ListingsLayout";
 
+/**
+ * VenuesLayout is a component which lays out the venues collection page.
+ * @class
+ * @child
+ */
 export default class VenuesLayout extends ListingsLayout {
+  /**
+   * The class's constructor.
+   * @param {object} props
+   */
   constructor(props) {
     super(props, 'venues');
 
-    this.defaultQuery = {$sort: {name: 1}, $select: ['name', 'uuid'], $limit: 100};
-
-    this.state = {
-      listings: [], hoods: [], listingsTotal: 0, listingsLoaded: false, hoodsLoaded: false,
-      pageSize: this.defaultPageSize, currentPage: 1, sort: this.defaultTableSort,
-      messagePanelVisible: false, messages: []
-    };
+    Object.assign(this.state, {
+      hoods: [], hoodsLoaded: false
+    });
 
     this.hoodsService = app.service('neighborhoods');
 
-    this.fetchListings = this.fetchListings.bind(this);
     this.fetchHoods = this.fetchHoods.bind(this);
   }
 
+  /**
+   * Runs when the component mounts. Fetches data and registers data service listeners.
+   * @override
+   */
   componentDidMount() {
     const reloadVenues = () => {
       this.setState({currentPage: 1}, () => this.fetchListings())
@@ -62,6 +70,10 @@ export default class VenuesLayout extends ListingsLayout {
       .on('removed', () => {this.fetchHoods()});
   }
 
+  /**
+   * Runs before the component unmounts. Unregisters data service listeners.
+   * @override
+   */
   componentWillUnmount() {
     this.listingsService
       .removeAllListeners('created')
@@ -76,11 +88,18 @@ export default class VenuesLayout extends ListingsLayout {
       .removeAllListeners('removed');
   }
 
+  /**
+   * Fetches all data required for the table.
+   */
   fetchAllData() {
     this.fetchListings();
     this.fetchHoods();
   }
 
+  /**
+   * Fetches data for all published venues. Handles table page size, page skipping, and column sorting.
+   * @override
+   */
   fetchListings() {
     const sort = this.state.sort;
     const pageSize = this.state.pageSize;
@@ -97,12 +116,20 @@ export default class VenuesLayout extends ListingsLayout {
     });
   }
 
+  /**
+   * Fetches data for all published neighborhoods.
+   */
   fetchHoods() {
     this.hoodsService.find({query: this.defaultQuery}).then(message => {
       this.setState({hoods: message.data, hoodsLoaded: true});
     });
   }
 
+  /**
+   * Renders the venue collection table.
+   * @override
+   * @returns {*}
+   */
   renderTable() {
     if (!(this.state.listingsLoaded && this.state.hoodsLoaded)) {
       return <p>Data is loading... Please be patient...</p>;
@@ -127,6 +154,11 @@ export default class VenuesLayout extends ListingsLayout {
     />;
   }
 
+  /**
+   * Renders the form for adding a new venue.
+   * @override
+   * @returns {*}
+   */
   renderAddForm() {
     if (!this.state.hoodsLoaded) {
       return <p>Data is loading... Please be patient...</p>;
@@ -135,21 +167,5 @@ export default class VenuesLayout extends ListingsLayout {
     const hoods = this.state.hoods;
 
     return <VenueAddForm hoods={hoods} createListing={this.createListing} />;
-  }
-
-  render() {
-    const showMessagePanel = this.state.messagePanelVisible;
-    const messages = this.state.messages;
-
-    return (
-      <div className={'container'}>
-        <Header />
-        <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
-        <h2>All Venues</h2>
-        {this.renderTable()}
-        <h3>Add New Venue</h3>
-        {this.renderAddForm()}
-      </div>
-    );
   }
 };

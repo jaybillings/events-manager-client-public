@@ -46,7 +46,8 @@ export default class ImportLayout extends Component {
   }
 
   /**
-   * Runs after the component mounts. Registers listeners.
+   * Runs after the component mounts. Registers data service listeners.
+   * @override
    */
   componentDidMount() {
     this.importerService.on('status', message => {
@@ -55,7 +56,8 @@ export default class ImportLayout extends Component {
   }
 
   /**
-   * Runs before the component unmounts.
+   * Runs before the component unmounts. Unregisters data service listeners.
+   * @override
    */
   componentWillUnmount() {
     this.importerService.removeAllListeners('status');
@@ -63,7 +65,7 @@ export default class ImportLayout extends Component {
 
   /**
    * Handles the importing of a single CSV file containing listings of a given schema. Parameters are
-   * retrieved from from elements.
+   * retrieved from from DOM.
    *
    * @param {Event} e
    */
@@ -128,7 +130,6 @@ export default class ImportLayout extends Component {
 
   /**
    * Renders the component.
-   *
    * @render
    * @returns {*}
    */

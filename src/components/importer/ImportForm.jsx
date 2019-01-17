@@ -9,7 +9,6 @@ import '../../styles/import-form.css';
 export default class ImportForm extends Component {
   /**
    * The class's constructor.
-   *
    * @constructor
    * @param props
    */
@@ -21,7 +20,6 @@ export default class ImportForm extends Component {
 
   /**
    * Renders the schema selection dropdown.
-   *
    * @returns {*}
    */
   renderSchemaSelect() {
@@ -42,7 +40,6 @@ export default class ImportForm extends Component {
 
   /**
    * Renders the component.
-   *
    * @render
    * @returns {*}
    */

@@ -16,6 +16,7 @@ import MessagePanel from "./common/MessagePanel";
 export default class ListingsLayout extends Component {
   /**
    * The class's constructor.
+   *
    * @param props
    * @param {string} schema - The collection's schema.
    */
@@ -25,6 +26,7 @@ export default class ListingsLayout extends Component {
     this.schema = schema;
     this.defaultPageSize = 5;
     this.defaultTableSort = ['updated_at', -1];
+    this.defaultQuery = {$sort: {name: 1}, $select: ['name', 'uuid'], $limit: 100};
 
     this.state = {
       listings: [], listingsTotal: 0, listingsLoaded: false,
@@ -53,35 +55,51 @@ export default class ListingsLayout extends Component {
 
   /**
    * Runs when the component mounts. Fetches data and registers data service listeners.
+   * @override
    */
   componentDidMount() {
     const schemaSingular = this.schema.slice(0, -1);
-    const reloadData = () => { this.setState({currentPage: 1}, () => this.fetchAllData())};
+    const reloadData = () => {
+      this.setState({currentPage: 1}, () => this.fetchAllData())
+    };
 
     this.fetchAllData();
 
     // Register listeners
     this.listingsService
       .on('created', message => {
-        this.updateMessagePanel({status: 'success', details: `Created ${schemaSingular} #${message.id} - "${message.name}"`});
+        this.updateMessagePanel({
+          status: 'success',
+          details: `Created ${schemaSingular} #${message.id} - "${message.name}"`
+        });
         reloadData();
       })
       .on('updated', message => {
-        this.updateMessagePanel({status: 'success', details: `Updated ${schemaSingular} #${message.id} - "${message.name}"`});
+        this.updateMessagePanel({
+          status: 'success',
+          details: `Updated ${schemaSingular} #${message.id} - "${message.name}"`
+        });
         reloadData();
       })
       .on('patched', message => {
-        this.updateMessagePanel({status: 'success', details: `Updated ${schemaSingular} #${message.id} - "${message.name}"`});
+        this.updateMessagePanel({
+          status: 'success',
+          details: `Updated ${schemaSingular} #${message.id} - "${message.name}"`
+        });
         reloadData();
       })
       .on('removed', message => {
-        this.updateMessagePanel({status: 'success', details: `Permanently deleted ${schemaSingular} #${message.id} - "${message.name}"`});
+        this.updateMessagePanel({
+          status: 'success',
+          details: `Permanently deleted ${schemaSingular} #${message.id} - "${message.name}"`
+        });
         reloadData();
       });
   }
 
   /**
    * Runs before the component unmounts. Unregisters data service listeners.
+   * @override
    */
   componentWillUnmount() {
     this.listingsService
@@ -92,7 +110,7 @@ export default class ListingsLayout extends Component {
   }
 
   /**
-   * Fetches all data required for the page.
+   * Fetches all data required for the table.
    * @note This function pattern exists to cut down on extraneous requests for components with linked schema.
    */
   fetchAllData() {
@@ -100,7 +118,8 @@ export default class ListingsLayout extends Component {
   }
 
   /**
-   * Fetches data for all the published listings for a given schema. Handles filtering, sorting, and page skipping.
+   * Fetches data for all the published listings for a given schema. Handles table page size, page skipping,
+   * and column sorting.
    */
   fetchListings() {
     this.listingsService.find({
@@ -112,21 +131,21 @@ export default class ListingsLayout extends Component {
     }).then(message => {
       this.setState({listings: message.data, listingsTotal: message.total, listingsLoaded: true});
     }, err => {
-      console.log('could not fetch listings', err);
+      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      this.setState({listingsLoaded: false});
     });
   }
 
   /**
    * Creates a new listing by generating a new UUID and calling the service's CREATE method with passed-in data.
    *
-   * @param {object} newData - Data for the new listing.
+   * @param {object} listingData - Data for the new listing.
    * @returns {Promise}
    */
-  createListing(newData) {
-    // Give the new listing a UUID
-    newData.uuid = uuid();
+  createListing(listingData) {
+    listingData.uuid = uuid();
 
-    return this.listingsService.create(newData).catch(err => {
+    return this.listingsService.create(listingData).catch(err => {
       this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
@@ -135,16 +154,17 @@ export default class ListingsLayout extends Component {
    * Updates a given listing by calling the service's PATCH method with passed-in data.
    *
    * @param {int} id
-   * @param {object} newData - The listing's new data.
+   * @param {object} newData
+   * @returns {Promise}
    */
   updateListing(id, newData) {
-    this.listingsService.patch(id, newData).catch(err => {
+    return this.listingsService.patch(id, newData).catch(err => {
       this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
 
   /**
-   * Delete's a given listing by calling the service's REMOVE method.
+   * Deletes a given listing by calling the service's REMOVE method.
    *
    * @param {int} id
    */
@@ -243,6 +263,7 @@ export default class ListingsLayout extends Component {
   /**
    * Renders the component.
    *
+   * @override
    * @render
    * @returns {*}
    */

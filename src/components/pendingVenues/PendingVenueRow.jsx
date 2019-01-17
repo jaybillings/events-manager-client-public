@@ -8,14 +8,12 @@ import StatusLabel from "../common/StatusLabel";
 
 /**
  * PendingVenueRow is a component which displays a single row from a pending venues table.
- *
  * @class
  * @child
  */
 export default class PendingVenueRow extends PendingListingRow {
   /**
    * The component's constructor.
-   *
    * @constructor
    * @param {object} props
    */
@@ -27,20 +25,18 @@ export default class PendingVenueRow extends PendingListingRow {
 
   /**
    * Handles the save button click by parsing new data and triggering a function to update the venue.
-   *
    * @override
    * @param {Event} e
    */
   handleSaveClick(e) {
     e.stopPropagation();
 
-    const id = this.props.pendingListing.id;
     const newData = {
       name: this.nameInput.current.value.trim(),
       hood_uuid: this.hoodList.current.value
     };
 
-    this.props.updateListing(id, newData).then(result => {
+    this.props.updateListing(this.props.listing.id, newData).then(result => {
       this.checkWriteStatus(result);
       this.setState({editable: false});
     });
@@ -48,9 +44,7 @@ export default class PendingVenueRow extends PendingListingRow {
 
   /**
    * Renders the component.
-   *
    * @note The render has two different paths depending on whether the row can be edited.
-   *
    * @override
    * @render
    * @returns {*}
@@ -59,7 +53,7 @@ export default class PendingVenueRow extends PendingListingRow {
     const pendingListing = this.props.listing;
     const createdAt = Moment(pendingListing.created_at).calendar();
     const selected = this.props.selected;
-    const writeStatus = this.state.write_status;
+    const writeStatus = this.state.writeStatus;
     const selectClass = selected ? ' is-selected' : '';
     const hoods = this.props.hoods;
 

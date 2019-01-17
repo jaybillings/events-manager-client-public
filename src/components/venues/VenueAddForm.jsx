@@ -4,8 +4,7 @@ import {renderOptionList} from '../../utilities';
 import ListingAddForm from "../ListingAddForm";
 
 /**
- * VenueAddForm is a component that displays a form for adding new venues.
- *
+ * VenueAddForm is a component which displays a form for adding new venues.
  * @class
  * @child
  */
@@ -33,6 +32,7 @@ export default class VenueAddForm extends ListingAddForm {
   /**
    * Handles the submit event by parsing data and calling a function to create a new venue.
    *
+   * @override
    * @param {Event} e
    */
   handleSubmit(e) {
@@ -57,6 +57,7 @@ export default class VenueAddForm extends ListingAddForm {
 
   /**
    * Clears the form by setting all fields to a default or empty value.
+   * @override
    */
   clearForm() {
     this.nameInput.current.value = '';
@@ -74,6 +75,7 @@ export default class VenueAddForm extends ListingAddForm {
   /**
    * Renders the component.
    *
+   * @override
    * @render
    * @returns {*}
    */

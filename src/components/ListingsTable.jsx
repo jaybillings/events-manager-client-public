@@ -9,17 +9,14 @@ import '../styles/schema-table.css';
 /**
  * ListingsTable is a generic component that displays a table representing a collection of listings, and that table's
  * controls.
- *
  * @note This is a stateless module. Data manipulation should occur in the *Row class and display should occur in the
  * *Layout class.
- *
  * @class
  * @parent
  */
 export default class ListingsTable extends Component {
   /**
    * Renders the component.
-   *
    * @returns {*[]}
    */
   render() {
@@ -29,12 +26,12 @@ export default class ListingsTable extends Component {
       ['updated_at', 'Last Modified']
     ]);
 
-    const listings = this.props.listings;
     const schema = this.props.schema;
+    const listings = this.props.listings;
+    const listingsTotal = this.props.listingsTotal;
 
     const pageSize = this.props.pageSize;
     const currentPage = this.props.currentPage;
-    const listingsTotal = this.props.listingsTotal;
     const sort = this.props.sort;
 
     return ([

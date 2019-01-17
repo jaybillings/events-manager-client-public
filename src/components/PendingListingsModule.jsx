@@ -12,14 +12,12 @@ import '../styles/schema-table.css';
 
 /**
  * PendingListingsModule is a generic component to display pending listings as a module within a layout.
- *
  * @class
  * @parent
  */
 export default class PendingListingsModule extends Component {
   /**
    * The class's constructor.
-   *
    * @constructor
    * @param {object} props
    * @param {string} schema
@@ -63,7 +61,8 @@ export default class PendingListingsModule extends Component {
   }
 
   /**
-   * Code to run one component is mounted. Fetches all data and registers listeners.
+   * Code to run one component is mounted. Fetches all data and registers data serivce listeners.
+   * @override
    */
   componentDidMount() {
     const schemaSingular = this.schema.slice(0, -1);
@@ -100,7 +99,8 @@ export default class PendingListingsModule extends Component {
   }
 
   /**
-   * Code to run before component is unmounted.
+   * Runs before component is unmounted. Unregisters data service listeners.
+   * @override
    */
   componentWillUnmount() {
     /** @var {Function} this.pendingListingsService.removeAllListeners */
@@ -113,13 +113,15 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Fetches all data for the module.
+   * @note This architecture exists for listings with linked schema, so the app can be judicious about what it
+   * fetches.
    */
   fetchAllData() {
     this.fetchPendingListings();
   }
 
   /**
-   * Fetches the main schema's data. What is fetched is controlled by query parameters set by the table controls.
+   * Fetches the main schema's data. Handles table page size, page skipping, and column sorting.
    */
   fetchPendingListings() {
     this.pendingListingsService.find({
@@ -138,9 +140,9 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Queries the live service for duplicate listings.
-   *
+   * @async
    * @param {object} pendingListing
-   * @returns {Promise<*>}
+   * @returns {Promise<>}
    */
   queryForExisting(pendingListing) {
     return this.listingsService.find({
@@ -153,9 +155,9 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Queries the live service for listings with the same uuid.
-   *
+   * @async
    * @param {object} pendingListing
-   * @returns {Promise<*>}
+   * @returns {Promise<>}
    */
   queryForExact(pendingListing) {
     return this.listingsService.find({query: {uuid: pendingListing.uuid}});
@@ -163,7 +165,6 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Creates a new listing from the data of a pending listing. Used when publishing listings.
-   *
    * @param {object} pendingListing
    */
   createLiveListing(pendingListing) {
@@ -183,9 +184,8 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Updates a live schema listing with the pending schema's data. Used when publishing listings.
-   *
    * @param {object} pendingListing
-   * @param {object} target
+   * @param {object} target - The listing to update.
    */
   updateLiveListing(pendingListing, target) {
     const id = pendingListing.id;
@@ -247,19 +247,18 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Saves changes to main schema listing. Used in row quick-edits.
-   *
+   * @async
    * @param {int} id
    * @param {object} newData
-   * @returns {Promise<*>}
+   * @returns {Promise}
    */
-  async saveChanges(id, newData) {
+  saveChanges(id, newData) {
     /** @var {Function} this.pendingListingsService.patch */
     return this.pendingListingsService.patch(id, newData);
   }
 
   /**
    * Removes single main schema listing from the database.
-   *
    * @param {int} id
    */
   removePendingListing(id) {
@@ -272,7 +271,6 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Updates the module's table column sort.
-   *
    * @param {Event} e
    */
   updateColSort(e) {
@@ -282,7 +280,6 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Updates the modules's table page size.
-   *
    * @param {Event} e
    */
   updatePageSize(e) {
@@ -292,7 +289,6 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Updates the module's current table page.
-   *
    * @param {string} page
    */
   updateCurrentPage(page) {
@@ -308,9 +304,8 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Registers a listing as selected.
-   *
    * @param {int} id
-   * @param {bool} shouldAdd
+   * @param {boolean} shouldAdd - True = select / False = deselect
    */
   handleListingSelect(id, shouldAdd) {
     const selections = this.state.selectedListings;
@@ -345,17 +340,13 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Renders the module's table.
-   *
    * @returns {[*]}
    */
   renderTable() {
     const pendingListingsTotal = this.state.pendingListingsTotal;
 
-    if (!this.state.listingsLoaded) {
-      return <p>Data is loading... Please be patient...</p>;
-    } else if (pendingListingsTotal === 0) {
-      return <p>No pending {this.schema} to list.</p>
-    }
+    if (!this.state.listingsLoaded) return <p>Data is loading... Please be patient...</p>;
+    if (pendingListingsTotal === 0) return <p>No pending {this.schema} to list.</p>;
 
     const pendingListings = this.state.pendingListings;
     const titleMap = new Map([
@@ -412,7 +403,7 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Renders the component.
-   *
+   * @override
    * @render
    * @returns {*}
    */

@@ -6,14 +6,12 @@ import StatusLabel from "../pendingEvents/PendingEventRecord";
 
 /**
  * PendingTagRecord is a component which displays a single pending tag's record.
- *
  * @class
  * @child
  */
 export default class PendingTagRecord extends ListingRecordUniversal {
   /**
    * Renders the component.
-   *
    * @render
    * @returns {*}
    */

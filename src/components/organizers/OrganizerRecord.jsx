@@ -5,14 +5,12 @@ import ListingRecordUniversal from "../ListingRecordUniversal";
 
 /**
  * OrganizerRecord is a component which displays a single organizer's records.
- *
  * @class
  * @child
  */
 export default class OrganizerRecord extends ListingRecordUniversal {
   /**
    * The class's constructor.
-   *
    * @constructor
    * @param {object} props
    */
@@ -26,7 +24,7 @@ export default class OrganizerRecord extends ListingRecordUniversal {
 
   /**
    * Handles the submit action by parsing new data and calling a function to create a new organizer.
-   *
+   * @override
    * @param {Event} e
    */
   handleSubmit(e) {
@@ -44,7 +42,7 @@ export default class OrganizerRecord extends ListingRecordUniversal {
 
   /**
    * Renders the component.
-   *
+   * @override
    * @render
    * @returns {*}
    */

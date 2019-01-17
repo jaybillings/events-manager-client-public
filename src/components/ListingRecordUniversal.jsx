@@ -6,29 +6,59 @@ import "../styles/schema-record.css";
 
 /**
  * ListingRecordUniversal is a generic component which displays a single listing record.
- *
  * @class
  * @parent
  */
 export default class ListingRecordUniversal extends Component {
   /**
    * The class's constructor.
-   *
    * @constructor
    * @param {object} props
    */
   constructor(props) {
     super(props);
 
+    this.state({writeStatus: ''});
+
     this.nameInput = React.createRef();
 
+    this.checkWriteStatus = this.checkWriteStatus.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
   }
 
   /**
-   * Handles the submit action by parsing new data and calling a function to create a new listing.
+   * Checks the publish/write status of a single listing.
    *
+   * checkWriteStatus checks the status of a single listing -- what will potentially happen if it's published. Possible
+   * results are:
+   *   - new (will make a new listing)
+   *   - update (will update a preexisting listing)
+   *   - duplicate (will make a new listing that might duplicate an existing listing)
+   *
+   *   @returns {string} writeStatus
+   */
+  checkWriteStatus() {
+    this.props.queryForExisting(this.state.listing).then(message => {
+      let writeStatus;
+
+      if (!message.total) {
+        writeStatus = 'new';
+      } else {
+        const uuids = message.data.map(row => row.uuid);
+        if (uuids.includes(this.props.listing.uuid)) {
+          writeStatus = 'update';
+        } else {
+          writeStatus = 'duplicate';
+        }
+      }
+
+      this.state({writeStatus: writeStatus});
+    });
+  }
+
+  /**
+   * Handles the submit action by parsing new data and calling a function to create a new listing.
    * @param {Event} e
    */
   handleSubmit(e) {
@@ -47,6 +77,7 @@ export default class ListingRecordUniversal extends Component {
   /**
    * Renders the component.
    *
+   * @override
    * @render
    * @returns {*}
    */

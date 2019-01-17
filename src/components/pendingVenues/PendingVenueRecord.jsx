@@ -7,14 +7,12 @@ import StatusLabel from "../pendingEvents/PendingEventRecord";
 
 /**
  * PendingVenueRecord is a component which displays a single pending venue's record.
- *
  * @class
  * @child
  */
 export default class PendingVenueRecord extends ListingRecordUniversal {
   /**
    * The class's constructor.
-   *
    * @constructor
    * @param {object} props
    */
@@ -34,7 +32,6 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
 
   /**
    * Handles the submit action by parsing new data and calling a function to create a new pending venue.
-   *
    * @override
    * @param {Event} e
    */

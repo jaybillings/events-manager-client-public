@@ -6,15 +6,13 @@ import {renderOptionList} from "../../utilities";
 import ListingRow from "../ListingRow";
 
 /**
- * VenueROw is a component which displays a single row for a live venue table.
- *
+ * VenueRow is a component which displays a single row for a live venue table.
  * @class
  * @child
  */
 export default class VenueRow extends ListingRow {
   /**
    * The component's constructor.
-   *
    * @constructor
    * @param {object} props
    */
@@ -23,12 +21,12 @@ export default class VenueRow extends ListingRow {
 
     const hoodUUID = typeof this.props.hood === 'undefined' ? '' : this.props.hood.uuid;
 
-    this.state = {venueName: this.props.listing.name, venueHood: hoodUUID, editable: false}
+    Object.assign(this.state, { venueHood: hoodUUID });
   }
 
   /**
    * Handles the save button click by parsing new data and triggering a function to update the event.
-   *
+   * @override
    * @param {Event} e
    */
   handleSaveClick(e) {
@@ -36,7 +34,7 @@ export default class VenueRow extends ListingRow {
 
     const newData = {
       uuid: this.props.listing.uuid,
-      name: this.state.venueName,
+      name: this.state.listingName,
       hood_uuid: this.state.venueHood
     };
 
@@ -48,14 +46,15 @@ export default class VenueRow extends ListingRow {
   /**
    * Renders the component.
    * @note The render has two different paths depending on whether the row can be edited.
-   *
+   * @override
    * @render
    * @returns {*}
    */
   render() {
-    const venue = this.props.listing;
+    const id = this.props.listing.id;
+    const name = this.state.listingName;
     const hoods = this.props.hoods;
-    const updatedAt = Moment(venue['updated_at']).calendar();
+    const updatedAt = Moment(this.props.listing.updated_at).calendar();
 
     const defaultHood = this.state.venueHood || this.props.hoods[0].uuid;
 
@@ -66,7 +65,7 @@ export default class VenueRow extends ListingRow {
             <button type={'button'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
-          <td><input type={'text'} name={'venueName'} value={venue.name} onChange={this.handleInputChange} /></td>
+          <td><input type={'text'} name={'listingName'} value={name} onChange={this.handleInputChange} /></td>
           <td><select name={'venueHood'} value={defaultHood}
                       onChange={this.handleInputChange}>{renderOptionList(hoods)}</select></td>
           <td>{updatedAt}</td>
@@ -83,7 +82,7 @@ export default class VenueRow extends ListingRow {
           <button type={'button'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button>
         </td>
-        <td><Link to={`/venues/${venue.id}`}>{venue.name}</Link></td>
+        <td><Link to={`/venues/${id}`}>{name}</Link></td>
         <td>{hoodNameLink}</td>
         <td>{updatedAt}</td>
       </tr>

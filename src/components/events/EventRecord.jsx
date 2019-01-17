@@ -2,20 +2,18 @@ import React from "react";
 import Moment from "moment";
 import {renderCheckboxList, renderOptionList} from "../../utilities";
 
-import "../../styles/toggle.css";
-
 import ListingRecordUniversal from "../ListingRecordUniversal";
+
+import "../../styles/toggle.css";
 
 /**
  * EventRecord is a component which displays a single event's record.
- *
  * @class
  * @child
  */
 export default class EventRecord extends ListingRecordUniversal {
   /**
    * The class's constructor.
-   *
    * @constructor
    * @param {object} props
    */
@@ -46,6 +44,7 @@ export default class EventRecord extends ListingRecordUniversal {
 
   /**
    * Runs once the component mounts. Checks for the event's publish/live status.
+   * @override
    */
   componentDidMount() {
     this.props.checkForLive().then(results => {
@@ -59,7 +58,6 @@ export default class EventRecord extends ListingRecordUniversal {
   /**
    * Handles the submit action by parsing new data and calling a function to create a new event. Also modifies
    * associations between the event and its tags.
-   *
    * @override
    * @param {Event} e
    */
@@ -73,21 +71,21 @@ export default class EventRecord extends ListingRecordUniversal {
       org_id: parseInt(this.orgInput.current.value, 10),
       start_date: Moment(this.startInput.current.value).valueOf(),
       end_date: Moment(this.endInput.current.value).valueOf(),
-      description: this.descInput.current.value || null,
-      email: this.emailInput.current.value || null,
-      url: this.urlInput.current.value || null,
-      phone: this.phoneInput.current.value || null,
-      hours: this.hoursInput.current.value || null,
-      ticket_url: this.ticketUrlInput.current.value || null,
-      ticket_phone: this.ticketPhoneInput.current.value || null,
-      ticket_prices: this.ticketPricesInput.current.value || null,
+      description: this.descInput.current.value,
+      email: this.emailInput.current.value,
+      url: this.urlInput.current.value,
+      phone: this.phoneInput.current.value,
+      hours: this.hoursInput.current.value,
+      ticket_url: this.ticketUrlInput.current.value,
+      ticket_phone: this.ticketPhoneInput.current.value,
+      ticket_prices: this.ticketPricesInput.current.value,
       flag_ongoing: this.ongoingInput.current.checked
     };
 
     // Tag Data
+    let tagsToSave = [], tagsToRemove = [];
     const checkedBoxes = document.querySelectorAll('.js-checkbox:checked');
     const uncheckedBoxes = document.querySelectorAll('.js-checkbox:not(:checked)');
-    let tagsToSave = [], tagsToRemove = [];
 
     checkedBoxes.forEach(input => {
       if (!this.props.tagsForListing.includes(parseInt(input.value, 10))) {
@@ -117,7 +115,6 @@ export default class EventRecord extends ListingRecordUniversal {
 
   /**
    * Determines whether the event should be published or dropped.
-   *
    * @returns {string}
    */
   checkPublishOrDrop() {
@@ -128,7 +125,7 @@ export default class EventRecord extends ListingRecordUniversal {
 
   /**
    * Renders the component.
-   *
+   * @override
    * @render
    * @returns {*}
    */
@@ -137,8 +134,8 @@ export default class EventRecord extends ListingRecordUniversal {
     const venues = this.props.venues;
     const orgs = this.props.orgs;
     const tags = this.props.tags;
-    const isPublished = this.state.newPublish;
     const eventTags = this.props.tagsForListing;
+    const isPublished = this.state.newPublish;
 
     const startDate = Moment(event.start_date).format('YYYY-MM-DD');
     const endDate = Moment(event.end_date).format('YYYY-MM-DD');
@@ -191,7 +188,8 @@ export default class EventRecord extends ListingRecordUniversal {
           <textarea ref={this.descInput} defaultValue={event.description} maxLength={500} required />
         </label>
         <label>
-          Tags {renderCheckboxList(tags, eventTags)}
+          Tags
+          {renderCheckboxList(tags, eventTags)}
         </label>
         <label>
           Email Address

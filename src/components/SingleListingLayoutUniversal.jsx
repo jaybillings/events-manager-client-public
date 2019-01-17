@@ -9,14 +9,12 @@ import MessagePanel from "../components/common/MessagePanel";
 
 /**
  * SingleListingLayoutUniversal is a generic component which lays out a single listing page.
- *
  * @class
  * @parent
  */
 export default class SingleListingLayoutUniversal extends Component {
   /**
    * The class's constructor.
-   *
    * @constructor
    * @param {object} props
    * @param {string} schema - The schema being laid out.
@@ -50,6 +48,7 @@ export default class SingleListingLayoutUniversal extends Component {
 
   /**
    * Runs once the component mounts. Registers data service listeners and fetches data.
+   * @override
    */
   componentDidMount() {
     this.fetchAllData();
@@ -66,6 +65,7 @@ export default class SingleListingLayoutUniversal extends Component {
 
   /**
    * Runs before the component unmounts. Unregisters data service listeners.
+   * @override
    */
   componentWillUnmount() {
     this.listingsService
@@ -75,7 +75,6 @@ export default class SingleListingLayoutUniversal extends Component {
 
   /**
    * Fetches all data required for the page.
-   *
    * @note This function pattern exists to cut down on extraneous requests for components with linked schema.
    */
   fetchAllData() {
@@ -96,7 +95,6 @@ export default class SingleListingLayoutUniversal extends Component {
 
   /**
    * Determines whether the listing may duplicate an existing listing.
-   *
    * @async
    * @returns {Promise}
    */
@@ -105,8 +103,6 @@ export default class SingleListingLayoutUniversal extends Component {
       query: {
         $or: [{uuid: this.state.listing.uuid}, {description: this.state.listing.description}, {
           name: this.state.listing.name,
-          start_date: this.state.listing.start_date,
-          end_date: this.state.listing.end_date
         }],
         $select: ['uuid']
       }
@@ -114,36 +110,7 @@ export default class SingleListingLayoutUniversal extends Component {
   }
 
   /**
-   * Checks the publish/write status of a single listing.
-   *
-   * checkWriteStatus checks the status of a single listing -- what will potentially happen if it's published. Possible
-   * results are:
-   *   - new (will make a new listing)
-   *   - update (will update a preexisting listing)
-   *   - duplicate (will make a new listing that might duplicate an existing listing)
-   */
-  checkWriteStatus() {
-    this.props.queryForExisting(this.state.listing).then(message => {
-      let writeStatus;
-
-      if (!message.total) {
-        writeStatus = 'new';
-      } else {
-        const uuids = message.data.map(row => row.uuid);
-        if (uuids.includes(this.props.listing.uuid)) {
-          writeStatus = 'update';
-        } else {
-          writeStatus = 'duplicate';
-        }
-      }
-
-      return writeStatus;
-    });
-  }
-
-  /**
    * Updates the listing's data by calling the service's PATCH method.
-   *
    * @param {object} newData
    */
   updateListing(newData) {
@@ -167,7 +134,6 @@ export default class SingleListingLayoutUniversal extends Component {
 
   /**
    * Adds a message to the message panel.
-   *
    * @param {object} newMsg
    */
   updateMessagePanel(newMsg) {
@@ -183,7 +149,7 @@ export default class SingleListingLayoutUniversal extends Component {
 
   /**
    * Renders the single listing's record.
-   *
+   * @note `queryForExisting` is only used in pending schema classes.
    * @returns {*}
    */
   renderRecord() {
@@ -200,20 +166,26 @@ export default class SingleListingLayoutUniversal extends Component {
 
   /**
    * Renders the component.
-   *
+   * @override
    * @render
    * @returns {*}
    */
   render() {
-    const schema = this.schema;
+    if (this.state.notFound) return <Redirect to={'/404'} />;
 
-    if (this.state.notFound) {
-      return <Redirect to={'/404'} />
+    let returnTarget, headerClass, headerTitle;
+
+    if (this.schema.indexOf('pending') === -1) {
+      returnTarget = 'import';
+      headerClass = 'block-warning';
+      headerTitle = 'Caution: This event is pending. It must be pushed live before it is visible on the site.';
+    } else {
+      returnTarget = this.schema;
+      headerClass = '';
+      headerTitle = '';
     }
 
-    if (this.state.hasDeleted) {
-      return <Redirect to={`/${schema}`} />
-    }
+    if (this.state.hasDeleted) return <Redirect to={`/returnTarget`} />;
 
     const showMessagePanel = this.state.messagePanelVisible;
     const messages = this.state.messages;
@@ -222,9 +194,9 @@ export default class SingleListingLayoutUniversal extends Component {
     return (
       <div className={'container'}>
         <Header />
-        <p><Link to={`/${this.schema}`}>&lt; Return to {this.schema}</Link></p>
+        <p><Link to={`/returnTarget`}>&lt; Return to {returnTarget}</Link></p>
         <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
-        <h2>{name}</h2>
+        <h2 className={headerClass} title={headerTitle}>{name}</h2>
         {this.renderRecord()}
       </div>
     );

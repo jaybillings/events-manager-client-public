@@ -6,24 +6,19 @@ import SingleListingLayoutUniversal from "../../components/SingleListingLayoutUn
 
 /**
  * SingleVenueLayout is a component which lays out a single venue page.
- *
  * @class
  * @child
  */
 export default class SingleVenueLayout extends SingleListingLayoutUniversal {
   /**
    * The class's constructor.
-   *
    * @constructor
    * @param {object} props
    */
   constructor(props) {
     super(props, 'venues');
 
-    this.state = {
-      listing: {}, listingLoaded: false, hoods: [], hoodsLoaded: false,
-      hasDeleted: false, notFound: false, messages: [], messagePanelVisible: false
-    };
+    Object.assign(this.state, {hoods: [], hoodsLoaded: false});
 
     this.hoodsService = app.service('neighborhoods');
 
@@ -32,7 +27,6 @@ export default class SingleVenueLayout extends SingleListingLayoutUniversal {
 
   /**
    * Runs once the component mounts. Registers data service listeners.
-   *
    * @override
    */
   componentDidMount() {
@@ -47,7 +41,6 @@ export default class SingleVenueLayout extends SingleListingLayoutUniversal {
 
   /**
    * Runs before the component unmounts. Unregisters data service listeners.
-   *
    * @override
    */
   componentWillUnmount() {
@@ -62,7 +55,6 @@ export default class SingleVenueLayout extends SingleListingLayoutUniversal {
 
   /**
    * Fetches all data required for the page.
-   *
    * @override
    */
   fetchAllData() {
@@ -71,7 +63,7 @@ export default class SingleVenueLayout extends SingleListingLayoutUniversal {
   }
 
   /**
-   * Fetches data for linked neighborhoods.
+   * Fetches published neighborhoods.
    */
   fetchHoods() {
     this.hoodsService.find({query: this.defaultQuery}).then(message => {
@@ -80,8 +72,8 @@ export default class SingleVenueLayout extends SingleListingLayoutUniversal {
   }
 
   /**
-   * Renders the venue's record.
-   *
+   * Renders the venue record.
+   * @override
    * @returns {*}
    */
   renderRecord() {

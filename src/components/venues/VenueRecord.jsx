@@ -6,14 +6,12 @@ import ListingRecordUniversal from "../ListingRecordUniversal";
 
 /**
  * VenueRecord is a component which displays a single venue's record.
- *
  * @class
  * @child
  */
 export default class VenueRecord extends ListingRecordUniversal {
   /**
    * The class's constructor.
-   *
    * @constructor
    * @param {object} props
    */
@@ -33,7 +31,6 @@ export default class VenueRecord extends ListingRecordUniversal {
 
   /**
    * Handles the submit action by parsing new data and calling a function to create a new venue.
-   *
    * @override
    * @param {Event} e
    */
