@@ -8,82 +8,99 @@ import VenueAddForm from "../../components/venues/VenueAddForm";
 import MessagePanel from "../../components/common/MessagePanel";
 import ListingsLayout from "../../components/ListingsLayout";
 
+/**
+ * VenuesLayout is a component which lays out the venues collection page.
+ * @class
+ * @child
+ */
 export default class VenuesLayout extends ListingsLayout {
+  /**
+   * The class's constructor.
+   * @param {object} props
+   */
   constructor(props) {
     super(props, 'venues');
 
-    this.defaultQuery = {$sort: {name: 1}, $select: ['name'], $limit: 100};
-
-    this.state = {
-      listings: [], hoods: [], listingsTotal: 0, listingsLoaded: false, hoodsLoaded: false,
-      pageSize: this.defaultPageSize, currentPage: 1, sort: this.defaultTableSort,
-      messagePanelVisible: false, messages: []
-    };
+    Object.assign(this.state, {
+      hoods: [], hoodsLoaded: false
+    });
 
     this.hoodsService = app.service('neighborhoods');
 
-    this.fetchVenues = this.fetchVenues.bind(this);
     this.fetchHoods = this.fetchHoods.bind(this);
   }
 
+  /**
+   * Runs when the component mounts. Fetches data and registers data service listeners.
+   * @override
+   */
   componentDidMount() {
+    const reloadVenues = () => {
+      this.setState({currentPage: 1}, () => this.fetchListings())
+    };
+
     this.fetchAllData();
 
     // Register listeners
     this.listingsService
       .on('created', message => {
-        console.log('venue created', message);
-        this.updateMessagePanel({status: 'success', details: `Created new venue "${message.name}"`});
-        this.setState({currentPage: 1}, () => this.fetchVenues());
+        this.updateMessagePanel({status: 'success', details: `Created venue #${message.id} - "${message.name}"`});
+        reloadVenues();
       })
       .on('patched', message => {
-        console.log('venue patched', message);
-        this.updateMessagePanel({status: 'success', details: `Updated venue "${message.name}"`});
-        this.fetchVenues();
+        this.updateMessagePanel({status: 'success', details: `Updated venue #${message.id} - "${message.name}"`});
+        reloadVenues();
+      })
+      .on('updated', message => {
+        this.updateMessagePanel({status: 'success', details: `Updated venue #${message.id} - "${message.name}"`});
+        reloadVenues();
       })
       .on('removed', message => {
-        console.log('venue removed', message);
-        this.updateMessagePanel({status: 'success', details: `Permanently deleted venue "${message.name}"`});
-        this.setState({currentPage: 1}, () => this.fetchVenues());
-      })
-      .on('error', error => {
-        console.log('venue error', error);
-        this.updateMessagePanel({status: 'error', details: error.message});
+        this.updateMessagePanel({
+          status: 'success',
+          details: `Permanently deleted venue #${message.id} - "${message.name}"`
+        });
+        reloadVenues();
       });
 
     this.hoodsService
-      .on('created', message => {
-        console.log('hood created', message);
-        this.fetchHoods();
-      })
-      .on('patched', message => {
-        console.log('hood patched', message);
-        this.fetchHoods();
-      })
-      .on('removed', message => {
-        console.log('hood removed', message);
-        this.fetchHoods();
-      });
+      .on('created', () => {this.fetchHoods()})
+      .on('updated', () => {this.fetchHoods()})
+      .on('patched', () => {this.fetchHoods()})
+      .on('removed', () => {this.fetchHoods()});
   }
 
+  /**
+   * Runs before the component unmounts. Unregisters data service listeners.
+   * @override
+   */
   componentWillUnmount() {
     this.listingsService
       .removeAllListeners('created')
+      .removeAllListeners('updated')
       .removeAllListeners('patched')
       .removeAllListeners('removed');
 
     this.hoodsService
       .removeAllListeners('created')
+      .removeAllListeners('updated')
       .removeAllListeners('patched')
       .removeAllListeners('removed');
   }
 
+  /**
+   * Fetches all data required for the table.
+   */
   fetchAllData() {
-    this.fetchVenues();
+    this.fetchListings();
     this.fetchHoods();
   }
 
-  fetchVenues() {
+  /**
+   * Fetches data for all published venues. Handles table page size, page skipping, and column sorting.
+   * @override
+   */
+  fetchListings() {
     const sort = this.state.sort;
     const pageSize = this.state.pageSize;
     const currentPage = this.state.currentPage;
@@ -99,12 +116,20 @@ export default class VenuesLayout extends ListingsLayout {
     });
   }
 
+  /**
+   * Fetches data for all published neighborhoods.
+   */
   fetchHoods() {
     this.hoodsService.find({query: this.defaultQuery}).then(message => {
       this.setState({hoods: message.data, hoodsLoaded: true});
-    })
+    });
   }
 
+  /**
+   * Renders the venue collection table.
+   * @override
+   * @returns {*}
+   */
   renderTable() {
     if (!(this.state.listingsLoaded && this.state.hoodsLoaded)) {
       return <p>Data is loading... Please be patient...</p>;
@@ -124,31 +149,23 @@ export default class VenuesLayout extends ListingsLayout {
       listings={venues} listingsTotal={total} hoods={hoods}
       pageSize={pageSize} currentPage={currentPage} sort={sort}
       updateColumnSort={this.updateColumnSort} updatePageSize={this.updatePageSize}
-      updateCurrentPage={this.updateCurrentPage} deleteListing={this.deleteListing} saveListing={this.saveListing}
+      updateCurrentPage={this.updateCurrentPage}
+      updateListing={this.updateListing} deleteListing={this.deleteListing}
     />;
   }
 
+  /**
+   * Renders the form for adding a new venue.
+   * @override
+   * @returns {*}
+   */
   renderAddForm() {
     if (!this.state.hoodsLoaded) {
       return <p>Data is loading... Please be patient...</p>;
     }
 
-    return <VenueAddForm hoods={this.state.hoods} createListing={this.createListing}/>;
-  }
+    const hoods = this.state.hoods;
 
-  render() {
-    const showMessagePanel = this.state.messagePanelVisible;
-    const messages = this.state.messages;
-
-    return (
-      <div className={'container'}>
-        <Header />
-        <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
-        <h2>All Venues</h2>
-        {this.renderTable()}
-        <h3>Add New Venue</h3>
-        {this.renderAddForm()}
-      </div>
-    );
+    return <VenueAddForm hoods={hoods} createListing={this.createListing} />;
   }
 };

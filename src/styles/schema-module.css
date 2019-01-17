@@ -20,6 +20,10 @@
   cursor: pointer;
 }
 
+.schema-module div > button + button {
+  margin-left: 1rem;
+}
+
 .schema-module .visibility-toggle {
   position: absolute;
   top: 0;
@@ -35,12 +39,14 @@
 
 .schema-module button[disabled] {
   background-color: var(--light-gray);
+  border-color: var(--light-gray);
   color: var(--true-white);
   cursor: not-allowed;
 }
 
 .schema-module button[disabled]:hover {
   border-color: var(--light-gray);
+  background-color: var(--light-gray); /* override */
 }
 
 .schema-module[data-visibility='hidden'] > div {

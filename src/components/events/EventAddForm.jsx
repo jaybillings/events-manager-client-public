@@ -2,10 +2,20 @@ import React from 'react';
 import Moment from 'moment';
 import {renderCheckboxList, renderOptionList} from '../../utilities';
 
-import '../../styles/add-form.css';
 import ListingAddForm from "../ListingAddForm";
 
+/**
+ * EventAddForm is a component which displays a form for adding new events.
+ * @class
+ * @child
+ */
 export default class EventAddForm extends ListingAddForm {
+  /**
+   * The class's constructor.
+   *
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
 
@@ -25,38 +35,50 @@ export default class EventAddForm extends ListingAddForm {
     this.orgList = React.createRef();
   }
 
+  /**
+   * Handles the submit event by parsing data and calling a function to create a new event.
+   * Also associates tags with the new event.
+   *
+   * @override
+   * @param {Event} e
+   */
   handleSubmit(e) {
     e.preventDefault();
 
     const eventObj = {
-      name: this.nameInput.current.value.trim(),
+      name: this.nameInput.current.value,
       start_date: Moment(this.startInput.current.value).valueOf(),
       end_date: Moment(this.endInput.current.value).valueOf(),
-      venue_id: this.venueList.current.value,
-      org_id: this.orgList.current.value,
-      description: this.descInput.current.value.trim(),
+      venue_uuid: this.venueList.current.value,
+      org_uuid: this.orgList.current.value,
+      description: this.descInput.current.value,
       flag_ongoing: this.ongoingInput.current.checked
     };
+
+    // Optional data
+    this.emailInput.current.value !== '' && (eventObj.email = this.emailInput.current.value);
+    this.urlInput.current.value !== '' && (eventObj.url = this.urlInput.current.value);
+    this.phoneInput.current.value !== '' && (eventObj.phone = this.phoneInput.current.value);
+    this.hoursInput.current.value !== '' && (eventObj.hours = this.hoursInput.current.value);
+    this.ticketUrlInput.current.value !== '' && (eventObj.ticket_url = this.ticketUrlInput.current.value);
+    this.ticketPhoneInput.current.value !== '' && (eventObj.ticket_phone = this.ticketPhoneInput.current.value);
+    this.ticketPricesInput.current.value !== '' && (eventObj.ticket_prices = this.ticketPricesInput.current.value);
+
+    // Tag data
     const checkedBoxes = document.querySelectorAll('.js-checkbox:checked');
     let tagsToSave = [];
 
-    // Optional data
-    this.emailInput.current.value !== '' && (eventObj.email = this.emailInput.current.value.trim());
-    this.urlInput.current.value !== '' && (eventObj.url = this.urlInput.current.value.trim());
-    this.phoneInput.current.value !== '' && (eventObj.phone = this.phoneInput.current.value.trim());
-    this.hoursInput.current.value !== '' && (eventObj.hours = this.hoursInput.current.value.trim());
-    this.ticketUrlInput.current.value !== '' && (eventObj.ticket_url = this.ticketUrlInput.current.value.trim());
-    this.ticketPhoneInput.current.value !== '' && (eventObj.ticket_phone = this.ticketPhoneInput.current.value.trim());
-    this.ticketPricesInput.current.value !== '' && (eventObj.ticket_prices = this.ticketPricesInput.current.value.trim());
-
-    // Tag data
     checkedBoxes.forEach(input => {
       tagsToSave.push(input.value);
     });
 
-    this.props.createListing(eventObj, tagsToSave);
+    this.props.createListing({eventObj: eventObj, tagsToSave: tagsToSave}).then(() => this.clearForm());
   }
 
+  /**
+   * Clears the form by setting all values to a default or empty value.
+   * @override
+   */
   clearForm() {
     this.nameInput.current.value = '';
     this.startInput.current.valueAsDate = new Date();
@@ -75,6 +97,13 @@ export default class EventAddForm extends ListingAddForm {
     document.querySelectorAll('.js-checkbox:checked').forEach(chkbx => chkbx.checked = false);
   }
 
+  /**
+   * Renders the component.
+   *
+   * @override
+   * @render
+   * @returns {*}
+   */
   render() {
     const venues = this.props.venues;
     const orgs = this.props.orgs;

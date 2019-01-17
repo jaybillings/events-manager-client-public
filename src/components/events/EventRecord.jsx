@@ -1,17 +1,27 @@
-import React, {Component} from "react";
+import React from "react";
 import Moment from "moment";
-import {renderOptionList, renderCheckboxList} from "../../utilities";
+import {renderCheckboxList, renderOptionList} from "../../utilities";
 
-import '../../styles/schema-record.css';
-import '../../styles/toggle.css';
+import ListingRecordUniversal from "../ListingRecordUniversal";
 
-export default class EventRecord extends Component {
+import "../../styles/toggle.css";
+
+/**
+ * EventRecord is a component which displays a single event's record.
+ * @class
+ * @child
+ */
+export default class EventRecord extends ListingRecordUniversal {
+  /**
+   * The class's constructor.
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
 
-    this.state = {tmpStatus: this.props.event.is_published};
+    this.state = {defaultPublish: false, newPublish: false};
 
-    this.nameInput = React.createRef();
     this.startInput = React.createRef();
     this.endInput = React.createRef();
     this.descInput = React.createRef();
@@ -28,66 +38,105 @@ export default class EventRecord extends Component {
     this.orgInput = React.createRef();
     this.liveToggle = React.createRef();
 
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleClickDelete = this.handleClickDelete.bind(this);
+    this.checkPublishOrDrop = this.checkPublishOrDrop.bind(this);
     this.toggleStatus = this.toggleStatus.bind(this);
   }
 
-  handleClickDelete() {
-    const id = this.props.event.id;
-    this.props.deleteListing(id);
+  /**
+   * Runs once the component mounts. Checks for the event's publish/live status.
+   * @override
+   */
+  componentDidMount() {
+    this.props.checkForLive().then(results => {
+      const publishState = results.total > 0;
+      this.setState({defaultPublish: publishState, newPublish: publishState});
+    }, err => {
+      console.log('error in checking for live', JSON.stringify(err));
+    });
   }
 
+  /**
+   * Handles the submit action by parsing new data and calling a function to create a new event. Also modifies
+   * associations between the event and its tags.
+   * @override
+   * @param {Event} e
+   */
   handleSubmit(e) {
     e.preventDefault();
 
-    const event = this.props.event;
-    const id = event.id;
-    const checkedBoxes = document.querySelectorAll('.js-checkbox:checked');
-    const uncheckedBoxes = document.querySelectorAll('.js-checkbox:not(:checked)');
-    let tagsToSave = [], tagsToDelete = [];
-
+    const doPublish = this.checkPublishOrDrop();
     const newData = {
-      name: this.nameInput.current.value.trim(),
+      name: this.nameInput.current.value,
+      venue_id: parseInt(this.venueInput.current.value, 10),
+      org_id: parseInt(this.orgInput.current.value, 10),
       start_date: Moment(this.startInput.current.value).valueOf(),
       end_date: Moment(this.endInput.current.value).valueOf(),
-      venue_id: this.venueInput.current.value,
-      org_id: this.orgInput.current.value,
-      description: this.descInput.current.value.trim(),
-      flag_ongoing: this.ongoingInput.current.checked,
-      is_published: this.liveToggle.current.checked
+      description: this.descInput.current.value,
+      email: this.emailInput.current.value,
+      url: this.urlInput.current.value,
+      phone: this.phoneInput.current.value,
+      hours: this.hoursInput.current.value,
+      ticket_url: this.ticketUrlInput.current.value,
+      ticket_phone: this.ticketPhoneInput.current.value,
+      ticket_prices: this.ticketPricesInput.current.value,
+      flag_ongoing: this.ongoingInput.current.checked
     };
 
-    // Only add non-required if they have a value
-    this.emailInput.current.value !== '' && (newData.email = this.emailInput.current.value.trim());
-    this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value.trim());
-    this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value.trim());
-    this.hoursInput.current.value !== '' && (newData.hours = this.hoursInput.current.value.trim());
-    this.ticketUrlInput.current.value !== '' && (newData.ticket_url = this.ticketUrlInput.current.value.trim());
-    this.ticketPhoneInput.current.value !== '' && (newData.ticket_phone = this.ticketPhoneInput.current.value.trim());
-    this.ticketPricesInput.current.value !== '' && (newData.ticket_prices = this.ticketPricesInput.current.value.trim());
+    // Tag Data
+    let tagsToSave = [], tagsToRemove = [];
+    const checkedBoxes = document.querySelectorAll('.js-checkbox:checked');
+    const uncheckedBoxes = document.querySelectorAll('.js-checkbox:not(:checked)');
 
-    // Tag data
     checkedBoxes.forEach(input => {
-      if (!this.props.eventTags.includes(parseInt(input.value, 10))) {
-        tagsToSave.push({event_id: id, tag_id: input.value});
+      if (!this.props.tagsForListing.includes(parseInt(input.value, 10))) {
+        tagsToSave.push({event_id: this.props.listing.id, tag_id: input.value});
       }
     });
-    uncheckedBoxes.forEach(input => tagsToDelete.push(input.value));
+    uncheckedBoxes.forEach(input => {
+      if (this.props.tagsForListing.includes(parseInt(input.value, 10))) {
+        tagsToRemove.push(input.value)
+      }
+    });
 
-    this.props.saveListing(id, newData, {to_save: tagsToSave, to_delete: tagsToDelete});
+    this.props.updateListing({
+      eventData: newData,
+      tagsToSave: tagsToSave,
+      tagsToRemove: tagsToRemove,
+      publishState: doPublish
+    });
   }
 
+  /**
+   * Flips the publish/live status of the event.
+   */
   toggleStatus() {
-    this.setState({ tmpStatus: this.liveToggle.current.checked});
+    this.setState(prevStatus => ({newPublish: !prevStatus.newPublish}));
   }
 
+  /**
+   * Determines whether the event should be published or dropped.
+   * @returns {string}
+   */
+  checkPublishOrDrop() {
+    if (this.state.defaultPublish === this.state.newPublish) return '';
+    if (this.state.newPublish) return 'publish';
+    if (!this.state.newPublish) return 'drop';
+  }
+
+  /**
+   * Renders the component.
+   * @override
+   * @render
+   * @returns {*}
+   */
   render() {
-    const event = this.props.event;
+    const event = this.props.listing;
     const venues = this.props.venues;
     const orgs = this.props.orgs;
     const tags = this.props.tags;
-    const eventTags = this.props.eventTags;
+    const eventTags = this.props.tagsForListing;
+    const isPublished = this.state.newPublish;
+
     const startDate = Moment(event.start_date).format('YYYY-MM-DD');
     const endDate = Moment(event.end_date).format('YYYY-MM-DD');
     const createdAt = Moment(event.created_at).calendar();
@@ -96,14 +145,15 @@ export default class EventRecord extends Component {
     return (
       <form id={'event-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
         <div>
-          <p className={'label'}>Status - {this.state.tmpStatus ? 'Published' : 'Dropped'}</p>
-          <input id={`toggle-${event.id}`} ref={this.liveToggle} className={'toggle'} type={'checkbox'}
-                 defaultChecked={event.is_published} onClick={this.toggleStatus} />
+          <p className={'label'}>Status - {isPublished ? 'Published' : 'Dropped'}</p>
+          <input id={`toggle-${event.id}`} type={'checkbox'} ref={this.liveToggle} className={'toggle'}
+                 checked={isPublished} onChange={this.toggleStatus}
+          />
           <label className={'toggle-switch'} htmlFor={'toggle-' + event.id} />
         </div>
         <label>
-          ID
-          <input type={'text'} value={event.id} disabled />
+          UUID
+          <input type={'text'} value={event.uuid} readOnly />
         </label>
         <label>
           Created
@@ -135,7 +185,7 @@ export default class EventRecord extends Component {
         </label>
         <label className={'required'}>
           Description
-          <textarea ref={this.descInput} defaultValue={event.description} required />
+          <textarea ref={this.descInput} defaultValue={event.description} maxLength={500} required />
         </label>
         <label>
           Tags
@@ -143,39 +193,39 @@ export default class EventRecord extends Component {
         </label>
         <label>
           Email Address
-          <input type={'email'} ref={this.emailInput} defaultValue={event.email} />
+          <input type={'email'} ref={this.emailInput} defaultValue={event.email} maxLength={50} />
         </label>
         <label>
           URL
-          <input type={'url'} ref={this.urlInput} defaultValue={event.url} />
+          <input type={'url'} ref={this.urlInput} defaultValue={event.url} maxLength={100} />
         </label>
         <label>
           Phone Number
-          <input type={'tel'} ref={this.phoneInput} defaultValue={event.phone} />
+          <input type={'tel'} ref={this.phoneInput} defaultValue={event.phone} maxLength={20} />
         </label>
         <label>
           Event Hours
-          <input type={'text'} ref={this.hoursInput} defaultValue={event.hours} />
+          <input type={'text'} ref={this.hoursInput} defaultValue={event.hours} maxLength={100} />
         </label>
         <label>
           Ticketing URL
-          <input type={'url'} ref={this.ticketUrlInput} defaultValue={event.ticket_url} />
+          <input type={'url'} ref={this.ticketUrlInput} defaultValue={event.ticket_url} maxLength={150} />
         </label>
         <label>
           Ticketing Phone Number
-          <input type={'tel'} ref={this.ticketPhoneInput} defaultValue={event.ticket_phone} />
+          <input type={'tel'} ref={this.ticketPhoneInput} defaultValue={event.ticket_phone} maxLength={20} />
         </label>
         <label>
           Ticket Prices
-          <input type={'text'} ref={this.ticketPricesInput} defaultValue={event.ticket_prices} />
+          <input type={'text'} ref={this.ticketPricesInput} defaultValue={event.ticket_prices} maxLength={50} />
         </label>
         <label>
           <input type='checkbox' ref={this.ongoingInput} defaultChecked={event.flag_ongoing} />
           Ongoing Event
         </label>
         <div>
-          <button type={'button'} onClick={this.handleClickDelete}>Delete Event</button>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
+          <button type={'button'} onClick={this.handleDeleteClick}>Delete Event</button>
         </div>
       </form>
     );

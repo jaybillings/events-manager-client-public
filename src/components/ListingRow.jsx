@@ -3,45 +3,89 @@ import Moment from "moment";
 import {Link} from "react-router-dom";
 
 import "../styles/schema-row.css";
-import "../styles/toggle.css";
 
+/**
+ * ListingRow is a generic component which displays a single row from a live listings table.
+ * @class
+ * @parent
+ */
 export default class ListingRow extends Component {
+  /**
+   * The component's constructor.
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
 
-    this.state = {editable: false};
-
-    this.nameInput = React.createRef();
+    this.state = {editable: false, listingName: this.props.listing.name};
 
     this.startEdit = this.startEdit.bind(this);
     this.cancelEdit = this.cancelEdit.bind(this);
-    this.handleDeleteClick = this.handleDeleteClick.bind(this);
+    this.handleInputChange = this.handleInputChange.bind(this);
     this.handleSaveClick = this.handleSaveClick.bind(this);
+    this.handleDeleteClick = this.handleDeleteClick.bind(this);
   }
 
-  startEdit() {
+  /**
+   * Marks the row as editable to trigger a UI change.
+   * @param {Event} e
+   */
+  startEdit(e) {
+    e.stopPropagation();
     this.setState({editable: true});
   }
 
-  cancelEdit() {
+  /**
+   * Marks the row as not editable to trigger a UI change.
+   * @param {Event} e
+   */
+  cancelEdit(e) {
+    e.stopPropagation();
     this.setState({editable: false});
   }
 
+  /**
+   * Handles changes to input blocks by saving the data as a state parameter.
+   * @param {Event} e
+   */
+  handleInputChange(e) {
+    this.setState({[e.target.name]: e.target.value.trim()});
+  }
+
+  /**
+   * Handles the save button click by parsing new data and triggering a function to update the listing.
+   * @param {Event} e
+   */
+  handleSaveClick(e) {
+    e.stopPropagation();
+
+    const newData = {uuid: this.props.listing.uuid, name: this.state.listingName};
+
+    this.props.updateListing(this.props.listing.id, newData).then(() => {
+      this.setState({editable: false});
+    });
+  }
+
+  /**
+   * Handles the delete button click by triggering a function to delete the listing.
+   */
   handleDeleteClick() {
     this.props.deleteListing(this.props.listing.id);
   }
 
-  handleSaveClick() {
-    const newData = {name: this.nameInput.current.value.trim()};
-
-    this.props.saveChanges(this.props.listing.id, newData);
-    this.setState({editable: false});
-  }
-
+  /**
+   * Renders the component.
+   * @note The render has two different paths depending on whether the row can be edited.
+   * @override
+   * @render
+   * @returns {*}
+   */
   render() {
-    const listing = this.props.listing;
     const schema = this.props.schema;
-    const updatedAt = Moment(listing.updated_at).calendar();
+    const id = this.props.listing.id;
+    const name = this.state.listingName;
+    const updatedAt = Moment(this.props.listing.updated_at).calendar();
 
     if (this.state.editable) {
       return (
@@ -50,7 +94,7 @@ export default class ListingRow extends Component {
             <button type={'button'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
-          <td><input type={'text'} ref={this.nameInput} defaultValue={listing.name} /></td>
+          <td><input type={'text'} name={'listingName'} value={name} onChange={this.handleInputChange} /></td>
           <td>{updatedAt}</td>
         </tr>
       );
@@ -62,7 +106,7 @@ export default class ListingRow extends Component {
           <button type={'button'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button>
         </td>
-        <td><Link to={`/${schema}/${listing.uuid}`}>{listing.name}</Link></td>
+        <td><Link to={`/${schema}/${id}`}>{name}</Link></td>
         <td>{updatedAt}</td>
       </tr>
     );

@@ -6,37 +6,19 @@ import PaginationLayout from "./common/PaginationLayout";
 
 import '../styles/schema-table.css';
 
+/**
+ * ListingsTable is a generic component that displays a table representing a collection of listings, and that table's
+ * controls.
+ * @note This is a stateless module. Data manipulation should occur in the *Row class and display should occur in the
+ * *Layout class.
+ * @class
+ * @parent
+ */
 export default class ListingsTable extends Component {
-  constructor(props) {
-    super(props);
-
-    this.handleSaveChanges = this.handleSaveChanges.bind(this);
-    this.handleDeleteListing = this.handleDeleteListing.bind(this);
-    this.handleUpdatePageSize = this.handleUpdatePageSize.bind(this);
-    this.handleUpdateCurrentPage = this.handleUpdateCurrentPage.bind(this);
-    this.handleUpdateSort = this.handleUpdateSort.bind(this);
-  }
-
-  handleDeleteListing(id) {
-    this.props.deleteListing(id);
-  }
-
-  handleSaveChanges(id, newData) {
-    this.props.saveListing(id, newData);
-  }
-
-  handleUpdatePageSize(e) {
-    this.props.updatePageSize(e);
-  }
-
-  handleUpdateCurrentPage(page) {
-    this.props.updateCurrentPage(page);
-  }
-
-  handleUpdateSort(e) {
-    this.props.updateColumnSort(e);
-  }
-
+  /**
+   * Renders the component.
+   * @returns {*[]}
+   */
   render() {
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
@@ -44,27 +26,27 @@ export default class ListingsTable extends Component {
       ['updated_at', 'Last Modified']
     ]);
 
-    const listings = this.props.listings;
     const schema = this.props.schema;
+    const listings = this.props.listings;
+    const listingsTotal = this.props.listingsTotal;
 
     const pageSize = this.props.pageSize;
     const currentPage = this.props.currentPage;
-    const listingsTotal = this.props.listingsTotal;
     const sort = this.props.sort;
 
     return ([
       <PaginationLayout
         key={`${schema}-pagination`} schema={schema} total={listingsTotal} pageSize={pageSize} activePage={currentPage}
-        updatePageSize={this.handleUpdatePageSize} updateCurrentPage={this.handleUpdateCurrentPage}
+        updatePageSize={this.props.updatePageSize} updateCurrentPage={this.props.updateCurrentPage}
       />,
       <table key={`${schema}-table`} className={'schema-table'}>
-        <thead>{renderTableHeader(titleMap, sort, this.handleUpdateSort)}</thead>
+        <thead>{renderTableHeader(titleMap, sort, this.props.updateColumnSort)}</thead>
         <tbody>
         {
           listings.map(listing =>
             <ListingRow
               key={listing.id} schema={schema} listing={listing}
-              saveChanges={this.handleSaveChanges} deleteListing={this.handleDeleteListing}
+              updateListing={this.props.updateListing} deleteListing={this.props.deleteListing}
             />
           )
         }

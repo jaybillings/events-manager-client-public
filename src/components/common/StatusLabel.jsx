@@ -1,7 +1,19 @@
 import React, {Component} from 'react';
+
 import '../../styles/status-label.css';
 
+/**
+ * The StatusLabel component displays a label showing the publish status of a row.
+ *
+ * @class
+ */
 export default class StatusLabel extends Component {
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @returns {*}
+   */
   render() {
     const writeStatus = this.props.writeStatus;
     const schema = this.props.schema;

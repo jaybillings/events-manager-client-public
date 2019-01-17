@@ -1,8 +1,20 @@
 import React from 'react';
 import {renderOptionList} from '../../utilities';
+
 import ListingAddForm from "../ListingAddForm";
 
+/**
+ * VenueAddForm is a component which displays a form for adding new venues.
+ * @class
+ * @child
+ */
 export default class VenueAddForm extends ListingAddForm {
+  /**
+   * The class's constructor.
+   *
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
 
@@ -17,27 +29,36 @@ export default class VenueAddForm extends ListingAddForm {
     this.zipInput = React.createRef();
   }
 
+  /**
+   * Handles the submit event by parsing data and calling a function to create a new venue.
+   *
+   * @override
+   * @param {Event} e
+   */
   handleSubmit(e) {
     e.preventDefault();
 
     const venueObj = {
       name: this.nameInput.current.value.trim(),
-      hood_id: this.hoodList.current.value,
+      hood_uuid: this.hoodList.current.value,
       description: this.descInput.current.value.trim()
     };
 
-    this.emailInput.current.value !== '' && (venueObj.email = this.emailInput.current.value.trim());
-    this.urlInput.current.value !== '' && (venueObj.url = this.urlInput.current.value.trim());
-    this.phoneInput.current.value !== '' && (venueObj.phone = this.phoneInput.current.value.trim());
-    this.streetInput.current.value !== '' && (venueObj.address_street = this.streetInput.current.value.trim());
-    this.cityInput.current.value !== '' && (venueObj.address_city = this.cityInput.current.value.trim());
-    this.stateInput.current.value !== '' && (venueObj.address_state = this.stateInput.current.value.trim());
-    this.zipInput.current.value !== '' && (venueObj.address_zip = this.zipInput.current.value.trim());
+    this.emailInput.current.value !== '' && (venueObj.email = this.emailInput.current.value);
+    this.urlInput.current.value !== '' && (venueObj.url = this.urlInput.current.value);
+    this.phoneInput.current.value !== '' && (venueObj.phone = this.phoneInput.current.value);
+    this.streetInput.current.value !== '' && (venueObj.address_street = this.streetInput.current.value);
+    this.cityInput.current.value !== '' && (venueObj.address_city = this.cityInput.current.value);
+    this.stateInput.current.value !== '' && (venueObj.address_state = this.stateInput.current.value);
+    this.zipInput.current.value !== '' && (venueObj.address_zip = this.zipInput.current.value);
 
-    this.props.createListing(venueObj);
-    this.clearForm();
+    this.props.createListing(venueObj).then(() => this.clearForm());
   }
 
+  /**
+   * Clears the form by setting all fields to a default or empty value.
+   * @override
+   */
   clearForm() {
     this.nameInput.current.value = '';
     this.hoodList.current.value = this.hoodList.current.firstChild.value;
@@ -51,9 +72,14 @@ export default class VenueAddForm extends ListingAddForm {
     this.zipInput.current.value = '';
   }
 
+  /**
+   * Renders the component.
+   *
+   * @override
+   * @render
+   * @returns {*}
+   */
   render() {
-    const hoods = this.props.hoods;
-
     return (
       <form id={'venue-add-form'} className={'add-form'} onSubmit={this.handleSubmit}>
         <label className={'required'}>
@@ -62,7 +88,7 @@ export default class VenueAddForm extends ListingAddForm {
         </label>
         <label className={'required'}>
           Neighborhood
-          <select ref={this.hoodList} defaultValue={this.props.hoods[0].id}>{renderOptionList(hoods)}</select>
+          <select ref={this.hoodList} defaultValue={this.props.hoods[0].id}>{renderOptionList(this.props.hoods)}</select>
         </label>
         <label className={'required'}>
           Description

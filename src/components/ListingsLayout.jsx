@@ -8,13 +8,25 @@ import ListingsTable from "./ListingsTable";
 import ListingAddForm from "./ListingAddForm";
 import MessagePanel from "./common/MessagePanel";
 
+/**
+ * ListingsLayout is a generic component that lays out a listing collection page.
+ * @class
+ * @parent
+ */
 export default class ListingsLayout extends Component {
+  /**
+   * The class's constructor.
+   *
+   * @param props
+   * @param {string} schema - The collection's schema.
+   */
   constructor(props, schema) {
     super(props);
 
     this.schema = schema;
     this.defaultPageSize = 5;
     this.defaultTableSort = ['updated_at', -1];
+    this.defaultQuery = {$sort: {name: 1}, $select: ['name', 'uuid'], $limit: 100};
 
     this.state = {
       listings: [], listingsTotal: 0, listingsLoaded: false,
@@ -25,6 +37,11 @@ export default class ListingsLayout extends Component {
     this.listingsService = app.service(this.schema);
 
     this.fetchAllData = this.fetchAllData.bind(this);
+    this.fetchListings = this.fetchListings.bind(this);
+
+    this.createListing = this.createListing.bind(this);
+    this.updateListing = this.updateListing.bind(this);
+    this.deleteListing = this.deleteListing.bind(this);
 
     this.updatePageSize = this.updatePageSize.bind(this);
     this.updateCurrentPage = this.updateCurrentPage.bind(this);
@@ -32,127 +49,190 @@ export default class ListingsLayout extends Component {
     this.updateMessagePanel = this.updateMessagePanel.bind(this);
     this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
 
-    this.deleteListing = this.deleteListing.bind(this);
-    this.saveListing = this.saveListing.bind(this);
-    this.createListing = this.createListing.bind(this);
-
     this.renderTable = this.renderTable.bind(this);
     this.renderAddForm = this.renderAddForm.bind(this);
   }
 
+  /**
+   * Runs when the component mounts. Fetches data and registers data service listeners.
+   * @override
+   */
   componentDidMount() {
-    const schema = this.schema;
+    const schemaSingular = this.schema.slice(0, -1);
+    const reloadData = () => {
+      this.setState({currentPage: 1}, () => this.fetchAllData())
+    };
 
     this.fetchAllData();
 
     // Register listeners
     this.listingsService
       .on('created', message => {
-        console.log(`${schema} created`, message);
-        this.updateMessagePanel({status: 'success', details: `Created new ${schema.slice(0, -1)} "${message.name}"`});
-        this.setState({currentPage: 1}, () => this.fetchAllData());
+        this.updateMessagePanel({
+          status: 'success',
+          details: `Created ${schemaSingular} #${message.id} - "${message.name}"`
+        });
+        reloadData();
+      })
+      .on('updated', message => {
+        this.updateMessagePanel({
+          status: 'success',
+          details: `Updated ${schemaSingular} #${message.id} - "${message.name}"`
+        });
+        reloadData();
       })
       .on('patched', message => {
-        console.log(`${schema} patched`, message);
-        this.updateMessagePanel({status: 'success', details: `Updated ${schema.slice(0, -1)} "${message.name}"`});
-        this.fetchAllData();
+        this.updateMessagePanel({
+          status: 'success',
+          details: `Updated ${schemaSingular} #${message.id} - "${message.name}"`
+        });
+        reloadData();
       })
       .on('removed', message => {
-        console.log(`${schema} removed`, message);
-        this.updateMessagePanel({status: 'success', details: `Permanently deleted ${schema.slice(0, -1)} "${message.name}"`});
-        this.setState({currentPage: 1}, () => this.fetchAllData());
-      })
-      .on('error', error => {
-        console.log(`${schema} error`, error);
-        this.updateMessagePanel({status: 'error', details: error.message});
+        this.updateMessagePanel({
+          status: 'success',
+          details: `Permanently deleted ${schemaSingular} #${message.id} - "${message.name}"`
+        });
+        reloadData();
       });
   }
 
+  /**
+   * Runs before the component unmounts. Unregisters data service listeners.
+   * @override
+   */
   componentWillUnmount() {
     this.listingsService
       .removeAllListeners('created')
+      .removeAllListeners('updated')
       .removeAllListeners('patched')
       .removeAllListeners('removed');
   }
 
+  /**
+   * Fetches all data required for the table.
+   * @note This function pattern exists to cut down on extraneous requests for components with linked schema.
+   */
   fetchAllData() {
-    const sort = this.state.sort;
-    const pageSize = this.state.pageSize;
-    const currentPage = this.state.currentPage;
+    this.fetchListings();
+  }
 
+  /**
+   * Fetches data for all the published listings for a given schema. Handles table page size, page skipping,
+   * and column sorting.
+   */
+  fetchListings() {
     this.listingsService.find({
       query: {
-        $sort: buildSortQuery(sort),
-        $limit: pageSize,
-        $skip: pageSize * (currentPage - 1)
+        $sort: buildSortQuery(this.state.sort),
+        $limit: this.state.pageSize,
+        $skip: this.state.pageSize * (this.state.currentPage - 1)
       }
     }).then(message => {
-      this.setState({listings: message.data, listingsTotal: message.total, listingsLoaded: true})
+      this.setState({listings: message.data, listingsTotal: message.total, listingsLoaded: true});
+    }, err => {
+      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      this.setState({listingsLoaded: false});
     });
   }
 
+  /**
+   * Creates a new listing by generating a new UUID and calling the service's CREATE method with passed-in data.
+   *
+   * @param {object} listingData - Data for the new listing.
+   * @returns {Promise}
+   */
+  createListing(listingData) {
+    listingData.uuid = uuid();
+
+    return this.listingsService.create(listingData).catch(err => {
+      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+    });
+  }
+
+  /**
+   * Updates a given listing by calling the service's PATCH method with passed-in data.
+   *
+   * @param {int} id
+   * @param {object} newData
+   * @returns {Promise}
+   */
+  updateListing(id, newData) {
+    return this.listingsService.patch(id, newData).catch(err => {
+      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+    });
+  }
+
+  /**
+   * Deletes a given listing by calling the service's REMOVE method.
+   *
+   * @param {int} id
+   */
+  deleteListing(id) {
+    this.listingsService.remove(id).catch(err => {
+      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+    });
+  }
+
+  /**
+   * Updates the component's page size, then fetches new listings.
+   *
+   * @param {Event} e
+   */
   updatePageSize(e) {
-    this.setState({pageSize: parseInt(e.target.value, 10), currentPage: 1}, () => this.fetchAllData());
+    this.setState({pageSize: parseInt(e.target.value, 10), currentPage: 1}, () => this.fetchListings());
   }
 
+  /**
+   * Updates the component's current page, then fetches new listings.
+   *
+   * @param {string} page
+   */
   updateCurrentPage(page) {
-    this.setState({currentPage: parseInt(page, 10)}, () => this.fetchAllData());
+    this.setState({currentPage: parseInt(page, 10)}, () => this.fetchListings());
   }
 
+  /**
+   * Updates the component's column sorting, then fetches new listings.
+   *
+   * @param {Event} e
+   */
   updateColumnSort(e) {
     const colSortState = buildColumnSort(e.target, this.state.sort);
-    this.setState({sort: colSortState}, () => this.fetchAllData());
+    this.setState({sort: colSortState}, () => this.fetchListings());
   }
 
-  updateMessagePanel(msg) {
-    const messageList = this.state.messages;
-    this.setState({messages: messageList.concat([msg]), messagePanelVisible: true});
+  /**
+   * Adds a message to the message panel.
+   *
+   * @param {object} newMsg
+   */
+  updateMessagePanel(newMsg) {
+    this.setState(prevState => ({messages: [newMsg, ...prevState.messages], messagePanelVisible: true}));
   }
 
+  /**
+   * Prepares the message panel for dismissal by removing all messages and setting its visible state to false.
+   */
   dismissMessagePanel() {
     this.setState({messages: [], messagePanelVisible: false});
   }
 
-  deleteListing(id) {
-    this.listingsService.remove(id).then(message => console.log(`removing ${this.schema}`, message));
-  }
-
-  saveListing(id, newData) {
-    const schema = this.schema;
-
-    this.listingsService.patch(id, newData).then(message => {
-      console.log(`patching ${schema}`, message);
-    }, err => {
-      console.log(`error patching ${schema}`, err);
-      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-    });
-  }
-
-  createListing(newData) {
-    const schema = this.schema;
-
-    // Give the new listing a UUID
-    newData.uuid = uuid();
-
-    this.listingsService.create(newData).then(() => {
-      console.log(`creating ${schema}`);
-    }, err => {
-      console.log(`error creating ${schema}`, err);
-      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-
-    });
-  }
-
+  /**
+   * Renders the listing collection table.
+   *
+   * @returns {*}
+   */
   renderTable() {
+    const schema = this.schema;
+
     if (!this.state.listingsLoaded) {
       return <p>Data is being loaded... Please be patient...</p>;
     } else if (this.state.listingsTotal === 0) {
-      return <p>No tags to list.</p>
+      return <p>No {schema} to list.</p>
     }
 
     const listings = this.state.listings;
-    const schema = this.schema;
-
     const pageSize = this.state.pageSize;
     const currentPage = this.state.currentPage;
     const total = this.state.listingsTotal;
@@ -162,10 +242,16 @@ export default class ListingsLayout extends Component {
       listings={listings} listingsTotal={total} schema={schema}
       pageSize={pageSize} currentPage={currentPage} sort={sort}
       updateColumnSort={this.updateColumnSort} updatePageSize={this.updatePageSize}
-      updateCurrentPage={this.updateCurrentPage} deleteListing={this.deleteListing} saveListing={this.saveListing}
+      updateCurrentPage={this.updateCurrentPage}
+      updateListing={this.updateListing} deleteListing={this.deleteListing}
     />;
   }
 
+  /**
+   * Renders the form for adding a new listing.
+   *
+   * @returns {*}
+   */
   renderAddForm() {
     if (!this.state.listingsLoaded) {
       return <p>Data is loading... Please be patient...</p>;
@@ -174,6 +260,13 @@ export default class ListingsLayout extends Component {
     return <ListingAddForm schema={this.schema} createListing={this.createListing} />;
   }
 
+  /**
+   * Renders the component.
+   *
+   * @override
+   * @render
+   * @returns {*}
+   */
   render() {
     const showMessagePanel = this.state.messagePanelVisible;
     const messages = this.state.messages;

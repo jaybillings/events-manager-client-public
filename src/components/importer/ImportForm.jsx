@@ -2,13 +2,26 @@ import React, {Component} from 'react';
 
 import '../../styles/import-form.css';
 
+/**
+ * The ImportForm component displays a form used for importing external data.
+ * @class
+ */
 export default class ImportForm extends Component {
+  /**
+   * The class's constructor.
+   * @constructor
+   * @param props
+   */
   constructor(props) {
     super(props);
 
     this.renderSchemaSelect = this.renderSchemaSelect.bind(this);
   }
 
+  /**
+   * Renders the schema selection dropdown.
+   * @returns {*}
+   */
   renderSchemaSelect() {
     const schemas = ['events', 'venues', 'organizers', 'neighborhoods', 'tags'];
     let selectOptions = [];
@@ -17,6 +30,7 @@ export default class ImportForm extends Component {
       selectOptions.push(<option key={schema} value={schema}>{schema}</option>);
     });
 
+    /** @var {object} this.props.schemaSelectRef */
     return (
       <select id={'schema-select'} ref={this.props.schemaSelectRef} required>
         {selectOptions}
@@ -24,7 +38,13 @@ export default class ImportForm extends Component {
     );
   }
 
+  /**
+   * Renders the component.
+   * @render
+   * @returns {*}
+   */
   render() {
+    /** @var {object} this.props.fileInputRef */
     return (
       <form id={'import-from-csv-form'} className={'import-form'} onSubmit={this.props.handleSubmit}>
         <div>

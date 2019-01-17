@@ -12,6 +12,11 @@
   cursor: not-allowed;
 }
 
+.schema-record input[readonly] {
+  color: var(--disabled-color);
+  cursor: default;
+}
+
 .schema-record button + button {
   margin-left: 1rem;
 }

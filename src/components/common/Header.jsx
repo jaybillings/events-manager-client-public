@@ -3,7 +3,18 @@ import {NavLink} from 'react-router-dom';
 
 import "../../styles/header.css";
 
+/**
+ * The Header component displays the page header and main navigation.
+ *
+ * @class
+ */
 export default class Header extends Component {
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @returns {*}
+   */
   render() {
     return (
       <header>

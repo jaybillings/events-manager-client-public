@@ -1,14 +1,24 @@
-import React, {Component} from "react";
+import React from "react";
 import Moment from "moment";
 import {renderOptionList} from "../../utilities";
 
-import '../../styles/schema-record.css';
+import ListingRecordUniversal from "../ListingRecordUniversal";
+import StatusLabel from "../pendingEvents/PendingEventRecord";
 
-export default class PendingVenueRecord extends Component {
+/**
+ * PendingVenueRecord is a component which displays a single pending venue's record.
+ * @class
+ * @child
+ */
+export default class PendingVenueRecord extends ListingRecordUniversal {
+  /**
+   * The class's constructor.
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
 
-    this.nameInput = React.createRef();
     this.hoodInput = React.createRef();
     this.descInput = React.createRef();
     this.emailInput = React.createRef();
@@ -18,16 +28,16 @@ export default class PendingVenueRecord extends Component {
     this.cityInput = React.createRef();
     this.stateInput = React.createRef();
     this.zipInput = React.createRef();
-
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleClickDelete = this.handleClickDelete.bind(this);
   }
 
+  /**
+   * Handles the submit action by parsing new data and calling a function to create a new pending venue.
+   * @override
+   * @param {Event} e
+   */
   handleSubmit(e) {
     e.preventDefault();
 
-    const pendingVenue = this.props.pendingVenue;
-    const id = pendingVenue.id;
     const newData = {
       name: this.nameInput.current.value.trim(),
       hood_id: this.hoodInput.current.value,
@@ -43,26 +53,31 @@ export default class PendingVenueRecord extends Component {
     this.stateInput.current.value !== '' && (newData.address_state = this.stateInput.current.value.trim());
     this.zipInput.current.value !== '' && (newData.address_zip = this.zipInput.current.value.trim());
 
-    this.props.saveListing(id, newData);
+    this.props.updateListing(newData);
   }
 
-  handleClickDelete() {
-    const id = this.props.pendingVenue.id;
-    this.props.deleteListing(id);
-  }
-
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @returns {*}
+   */
   render() {
-    const pendingVenue = this.props.pendingVenue;
-    const venueId = pendingVenue.target_id || 'N/A';
+    const pendingVenue = this.props.listing;
     const hoods = this.props.hoods;
     const createdAt = Moment(pendingVenue.created_at).calendar();
     const updatedAt = Moment(pendingVenue.updated_at).calendar();
+    const writeStatus = this.props.writeStatus;
 
     return (
       <form id={'pending-venue-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
         <label>
-          Live Venue ID
-          <input type={'text'} value={venueId} disabled />
+          UUID
+          <input type={'text'} value={pendingVenue.uuid} disabled />
+        </label>
+        <label>
+          Status
+          <StatusLabel writeStatus={writeStatus} schema={'pending-events'} />
         </label>
         <label>
           Created
@@ -117,7 +132,7 @@ export default class PendingVenueRecord extends Component {
         <div className={'block-warning'}
              title={'Caution: This venue is pending. It must be pushed live before it is visible on the site.'}>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
-          <button type={'button'} onClick={this.handleClickDelete}>Discard Venue</button>
+          <button type={'button'} onClick={this.handleDeleteClick}>Discard Venue</button>
         </div>
       </form>
     );

@@ -6,7 +6,16 @@ import {renderOptionList, renderSchemaLink} from "../../utilities";
 import PendingListingRow from '../PendingListingRow';
 import StatusLabel from "../common/StatusLabel";
 
+/**
+ * PendingEventRow is a component which displays a single row for a pending event table.
+ * @class
+ * @child
+ */
 export default class PendingEventRow extends PendingListingRow {
+  /**
+   * The component's constructor.
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
 
@@ -16,10 +25,14 @@ export default class PendingEventRow extends PendingListingRow {
     this.orgList = React.createRef();
   }
 
+  /**
+   * Handles the save button click by parsing new data and triggering a function to update the pending event.
+   * @override
+   * @param {Event} e
+   */
   handleSaveClick(e) {
     e.stopPropagation();
 
-    const id = this.props.pendingListing.id;
     const newData = {
       name: this.nameInput.current.value.trim(),
       start_date: Moment(this.startInput.current.value).valueOf(),
@@ -28,17 +41,23 @@ export default class PendingEventRow extends PendingListingRow {
       org_uuid: this.orgList.current.value
     };
 
-    this.props.saveChanges(id, newData).then(result => {
-      this.checkWriteStatus(result);
+    this.props.updateListing(this.props.listing.id, newData).then(() => {
+      this.checkWriteStatus();
       this.setState({editable: false});
     });
   }
 
+  /**
+   * Renders the component.
+   * @note The render has two different paths depending on whether the row can be edited.
+   * @render
+   * @returns {*}
+   */
   render() {
-    const pendingListing = this.props.pendingListing;
+    const pendingListing = this.props.listing;
     const createdAt = Moment(pendingListing.created_at).calendar();
     const selected = this.props.selected;
-    const writeStatus = this.state.write_status;
+    const writeStatus = this.state.writeStatus;
     const selectClass = selected ? ' is-selected' : '';
 
     const venues = this.props.venues;
@@ -58,10 +77,13 @@ export default class PendingEventRow extends PendingListingRow {
           <td><input type={'text'} ref={this.nameInput} defaultValue={pendingListing.name} /></td>
           <td><input type={'date'} ref={this.startInput} defaultValue={startDateVal} /></td>
           <td><input type={'date'} ref={this.endInput} defaultValue={endDateVal} /></td>
-          <td><select ref={this.venueList}
-                      defaultValue={pendingListing.venue_id || ''}>{renderOptionList(venues)}</select></td>
+          <td>
+            <select ref={this.venueList} defaultValue={pendingListing.venue_id || ''}>
+              {renderOptionList(venues, 'uuid')}
+            </select>
+          </td>
           <td><select ref={this.orgList} defaultValue={pendingListing.org_id || ''} required>
-            {renderOptionList(orgs)}
+            {renderOptionList(orgs, 'uuid')}
           </select>
           </td>
           <td>{createdAt}</td>
@@ -79,7 +101,7 @@ export default class PendingEventRow extends PendingListingRow {
           <button type={'button'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Discard</button>
         </td>
-        <td><Link to={`/pendingEvents/${pendingListing.uuid}`}>{pendingListing.name}</Link></td>
+        <td><Link to={`/pendingEvents/${pendingListing.id}`}>{pendingListing.name}</Link></td>
         <td>{startDate}</td>
         <td>{endDate}</td>
         <td>{venueLink}</td>

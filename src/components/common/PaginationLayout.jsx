@@ -3,13 +3,29 @@ import Pagination from 'react-js-pagination';
 
 import "../../styles/pagination.css";
 
+/**
+ * The PaginationLayout component displays table pagination.
+ *
+ * @class
+ */
 export default class PaginationLayout extends Component {
+  /**
+   * The class's constructor.
+   *
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
 
     this.renderPageOptions = this.renderPageOptions.bind(this);
   }
 
+  /**
+   * Renders the rows-per-page option block.
+   *
+   * @returns {Array}
+   */
   renderPageOptions() {
     const schema = this.props.schema;
     const pageSizes = [5, 25, 50, 100];
@@ -25,6 +41,12 @@ export default class PaginationLayout extends Component {
     return pageOptions;
   }
 
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @returns {*}
+   */
   render() {
     const tmpEnd = this.props.activePage * this.props.pageSize;
     const end = tmpEnd > this.props.total ? this.props.total : tmpEnd;
@@ -33,7 +55,8 @@ export default class PaginationLayout extends Component {
 
     return (
       <div className={'pagination-container'}>
-        <select defaultValue={this.props.pageSize} onChange={this.props.updatePageSize}>{this.renderPageOptions()}</select>
+        <select defaultValue={this.props.pageSize}
+                onChange={this.props.updatePageSize}>{this.renderPageOptions()}</select>
         <Pagination
           activePage={this.props.activePage} itemsCountPerPage={this.props.pageSize} totalItemsCount={this.props.total}
           onChange={this.props.updateCurrentPage}

@@ -10,7 +10,16 @@ import PendingVenuesModule from "../components/pendingVenues/PendingVenuesModule
 import PendingOrganizersModule from "../components/pendingOrganizers/PendingOrganizersModule";
 import PendingNeighborhoodsModule from "../components/pendingNeighborhoods/PendingNeighborhoodsModule";
 
+/**
+ * The ImportLayout component lays out the page that handles importing and processing external data.
+ * @class
+ */
 export default class ImportLayout extends Component {
+  /**
+   * The class's constructor.
+   * @constructor
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
 
@@ -32,21 +41,34 @@ export default class ImportLayout extends Component {
 
     this.importData = this.importData.bind(this);
     this.publishListings = this.publishListings.bind(this);
-    this.updateMessageList = this.updateMessageList.bind(this);
+    this.updateMessagePanel = this.updateMessagePanel.bind(this);
     this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
   }
 
+  /**
+   * Runs after the component mounts. Registers data service listeners.
+   * @override
+   */
   componentDidMount() {
-    // Register listeners
     this.importerService.on('status', message => {
-      this.updateMessageList({status: 'info', details: message.details});
+      this.updateMessagePanel({status: 'info', details: message.details});
     });
   }
 
+  /**
+   * Runs before the component unmounts. Unregisters data service listeners.
+   * @override
+   */
   componentWillUnmount() {
     this.importerService.removeAllListeners('status');
   }
 
+  /**
+   * Handles the importing of a single CSV file containing listings of a given schema. Parameters are
+   * retrieved from from DOM.
+   *
+   * @param {Event} e
+   */
   importData(e) {
     e.preventDefault();
 
@@ -62,13 +84,21 @@ export default class ImportLayout extends Component {
     }).then((response) => {
       response.json().then((body) => {
         if (body.code >= 400) {
-          this.updateMessageList({status: 'error', details: body.message});
+          this.updateMessagePanel({status: 'error', details: body.message});
         }
       });
     });
   }
 
+  /**
+   * Triggers the publishing of all listings on the import page.
+   *
+   * @note Unlike when publishing listings manually, publishListings publishes them in the correct order to prevent
+   * missing linked schema. It also stops on the first error encountered. It may be preferred over manually publishing
+   * large datasets.
+   */
   publishListings() {
+    // noinspection JSCheckFunctionSignatures
     Promise
       .all([
         this.hoodsModule.current.publishListings(),
@@ -77,20 +107,32 @@ export default class ImportLayout extends Component {
       ])
       .then(this.venuesModule.current.publishListings())
       .then(this.eventsModule.current.publishListings())
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      });
   }
 
-  updateMessageList(newMessage) {
-    this.setState(prevState => ({
-      messages: [newMessage, ...prevState.messages],
-      messagePanelVisible: true
-    }));
+  /**
+   * Updates the message list with a new message and displays the module.
+   *
+   * @param {object} newMsg
+   */
+  updateMessagePanel(newMsg) {
+    this.setState(prevState => ({messages: [newMsg, ...prevState.messages], messagePanelVisible: true}));
   }
 
+  /**
+   * Clears and hides the message panel.
+   */
   dismissMessagePanel() {
     this.setState({messages: [], messagePanelVisible: false});
   }
 
+  /**
+   * Renders the component.
+   * @render
+   * @returns {*}
+   */
   render() {
     const showMessagePanel = this.state.messagePanelVisible;
     const messages = this.state.messages;
@@ -104,23 +146,23 @@ export default class ImportLayout extends Component {
         <h2>Review Unpublished Data</h2>
         <PendingEventsModule
           ref={this.eventsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
-          updateMessageList={this.updateMessageList}
+          updateMessageList={this.updateMessagePanel}
         />
         <PendingVenuesModule
           ref={this.venuesModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
-          updateMessageList={this.updateMessageList}
+          updateMessageList={this.updateMessagePanel}
         />
         <PendingOrganizersModule
           ref={this.orgsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
-          updateMessageList={this.updateMessageList}
+          updateMessageList={this.updateMessagePanel}
         />
         <PendingNeighborhoodsModule
           ref={this.hoodsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
-          updateMessageList={this.updateMessageList}
+          updateMessageList={this.updateMessagePanel}
         />
         <PendingTagsModule
           ref={this.tagsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
-          updateMessageList={this.updateMessageList}
+          updateMessageList={this.updateMessagePanel}
         />
         <button type={'button'} className={'button-primary button-publish'} onClick={this.publishListings}>
           Publish All Pending Listings
