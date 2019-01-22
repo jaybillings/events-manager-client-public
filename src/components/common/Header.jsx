@@ -21,7 +21,7 @@ export default class Header extends Component {
         <h1>Visit Seattle Events Manager</h1>
         <nav>
           <ul>
-            <li><NavLink to={`/import/`} activeClassName="current" isActive={function (match, location) {
+            <li><NavLink to={`/import/`} activeClassName={'current'} isActive={function (match, location) {
               return location.pathname === '/' || location.pathname.search('import') !== -1;
             }} title="Import">Import</NavLink></li>
             <li><NavLink to={`/events/`} activeClassName="current">Events</NavLink></li>
