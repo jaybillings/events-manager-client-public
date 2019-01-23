@@ -1,34 +1,46 @@
 import React, {Component} from 'react';
 import {Redirect, Route} from "react-router";
 import app from '../services/socketio';
+import Header from "./common/Header";
 
 /**
- * PrivateRoute is a custom route component that enforces authentication for access. If the client
- * is not authenticated, the component redirects to the login page.
+ * PrivateRoute is a custom route component for routes that require authentication. If authentication fails, the client
+ * is redirected to the login page.
  */
 export default class PrivateRoute extends Component {
   constructor(props) {
-      super(props);
+    super(props);
 
-      this.state = {isLoggedIn: false, isPending: true};
+    this.state = {};
   }
 
   /**
-   * Runs before the component mounts. Fetches JWT / auth data.
+   * Runs after the component mounts. Authenticates the user and registers listeners for auth related events.
    * @override
    */
-  componentWillMount() {
-    app.authenticate().then((message) => {
-      console.log('login success' + message);
-      //this.setState({isLoggedIn: true, isPending: false});
-    }).catch((err) => {
+  componentDidMount() {
+    app.authenticate().catch((err) => {
       console.log('login error', err);
-      //this.setState({isLoggedIn: false, isPending: false});
+      this.setState({login: null});
     });
+
+    app
+      .on('authenticated', login => {
+        this.setState({login});
+      })
+      .on('reauthentication-error', msg => {
+        app.authenticate().then(() => {
+          console.log('=== reconnected ====\n' + msg)
+        });
+      })
+      .on('logout', () => {
+        this.setState({login: null});
+      });
   }
 
   /**
-   * Renders the component. If not logged in, redirects to the login page.
+   * Renders the component. If successfully authenticated, renders the requested route. If auth is undefined
+   * (i.e. authentication has not completed), renders a message. If auth fails, renders a redirect to the login page.
    *
    * @render
    * @override
@@ -36,14 +48,20 @@ export default class PrivateRoute extends Component {
    */
   render() {
     const {component: Component, ...rest} = this.props;
-    const isPending = this.state.isPending;
-    //const isLoggedIn = this.state.isLoggedIn;
 
     return (
       <Route {...rest} render={props => {
-        if (isPending) return <div>Loading...</div>;
-        return <Component {...props} />;
+        if (this.state.login === undefined) {
+          return (
+            <div className={'container'}>
+              <Header />
+              <p style={{'fontWeight':'700','color':'var(--dull-orange)'}}>Authenticating...</p>
+            </div>
+          );
+        } else if (this.state.login) return <Component {...props} login={this.state.login} />;
+
+        return <Redirect to={`/login${this.props.location.pathname}`} />;
       }} />
-    )
+    );
   }
 }

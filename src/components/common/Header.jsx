@@ -29,8 +29,8 @@ export default class Header extends Component {
             <li><NavLink to={`/organizers/`} activeClassName={'current'}>Organizers</NavLink></li>
             <li><NavLink to={`/neighborhoods/`} activeClassName={'current'}>Neighborhoods</NavLink></li>
             <li><NavLink to={`/tags/`} activeClassName={'current'}>Tags</NavLink></li>
-            <li><NavLink to={`/account`} activeClassName={'current'}>My Account</NavLink></li>
             <li><NavLink to={`/admin/`} activeClassName={'current'}>Admin Tools</NavLink></li>
+            <li><NavLink to={`/account`} activeClassName={'current'}>My Account</NavLink></li>
           </ul>
         </nav>
       </header>

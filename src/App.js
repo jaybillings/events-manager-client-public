@@ -5,7 +5,7 @@ import PrivateRoute from './components/PrivateRoute';
 
 import ImportLayout from './layouts/ImportLayout';
 import AdminToolsLayout from './layouts/AdminToolsLayout';
-import MyAccountLayout from './layouts/MyAccountLayout';
+import MyAccountPage from './layouts/single/MyAccountPage';
 
 import EventsLayout from './layouts/collections/EventsLayout';
 import VenuesLayout from './layouts/collections/VenuesLayout';
@@ -56,7 +56,7 @@ class App extends Component {
           <PrivateRoute exact path={'/pendingNeighborhoods/:id'} component={SinglePendingNeighborhoodLayout} />
           <PrivateRoute exact path={'/pendingTags/:id'} component={SinglePendingTagLayout} />
 
-          <PrivateRoute exact path={'/account'} component={MyAccountLayout} />
+          <PrivateRoute exact path={'/account'} component={MyAccountPage} />
           <PrivateRoute exact path={'/admin'} component={AdminToolsLayout} />
 
           <Route path={'/login(/:redirectUrl)?'} component={LoginPage} />

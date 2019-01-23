@@ -3,23 +3,19 @@
   margin-top: 2.5rem;
 }
 
-.login-page .input-container {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  grid-template-rows: auto;
-  margin-top: 2.5rem;
-}
-
-.login-page .button-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-column-gap: 2rem;
-}
-
-.login-page .login-message {
-  color: var(--true-blue);
-  border: 2px solid var(--true-blue);
-  font-weight: 900;
+.login-page .message {
+  display: inline-block;
+  font-weight: 700;
   padding: 1rem;
   margin: 1rem 0;
+}
+
+.login-page .success-message {
+  color: var(--true-blue);
+  border: 2px solid var(--true-blue);
+}
+
+.login-page .warning-message {
+  color: var(--dull-orange);
+  border: 1px solid var(--dull-orange);
 }

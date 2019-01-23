@@ -48,8 +48,12 @@ h1 {
 }
 
 h2 {
-  font-size: 3rem;
+  font-size: 3.5rem;
   padding: 2rem 0 1rem;
+}
+
+h3 {
+  font-size: 2.5rem;
 }
 
 h2:first-of-type {
@@ -66,12 +70,27 @@ a.current {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 .visible {
   display: block;
 }
+
+.button-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-column-gap: 2rem;
+}
+
+.input-container {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  grid-template-rows: auto;
+  margin-top: 2.5rem;
+}
+
+/* The following are container-specific styles that weren't worth putting in their own file */
 
 .block-warning {
   color: white;
