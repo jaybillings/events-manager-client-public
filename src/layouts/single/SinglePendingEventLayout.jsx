@@ -43,8 +43,6 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
 
     this.createTagAssociations = this.createTagAssociations.bind(this);
     this.removeTagAssociations = this.removeTagAssociations.bind(this);
-
-    this.checkWriteStatus = this.checkWriteStatus.bind(this);
   }
 
   /**
@@ -259,7 +257,6 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
    */
   updateListing(listingData) {
     this.listingsService.patch(this.state.listing.id, listingData.eventData).then(() => {
-      this.checkWriteStatus();
       if (listingData.tagsToSave) this.createTagAssociations(listingData.tagsToSave);
       if (listingData.tagsToRemove) this.removeTagAssociations(listingData.tagsToRemove);
     }, err => {
@@ -300,7 +297,8 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
     return <PendingEventRecord
       listing={this.state.listing} venues={uniqueVenues} orgs={uniqueOrgs}
       tags={uniqueTags} tagsForListing={this.state.tagsForListing}
-      updateListing={this.updateListing} deleteListing={this.deleteListing} queryForExisting={this.queryForExisting}
+      updateListing={this.updateListing} deleteListing={this.deleteListing}
+      queryForExisting={this.queryForExisting}
     />;
   }
 };

@@ -35,7 +35,6 @@ export default class SingleListingLayoutUniversal extends Component {
     this.fetchAllData = this.fetchAllData.bind(this);
     this.fetchListing = this.fetchListing.bind(this);
     this.queryForExisting = this.queryForExisting.bind(this);
-    this.checkWriteStatus = this.checkWriteStatus.bind(this);
 
     this.updateListing = this.updateListing.bind(this);
     this.deleteListing = this.deleteListing.bind(this);

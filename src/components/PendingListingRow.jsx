@@ -65,7 +65,7 @@ export default class PendingListingRow extends Component {
         }
       }
 
-      this.setState({writeStatus: writeStatus});
+      this.setState({writeStatus});
     });
   }
 

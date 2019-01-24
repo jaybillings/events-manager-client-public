@@ -2,6 +2,10 @@
   margin-bottom: 1rem;
 }
 
+.schema-record > label > div {
+  margin-bottom: 1.5rem;
+}
+
 .schema-record input:not([type='checkbox']), .schema-record textarea, .schema-record select {
   display:block;
   width: 50%;

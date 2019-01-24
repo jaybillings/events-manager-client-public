@@ -5,8 +5,6 @@ import {renderCheckboxList, renderOptionList} from "../../utilities";
 import ListingRecordUniversal from "../ListingRecordUniversal";
 import StatusLabel from "../common/StatusLabel";
 
-import '../../styles/toggle.css';
-
 /**
  * PendingEventRecord is a component which displays a single pending event's record.
  * @class
@@ -20,6 +18,8 @@ export default class PendingEventRecord extends ListingRecordUniversal {
    */
   constructor(props) {
     super(props);
+
+    this.state = {writeStatus: ''};
 
     this.startInput = React.createRef();
     this.endInput = React.createRef();
@@ -89,9 +89,8 @@ export default class PendingEventRecord extends ListingRecordUniversal {
       }
     });
 
-    this.props.updateListing({eventData: newData, tagsToSave: tagsToSave, tagsToRemove: tagsToRemove}).then(message => {
-      this.checkWriteStatus();
-    });
+    this.props.updateListing({eventData: newData, tagsToSave: tagsToSave, tagsToRemove: tagsToRemove})
+      .then(() => this.checkWriteStatus());
   }
 
   /**
@@ -116,12 +115,14 @@ export default class PendingEventRecord extends ListingRecordUniversal {
     return (
       <form id={'pending-event-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
         <label>
-          UUID
-          <input type={'text'} value={pendingEvent.uuid} disabled />
+          Status
+          <div>
+            <StatusLabel writeStatus={writeStatus} schema={'pending-events'} />
+          </div>
         </label>
         <label>
-          Status
-          <StatusLabel writeStatus={writeStatus} schema={'pending-events'} />
+          UUID
+          <input type={'text'} value={pendingEvent.uuid} disabled />
         </label>
         <label>
           Created

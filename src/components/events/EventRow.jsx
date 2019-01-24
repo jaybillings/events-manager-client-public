@@ -6,6 +6,7 @@ import {renderOptionList} from "../../utilities";
 import ListingRow from "../ListingRow";
 
 import "../../styles/toggle.css";
+import StatusLabel from "../common/StatusLabel";
 
 /**
  * EventRow is a component which displays a single row for a live event table.
@@ -127,12 +128,11 @@ export default class EventRow extends ListingRow {
       );
     }
 
+    const eventStatus = this.state.is_published ? 'live' : 'dropped';
     const venueLink = this.props.venue
       ? <Link to={`/venues/${this.props.venue.id}`}>{this.props.venue.name}</Link> : 'NO VENUE';
     const orgLink = this.props.org
       ? <Link to={`/organizers/${this.props.org.id}`}>{this.props.org.name}</Link> : 'NO ORGANIZER';
-    const eventStatus = this.state.is_published ? <span className="bolded">Published</span> :
-      <span className="muted">Dropped</span>;
     const deleteButton = this.user.is_admin ?
       <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button> : '';
 
@@ -148,7 +148,7 @@ export default class EventRow extends ListingRow {
         <td>{venueLink}</td>
         <td>{orgLink}</td>
         <td>{updatedAt}</td>
-        <td>{eventStatus}</td>
+        <td><StatusLabel writeStatus={eventStatus} schema={'events'}/></td>
       </tr>
     );
   }

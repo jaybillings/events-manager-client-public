@@ -1,9 +1,23 @@
-.status-label.status-dup {
+.status-label {
+  padding: 1rem;
+  border-radius: 4px;
+  display: inline-block;
+  color: var(--dark-bg-text-color);
+}
+
+.status-label.warning {
   color: var(--light-bg-text-color);
-  background-color: var(--warning-color);
+  background-color: var(--bright-yellow);
 }
 
-.status-label.status-change {
-  background-color: var(--alert-color);
+.status-label.alert {
+  background-color: var(--dull-orange);
 }
 
+.status-label.bolded {
+  background-color: var(--bolded-bg-color);
+}
+
+.status-label.muted {
+  background-color: var(--medium-gray);
+}

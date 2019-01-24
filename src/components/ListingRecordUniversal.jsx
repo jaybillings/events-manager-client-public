@@ -18,8 +18,6 @@ export default class ListingRecordUniversal extends Component {
   constructor(props) {
     super(props);
 
-    this.state({writeStatus: ''});
-
     this.nameInput = React.createRef();
 
     this.checkWriteStatus = this.checkWriteStatus.bind(this);
@@ -53,7 +51,7 @@ export default class ListingRecordUniversal extends Component {
         }
       }
 
-      this.state({writeStatus: writeStatus});
+      this.setState({writeStatus});
     });
   }
 
