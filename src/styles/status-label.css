@@ -3,6 +3,7 @@
   border-radius: 4px;
   display: inline-block;
   color: var(--dark-bg-text-color);
+  cursor: help;
 }
 
 .status-label.warning {

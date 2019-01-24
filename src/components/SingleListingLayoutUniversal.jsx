@@ -174,7 +174,7 @@ export default class SingleListingLayoutUniversal extends Component {
 
     let returnTarget, headerClass, headerTitle;
 
-    if (this.schema.indexOf('pending') === -1) {
+    if (this.schema.indexOf('pending') !== -1) {
       returnTarget = 'import';
       headerClass = 'block-warning';
       headerTitle = 'Caution: This event is pending. It must be pushed live before it is visible on the site.';
@@ -184,7 +184,7 @@ export default class SingleListingLayoutUniversal extends Component {
       headerTitle = '';
     }
 
-    if (this.state.hasDeleted) return <Redirect to={`/returnTarget`} />;
+    if (this.state.hasDeleted) return <Redirect to={`/${returnTarget}`} />;
 
     const showMessagePanel = this.state.messagePanelVisible;
     const messages = this.state.messages;
@@ -193,9 +193,9 @@ export default class SingleListingLayoutUniversal extends Component {
     return (
       <div className={'container'}>
         <Header />
-        <p><Link to={`/returnTarget`}>&lt; Return to {returnTarget}</Link></p>
+        <p><Link to={`/${returnTarget}`}>&lt; Return to {returnTarget}</Link></p>
         <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
-        <h2 className={headerClass} title={headerTitle}>{name}</h2>
+        <div className={headerClass}><h2 title={headerTitle}>{name}</h2></div>
         {this.renderRecord()}
       </div>
     );
