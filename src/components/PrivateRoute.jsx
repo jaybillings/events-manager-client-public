@@ -26,16 +26,41 @@ export default class PrivateRoute extends Component {
 
     app
       .on('authenticated', login => {
-        this.setState({login});
+        app.passport.verifyJWT(login.accessToken)
+          .then(payload => {
+            console.log('payload', payload);
+            return app.service('users').get(payload.userId);
+          })
+          .then(user => {
+            console.log('user-pr', user);
+            user.is_admin = user.permissions.indexOf('admin') !== -1;
+            user.is_su = user.permissions.indexOf('super_user') !== -1;
+            app.set('user', user);
+            this.setState({login});
+          })
+          .catch(err => {
+            console.log(JSON.stringify(err));
+          });
       })
       .on('reauthentication-error', msg => {
         app.authenticate().then(() => {
-          console.log('=== reconnected ====\n' + msg)
+          console.log('==== reconnected ====\n' + msg)
         });
       })
       .on('logout', () => {
         this.setState({login: null});
       });
+  }
+
+  /**
+   * Runs before the component unmounts. Unregisters service listeners.
+   * @override
+   */
+  componentWillUnmount() {
+    app
+      .removeAllListeners('authenticated')
+      .removeAllListeners('reauthentication-error')
+      .removeAllListeners('logout');
   }
 
   /**
@@ -55,10 +80,10 @@ export default class PrivateRoute extends Component {
           return (
             <div className={'container'}>
               <Header />
-              <p style={{'fontWeight':'700','color':'var(--dull-orange)'}}>Authenticating...</p>
+              <p style={{'fontWeight': '700', 'color': 'var(--dull-orange)'}}>Authenticating...</p>
             </div>
           );
-        } else if (this.state.login) return <Component {...props} login={this.state.login} />;
+        } else if (this.state.login) return <Component {...props} />;
 
         return <Redirect to={`/login${this.props.location.pathname}`} />;
       }} />

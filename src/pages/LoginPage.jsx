@@ -16,7 +16,7 @@ export default class LoginPage extends Component {
 
     this.state = {email: '', password: '', redirectCount: -1, messages: [], messagePanelVisible: false};
 
-    this.authService = app.service('authentication');
+    this.usersService = app.service('users');
 
     this.redirectCountdown = this.redirectCountdown.bind(this);
     this.handleFormLogin = this.handleFormLogin.bind(this);
@@ -75,7 +75,7 @@ export default class LoginPage extends Component {
       })
       .then(payload => {
         console.log('JWT payload', payload);
-        return app.service('users').get(payload.userId);
+        return this.usersService.get(payload.userId);
       })
       .then(user => {
         app.set('user', user);
@@ -94,17 +94,17 @@ export default class LoginPage extends Component {
    */
   handleUserCreate() {
     // TODO: Email/SMS verification
-    this.authService.create({
-      strategy: 'local',
+    this.usersService.create({
       email: this.state.email,
       password: this.state.password
     }).then(() => {
       this.updateMessagePanel({
         status: 'info',
-        message: 'Account created. You can now login using the same credentials.'
+        details: 'Account created. You can now login using the same credentials.'
       });
     }, err => {
       this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      console.log('account create error');
     });
   }
 

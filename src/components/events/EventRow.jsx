@@ -133,12 +133,14 @@ export default class EventRow extends ListingRow {
       ? <Link to={`/organizers/${this.props.org.id}`}>{this.props.org.name}</Link> : 'NO ORGANIZER';
     const eventStatus = this.state.is_published ? <span className="bolded">Published</span> :
       <span className="muted">Dropped</span>;
+    const deleteButton = this.user.is_admin ?
+      <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button> : '';
 
     return (
       <tr className={'schema-row'}>
         <td>
           <button type={'button'} onClick={this.startEdit}>Edit</button>
-          <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button>
+          {deleteButton}
         </td>
         <td><Link to={`/events/${id}`}>{name}</Link></td>
         <td>{startDate}</td>

@@ -1,6 +1,7 @@
 import React, {Component} from "react";
 import Moment from "moment";
 import {Link} from "react-router-dom";
+import app from '../services/socketio';
 
 import "../styles/schema-row.css";
 
@@ -19,6 +20,7 @@ export default class ListingRow extends Component {
     super(props);
 
     this.state = {editable: false, listingName: this.props.listing.name};
+    this.user = app.get('user');
 
     this.startEdit = this.startEdit.bind(this);
     this.cancelEdit = this.cancelEdit.bind(this);
@@ -100,11 +102,14 @@ export default class ListingRow extends Component {
       );
     }
 
+    const deleteButton = this.user.is_admin
+      ? <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button>: '';
+
     return (
       <tr className={'schema-row'}>
         <td>
           <button type={'button'} onClick={this.startEdit}>Edit</button>
-          <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button>
+          {deleteButton}
         </td>
         <td><Link to={`/${schema}/${id}`}>{name}</Link></td>
         <td>{updatedAt}</td>

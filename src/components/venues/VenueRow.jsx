@@ -21,7 +21,7 @@ export default class VenueRow extends ListingRow {
 
     const hoodUUID = typeof this.props.hood === 'undefined' ? '' : this.props.hood.uuid;
 
-    Object.assign(this.state, { venueHood: hoodUUID });
+    Object.assign(this.state, {venueHood: hoodUUID});
   }
 
   /**
@@ -74,13 +74,15 @@ export default class VenueRow extends ListingRow {
     }
 
     const hoodNameLink = this.props.hood
-      ? <Link to={`/neighborhoods/${this.props.hood.id}`}>{ this.props.hood.name }</Link> : 'NO NEIGHBORHOOD';
+      ? <Link to={`/neighborhoods/${this.props.hood.id}`}>{this.props.hood.name}</Link> : 'NO NEIGHBORHOOD';
+    const deleteButton = this.user.is_admin
+      ? <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button> : '';
 
     return (
       <tr className={'schema-row'}>
         <td>
           <button type={'button'} onClick={this.startEdit}>Edit</button>
-          <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button>
+          {deleteButton}
         </td>
         <td><Link to={`/venues/${id}`}>{name}</Link></td>
         <td>{hoodNameLink}</td>
