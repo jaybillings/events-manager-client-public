@@ -59,7 +59,7 @@ class App extends Component {
           <PrivateRoute exact path={'/account'} component={MyAccountPage} />
           <PrivateRoute exact path={'/admin'} component={AdminToolsLayout} />
 
-          <Route path={'/login(/:redirectUrl)?'} component={LoginPage} />
+          <Route path={'/login/:redirectUrl*'} component={LoginPage} />
           <Route component={NotFound} />
         </Switch>
       </BrowserRouter>

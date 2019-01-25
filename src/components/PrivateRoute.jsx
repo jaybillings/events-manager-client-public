@@ -34,7 +34,7 @@ export default class PrivateRoute extends Component {
           .then(user => {
             console.log('user-pr', user);
             user.is_admin = user.permissions.indexOf('admin') !== -1;
-            user.is_su = user.permissions.indexOf('super_user') !== -1;
+            user.is_su = user.is_admin || user.permissions.indexOf('super_user') !== -1;
             app.set('user', user);
             this.setState({login});
           })
@@ -80,10 +80,11 @@ export default class PrivateRoute extends Component {
           return (
             <div className={'container'}>
               <Header />
-              <p style={{'fontWeight': '700', 'color': 'var(--dull-orange)'}}>Authenticating...</p>
+              <p style={{'fontWeight': '700', 'color': 'var(--bright-pink)'}}>Authenticating...</p>
             </div>
           );
-        } else if (this.state.login) return <Component {...props} />;
+        }
+        else if (this.state.login) return <Component {...props} />;
 
         return <Redirect to={`/login${this.props.location.pathname}`} />;
       }} />

@@ -32,9 +32,16 @@ export default class LoginPage extends Component {
    * @override
    */
   componentDidMount() {
-    app.authenticate().then(() => {
-      this.redirectCountdown();
-    });
+    app.authenticate()
+      .then((login) => {
+        app.passport.verifyJWT(login.accessToken)
+      })
+      .then(() => {
+        this.redirectCountdown();
+      })
+      .catch(err => {
+        this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      });
   }
 
   /**
@@ -96,7 +103,8 @@ export default class LoginPage extends Component {
     // TODO: Email/SMS verification
     this.usersService.create({
       email: this.state.email,
-      password: this.state.password
+      password: this.state.password,
+      permissions: 'user:*'
     }).then(() => {
       this.updateMessagePanel({
         status: 'info',
@@ -136,8 +144,9 @@ export default class LoginPage extends Component {
     const redirectCount = this.state.redirectCount;
     const successMsgClass = redirectCount > 0 ? '' : ' hidden';
     const warningMsgClass = redirectCount === -1 ? '' : ' hidden';
+    const redirectTarget = this.props.match.params.redirectUrl || 'import';
 
-    if (redirectCount === 0) return <Redirect to={'/import'} />;
+    if (redirectCount === 0) return <Redirect to={`/${redirectTarget}`} />;
 
     return (
       <div className={'container login-page'}>
@@ -145,8 +154,8 @@ export default class LoginPage extends Component {
         <h2>Log In To Your Account</h2>
         <MessagePanel messages={this.state.messages} isVisible={this.state.messagePanelVisible}
                       dismissPanel={this.dismissMessagePanel} />
-        <p className={'message success-message' + successMsgClass}>Logged in. Redirecting to import page
-          in {this.state.redirectCount} {redirectCount === 1 ? 'second' : 'seconds'}. </p>
+        <p className={'message success-message' + successMsgClass}>Logged in. Redirecting in {this.state.redirectCount}
+          {redirectCount === 1 ? 'second' : 'seconds'}. </p>
         <p className={'message warning-message' + warningMsgClass}>You must log in to continue.</p>
         <form>
           <div className={'input-container'}>
