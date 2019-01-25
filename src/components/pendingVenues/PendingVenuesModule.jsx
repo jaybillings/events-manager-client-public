@@ -152,10 +152,6 @@ export default class PendingVenuesModule extends PendingListingsModule {
     ]);
 
     const uniqueHoods = uniqueListingsOnly(this.state.hoods, this.state.pendingHoods);
-    const sort = this.state.sort;
-    const pageSize = this.state.pageSize;
-    const currentPage = this.state.currentPage;
-    const isVisible = this.state.moduleVisible;
     const selectedVenues = this.state.selectedListings;
     const schemaLabel = selectedVenues.length === 1 ? 'venue' : 'venues';
     const publishButton = this.user.is_su ?
@@ -166,7 +162,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
 
     return ([
       <ShowHideToggle
-        key={'venues-module-showhide'} isVisible={isVisible} changeVisibility={this.toggleModuleVisibility}
+        key={'venues-module-showhide'} isVisible={this.state.moduleVisible} changeVisibility={this.toggleModuleVisibility}
       />,
       <div key={'venues-module-body'}>
         <SelectionControl
@@ -174,11 +170,11 @@ export default class PendingVenuesModule extends PendingListingsModule {
         />
         <PaginationLayout
           key={'pending-venues-pagination'} schema={'pending-venues'}
-          total={pendingVenuesTotal} pageSize={pageSize} activePage={currentPage}
+          total={pendingVenuesTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
           updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
         />
         <table className={'schema-table'} key={'pending-venues-table'}>
-          <thead>{renderTableHeader(titleMap, sort, this.updateColSort)}</thead>
+          <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColSort)}</thead>
           <tbody>
           {
             pendingVenues.map(venue =>

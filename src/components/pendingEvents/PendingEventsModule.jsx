@@ -322,7 +322,6 @@ export default class PendingEventsModule extends PendingListingsModule {
       return <p>No pending events to list.</p>
     }
 
-    const pendingEvents = this.state.pendingListings;
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
       ['name', 'Name'],
@@ -335,16 +334,17 @@ export default class PendingEventsModule extends PendingListingsModule {
     ]);
     const uniqueVenues = uniqueListingsOnly(this.state.venues, this.state.pendingVenues);
     const uniqueOrgs = uniqueListingsOnly(this.state.orgs, this.state.pendingOrgs);
-    const sort = this.state.sort;
-    const pageSize = this.state.pageSize;
-    const currentPage = this.state.currentPage;
-    const isVisible = this.state.moduleVisible;
     const selectedEvents = this.state.selectedListings;
     const schemaLabel = selectedEvents.length === 1 ? 'event' : 'events';
+    const publishButton = this.user.is_su ?
+      <button type={'button'} className={'button-primary'} onClick={this.publishListings}
+              disabled={selectedEvents.length === 0}>
+        Publish {selectedEvents.length || ''} {schemaLabel}
+      </button> : '';
 
     return ([
       <ShowHideToggle
-        key={'events-module-showhide'} isVisible={isVisible} changeVisibility={this.toggleModuleVisibility}
+        key={'events-module-showhide'} isVisible={this.state.moduleVisible} changeVisibility={this.toggleModuleVisibility}
       />,
       <div key={'events-module-body'}>
         <SelectionControl
@@ -352,14 +352,14 @@ export default class PendingEventsModule extends PendingListingsModule {
         />
         <PaginationLayout
           key={'pending-events-pagination'} schema={'pending-events'}
-          total={pendingEventsTotal} pageSize={pageSize} activePage={currentPage}
+          total={pendingEventsTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
           updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
         />
         <table className={'schema-table'} key={'pending-events-table'}>
-          <thead>{renderTableHeader(titleMap, sort, this.updateColSort)}</thead>
+          <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColSort)}</thead>
           <tbody>
           {
-            pendingEvents.map(event =>
+            this.state.pendingListings.map(event =>
               <PendingEventRow
                 key={`event-${event.id}`} selected={selectedEvents.includes(event.id)}
                 listing={event} venues={uniqueVenues} orgs={uniqueOrgs}
@@ -375,10 +375,7 @@ export default class PendingEventsModule extends PendingListingsModule {
           }
           </tbody>
         </table>
-        <button type={'button'} className={'button-primary'} onClick={this.publishListings}
-                disabled={selectedEvents.length === 0}>
-          Publish {selectedEvents.length || ''} {schemaLabel}
-        </button>
+        {publishButton}
         <button type={'button'} onClick={this.discardListings} disabled={selectedEvents.length === 0}>
           Discard {selectedEvents.length || ''} {schemaLabel}
         </button>

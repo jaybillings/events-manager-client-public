@@ -26,6 +26,7 @@ export default class PendingListingsModule extends Component {
     super(props);
 
     this.schema = schema;
+    this.user = app.get('user');
     this.defaultQuery = {$sort: {name: 1}, $limit: 100};
 
     this.state = {
@@ -57,6 +58,7 @@ export default class PendingListingsModule extends Component {
     this.handleListingSelect = this.handleListingSelect.bind(this);
     this.selectAllListings = this.selectAllListings.bind(this);
     this.selectNoListings = this.selectNoListings.bind(this);
+
     this.renderTable = this.renderTable.bind(this);
   }
 
@@ -343,29 +345,27 @@ export default class PendingListingsModule extends Component {
    * @returns {[*]}
    */
   renderTable() {
-    const pendingListingsTotal = this.state.pendingListingsTotal;
-
     if (!this.state.listingsLoaded) return <p>Data is loading... Please be patient...</p>;
-    if (pendingListingsTotal === 0) return <p>No pending {this.schema} to list.</p>;
+    if (this.state.pendingListingsTotal === 0) return <p>No pending {this.schema} to list.</p>;
 
-    const pendingListings = this.state.pendingListings;
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
       ['name', 'Name'],
       ['created_at', 'Imported On'],
       ['status_NOSORT', 'Status']
     ]);
-    const sort = this.state.sort;
-    const pageSize = this.state.pageSize;
-    const currentPage = this.state.currentPage;
-    const isVisible = this.state.moduleVisible;
     const schema = this.schema;
     const selectedListings = this.state.selectedListings;
     const schemaLabel = selectedListings.length === 1 ? schema.slice(0, -1) : schema;
+    const publishButton = this.user.is_su ?
+      <button type={'button'} className={'button-primary'} onClick={this.publishListings}
+              disabled={selectedListings.length === 0}>
+        Publish {selectedListings.length || ''} {schemaLabel}
+      </button> : '';
 
     return ([
       <ShowHideToggle
-        key={`${schema}-module-showhide`} isVisible={isVisible} changeVisibility={this.toggleModuleVisibility}
+        key={`${schema}-module-showhide`} isVisible={this.state.moduleVisible} changeVisibility={this.toggleModuleVisibility}
       />,
       <div key={`${schema}-module-body`}>
         <SelectionControl
@@ -373,14 +373,14 @@ export default class PendingListingsModule extends Component {
         />
         <PaginationLayout
           key={`pending-${schema}-pagination`} schema={`pending-${schema}`}
-          total={pendingListingsTotal} pageSize={pageSize} activePage={currentPage}
+          total={this.state.pendingListingsTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
           updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
         />
         <table className={'schema-table'} key={`pending-${schema}-table`}>
-          <thead>{renderTableHeader(titleMap, sort, this.updateColSort)}</thead>
+          <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColSort)}</thead>
           <tbody>
           {
-            pendingListings.map(listing =>
+            this.state.pendingListings.map(listing =>
               <PendingListingRow
                 key={`${this.schema}-${listing.id}`} schema={schema} listing={listing}
                 selected={selectedListings.includes(listing.id)}
@@ -390,10 +390,7 @@ export default class PendingListingsModule extends Component {
           }
           </tbody>
         </table>
-        <button type={'button'} className={'button-primary'} onClick={this.publishListings}
-                disabled={selectedListings.length === 0}>
-          Publish {selectedListings.length || ''} {schemaLabel}
-        </button>
+        {publishButton}
         <button type={'button'} onClick={this.discardListings} disabled={selectedListings.length === 0}>
           Discard {selectedListings.length || ''} {schemaLabel}
         </button>
