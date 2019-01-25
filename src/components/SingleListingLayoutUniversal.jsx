@@ -13,12 +13,6 @@ import MessagePanel from "../components/common/MessagePanel";
  * @parent
  */
 export default class SingleListingLayoutUniversal extends Component {
-  /**
-   * The class's constructor.
-   * @constructor
-   * @param {object} props
-   * @param {string} schema - The schema being laid out.
-   */
   constructor(props, schema) {
     super(props);
 

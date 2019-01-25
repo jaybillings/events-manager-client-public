@@ -11,6 +11,14 @@ import StatusLabel from "../common/StatusLabel";
  */
 export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
   /**
+   * Runs when the component mounts. Checks for write status of listing.
+   * @override
+   */
+  componentDidMount() {
+    this.checkWriteStatus();
+  }
+
+  /**
    * Renders the component.
    * @render
    * @returns {*}
@@ -24,12 +32,14 @@ export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
     return (
       <form id={'pending-hood-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
         <label>
-          UUID
-          <input type={'text'} value={pendingHood.uuid} disabled />
+          Status
+          <div>
+            <StatusLabel writeStatus={writeStatus} schema={'pending-neighborhoods'} />
+          </div>
         </label>
         <label>
-          Status
-          <StatusLabel writeStatus={writeStatus} schema={'pending-neighborhoods'} />
+          UUID
+          <input type={'text'} value={pendingHood.uuid} disabled />
         </label>
         <label>
           Created
@@ -43,9 +53,10 @@ export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
           Name
           <input type={'text'} ref={this.nameInput} defaultValue={pendingHood.name} required maxLength={100} />
         </label>
-        <div className={'block-warning'} title={'Caution: This neighborhood is pending. It must be pushed live before it is visible on the site.'}>
-          <button type="submit" className={'button-primary'}>Save Changes</button>
+        <div className={'block-warning'}
+             title={'Caution: This neighborhood is pending. It must be pushed live before it is visible on the site.'}>
           <button type="button" onClick={this.handleDeleteClick}>Discard Neighborhood</button>
+          <button type="submit" className={'button-primary'}>Save Changes</button>
         </div>
       </form>
     );

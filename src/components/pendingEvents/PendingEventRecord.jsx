@@ -19,8 +19,6 @@ export default class PendingEventRecord extends ListingRecordUniversal {
   constructor(props) {
     super(props);
 
-    this.state = {writeStatus: ''};
-
     this.startInput = React.createRef();
     this.endInput = React.createRef();
     this.descInput = React.createRef();
@@ -198,8 +196,8 @@ export default class PendingEventRecord extends ListingRecordUniversal {
         </label>
         <div className={'block-warning'}
              title={'Caution: This event is pending. It must be pushed live before it is visible on the site.'}>
-          <button type={"submit"} className={"button-primary"}>Save Changes</button>
           <button type={"button"} onClick={this.handleDeleteClick}>Discard Event</button>
+          <button type={"submit"} className={"button-primary"}>Save Changes</button>
         </div>
       </form>
     );

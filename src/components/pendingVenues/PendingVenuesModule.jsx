@@ -158,6 +158,11 @@ export default class PendingVenuesModule extends PendingListingsModule {
     const isVisible = this.state.moduleVisible;
     const selectedVenues = this.state.selectedListings;
     const schemaLabel = selectedVenues.length === 1 ? 'venue' : 'venues';
+    const publishButton = this.user.is_su ?
+      <button type={'button'} className={'button-primary'} onClick={this.publishListings}
+              disabled={selectedVenues.length === 0}>
+        Publish {selectedVenues.length || ''} {schemaLabel}
+      </button> : '';
 
     return ([
       <ShowHideToggle
@@ -188,10 +193,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
           }
           </tbody>
         </table>
-        <button type={'button'} className={'button-primary'} onClick={this.publishListings}
-                disabled={selectedVenues.length === 0}>
-          Publish {selectedVenues.length || ''} {schemaLabel}
-        </button>
+        {publishButton}
         <button type={'button'} onClick={this.discardListings} disabled={selectedVenues.length === 0}>
           Discard {selectedVenues.length || ''} {schemaLabel}
         </button>

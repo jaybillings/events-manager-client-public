@@ -1,6 +1,7 @@
 import React, {Component} from "react";
 import Moment from "moment";
 import {makeSingular, makeTitleCase} from "../utilities";
+import app from '../services/socketio';
 
 import "../styles/schema-record.css";
 
@@ -18,6 +19,9 @@ export default class ListingRecordUniversal extends Component {
   constructor(props) {
     super(props);
 
+    this.state = {writeStatus: ''};
+    
+    this.user = app.get('user');
     this.nameInput = React.createRef();
 
     this.checkWriteStatus = this.checkWriteStatus.bind(this);

@@ -9,7 +9,7 @@ export default class SinglePendingOrganizerLayout extends SingleListingLayoutUni
   }
 
   /**
-   * Renders the pending organizer record.
+   * Renders the record.
    * @override
    * @returns {*}
    */
@@ -17,7 +17,7 @@ export default class SinglePendingOrganizerLayout extends SingleListingLayoutUni
     if (!this.state.listingLoaded) return <p>Data is loading... Please be patient...</p>;
 
     return <PendingOrganizerRecord
-      pendingListing={this.state.listing} saveListing={this.updateListing} deleteListing={this.deleteListing}
+      listing={this.state.listing} saveListing={this.updateListing} deleteListing={this.deleteListing}
       queryForExisting={this.queryForExisting}
     />;
   }

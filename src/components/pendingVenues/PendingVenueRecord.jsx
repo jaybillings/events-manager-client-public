@@ -3,7 +3,7 @@ import Moment from "moment";
 import {renderOptionList} from "../../utilities";
 
 import ListingRecordUniversal from "../ListingRecordUniversal";
-import StatusLabel from "../pendingEvents/PendingEventRecord";
+import StatusLabel from "../common/StatusLabel";
 
 /**
  * PendingVenueRecord is a component which displays a single pending venue's record.
@@ -31,6 +31,14 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
   }
 
   /**
+   * Runs after the component mounts. Checks for write status of listing.
+   * @override
+   */
+  componentDidMount() {
+    this.checkWriteStatus();
+  }
+
+  /**
    * Handles the submit action by parsing new data and calling a function to create a new pending venue.
    * @override
    * @param {Event} e
@@ -46,10 +54,10 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
 
     // Only add non-required if they have value
     this.emailInput.current.value !== '' && (newData.email = this.emailInput.current.value.trim());
-    this.urlInput.current.value !=='' && (newData.url = this.urlInput.current.value.trim());
+    this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value.trim());
     this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value.trim());
     this.streetInput.current.value !== '' && (newData.address_street = this.streetInput.current.value.trim());
-    this.cityInput.current.value !==  '' && (newData.address_city = this.cityInput.current.value.trim());
+    this.cityInput.current.value !== '' && (newData.address_city = this.cityInput.current.value.trim());
     this.stateInput.current.value !== '' && (newData.address_state = this.stateInput.current.value.trim());
     this.zipInput.current.value !== '' && (newData.address_zip = this.zipInput.current.value.trim());
 
@@ -67,17 +75,19 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
     const hoods = this.props.hoods;
     const createdAt = Moment(pendingVenue.created_at).calendar();
     const updatedAt = Moment(pendingVenue.updated_at).calendar();
-    const writeStatus = this.props.writeStatus;
+    const writeStatus = this.state.writeStatus;
 
     return (
       <form id={'pending-venue-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
         <label>
-          UUID
-          <input type={'text'} value={pendingVenue.uuid} disabled />
+          Status
+          <div>
+            <StatusLabel writeStatus={writeStatus} schema={'pending-events'} />
+          </div>
         </label>
         <label>
-          Status
-          <StatusLabel writeStatus={writeStatus} schema={'pending-events'} />
+          UUID
+          <input type={'text'} value={pendingVenue.uuid} disabled />
         </label>
         <label>
           Created
@@ -131,8 +141,8 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
         </label>
         <div className={'block-warning'}
              title={'Caution: This venue is pending. It must be pushed live before it is visible on the site.'}>
-          <button type={'submit'} className={'button-primary'}>Save Changes</button>
           <button type={'button'} onClick={this.handleDeleteClick}>Discard Venue</button>
+          <button type={'submit'} className={'button-primary'}>Save Changes</button>
         </div>
       </form>
     );

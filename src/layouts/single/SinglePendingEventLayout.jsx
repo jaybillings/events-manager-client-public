@@ -1,9 +1,9 @@
 import React from 'react';
 import app from "../../services/socketio";
+import {uniqueListingsOnly} from "../../utilities";
 
 import PendingEventRecord from "../../components/pendingEvents/PendingEventRecord";
 import SingleListingLayoutUniversal from "../../components/SingleListingLayoutUniversal";
-import {uniqueListingsOnly} from "../../utilities";
 
 /**
  * SinglePendingEventLayout is a component which lays out a single pending event page.
@@ -11,11 +11,6 @@ import {uniqueListingsOnly} from "../../utilities";
  * @child
  */
 export default class SinglePendingEventLayout extends SingleListingLayoutUniversal {
-  /**
-   * The class's constructor.
-   * @constructor
-   * @param {object} props
-   */
   constructor(props) {
     super(props, 'pending-events');
 

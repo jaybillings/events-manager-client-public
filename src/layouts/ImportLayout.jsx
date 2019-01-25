@@ -28,6 +28,7 @@ export default class ImportLayout extends Component {
     this.API_URI = 'http://localhost:3030/importer';
     this.defaultPageSize = 5;
     this.defaultSortOrder = ['created_at', -1];
+    this.user = app.get('user');
 
     this.fileInput = React.createRef();
     this.schemaSelect = React.createRef();
@@ -136,6 +137,10 @@ export default class ImportLayout extends Component {
   render() {
     const showMessagePanel = this.state.messagePanelVisible;
     const messages = this.state.messages;
+    const publishButton = this.user.is_su ?
+      <button type={'button'} className={'button-primary button-publish'} onClick={this.publishListings}>
+        Publish All Pending Listings
+      </button> : '';
 
     return (
       <div className="container">
@@ -164,9 +169,7 @@ export default class ImportLayout extends Component {
           ref={this.tagsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
           updateMessageList={this.updateMessagePanel}
         />
-        <button type={'button'} className={'button-primary button-publish'} onClick={this.publishListings}>
-          Publish All Pending Listings
-        </button>
+        {publishButton}
       </div>
     );
   }

@@ -3,6 +3,10 @@ header {
   margin-bottom: 3rem;
 }
 
+header .smaller {
+  font-size: 0.9em;
+}
+
 header nav ul {
   display: grid;
   grid-auto-flow: column;

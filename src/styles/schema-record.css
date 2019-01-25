@@ -7,7 +7,7 @@
 }
 
 .schema-record > div:last-child {
-  margin-top: 2em;
+  margin: 2em 0;
 }
 
 .schema-record input:not([type='checkbox']), .schema-record textarea, .schema-record select {

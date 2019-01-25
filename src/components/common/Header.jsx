@@ -20,8 +20,8 @@ export default class Header extends Component {
     const user = app.get('user');
     const adminNav = user && user.permissions.indexOf('admin') !== -1
       ? <li><NavLink to={`/admin/`} activeClassName={'current'}>Admin Tools</NavLink></li> : '';
-    const accountNav = user ? <li><NavLink to={`/account`} activeClassName={'current'}>My Account</NavLink></li>
-      : <li><NavLink to={'/login'} activeClassName={'current'}>Log In/Create Account</NavLink></li>;
+    const accountLink = user ? <NavLink to={`/account`} activeClassName={'current'}>{user.email}'s Account</NavLink>
+      : <NavLink to={'/login'} activeClassName={'current'}>Log In/Create Account</NavLink>;
 
     return (
       <header>
@@ -37,7 +37,7 @@ export default class Header extends Component {
             <li><NavLink to={`/neighborhoods/`} activeClassName={'current'}>Neighborhoods</NavLink></li>
             <li><NavLink to={`/tags/`} activeClassName={'current'}>Tags</NavLink></li>
             {adminNav}
-            {accountNav}
+            <li className={'smaller'}>{accountLink}</li>
           </ul>
         </nav>
       </header>
