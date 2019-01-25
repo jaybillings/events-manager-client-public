@@ -4,9 +4,9 @@ import {Link} from "react-router-dom";
 import {renderOptionList} from "../../utilities";
 
 import ListingRow from "../ListingRow";
+import StatusLabel from "../common/StatusLabel";
 
 import "../../styles/toggle.css";
-import StatusLabel from "../common/StatusLabel";
 
 /**
  * EventRow is a component which displays a single row for a live event table.

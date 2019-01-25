@@ -32,10 +32,12 @@ export default class OrganizerRecord extends ListingRecordUniversal {
 
     const newData = {
       name: this.nameInput.current.value,
-      description: this.descInput.current.value,
-      url: this.urlInput.current.value,
-      phone: this.phoneInput.current.value
+      description: this.descInput.current.value
     };
+
+    // Optional data -- only include if set (prevents validation errors)
+    this.urlInput.current.value && (newData.url = this.urlInput.current.value);
+    this.phoneInput.current.value && (newData.phone = this.phoneInput.current.value);
 
     this.props.updateListing(newData);
   }
@@ -50,6 +52,8 @@ export default class OrganizerRecord extends ListingRecordUniversal {
     const org = this.props.listing;
     const createdAt = Moment(org.created_at).calendar();
     const updatedAt = Moment(org.updated_at).calendar();
+    const deleteButton = this.user.is_admin ?
+      <button type={'button'} onClick={this.handleDeleteClick}>Delete Organizer</button> : '';
 
     return (
       <form id={'organizer-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
@@ -83,7 +87,7 @@ export default class OrganizerRecord extends ListingRecordUniversal {
         </label>
         <div>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
-          <button type={'button'} onClick={this.handleDeleteClick}>Delete Organizer</button>
+          {deleteButton}
         </div>
       </form>
     );

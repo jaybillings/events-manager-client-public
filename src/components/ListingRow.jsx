@@ -20,6 +20,7 @@ export default class ListingRow extends Component {
     super(props);
 
     this.state = {editable: false, listingName: this.props.listing.name};
+
     this.user = app.get('user');
 
     this.startEdit = this.startEdit.bind(this);

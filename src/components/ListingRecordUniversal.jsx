@@ -92,6 +92,8 @@ export default class ListingRecordUniversal extends Component {
     /** @var {string} listing.updated_at */
     const updatedAt = Moment(listing.updated_at).calendar();
 
+    const deleteButton = schema.indexOf('pending') === -1 && app.get('user').is_admin
+      ? <button type={'button'} onClick={this.handleDeleteClick}>Delete {singularTitleCaseSchema}</button> : '';
     return (
       <form id={`${schema}-listing-form`} className={'schema-record'} onSubmit={this.handleSubmit}>
         <label>
@@ -111,8 +113,8 @@ export default class ListingRecordUniversal extends Component {
           <input type={'text'} ref={this.nameInput} defaultValue={listing.name} required maxLength={100} />
         </label>
         <div>
+          {deleteButton}
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
-          <button type={'button'} onClick={this.handleDeleteClick}>Delete {singularTitleCaseSchema}</button>
         </div>
       </form>
     );

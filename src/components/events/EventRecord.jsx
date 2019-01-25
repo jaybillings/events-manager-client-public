@@ -72,15 +72,17 @@ export default class EventRecord extends ListingRecordUniversal {
       start_date: Moment(this.startInput.current.value).valueOf(),
       end_date: Moment(this.endInput.current.value).valueOf(),
       description: this.descInput.current.value,
-      email: this.emailInput.current.value,
-      url: this.urlInput.current.value,
-      phone: this.phoneInput.current.value,
-      hours: this.hoursInput.current.value,
-      ticket_url: this.ticketUrlInput.current.value,
-      ticket_phone: this.ticketPhoneInput.current.value,
-      ticket_prices: this.ticketPricesInput.current.value,
-      flag_ongoing: this.ongoingInput.current.checked
+      ongoing: this.ongoingInput.current.checked
     };
+
+    // Optional data -- only include if set
+    this.emailInput.current.value !== '' && (newData.email = this.emailInput.current.value);
+    this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value);
+    this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value);
+    this.hoursInput.current.value !== '' && (newData.hours = this.hoursInput.current.value);
+    this.ticketUrlInput.current.value !== '' && (newData.ticket_url = this.ticketUrlInput.current.value);
+    this.ticketPhoneInput.current.value !== '' && (newData.ticket_phone = this.ticketPhoneInput.current.value);
+    this.ticketPricesInput.current.value !== '' && (newData.ticket_prices = this.ticketPricesInput.current.value);
 
     // Tag Data
     let tagsToSave = [], tagsToRemove = [];
@@ -141,6 +143,8 @@ export default class EventRecord extends ListingRecordUniversal {
     const endDate = Moment(event.end_date).format('YYYY-MM-DD');
     const createdAt = Moment(event.created_at).calendar();
     const updatedAt = Moment(event.updated_at).calendar();
+    const deleteButton = this.user.is_admin
+      ?  <button type={'button'} onClick={this.handleDeleteClick}>Delete Event</button> : '';
 
     return (
       <form id={'event-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
@@ -225,7 +229,7 @@ export default class EventRecord extends ListingRecordUniversal {
         </label>
         <div>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
-          <button type={'button'} onClick={this.handleDeleteClick}>Delete Event</button>
+          {deleteButton}
         </div>
       </form>
     );

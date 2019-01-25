@@ -40,15 +40,17 @@ export default class VenueRecord extends ListingRecordUniversal {
     const newData = {
       name: this.nameInput.current.value,
       hood_id: parseInt(this.hoodList.current.value, 10),
-      description: this.descInput.current.value,
-      email: this.emailInput.current.value,
-      url: this.urlInput.current.value,
-      phone: this.phoneInput.current.value,
-      address_street: this.streetInput.current.value,
-      address_city: this.cityInput.current.value,
-      address_state: this.stateInput.current.value,
-      address_zip: this.zipInput.current.value
+      description: this.descInput.current.value
     };
+
+    // Optional data -- only include if set
+    this.emailInput.current.value !== '' && (newData.email = this.emailInput.current.value);
+    this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value);
+    this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value);
+    this.streetInput.current.value !== '' && (newData.street = this.streetInput.current.value);
+    this.cityInput.current.value !== '' && (newData.city = this.cityInput.current.value);
+    this.stateInput.current.value !== '' && (newData.state = this.stateInput.current.value);
+    this.zipInput.current.value !== '' && (newData.zip = this.zipInput.current.value);
 
     this.props.updateListing(newData);
   }
@@ -64,6 +66,8 @@ export default class VenueRecord extends ListingRecordUniversal {
     const hoods = this.props.hoods;
     const createdAt = Moment(venue.created_at).calendar();
     const updatedAt = Moment(venue.updated_at).calendar();
+    const deleteButton =this.user.is_admin ?
+      <button type={'button'} onClick={this.handleDeleteClick}>Delete Venue</button>: '';
 
     return (
       <form id={'venue-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
@@ -121,7 +125,7 @@ export default class VenueRecord extends ListingRecordUniversal {
         </label>
         <div>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
-          <button type={'button'} onClick={this.handleDeleteClick}>Delete Venue</button>
+          {deleteButton}
         </div>
       </form>
     );
