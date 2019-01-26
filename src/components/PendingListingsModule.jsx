@@ -11,7 +11,7 @@ import '../styles/schema-module.css';
 import '../styles/schema-table.css';
 
 /**
- * PendingListingsModule is a generic component to display pending listings as a module within a layout.
+ * PendingListingsModule is a generic component that displays pending listings as a module within a layout.
  * @class
  * @parent
  */

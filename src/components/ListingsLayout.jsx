@@ -232,15 +232,9 @@ export default class ListingsLayout extends Component {
       return <p>No {schema} to list.</p>
     }
 
-    const listings = this.state.listings;
-    const pageSize = this.state.pageSize;
-    const currentPage = this.state.currentPage;
-    const total = this.state.listingsTotal;
-    const sort = this.state.sort;
-
     return <ListingsTable
-      listings={listings} listingsTotal={total} schema={schema}
-      pageSize={pageSize} currentPage={currentPage} sort={sort}
+      listings={this.state.listings} listingsTotal={this.state.listingsTotal} schema={schema}
+      pageSize={this.state.pageSize} currentPage={this.state.currentPage} sort={this.state.sort}
       updateColumnSort={this.updateColumnSort} updatePageSize={this.updatePageSize}
       updateCurrentPage={this.updateCurrentPage}
       updateListing={this.updateListing} deleteListing={this.deleteListing}

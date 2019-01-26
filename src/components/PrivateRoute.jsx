@@ -20,7 +20,6 @@ export default class PrivateRoute extends Component {
    */
   componentDidMount() {
     app.authenticate().catch((err) => {
-      console.log('login error', err);
       this.setState({login: null});
     });
 
@@ -28,11 +27,9 @@ export default class PrivateRoute extends Component {
       .on('authenticated', login => {
         app.passport.verifyJWT(login.accessToken)
           .then(payload => {
-            console.log('payload', payload);
             return app.service('users').get(payload.userId);
           })
           .then(user => {
-            console.log('user-pr', user);
             user.is_admin = user.permissions.indexOf('admin') !== -1;
             user.is_su = user.is_admin || user.permissions.indexOf('super_user') !== -1;
             app.set('user', user);

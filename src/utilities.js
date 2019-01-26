@@ -91,11 +91,15 @@ const uniqueListingsOnly = function (schema, pendingSchema) {
   return uniqueSchema;
 };
 
-const buildSortQuery = function (sortState) {
+const buildSortQuery = function (sortState, secondaryNameSort=true) {
   if (sortState[0] === 'name') {
     return {'name': sortState[1]};
   }
-  return {[sortState[0]]: sortState[1], 'name': 1};
+
+  const sortStateObj = {[sortState[0]]: sortState[1]};
+  if (secondaryNameSort) sortStateObj.name = 1;
+
+  return sortStateObj;
 };
 
 const buildColumnSort = function (clickTarget, sortState) {

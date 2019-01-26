@@ -25,25 +25,19 @@ export default class ListingsTable extends Component {
       ['name', 'Name'],
       ['updated_at', 'Last Modified']
     ]);
-
     const schema = this.props.schema;
-    const listings = this.props.listings;
-    const listingsTotal = this.props.listingsTotal;
-
-    const pageSize = this.props.pageSize;
-    const currentPage = this.props.currentPage;
-    const sort = this.props.sort;
 
     return ([
       <PaginationLayout
-        key={`${schema}-pagination`} schema={schema} total={listingsTotal} pageSize={pageSize} activePage={currentPage}
+        key={`${schema}-pagination`} schema={schema} total={this.props.listingsTotal}
+        pageSize={this.props.pageSize} activePage={this.props.currentPage}
         updatePageSize={this.props.updatePageSize} updateCurrentPage={this.props.updateCurrentPage}
       />,
       <table key={`${schema}-table`} className={'schema-table'}>
-        <thead>{renderTableHeader(titleMap, sort, this.props.updateColumnSort)}</thead>
+        <thead>{renderTableHeader(titleMap, this.props.sort, this.props.updateColumnSort)}</thead>
         <tbody>
         {
-          listings.map(listing =>
+          this.props.listings.map(listing =>
             <ListingRow
               key={listing.id} schema={schema} listing={listing}
               updateListing={this.props.updateListing} deleteListing={this.props.deleteListing}
