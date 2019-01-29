@@ -4,7 +4,7 @@ import {buildColumnSort, buildSortQuery, renderTableHeader} from '../../utilitie
 
 import PaginationLayout from "../common/PaginationLayout";
 import UserRow from "./UserRow";
-import AddUserModule from "./AddUserModule";
+import AddUserForm from "./AddUserForm";
 
 import '../../styles/schema-module.css';
 import '../../styles/schema-table.css';
@@ -166,8 +166,8 @@ export default class ManageUsersModule extends Component {
 
   renderAddForm() {
     return ([
-      <h4>Add New User</h4>,
-      <AddUserModule createUser={this.createUser} />
+      <h4 key={'add-form-header'}>Add New User</h4>,
+      <AddUserForm key={'add-form'} createUser={this.createUser} />
     ])
   }
 

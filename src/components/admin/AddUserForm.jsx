@@ -1,20 +1,28 @@
 import React, {Component} from 'react';
+import generator from "generate-password";
 
 import '../../styles/user-add-form.css';
 
-export default class AddUserModule extends Component {
+export default class AddUserForm extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {email: '', permissions: 'user:*', password: ''};
+    this.state = {email: '', permissions: 'user:*', password: '', showPWField: true};
 
     this.generatePassword = this.generatePassword.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
+    this.createUser = this.createUser.bind(this);
     this.clearForm = this.clearForm.bind(this);
   }
 
   generatePassword() {
+    const password = generator.generate({
+      numbers: true, symbols: true, excludeSimilar: true
+    });
+
+    console.log('password', password);
+
+    this.setState({password});
   }
 
   /**
@@ -23,10 +31,15 @@ export default class AddUserModule extends Component {
    */
   handleInputChange(e) {
     if (!e.target.name) return;
-    this.setState({[e.target.name]: e.target.value.trim()});
+    this.setState({[e.target.name]: e.target.value.trim()}, () => {
+      // API Only users don't have passwords so they can't log in
+      if (this.state.permissions.indexOf('api') !== -1) this.setState({password: '', showPWField: false});
+    });
   }
 
-  handleSubmit(e) {
+  createUser(e) {
+    console.log('SUBMIT');
+
     e.preventDefault();
 
     this.props.createUser({
@@ -43,8 +56,10 @@ export default class AddUserModule extends Component {
   }
 
   render() {
+    const pwHiddenClass = this.state.showPWField ? '' : ' hidden';
+
     return (
-      <form key={'user-add-form'} className={'user-add-form'} onSubmit={this.handleSubmit}>
+      <form key={'user-add-form'} className={'user-add-form'}>
         <label className={'emailInput'}>
           <span>Email Address</span>
           <input type={'email'} name={'email'} value={this.state.email} required maxLength={100}
@@ -59,7 +74,7 @@ export default class AddUserModule extends Component {
             <option value={"api_only:*"}>API Only</option>
           </select>
         </label>
-        <label className={'pwInput'}>
+        <label className={`pwInput${pwHiddenClass}`}>
           <span>Password</span>
           <input type={'text'} name={'password'} value={this.state.password} required
                  onChange={this.handleInputChange} />
@@ -67,7 +82,7 @@ export default class AddUserModule extends Component {
         </label>
         <div className={'buttons'}>
           <button type={'button'} onClick={this.clearForm}>Reset</button>
-          <button type={'submit'} className={'button-primary'}>Add User</button>
+          <button type={'button'} className={'button-primary'} onClick={this.createUser}>Add User</button>
         </div>
       </form>
     );

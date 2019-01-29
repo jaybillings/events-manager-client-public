@@ -30,3 +30,8 @@
 .user-add-form .buttons {
   grid-area: buttons;
 }
+
+.user-add-form .pwInput button {
+  color: var(--true-green);
+  border-color: var(--true-green);
+}
