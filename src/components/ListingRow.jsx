@@ -49,7 +49,7 @@ export default class ListingRow extends Component {
   }
 
   /**
-   * Handles changes to input blocks by saving the data as a state parameter.
+   * Handles input changes by saving the data to the component's state.
    * @param {Event} e
    */
   handleInputChange(e) {

@@ -1,9 +1,8 @@
 import React, {Component} from 'react';
 
 import Header from '../components/common/Header';
-import ManageUsersModule from "../components/admin/ManageUsersModule";
 import MessagePanel from "../components/common/MessagePanel";
-
+import ManageUsersModule from "../components/admin/ManageUsersModule";
 
 export default class AdminToolsLayout extends Component {
   constructor(props) {
@@ -41,7 +40,6 @@ export default class AdminToolsLayout extends Component {
         <ManageUsersModule updateMessagePanel={this.updateMessagePanel} />
         <h3>Import/Export</h3>
         <a className="button" href={'http://localhost:3030/exporter/json'} target={'_blank'}>Export All Data</a>
-        <h3>Create API Buckets</h3>
       </div>
     );
   }

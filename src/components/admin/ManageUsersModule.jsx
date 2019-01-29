@@ -2,9 +2,13 @@ import React, {Component} from 'react';
 import app from '../../services/socketio';
 import {buildColumnSort, buildSortQuery, renderTableHeader} from '../../utilities';
 
+import PaginationLayout from "../common/PaginationLayout";
+import UserRow from "./UserRow";
+import AddUserModule from "./AddUserModule";
+
 import '../../styles/schema-module.css';
 import '../../styles/schema-table.css';
-import PaginationLayout from "../common/PaginationLayout";
+import '../../styles/manage-users-module.css';
 
 /**
  * ManageUsersModule is a component that displays and allows the admin to manage the console's users.
@@ -25,18 +29,22 @@ export default class ManageUsersModule extends Component {
 
     this.usersService = app.service('users');
 
-
     this.fetchAllData = this.fetchAllData.bind(this);
-    this.handleDeleteUser = this.handleDeleteUser.bind(this);
-    this.handleInputChange = this.handleInputChange.bind(this);
+
+    this.createUser = this.createUser.bind(this);
+    this.saveUser = this.saveUser.bind(this);
+    this.deleteUser = this.deleteUser.bind(this);
+
     this.updatePageSize = this.updatePageSize.bind(this);
     this.updateCurrentPage = this.updateCurrentPage.bind(this);
     this.updateColumnSort = this.updateColumnSort.bind(this);
+
     this.renderTable = this.renderTable.bind(this);
   }
 
   /**
    * Runs after the component mounts. Fetches data.
+   * @override
    */
   componentDidMount() {
     this.fetchAllData();
@@ -60,17 +68,45 @@ export default class ManageUsersModule extends Component {
     });
   }
 
-  handleDeleteUser(user) {
-    // TODO: Add a confirm requirement
-    this.usersService.remove(user.id).then(() => {
-      this.props.updateMessagePanel({status: 'success', details: `${user.email} has been permanently removed.`})
+  createUser(userData) {
+    return this.usersService.create(userData).then(message => {
+      this.props.updateMessagePanel({status: 'success', details: `Added user with email address ${message.email}`});
+      this.fetchAllData();
     }, err => {
       this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
 
   /**
-   * Updates the component's page size, then fetches new listings.
+   * Saves changes to a given user.
+   * @param {int} id
+   * @param {object} newData
+   */
+  saveUser(id, newData) {
+    this.usersService.patch(id, newData).then(message => {
+      console.log('saveUser', message);
+      this.props.updateMessagePanel({status: 'success', details: `Saved changes to ${message.email}`});
+      this.fetchAllData();
+    }, err => {
+      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+    });
+  }
+
+  /**
+   * Permanently removes a given user from the database.
+   * @param {int} userId
+   */
+  deleteUser(userId) {
+    this.usersService.remove(userId.id).then(() => {
+      this.props.updateMessagePanel({status: 'success', details: `${userId.email} has been permanently removed.`});
+      this.fetchAllData();
+    }, err => {
+      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+    });
+  }
+
+  /**
+   * Updates the component's page size and respective data.
    * @param {Event} e
    */
   updatePageSize(e) {
@@ -78,7 +114,7 @@ export default class ManageUsersModule extends Component {
   }
 
   /**
-   * Updates the component's current page, then fetches new listings.
+   * Updates the component's current page and respective data.
    * @param {string} page
    */
   updateCurrentPage(page) {
@@ -86,7 +122,7 @@ export default class ManageUsersModule extends Component {
   }
 
   /**
-   * Updates the component's column sorting, then fetches new listings.
+   * Updates the component's column sorting and respective data.
    * @param {Event} e
    */
   updateColumnSort(e) {
@@ -107,8 +143,6 @@ export default class ManageUsersModule extends Component {
       ['permissions', 'Permissions']
     ]);
 
-    // TODO: Make user row own componenet
-    
     return ([
       <PaginationLayout
         key={'users-pagination'} schema={'users'} total={this.state.usersTotal}
@@ -121,17 +155,20 @@ export default class ManageUsersModule extends Component {
         {
           this.state.users.map(user => {
             return (
-              <tr className={'schema-row'} key={user.id}>
-                <td><button type={'button'} className={'delete'} onClick={this.handleDeleteUser}>Delete</button></td>
-                <td>{user.email}</td>
-                <td><select name={'userPermissions'} value={user.permissions} onChange={this.handleInputChange}>{renderOptionList(this.state.users)}</select></td>
-              </tr>
+              <UserRow key={user.id} user={user} saveUser={this.saveUser} deleteUser={this.deleteUser} />
             );
           })
         }
         </tbody>
       </table>
     ]);
+  }
+
+  renderAddForm() {
+    return ([
+      <h4>Add New User</h4>,
+      <AddUserModule createUser={this.createUser} />
+    ])
   }
 
   /**
@@ -142,9 +179,10 @@ export default class ManageUsersModule extends Component {
    */
   render() {
     return (
-      <div className={'schema-module'}>
+      <div className={'schema-module manage-users'}>
         <h3>Manage Users</h3>
         {this.renderTable()}
+        {this.renderAddForm()}
       </div>
     );
   }

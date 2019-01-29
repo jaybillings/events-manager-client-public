@@ -1,0 +1,11 @@
+.user-add-form span {
+  display: block;
+}
+
+.user-add-form input, .user-add-form select {
+  min-width: 350px;
+}
+
+.user-add-form input + button {
+  margin-left: 1rem;
+}
