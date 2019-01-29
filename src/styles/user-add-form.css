@@ -1,3 +1,8 @@
+.user-add-form {
+  display: grid;
+  grid-auto-columns: 1fr 1fr;
+  grid-template-areas: "email permissions" "password password" "buttons buttons";
+}
 .user-add-form span {
   display: block;
 }
@@ -8,4 +13,20 @@
 
 .user-add-form input + button {
   margin-left: 1rem;
+}
+
+.user-add-form .emailInput {
+  grid-area: email;
+}
+
+.user-add-form .permsInput {
+  grid-area: permissions;
+}
+
+.user-add-form .pwInput {
+  grid-area: password;
+}
+
+.user-add-form .buttons {
+  grid-area: buttons;
 }

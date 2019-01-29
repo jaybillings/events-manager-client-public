@@ -61,11 +61,9 @@ export default class AddUserModule extends Component {
         </label>
         <label className={'pwInput'}>
           <span>Password</span>
-
-            <input type={'text'} name={'password'} value={this.state.password} required
-                   onChange={this.handleInputChange} />
-            <button type={'button'} onClick={this.generatePassword}>Generate</button>
-
+          <input type={'text'} name={'password'} value={this.state.password} required
+                 onChange={this.handleInputChange} />
+          <button type={'button'} onClick={this.generatePassword}>Generate Password</button>
         </label>
         <div className={'buttons'}>
           <button type={'button'} onClick={this.clearForm}>Reset</button>

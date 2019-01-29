@@ -38,8 +38,11 @@ export default class AdminToolsLayout extends Component {
                       dismissPanel={this.dismissMessagePanel} />
         <h2>Admin Tools</h2>
         <ManageUsersModule updateMessagePanel={this.updateMessagePanel} />
-        <h3>Import/Export</h3>
-        <a className="button" href={'http://localhost:3030/exporter/json'} target={'_blank'}>Export All Data</a>
+        <div className={'schema-module'}>
+          <h3>Import/Export</h3>
+          <a className="button" href={'http://localhost:3030/exporter/json'} target={'_blank'}>Export All Data</a>
+          <span> as a JSON file.</span>
+        </div>
       </div>
     );
   }
