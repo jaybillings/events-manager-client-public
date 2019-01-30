@@ -1,11 +1,12 @@
 import React from 'react';
-import {arrayUnique, buildSortQuery} from "../../utilities";
+import {arrayUnique, buildSortQuery, renderTableHeader} from "../../utilities";
 import app from '../../services/socketio';
 import uuid from "uuid/v1";
 
-import EventsTable from '../../components/events/EventsTable';
 import EventAddForm from '../../components/events/EventAddForm';
+import EventRow from "../../components/events/EventRow";
 import ListingsLayout from "../../components/ListingsLayout";
+import PaginationLayout from "../../components/common/PaginationLayout";
 
 /**
  * EventsLayout is a generic component that lays out an event collection page.
@@ -22,12 +23,9 @@ export default class EventsLayout extends ListingsLayout {
   constructor(props) {
     super(props, 'events');
 
-    this.state = {
-      listings: [], venues: [], orgs: [], tags: [], listingsTotal: 0,
-      listingsLoaded: false, venuesLoaded: false, orgsLoaded: false, tagsLoaded: false,
-      pageSize: this.defaultPageSize, currentPage: 1, sort: this.defaultTableSort, filter: {},
-      messagePanelVisible: false, messages: []
-    };
+    Object.assign(this.state, {
+      venues: [], orgs: [], tags: [], venuesLoaded: false, orgsLoaded: false, tagsLoaded: false, filter: {}
+    });
 
     this.venuesService = app.service('venues');
     this.orgsSerivce = app.service('organizers');
@@ -57,33 +55,7 @@ export default class EventsLayout extends ListingsLayout {
    * @override
    */
   componentDidMount() {
-    const reloadEvents = () => {
-      this.setState({currentPage: 1}, () => this.fetchListings())
-    };
-
-    this.fetchAllData();
-
-    // Register listeners
-    this.listingsService
-      .on('created', message => {
-        this.updateMessagePanel({status: 'success', details: `Created event #${message.id} - ${message.name}`});
-        reloadEvents();
-      })
-      .on('updated', message => {
-        this.updateMessagePanel({status: 'success', details: `Updated event #${message.id} - ${message.name}`});
-        reloadEvents();
-      })
-      .on('patched', message => {
-        this.updateMessagePanel({status: 'success', details: `Updated event #${message.id} - ${message.name}`});
-        reloadEvents();
-      })
-      .on('removed', message => {
-        this.updateMessagePanel({
-          status: 'success',
-          details: `Permanently deleted event #${message.id} - ${message.name}`
-        });
-        reloadEvents();
-      });
+    super.componentDidMount();
 
     this.venuesService
       .on('created', this.fetchVenues())
@@ -429,22 +401,43 @@ export default class EventsLayout extends ListingsLayout {
       return <p>No events to list.</p>;
     }
 
-    const events = this.state.listings;
+    const titleMap = new Map([
+      ['actions_NOSORT', 'Actions'],
+      ['name', 'Name'],
+      ['start_date', 'Start Date'],
+      ['end_date', 'End Date'],
+      ['fk_venue', 'Venue'],
+      ['fk_org', 'Organizer'],
+      ['updated_at', 'Last Modified'],
+      ['is_published_NOSORT', 'Status']
+    ]);
+
     const venues = this.state.venues;
     const orgs = this.state.orgs;
 
-    const pageSize = this.state.pageSize;
-    const currentPage = this.state.currentPage;
-    const total = this.state.listingsTotal;
-    const sort = this.state.sort;
-
-    return <EventsTable
-      listings={events} listingsTotal={total} venues={venues} orgs={orgs}
-      pageSize={pageSize} currentPage={currentPage} sort={sort}
-      updateColumnSort={this.updateColumnSort} updatePageSize={this.updatePageSize}
-      updateCurrentPage={this.updateCurrentPage}
-      updateListing={this.updateListing} deleteListing={this.deleteListing} checkForLive={this.checkForLive}
-    />;
+    return ([
+      <PaginationLayout
+        key={'events-pagination'} schema={'events'} total={this.state.listingsTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
+        updatePageSize={this.props.updatePageSize} updateCurrentPage={this.props.updateCurrentPage}
+      />,
+      <table key={'events-table'} className={'schema-table'}>
+        <thead>{renderTableHeader(titleMap, this.state.sort, this.props.updateColumnSort)}</thead>
+        <tbody>
+        {
+          this.state.listings.map(event =>
+            <EventRow
+              key={event.uuid} listing={event} venues={venues} orgs={orgs}
+              venue={venues.find(v => {return v.id === event.venue_id})}
+              org={orgs.find(o => {return o.id === event.org_id})}
+              updateListing={this.props.updateListing} deleteListing={this.props.deleteListing}
+              copyAsPending={this.copyAsPending()} checkForLive={this.props.checkForLive}
+              checkForPending={this.checkForPending}
+            />
+          )
+        }
+        </tbody>
+      </table>
+    ]);
   }
 
   /**

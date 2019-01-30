@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {buildColumnSort, buildSortQuery, makeTitleCase, renderTableHeader} from "../utilities";
+import {buildColumnSort, buildSortQuery, renderTableHeader} from "../utilities";
 import app from '../services/socketio';
 
 import PaginationLayout from "./common/PaginationLayout";
@@ -405,12 +405,11 @@ export default class PendingListingsModule extends Component {
    * @returns {*}
    */
   render() {
-    const schema = this.schema;
     const visibility = this.state.moduleVisible ? 'visible' : 'hidden';
 
     return (
       <div className={'schema-module'} data-visibility={visibility}>
-        <h3>{makeTitleCase(schema)}</h3>
+        <h3>{this.schema}</h3>
         {this.renderTable()}
       </div>
     )

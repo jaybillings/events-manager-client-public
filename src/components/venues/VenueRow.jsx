@@ -53,12 +53,11 @@ export default class VenueRow extends ListingRow {
   render() {
     const id = this.props.listing.id;
     const name = this.state.listingName;
-    const hoods = this.props.hoods;
     const updatedAt = Moment(this.props.listing.updated_at).calendar();
 
-    const defaultHood = this.state.venueHood || this.props.hoods[0].uuid;
-
     if (this.state.editable) {
+      const defaultHood = this.state.venueHood || this.props.hoods[0].uuid;
+
       return (
         <tr className={'schema-row'}>
           <td>
@@ -67,7 +66,7 @@ export default class VenueRow extends ListingRow {
           </td>
           <td><input type={'text'} name={'listingName'} value={name} onChange={this.handleInputChange} /></td>
           <td><select name={'venueHood'} value={defaultHood}
-                      onChange={this.handleInputChange}>{renderOptionList(hoods)}</select></td>
+                      onChange={this.handleInputChange}>{renderOptionList(this.props.hoods)}</select></td>
           <td>{updatedAt}</td>
         </tr>
       );
@@ -81,7 +80,7 @@ export default class VenueRow extends ListingRow {
     return (
       <tr className={'schema-row'}>
         <td>
-          <button type={'button'} onClick={this.startEdit}>Edit</button>
+          {this.renderEditButton()}
           {deleteButton}
         </td>
         <td><Link to={`/venues/${id}`}>{name}</Link></td>

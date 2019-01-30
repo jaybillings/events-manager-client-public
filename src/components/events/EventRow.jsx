@@ -26,10 +26,12 @@ export default class EventRow extends ListingRow {
     const venueUUID = typeof this.props.venue === 'undefined' ? '' : this.props.venue.uuid;
     const orgUUID = typeof this.props.org === 'undefined' ? '' : this.props.org.uuid;
 
-    this.state = {
-      listingName: event.name, eventStart: event.start_date, eventEnd: event.end_date,
-      eventVenue: venueUUID, eventOrg: orgUUID, is_published: false, editable: false
-    };
+    Object.assign(this.state, {
+      is_published: false, eventStart: event.start_date, eventEnd: event.end_date,
+      eventVenue: venueUUID, eventOrg: orgUUID
+    });
+
+    this.listingIsLive = this.listingIsLive.bind(this);
   }
 
   /**
@@ -37,12 +39,18 @@ export default class EventRow extends ListingRow {
    * @override
    */
   componentDidMount() {
+    super.componentDidMount();
+    this.listingIsLive();
+  }
+
+  listingIsLive() {
     this.props.checkForLive(this.props.listing.id).then(results => {
       this.setState({is_published: results.total > 0});
     }, err => {
       console.log('error in checking for live', JSON.stringify(err));
     });
-  }
+  };
+
 
   /**
    * Handles changes to input block by saving the data as a state parameter.
@@ -92,19 +100,14 @@ export default class EventRow extends ListingRow {
   render() {
     const id = this.props.listing.id;
     const name = this.state.listingName;
-    const venues = this.props.venues;
-    const orgs = this.props.orgs;
-    const isPublished = this.state.is_published;
-
-    const startDate = Moment(this.state.eventStart).format('MM/DD/YYYY');
-    const startDateVal = Moment(this.state.eventStart).format('YYYY-MM-DD');
-    const endDate = Moment(this.state.eventEnd).format('MM/DD/YYYY');
-    const endDateVal = Moment(this.state.eventEnd).format('YYYY-MM-DD');
     const updatedAt = Moment(this.props.listing.updated_at).calendar();
-    const defaultVenue = this.state.eventVenue || this.props.venues[0].uuid;
-    const defaultOrg = this.state.eventOrg || this.props.orgs[0].uuid;
 
     if (this.state.editable) {
+      const startDateVal = Moment(this.state.eventStart).format('YYYY-MM-DD');
+      const endDateVal = Moment(this.state.eventEnd).format('YYYY-MM-DD');
+      const defaultVenue = this.state.eventVenue || this.props.venues[0].uuid;
+      const defaultOrg = this.state.eventOrg || this.props.orgs[0].uuid;
+
       return (
         <tr className={'schema-row'}>
           <td>
@@ -115,19 +118,21 @@ export default class EventRow extends ListingRow {
           <td><input type={'date'} name={'eventStart'} value={startDateVal} onChange={this.handleInputChange} /></td>
           <td><input type={'date'} name={'eventEnd'} value={endDateVal} onChange={this.handleInputChange} /></td>
           <td><select name={'eventVenue'} value={defaultVenue}
-                      onChange={this.handleInputChange}>{renderOptionList(venues)}</select></td>
+                      onChange={this.handleInputChange}>{renderOptionList(this.props.venues)}</select></td>
           <td><select name={'eventOrg'} value={defaultOrg}
-                      onChange={this.handleInputChange}>{renderOptionList(orgs)}</select></td>
+                      onChange={this.handleInputChange}>{renderOptionList(this.props.orgs)}</select></td>
           <td>{updatedAt}</td>
           <td>
             <input id={'toggle-' + id} name={'is_published'} type={'checkbox'} className={'toggle'}
-                   checked={isPublished} onChange={this.handleInputChange} />
+                   checked={this.state.is_published} onChange={this.handleInputChange} />
             <label className={'toggle-switch'} htmlFor={'toggle-' + id} />
           </td>
         </tr>
       );
     }
 
+    const endDate = Moment(this.state.eventEnd).format('MM/DD/YYYY');
+    const startDate = Moment(this.state.eventStart).format('MM/DD/YYYY');
     const eventStatus = this.state.is_published ? 'live' : 'dropped';
     const venueLink = this.props.venue
       ? <Link to={`/venues/${this.props.venue.id}`}>{this.props.venue.name}</Link> : 'NO VENUE';
@@ -139,7 +144,7 @@ export default class EventRow extends ListingRow {
     return (
       <tr className={'schema-row'}>
         <td>
-          <button type={'button'} onClick={this.startEdit}>Edit</button>
+          {this.renderEditButton()}
           {deleteButton}
         </td>
         <td><Link to={`/events/${id}`}>{name}</Link></td>
@@ -148,7 +153,7 @@ export default class EventRow extends ListingRow {
         <td>{venueLink}</td>
         <td>{orgLink}</td>
         <td>{updatedAt}</td>
-        <td><StatusLabel writeStatus={eventStatus} schema={'events'}/></td>
+        <td><StatusLabel writeStatus={eventStatus} schema={'events'} /></td>
       </tr>
     );
   }

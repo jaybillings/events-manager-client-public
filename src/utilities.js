@@ -1,11 +1,22 @@
+/**
+ * utilities.js contains methods that perform common operations used in multiple places in the app.
+ */
 import React from 'react';
 import SortIndicator from "./components/common/SortIndicator";
 import {Link} from "react-router-dom";
 
-const renderOptionList = function (schema, keyType = 'id') {
+/**
+ * Generates a list of <option> elements representing members of given schema.
+ *
+ * @param {Array} schemaMembers
+ * @param {string} keyType - What to use as the key. ID or UUID.
+ *
+ * @returns {Array}
+ */
+const renderOptionList = function (schemaMembers, keyType = 'id') {
   let optionsList = [];
 
-  schema.forEach(record => {
+  schemaMembers.forEach(record => {
     const optionValue = keyType === 'uuid' ? record.uuid : record.id;
     optionsList.push(<option key={record.id} value={optionValue}>{record.name}</option>);
   });
@@ -13,10 +24,19 @@ const renderOptionList = function (schema, keyType = 'id') {
   return optionsList;
 };
 
-const renderCheckboxList = function (schema, selectedIds, keyType = 'id') {
+/**
+ * Generates list elements containing checkbox inputs representing members of a given schema.
+ *
+ * @param {Array} schemaMembers
+ * @param {Array} selectedIds - IDs of the members that should be selected,
+ * @param {string} keyType - What to use as the key. ID or UUID.
+ *
+ * @returns {*}
+ */
+const renderCheckboxList = function (schemaMembers, selectedIds, keyType = 'id') {
   let chkbxList = [];
 
-  schema.forEach(record => {
+  schemaMembers.forEach(record => {
     const inputValue = keyType === 'uuid' ? record.uuid : record.id;
     chkbxList.push(
       <li key={record.uuid}>
@@ -34,6 +54,15 @@ const renderCheckboxList = function (schema, selectedIds, keyType = 'id') {
   return <ul className={'tags-container'}>{chkbxList}</ul>;
 };
 
+/**
+ * Generates the header for a schema table.
+ *
+ * @param {Map} headerMap - A map of header labels and the parameters they represent.
+ * @param {Array} sortState - The parameters to sort the table by.
+ * @param {Function} clickHandler - The method to run on click.
+ *
+ * @returns {*}
+ */
 const renderTableHeader = function (headerMap, sortState, clickHandler) {
   let headersList = [];
 
@@ -61,11 +90,20 @@ const renderTableHeader = function (headerMap, sortState, clickHandler) {
   return <tr>{headersList}</tr>;
 };
 
+/**
+ * Generates link to the listing page for a given schema. What is returned depends on the publish state and whether the
+ * listing exists.
+ *
+ * @param {object} listing
+ * @param {string} schema
+ *
+ * @returns {*}
+ */
 const renderSchemaLink = function (listing, schema) {
   let linkString;
 
   if (listing.source === 'pending') {
-    linkString = `/pending${makeTitleCase(schema)}/${listing.uuid}`;
+    linkString = `/pending${schema}/${listing.uuid}`;
   } else if (listing.source === 'live') {
     linkString = `/${schema}/${listing.uuid}`;
   } else {
@@ -75,12 +113,21 @@ const renderSchemaLink = function (listing, schema) {
   return <Link to={linkString}>{listing.name}</Link>;
 };
 
-const uniqueListingsOnly = function (schema, pendingSchema) {
-  let uniqueSchema = schema;
+/**
+ * Generates a list of schema members, created from combining live and pending schema members. Only unique members are
+ * included, with preference given to live schema members.
+ *
+ * @param {Array} schemaMembers
+ * @param {Array} pendingSchemaMembers
+ *
+ * @returns {*}
+ */
+const uniqueListingsOnly = function (schemaMembers, pendingSchemaMembers) {
+  let uniqueSchema = schemaMembers;
   let schemaUUIDs = uniqueSchema.map(x => x.uuid);
   let schemaNames = uniqueSchema.map(x => x.name);
 
-  pendingSchema.forEach(listing => {
+  pendingSchemaMembers.forEach(listing => {
     if ((!schemaUUIDs.includes(listing.uuid) && !schemaNames.includes(listing.name))) {
       uniqueSchema.push(listing);
       schemaUUIDs.push(listing.uuid);
@@ -91,7 +138,15 @@ const uniqueListingsOnly = function (schema, pendingSchema) {
   return uniqueSchema;
 };
 
-const buildSortQuery = function (sortState, secondaryNameSort=true) {
+/**
+ * Generates the sort portion of a CommonAPI query, for use in complex table sorting.
+ *
+ * @param {Array} sortState - The parameters to sort the table by.
+ * @param {Boolean} secondaryNameSort - Should the table sort secondarily by name?
+ *
+ * @returns {*}
+ */
+const buildSortQuery = function (sortState, secondaryNameSort = true) {
   if (sortState[0] === 'name') {
     return {'name': sortState[1]};
   }
@@ -102,6 +157,14 @@ const buildSortQuery = function (sortState, secondaryNameSort=true) {
   return sortStateObj;
 };
 
+/**
+ * Generates a tuple of sort parameter to sort direction, for use in simple table sorting.
+ *
+ * @param {object} clickTarget
+ * @param {Array} sortState - The parameters to sort the table by.
+ *
+ * @returns {any[]}
+ */
 const buildColumnSort = function (clickTarget, sortState) {
   const target = clickTarget.nodeName === 'TH' ? clickTarget : clickTarget.closest('th');
   const column = target.dataset.sortType;
@@ -111,23 +174,43 @@ const buildColumnSort = function (clickTarget, sortState) {
 };
 
 /**
- * From https://gomakethings.com/converting-a-string-to-title-case-with-vanilla-javascript/
+ * Makes a word singular by chopping off the last letter.
+ * @note This function lazily assumes all plural words end in "s". This works for now, but this method may need
+ * to be expanded to accommodate more words.
+ *
  * @param string
+ *
+ * @returns string
  */
-const makeTitleCase = function (string) {
-  const tmpStr = string.toLocaleLowerCase().split(' ');
-  tmpStr.forEach((word, i, arr) => {
-    arr[i] = word.charAt(0).toLocaleUpperCase() + word.slice(1);
-  });
-  return tmpStr.join(' ');
-};
-
 const makeSingular = function (string) {
   return string.slice(0, -1);
 };
 
+/**
+ * Generates an array containing only unique elements of the given array.
+ * @note From [MDN Array Reference - Remove duplicate elements from the array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set#Remove_duplicate_elements_from_the_array)
+ *
+ * @param {Array} arr
+ * @returns {Array}
+ */
 const arrayUnique = function (arr) {
   return [...new Set(arr)];
+};
+
+/**
+ * Displays a list of error messages in a user-friendly way.
+ *
+ * @param {string} action - The action the user tried to take.
+ * @param {string} target - The target of the action.
+ * @param {object} errors - The error object returned from the action.
+ * @param {Function} displayMessage - The method used to display a message to the user.
+ */
+const displayErrorMessages = function (action, target, errors, displayMessage) {
+  console.log('in displayErrorMessages');
+  for (let i = 0; i < errors.length; i++) {
+    const subject = errors[i].dataPath.substring(1);
+    displayMessage({status: 'error', details: `Could not ${action} ${target} -- ${subject} ${errors[i].message}`});
+  }
 };
 
 export {
@@ -138,7 +221,7 @@ export {
   uniqueListingsOnly,
   buildSortQuery,
   buildColumnSort,
-  makeTitleCase,
   makeSingular,
-  arrayUnique
+  arrayUnique,
+  displayErrorMessages
 };

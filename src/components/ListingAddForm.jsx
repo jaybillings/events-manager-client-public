@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import {makeTitleCase} from "../utilities";
 
 import '../styles/add-form.css';
 
@@ -53,7 +52,6 @@ export default class ListingAddForm extends Component {
    */
   render() {
     const schema = this.props.schema;
-    const titleCaseSchema = makeTitleCase(schema);
 
     return (
       <form id={`${schema}-add-form`} className={'add-form'} onSubmit={this.handleSubmit}>
@@ -63,7 +61,7 @@ export default class ListingAddForm extends Component {
         </label>
         <div>
           <button type={'button'} onClick={this.clearForm}>Reset</button>
-          <button type={'submit'} className={'button-primary'}>Add {titleCaseSchema.slice(0, -1)}</button>
+          <button type={'submit'} className={'button-primary'}>Add {schema.slice(0, -1)}</button>
         </div>
       </form>
     );

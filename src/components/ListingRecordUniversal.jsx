@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import Moment from "moment";
-import {makeSingular, makeTitleCase} from "../utilities";
+import {makeSingular} from "../utilities";
 import app from '../services/socketio';
 
 import "../styles/schema-record.css";
@@ -20,7 +20,7 @@ export default class ListingRecordUniversal extends Component {
     super(props);
 
     this.state = {writeStatus: ''};
-    
+
     this.user = app.get('user');
     this.nameInput = React.createRef();
 
@@ -86,14 +86,11 @@ export default class ListingRecordUniversal extends Component {
   render() {
     const listing = this.props.listing;
     const schema = this.props.schema;
-    const singularTitleCaseSchema = makeSingular(makeTitleCase(schema));
-    /** @var {string} listing.created_at */
     const createdAt = Moment(listing.created_at).calendar();
-    /** @var {string} listing.updated_at */
     const updatedAt = Moment(listing.updated_at).calendar();
 
     const deleteButton = schema.indexOf('pending') === -1 && app.get('user').is_admin
-      ? <button type={'button'} onClick={this.handleDeleteClick}>Delete {singularTitleCaseSchema}</button> : '';
+      ? <button type={'button'} onClick={this.handleDeleteClick}>Delete {makeSingular(schema)}</button> : '';
     return (
       <form id={`${schema}-listing-form`} className={'schema-record'} onSubmit={this.handleSubmit}>
         <label>

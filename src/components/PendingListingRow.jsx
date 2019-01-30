@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import Moment from 'moment';
 import {Link} from "react-router-dom";
-import {makeTitleCase} from "../utilities";
 
 import StatusLabel from "./common/StatusLabel";
 
@@ -131,9 +130,7 @@ export default class PendingListingRow extends Component {
     const selected = this.props.selected;
     const writeStatus = this.state.writeStatus;
     const selectClass = selected ? ' is-selected' : '';
-
     const schema = this.props.schema;
-    const titleCaseSchema = makeTitleCase(this.props.schema);
 
     if (this.state.editable) {
       return (
@@ -155,7 +152,7 @@ export default class PendingListingRow extends Component {
           <button type={'button'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Discard</button>
         </td>
-        <td><Link to={`/pending${titleCaseSchema}/${pendingListing.id}`}>{pendingListing.name}</Link></td>
+        <td><Link to={`/pending${schema}/${pendingListing.id}`}>{pendingListing.name}</Link></td>
         <td>{createdAt}</td>
         <td><StatusLabel writeStatus={writeStatus} schema={schema} /></td>
       </tr>
