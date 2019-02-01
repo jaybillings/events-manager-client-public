@@ -17,6 +17,7 @@ export default class EventRow extends ListingRow {
   /**
    * The component's constructor.
    * @constructor
+   *
    * @param {object} props
    */
   constructor(props) {
@@ -43,6 +44,10 @@ export default class EventRow extends ListingRow {
     this.listingIsLive();
   }
 
+  /**
+   * Determines whether the event is live by triggering a function to query the live service for the event's
+   * presence.
+   */
   listingIsLive() {
     this.props.checkForLive(this.props.listing.id).then(results => {
       this.setState({is_published: results.total > 0});
@@ -51,10 +56,10 @@ export default class EventRow extends ListingRow {
     });
   };
 
-
   /**
    * Handles changes to input block by saving the data as a state parameter.
    * @override
+   *
    * @param {Event} e
    */
   handleInputChange(e) {
@@ -70,7 +75,7 @@ export default class EventRow extends ListingRow {
   /**
    * Handles the save button click by parsing new data and triggering a function to update the event.
    * @override
-   * @override
+   *
    * @param {Event} e
    */
   handleSaveClick(e) {
@@ -91,10 +96,29 @@ export default class EventRow extends ListingRow {
   }
 
   /**
+   * Handles the copy button click by parsing the listing data and triggering a function to create a pending
+   * event with the parsed data.
+   */
+  handleCopyClick() {
+    let pendingListingData = Object.assign({
+      org_uuid: this.props.org.uuid || null,
+      venue_uuid: this.props.venue.uuid || null
+    }, this.props.listing);
+
+    delete (pendingListingData.org_id);
+    delete (pendingListingData.venue_id);
+
+    this.props.copyAsPending(pendingListingData).then(() => {
+      this.listingHasPending();
+    });
+  }
+
+  /**
    * Renders the component.
    * @note The render has two different paths depending on whether the row can be edited.
    * @override
    * @render
+   *
    * @returns {*}
    */
   render() {

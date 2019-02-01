@@ -102,7 +102,10 @@ export default class ListingRow extends Component {
    * Handles the copy button click by triggering a function to create a pending listing that duplicates the listing.
    */
   handleCopyClick() {
-    this.props.copyAsPending(this.props.listing).then(() => {
+    let listingData = Object.assign({}, this.props.listing);
+    delete (listingData.id);
+
+    this.props.copyAsPending(listingData).then(() => {
       this.listingHasPending();
     });
   }
@@ -115,7 +118,8 @@ export default class ListingRow extends Component {
     if (this.user.is_su) {
       return <button type={'button'} onClick={this.startEdit}>Edit</button>;
     } else if (this.state.pendingID) {
-      return <Link to={`/pending${this.props.schema}/${this.state.pendingID}`} className={'button'}>Edit Pending Copy</Link>;
+      return <Link to={`/pending${this.props.schema}/${this.state.pendingID}`} className={'button'}>Edit Pending
+        Copy</Link>;
     } else {
       return <button type={'button'} onClick={this.handleCopyClick}>Copy For Editing</button>
     }
@@ -148,7 +152,7 @@ export default class ListingRow extends Component {
     }
 
     const deleteButton = this.user.is_admin
-      ? <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button>: '';
+      ? <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button> : '';
 
     return (
       <tr className={'schema-row'}>

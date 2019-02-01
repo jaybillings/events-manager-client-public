@@ -193,14 +193,11 @@ export default class ListingsLayout extends Component {
 
   /**
    * Creates a pending listing that duplicates the given data from a live listing.
-   * 
-   * @param {object} listing
+   *
+   * @param {object} listingData
    * @returns {Promise}
    */
-  copyAsPending(listing) {
-    const listingData = Object.assign({}, listing);
-    delete (listingData.id);
-
+  copyAsPending(listingData) {
     return app.service(`pending-${this.schema}`).create(listingData).then(message => {
       this.updateMessagePanel({status: 'success', details: `Pending ${this.schema} "${message.name}" created.`});
     }, errors => {
@@ -310,9 +307,9 @@ export default class ListingsLayout extends Component {
 
   /**
    * Renders the component.
-   *
    * @override
    * @render
+   *
    * @returns {*}
    */
   render() {

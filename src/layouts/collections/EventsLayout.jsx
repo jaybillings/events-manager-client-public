@@ -7,10 +7,10 @@ import EventAddForm from '../../components/events/EventAddForm';
 import EventRow from "../../components/events/EventRow";
 import ListingsLayout from "../../components/ListingsLayout";
 import PaginationLayout from "../../components/common/PaginationLayout";
+import Filters from "../../components/common/Filters";
 
 /**
  * EventsLayout is a generic component that lays out an event collection page.
- *
  * @class
  * @child
  */
@@ -27,22 +27,22 @@ export default class EventsLayout extends ListingsLayout {
       venues: [], orgs: [], tags: [], venuesLoaded: false, orgsLoaded: false, tagsLoaded: false, filter: {}
     });
 
+    this.pendingEventService = app.service('pending-events');
     this.venuesService = app.service('venues');
     this.orgsSerivce = app.service('organizers');
     this.tagsService = app.service('tags');
-    this.tagsLookupService = app.service('events-tags-lookup');
+    this.eventsTagsLookupService = app.service('events-tags-lookup');
+    this.pendingEventsTagsLookupService = app.service('pending-events-tags-lookup');
     this.liveEventService = app.service('events-live');
     this.droppedEventService = app.service('events-dropped');
 
-    this.fetchListings = this.fetchListings.bind(this);
     this.fetchVenues = this.fetchVenues.bind(this);
     this.fetchOrgs = this.fetchOrgs.bind(this);
     this.fetchTags = this.fetchTags.bind(this);
     this.fetchLiveListings = this.fetchLiveListings.bind(this);
-    this.checkForLive = this.checkForLive.bind(this);
 
+    this.checkForLive = this.checkForLive.bind(this);
     this.updateFilters = this.updateFilters.bind(this);
-    this.updateListing = this.updateListing.bind(this);
 
     this.createTagAssociations = this.createTagAssociations.bind(this);
     this.removeTagAssociations = this.removeTagAssociations.bind(this);
@@ -88,7 +88,7 @@ export default class EventsLayout extends ListingsLayout {
         this.updateMessagePanel({status: 'info', details: `Event #${message.id} removed from dropped list.`});
       });
 
-    this.tagsLookupService
+    this.eventsTagsLookupService
       .on('created', message => {
         this.updateMessagePanel({status: 'info', details: `Saved tags associated with event #${message.id}`});
       })
@@ -102,11 +102,7 @@ export default class EventsLayout extends ListingsLayout {
    * @override
    */
   componentWillUnmount() {
-    this.listingsService
-      .removeAllListeners('created')
-      .removeAllListeners('updated')
-      .removeAllListeners('patched')
-      .removeAllListeners('removed');
+    super.componentWillUnmount();
 
     this.venuesService
       .removeAllListeners('created')
@@ -131,7 +127,7 @@ export default class EventsLayout extends ListingsLayout {
       .removeAllListeners('created')
       .removeAllListeners('removed');
 
-    this.tagsLookupService
+    this.eventsTagsLookupService
       .removeAllListeners('created')
       .removeAllListeners('removed');
   }
@@ -207,7 +203,8 @@ export default class EventsLayout extends ListingsLayout {
 
   /**
    * Fetches a list of all live events.
-   * @returns {Promise<*>}
+   *
+   * @returns {Promise}
    */
   fetchLiveListings() {
     return this.liveEventService.find({query: {$limit: 1000}});
@@ -265,8 +262,8 @@ export default class EventsLayout extends ListingsLayout {
   /**
    * Creates a new event by generating a UUID and calling the service's CREATE method with passed-in data. Adds the
    * new event to the live list.
-   *
    * @override
+   *
    * @param {object} eventData - Data for the new listing.
    * @returns {Promise}
    */
@@ -285,8 +282,8 @@ export default class EventsLayout extends ListingsLayout {
   /**
    * Updates a given event by calling the service's PATCH method with passed-in data. If required, alters event's
    * live status.
-   *
    * @override
+   *
    * @param {int} id
    * @param {object} newData
    * @returns {Promise}
@@ -308,8 +305,8 @@ export default class EventsLayout extends ListingsLayout {
   /**
    * Deletes a given event by calling the service's REMOVE method. Removes all tag associations and registers event
    * as dropped.
-   *
    * @override
+   *
    * @param {int} id
    */
   deleteListing(id) {
@@ -318,6 +315,26 @@ export default class EventsLayout extends ListingsLayout {
       this.registerEventDropped(id);
     }, err => {
       this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+    });
+  }
+
+  /**
+   * Creates a pending event that duplicates the data from the given live event.
+   *
+   * @param {object} eventData
+   * @returns {Promise}
+   */
+  copyAsPending(eventData) {
+    console.log('in copyaspending');
+    const eventID = eventData.id;
+    delete (eventData.id);
+
+    return this.pendingEventService.create(eventData).then(result => {
+      this.updateMessagePanel({status: 'success', details: `Pending event "${result.name}" created.`});
+      this.copyTagAssociations(eventID, result.id);
+    }, errors => {
+      console.log(errors);
+      this.updateMessagePanel({status: 'error', details: JSON.stringify(errors)});
     });
   }
 
@@ -332,7 +349,7 @@ export default class EventsLayout extends ListingsLayout {
 
     tagList.forEach(tagId => tagsToSave.push({event_id: id, tag_id: tagId}));
 
-    this.tagsLookupService.create(tagsToSave).catch(err => {
+    this.eventsTagsLookupService.create(tagsToSave).catch(err => {
       const details = `Could not save tags associated with event #${id}.`
         + `Please re-save listing on its individual page. Error is: ${JSON.stringify(err)}`;
       this.updateMessagePanel({status: 'error', details: details});
@@ -345,11 +362,42 @@ export default class EventsLayout extends ListingsLayout {
    * @param id
    */
   removeTagAssociations(id) {
-    this.tagsLookupService.remove(null, {query: {event_id: id}}).catch(err => {
+    this.eventsTagsLookupService.remove(null, {query: {event_id: id}}).catch(err => {
       const details = `Could remove tags associated with event #${id}.`
         + `Please re-save listing on its individual page. Error is: ${JSON.stringify(err)}`;
       this.updateMessagePanel({status: 'error', details: details});
     });
+  }
+
+  /**
+   * Copies tag associations from the live event to the newly created pending event.
+   *
+   * @param liveID
+   * @param pendingID
+   */
+  copyTagAssociations(liveID, pendingID) {
+    // Find IDs of linked tags
+    this.eventsTagsLookupService.find({query: {event_id: liveID}})
+      .then(result => {
+        console.log('result', result);
+        const tagIDs = result.data.map(row => row.tag_id);
+        // Fetch data for returned IDs, to get UUID
+        return this.tagsService.find({query: {id: {$in: tagIDs}}});
+      })
+      .then(result => {
+        console.log('result', result);
+        const tagsToLink = [];
+        result.data.forEach(row => tagsToLink.push({pending_event_id: pendingID, tag_uuid: row.uuid}));
+        // Create pending links
+        return this.pendingEventsTagsLookupService.create(tagsToLink);
+      })
+      .then(() => {
+        this.updateMessagePanel({status: 'info', details: 'Live event tags linked to new pending event.'});
+      })
+      .catch(err => {
+        this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+        console.log(err);
+      });
   }
 
   /**
@@ -390,8 +438,8 @@ export default class EventsLayout extends ListingsLayout {
 
   /**
    * Renders the event collection table.
-   *
    * @override
+   *
    * @returns {*}
    */
   renderTable() {
@@ -416,21 +464,27 @@ export default class EventsLayout extends ListingsLayout {
     const orgs = this.state.orgs;
 
     return ([
+      <Filters updateFilters={this.updateFilters} />,
       <PaginationLayout
-        key={'events-pagination'} schema={'events'} total={this.state.listingsTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
-        updatePageSize={this.props.updatePageSize} updateCurrentPage={this.props.updateCurrentPage}
+        key={'events-pagination'} schema={'events'} total={this.state.listingsTotal} pageSize={this.state.pageSize}
+        activePage={this.state.currentPage}
+        updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
       />,
       <table key={'events-table'} className={'schema-table'}>
-        <thead>{renderTableHeader(titleMap, this.state.sort, this.props.updateColumnSort)}</thead>
+        <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColumnSort)}</thead>
         <tbody>
         {
           this.state.listings.map(event =>
             <EventRow
               key={event.uuid} listing={event} venues={venues} orgs={orgs}
-              venue={venues.find(v => {return v.id === event.venue_id})}
-              org={orgs.find(o => {return o.id === event.org_id})}
-              updateListing={this.props.updateListing} deleteListing={this.props.deleteListing}
-              copyAsPending={this.copyAsPending()} checkForLive={this.props.checkForLive}
+              venue={venues.find(v => {
+                return v.id === event.venue_id
+              })}
+              org={orgs.find(o => {
+                return o.id === event.org_id
+              })}
+              updateListing={this.updateListing} deleteListing={this.deleteListing}
+              copyAsPending={this.copyAsPending} checkForLive={this.checkForLive}
               checkForPending={this.checkForPending}
             />
           )
@@ -442,8 +496,8 @@ export default class EventsLayout extends ListingsLayout {
 
   /**
    * Renders the form for adding a new event.
-   *
    * @override
+   *
    * @returns {*}
    */
   renderAddForm() {
