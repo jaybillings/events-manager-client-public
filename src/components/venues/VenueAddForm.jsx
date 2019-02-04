@@ -30,14 +30,12 @@ export default class VenueAddForm extends ListingAddForm {
   }
 
   /**
-   * Handles the submit event by parsing data and calling a function to create a new venue.
-   *
+   * Compiles the data required for creating a new listing from the form fields.
    * @override
-   * @param {Event} e
+   *
+   * @returns {{hood_uuid: string, name: string, description: string}}
    */
-  handleSubmit(e) {
-    e.preventDefault();
-
+  buildNewListing() {
     const venueObj = {
       name: this.nameInput.current.value.trim(),
       hood_uuid: this.hoodList.current.value,
@@ -52,7 +50,7 @@ export default class VenueAddForm extends ListingAddForm {
     this.stateInput.current.value !== '' && (venueObj.address_state = this.stateInput.current.value);
     this.zipInput.current.value !== '' && (venueObj.address_zip = this.zipInput.current.value);
 
-    this.props.createListing(venueObj).then(() => this.clearForm());
+    return venueObj;
   }
 
   /**
@@ -80,15 +78,20 @@ export default class VenueAddForm extends ListingAddForm {
    * @returns {*}
    */
   render() {
+    const saveButton = this.user.is_admin
+      ? <button type={'button'} className={'button-primary'} onClick={this.handleAddClick}>Publish Venue</button>
+      : <button type={'button'} onClick={this.handleAddPendingClick}>Add Pending Venue</button>;
+
     return (
-      <form id={'venue-add-form'} className={'add-form'} onSubmit={this.handleSubmit}>
+      <form id={'venue-add-form'} className={'add-form'}>
         <label className={'required'}>
           Name
           <input type={'text'} ref={this.nameInput} required maxLength={100} />
         </label>
         <label className={'required'}>
           Neighborhood
-          <select ref={this.hoodList} defaultValue={this.props.hoods[0].id}>{renderOptionList(this.props.hoods)}</select>
+          <select ref={this.hoodList}
+                  defaultValue={this.props.hoods[0].id}>{renderOptionList(this.props.hoods)}</select>
         </label>
         <label className={'required'}>
           Description
@@ -124,7 +127,7 @@ export default class VenueAddForm extends ListingAddForm {
         </label>
         <div>
           <button type={'button'} onClick={this.clearForm}>Reset</button>
-          <button type={'submit'} className={'button-primary'}>Add Venue</button>
+          {saveButton}
         </div>
       </form>
     );

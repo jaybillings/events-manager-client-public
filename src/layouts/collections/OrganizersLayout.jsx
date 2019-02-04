@@ -24,6 +24,8 @@ export default class OrganizersLayout extends ListingsLayout {
   renderAddForm() {
     if (!this.state.listingsLoaded) return <p>Data is loading... Please be patient...</p>;
 
-    return <OrganizerAddForm listings={this.state.listings} createListing={this.createListing} />;
+    return <OrganizerAddForm
+      listings={this.state.listings} createListing={this.createListing} createPendingListing={this.createPendingListing}
+    />;
   }
 };

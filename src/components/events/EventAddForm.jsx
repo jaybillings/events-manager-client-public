@@ -36,15 +36,12 @@ export default class EventAddForm extends ListingAddForm {
   }
 
   /**
-   * Handles the submit event by parsing data and calling a function to create a new event.
-   * Also associates tags with the new event.
-   *
+   * Compiles the data required for creating a new listing from the form fields.
    * @override
-   * @param {Event} e
+   *
+   * @returns {{tagsToSave: Array, eventObj: {end_date: number, venue_uuid: *, name: *, description: *, org_uuid: *, start_date: number, flag_ongoing: *}}}
    */
-  handleSubmit(e) {
-    e.preventDefault();
-
+  buildNewListing() {
     const eventObj = {
       name: this.nameInput.current.value,
       start_date: Moment(this.startInput.current.value).valueOf(),
@@ -72,7 +69,7 @@ export default class EventAddForm extends ListingAddForm {
       tagsToSave.push(input.value);
     });
 
-    this.props.createListing({eventObj: eventObj, tagsToSave: tagsToSave}).then(() => this.clearForm());
+    return {eventObj: eventObj, tagsToSave: tagsToSave};
   }
 
   /**
@@ -94,7 +91,7 @@ export default class EventAddForm extends ListingAddForm {
     this.ticketUrlInput.current.value = '';
     this.ticketPhoneInput.current.value = '';
     this.ticketPricesInput.current.value = '';
-    document.querySelectorAll('.js-checkbox:checked').forEach(chkbx => chkbx.checked = false);
+    document.querySelectorAll('.js-checkbox:checked').forEach(checkbox => checkbox.checked = false);
   }
 
   /**
@@ -105,13 +102,13 @@ export default class EventAddForm extends ListingAddForm {
    * @returns {*}
    */
   render() {
-    const venues = this.props.venues;
-    const orgs = this.props.orgs;
-    const tags = this.props.tags;
     const currentDate = Moment().format('YYYY-MM-DD');
+    const saveButton = this.user.is_admin
+      ? <button type={'button'} className={'button-primary'} onClick={this.handleAddClick}>Publish Event</button>
+      : <button type={'button'} onClick={this.handleAddPendingClick}>Add Pending Event</button>;
 
     return (
-      <form id={'event-add-form'} className={'add-form'} onSubmit={this.handleSubmit}>
+      <form id={'event-add-form'} className={'add-form'}>
         <label className={'required'}>
           Name
           <input type={'text'} ref={this.nameInput} required maxLength={100} />
@@ -126,11 +123,12 @@ export default class EventAddForm extends ListingAddForm {
         </label>
         <label className={'required'}>
           Venue
-          <select ref={this.venueList} defaultValue={this.props.venues[0].id}>{renderOptionList(venues)}</select>
+          <select ref={this.venueList}
+                  defaultValue={this.props.venues[0].id}>{renderOptionList(this.props.venues)}</select>
         </label>
         <label className={'required'}>
           Organizers
-          <select ref={this.orgList}>{renderOptionList(orgs)}</select>
+          <select ref={this.orgList}>{renderOptionList(this.props.orgs)}</select>
         </label>
         <label className={'required'}>
           Description
@@ -138,7 +136,7 @@ export default class EventAddForm extends ListingAddForm {
         </label>
         <label>
           Tags
-          {renderCheckboxList(tags, [])}
+          {renderCheckboxList(this.props.tags, [])}
         </label>
         <label>
           Email Address
@@ -174,7 +172,7 @@ export default class EventAddForm extends ListingAddForm {
         </label>
         <div>
           <button type={'button'} onClick={this.clearForm}>Reset</button>
-          <button type={'submit'} className={'button-primary'}>Publish Event</button>
+          {saveButton}
         </div>
       </form>
     );

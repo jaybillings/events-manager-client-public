@@ -1,4 +1,5 @@
 import React, {Component} from "react";
+import {Link} from "react-router-dom";
 import {buildColumnSort, buildSortQuery, displayErrorMessages, makeSingular, renderTableHeader} from "../utilities";
 import app from "../services/socketio";
 import uuid from "uuid/v1";
@@ -32,7 +33,7 @@ export default class ListingsLayout extends Component {
     this.defaultQuery = {$sort: {name: 1}, $select: ['name', 'uuid'], $limit: 100};
 
     this.state = {
-      listings: [], listingsTotal: 0, listingsLoaded: false,
+      listings: [], listingsTotal: 0, listingsLoaded: false, newPendingListing: {},
       pageSize: this.defaultPageSize, currentPage: 1, sort: this.defaultTableSort,
       messagePanelVisible: false, messages: []
     };
@@ -47,7 +48,7 @@ export default class ListingsLayout extends Component {
     this.createListing = this.createListing.bind(this);
     this.updateListing = this.updateListing.bind(this);
     this.deleteListing = this.deleteListing.bind(this);
-    this.copyAsPending = this.copyAsPending.bind(this);
+    this.createPendingListing = this.createPendingListing.bind(this);
 
     this.updatePageSize = this.updatePageSize.bind(this);
     this.updateCurrentPage = this.updateCurrentPage.bind(this);
@@ -197,9 +198,13 @@ export default class ListingsLayout extends Component {
    * @param {object} listingData
    * @returns {Promise}
    */
-  copyAsPending(listingData) {
+  createPendingListing(listingData) {
     return app.service(`pending-${this.schema}`).create(listingData).then(message => {
-      this.updateMessagePanel({status: 'success', details: `Pending ${this.schema} "${message.name}" created.`});
+      this.setState({newPendingListing: message});
+      this.updateMessagePanel({
+        status: 'success',
+        details: `Pending ${makeSingular(this.schema)} "${message.name}" created.`
+      });
     }, errors => {
       displayErrorMessages('copy', listingData.name, errors, this.updateMessagePanel);
     });
@@ -283,7 +288,7 @@ export default class ListingsLayout extends Component {
             <ListingRow
               key={listing.id} schema={schema} listing={listing}
               updateListing={this.updateListing} deleteListing={this.deleteListing}
-              copyAsPending={this.copyAsPending} checkForPending={this.checkForPending}
+              copyAsPending={this.createPendingListing} checkForPending={this.checkForPending}
             />
           )
         }
@@ -302,7 +307,9 @@ export default class ListingsLayout extends Component {
       return <p>Data is loading... Please be patient...</p>;
     }
 
-    return <ListingAddForm schema={this.schema} createListing={this.createListing} />;
+    return <ListingAddForm
+      schema={this.schema} createListing={this.createListing} createPendingListing={this.createPendingListing}
+    />;
   }
 
   /**
@@ -316,11 +323,17 @@ export default class ListingsLayout extends Component {
     const showMessagePanel = this.state.messagePanelVisible;
     const messages = this.state.messages;
     const schema = this.schema;
+    const pendingListing = this.state.newPendingListing;
+
+    let pendingListingLink = pendingListing.id ? <div className={'pending-link'}>
+      <Link to={`/pending${this.schema}/${pendingListing.id}`}>Click here to edit {pendingListing.name}</Link>
+    </div> : '';
 
     return (
       <div className={'container'}>
         <Header />
         <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
+        {pendingListingLink}
         <h2>All {schema}</h2>
         {this.renderTable()}
         <h3>Add New {makeSingular(schema)}</h3>

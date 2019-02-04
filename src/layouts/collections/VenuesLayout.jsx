@@ -1,6 +1,6 @@
 import React from "react";
-import {buildSortQuery, renderTableHeader} from "../../utilities";
 import app from "../../services/socketio";
+import {buildSortQuery, renderTableHeader} from "../../utilities";
 
 import VenueRow from "../../components/venues/VenueRow";
 import VenueAddForm from "../../components/venues/VenueAddForm";
@@ -37,10 +37,18 @@ export default class VenuesLayout extends ListingsLayout {
     super.componentDidMount();
 
     this.hoodsService
-      .on('created', () => {this.fetchHoods()})
-      .on('updated', () => {this.fetchHoods()})
-      .on('patched', () => {this.fetchHoods()})
-      .on('removed', () => {this.fetchHoods()});
+      .on('created', () => {
+        this.fetchHoods()
+      })
+      .on('updated', () => {
+        this.fetchHoods()
+      })
+      .on('patched', () => {
+        this.fetchHoods()
+      })
+      .on('removed', () => {
+        this.fetchHoods()
+      });
   }
 
   /**
@@ -131,9 +139,11 @@ export default class VenuesLayout extends ListingsLayout {
         {
           this.state.listings.map(venue =>
             <VenueRow
-              key={venue.id} listing={venue} hood={hoods.find(n => {return n.id === venue.hood_id})} hoods={hoods}
+              key={venue.id} listing={venue} hood={hoods.find(n => {
+              return n.id === venue.hood_id
+            })} hoods={hoods}
               updateListing={this.props.updateListing} deleteListing={this.props.deleteListing}
-              copyAsPending={this.copyAsPending} checkForPending={this.checkForPending}
+              copyAsPending={this.createPendingListing} checkForPending={this.checkForPending}
             />
           )
         }
@@ -152,6 +162,8 @@ export default class VenuesLayout extends ListingsLayout {
       return <p>Data is loading... Please be patient...</p>;
     }
 
-    return <VenueAddForm hoods={this.state.hoods} createListing={this.createListing} />;
+    return <VenueAddForm
+      hoods={this.state.hoods} createListing={this.createListing} createPendingListing={this.createPendingListing}
+    />;
   }
 };

@@ -22,23 +22,20 @@ export default class OrganizerAddForm extends ListingAddForm {
   }
 
   /**
-   * Handles the submit event by parsing data and calling a function to create a new event.
+   * Compiles the data required for creating a new listing from the form fields.
    *
-   * @override
-   * @param {Event} e
+   * @returns {{name: string, description: string}}
    */
-  handleSubmit(e) {
-    e.preventDefault();
-
-    const listingObj = {
+  buildNewListing() {
+    const orgObj = {
       name: this.nameInput.current.value,
       description: this.descInput.current.value
     };
 
-    this.phoneInput.current.value !== '' && (listingObj.phone = this.phoneInput.current.value);
-    this.urlInput.current.value !== '' && (listingObj.url = this.urlInput.current.value);
+    this.phoneInput.current.value !== '' && (orgObj.phone = this.phoneInput.current.value);
+    this.urlInput.current.value !== '' && (orgObj.url = this.urlInput.current.value);
 
-    this.props.createListing(listingObj).then(() => this.clearForm());
+    return orgObj;
   }
 
   /**
@@ -60,8 +57,12 @@ export default class OrganizerAddForm extends ListingAddForm {
    * @returns {*}
    */
   render() {
+    const saveButton = this.user.is_admin
+      ? <button type={'button'} className={'button-primary'} onClick={this.handleAddClick}>Publish Organizer</button>
+      : <button type={'button'} onClick={this.handleAddPendingClick}>Add Pending Organizer</button>;
+
     return (
-      <form id={'organizers-add-form'} className={'add-form'} onSubmit={this.handleSubmit}>
+      <form id={'organizers-add-form'} className={'add-form'}>
         <label className={'required'}>
           Name
           <input type={'text'} ref={this.nameInput} required maxLength={100} />
@@ -80,7 +81,7 @@ export default class OrganizerAddForm extends ListingAddForm {
         </label>
         <div>
           <button type={'button'} onClick={this.clearForm}>Reset</button>
-          <button type={'submit'} className={'button-primary'}>Add Organizer</button>
+          {saveButton}
         </div>
       </form>
     );
