@@ -464,7 +464,7 @@ export default class EventsLayout extends ListingsLayout {
     const orgs = this.state.orgs;
 
     return ([
-      <Filters updateFilters={this.updateFilters} />,
+      <Filters key={'events-filters'} updateFilters={this.updateFilters} />,
       <PaginationLayout
         key={'events-pagination'} schema={'events'} total={this.state.listingsTotal} pageSize={this.state.pageSize}
         activePage={this.state.currentPage}
@@ -476,7 +476,8 @@ export default class EventsLayout extends ListingsLayout {
         {
           this.state.listings.map(event =>
             <EventRow
-              key={event.uuid} listing={event} venues={venues} orgs={orgs}
+              key={event.uuid} schema={'events'} listing={event}
+              venues={venues} orgs={orgs}
               venue={venues.find(v => {
                 return v.id === event.venue_id
               })}

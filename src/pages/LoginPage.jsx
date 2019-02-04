@@ -40,6 +40,7 @@ export default class LoginPage extends Component {
         this.redirectCountdown();
       })
       .catch(err => {
+        if (err.code === 401) return;
         this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
       });
   }
