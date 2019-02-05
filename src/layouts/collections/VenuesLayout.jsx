@@ -56,11 +56,7 @@ export default class VenuesLayout extends ListingsLayout {
    * @override
    */
   componentWillUnmount() {
-    this.listingsService
-      .removeAllListeners('created')
-      .removeAllListeners('updated')
-      .removeAllListeners('patched')
-      .removeAllListeners('removed');
+    super.componentWillUnmount();
 
     this.hoodsService
       .removeAllListeners('created')

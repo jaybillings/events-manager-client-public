@@ -210,6 +210,7 @@ export default class ListingsLayout extends Component {
     });
   }
 
+
   /**
    * Updates the component's page size, then fetches new listings.
    *

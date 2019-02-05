@@ -221,45 +221,6 @@ export default class EventsLayout extends ListingsLayout {
   }
 
   /**
-   * Updates filtering for event fetching.
-   *
-   * `updateFilters` updates the data fetch filter, then executes a new fetch with the new filter. The current page is
-   * reset to 1. Possible filter values are:
-   *   * dropped - events are not present in the live list
-   *   * stale - events are present in the live list, but their end dates are in the past
-   *   * live - events are present in the live list, and their end dates are not in the past
-   *   * default - all events
-   *
-   * @param {string} filterType - Which filter option to apply.
-   */
-  updateFilters(filterType) {
-    switch (filterType) {
-      case 'dropped':
-        this.fetchLiveListings().then(result => {
-          const uniqueIDs = arrayUnique(result.data.map(row => row.event_id));
-          this.setState({currentPage: 1, filter: {id: {$nin: uniqueIDs}}}, () => this.fetchListings());
-        });
-        break;
-      case 'stale':
-        this.fetchLiveListings().then(result => {
-          const uniqueIDs = arrayUnique(result.data.map(row => row.event_id));
-          this.setState({currentPage: 1, filter: {id: {$in: uniqueIDs}, end_date: {$lt: new Date().valueOf()}}},
-            () => this.fetchListings());
-        });
-        break;
-      case 'live':
-        this.fetchLiveListings().then(result => {
-          const uniqueIDs = arrayUnique(result.data.map(row => row.event_id));
-          this.setState({currentPage: 1, filter: {id: {$in: uniqueIDs}, end_date: {$gte: new Date().valueOf()}}},
-            () => this.fetchListings());
-        });
-        break;
-      default:
-        this.setState({currentPage: 1, filter: {}}, () => this.fetchListings());
-    }
-  }
-
-  /**
    * Creates a new event by generating a UUID and calling the service's CREATE method with passed-in data. Adds the
    * new event to the live list.
    * @override
@@ -272,7 +233,6 @@ export default class EventsLayout extends ListingsLayout {
 
     return this.listingsService.create(eventData.eventObj).then(message => {
       this.createTagAssociations(message.id, eventData.tagsToSave);
-      // TODO: Add as live if admin, as pending if not
       this.registerEventLive(message.id);
     }, err => {
       this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
@@ -291,10 +251,8 @@ export default class EventsLayout extends ListingsLayout {
   updateListing(id, newData) {
     return this.listingsService.patch(id, newData.newData).then(() => {
       if (newData.doPublish) {
-        console.log('publishing event');
         this.registerEventLive(id);
       } else {
-        console.log('dropping event');
         this.registerEventDropped(id);
       }
     }, err => {
@@ -434,6 +392,45 @@ export default class EventsLayout extends ListingsLayout {
         details: `Failed to register event #${id} as dropped. ${JSON.stringify(err)}`
       });
     });
+  }
+
+  /**
+   * Updates filtering for event fetching.
+   *
+   * `updateFilters` updates the data fetch filter, then executes a new fetch with the new filter. The current page is
+   * reset to 1. Possible filter values are:
+   *   * dropped - events are not present in the live list
+   *   * stale - events are present in the live list, but their end dates are in the past
+   *   * live - events are present in the live list, and their end dates are not in the past
+   *   * default - all events
+   *
+   * @param {string} filterType - Which filter option to apply.
+   */
+  updateFilters(filterType) {
+    switch (filterType) {
+      case 'dropped':
+        this.fetchLiveListings().then(result => {
+          const uniqueIDs = arrayUnique(result.data.map(row => row.event_id));
+          this.setState({currentPage: 1, filter: {id: {$nin: uniqueIDs}}}, () => this.fetchListings());
+        });
+        break;
+      case 'stale':
+        this.fetchLiveListings().then(result => {
+          const uniqueIDs = arrayUnique(result.data.map(row => row.event_id));
+          this.setState({currentPage: 1, filter: {id: {$in: uniqueIDs}, end_date: {$lt: new Date().valueOf()}}},
+            () => this.fetchListings());
+        });
+        break;
+      case 'live':
+        this.fetchLiveListings().then(result => {
+          const uniqueIDs = arrayUnique(result.data.map(row => row.event_id));
+          this.setState({currentPage: 1, filter: {id: {$in: uniqueIDs}, end_date: {$gte: new Date().valueOf()}}},
+            () => this.fetchListings());
+        });
+        break;
+      default:
+        this.setState({currentPage: 1, filter: {}}, () => this.fetchListings());
+    }
   }
 
   /**
