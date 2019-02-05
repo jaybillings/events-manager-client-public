@@ -14,14 +14,15 @@ export default class VenueRow extends ListingRow {
   /**
    * The component's constructor.
    * @constructor
+   *
    * @param {object} props
    */
   constructor(props) {
     super(props);
 
-    const hoodUUID = typeof this.props.hood === 'undefined' ? '' : this.props.hood.uuid;
+    const hoodID = typeof this.props.hood === 'undefined' ? '' : this.props.hood.id;
 
-    Object.assign(this.state, {venueHood: hoodUUID});
+    Object.assign(this.state, {venueHood: hoodID});
   }
 
   /**
@@ -35,11 +36,22 @@ export default class VenueRow extends ListingRow {
     const newData = {
       uuid: this.props.listing.uuid,
       name: this.state.listingName,
-      hood_uuid: this.state.venueHood
+      hood_id: this.state.venueHood
     };
 
     this.props.updateListing(this.props.listing.id, newData).then(() => {
       this.setState({editable: false});
+    });
+  }
+
+  handleCopyClick(e) {
+    e.stopPropagation();
+
+    let {id, hood_id, ...venueData} = this.props.listing;
+    venueData.hood_uuid = this.props.hood.uuid;
+
+    this.props.createPendingListing(venueData).then(() => {
+      this.listingHasPending();
     });
   }
 

@@ -142,8 +142,8 @@ export default class VenuesLayout extends ListingsLayout {
               key={venue.id} listing={venue} hood={hoods.find(n => {
               return n.id === venue.hood_id
             })} hoods={hoods}
-              updateListing={this.props.updateListing} deleteListing={this.props.deleteListing}
-              copyAsPending={this.createPendingListing} checkForPending={this.checkForPending}
+              updateListing={this.updateListing} deleteListing={this.deleteListing}
+              createPendingListing={this.createPendingListing} checkForPending={this.checkForPending}
             />
           )
         }

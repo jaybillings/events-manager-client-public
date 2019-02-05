@@ -325,12 +325,11 @@ export default class EventsLayout extends ListingsLayout {
    * @returns {Promise}
    */
   createPendingListing(eventData) {
-    console.log('in copyaspending');
     const eventID = eventData.id;
     delete (eventData.id);
 
     return this.pendingEventService.create(eventData).then(result => {
-      this.setState({newPendingListing: message});
+      this.setState({newPendingListing: result});
       this.updateMessagePanel({status: 'success', details: `Pending event "${result.name}" created.`});
       this.copyTagAssociations(eventID, result.id);
     }, errors => {
@@ -486,7 +485,7 @@ export default class EventsLayout extends ListingsLayout {
                 return o.id === event.org_id
               })}
               updateListing={this.updateListing} deleteListing={this.deleteListing}
-              copyAsPending={this.createPendingListing} checkForLive={this.checkForLive}
+              createPendingListing={this.createPendingListing} checkForLive={this.checkForLive}
               checkForPending={this.checkForPending}
             />
           )

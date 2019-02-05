@@ -288,7 +288,7 @@ export default class ListingsLayout extends Component {
             <ListingRow
               key={listing.id} schema={schema} listing={listing}
               updateListing={this.updateListing} deleteListing={this.deleteListing}
-              copyAsPending={this.createPendingListing} checkForPending={this.checkForPending}
+              createPendingListing={this.createPendingListing} checkForPending={this.checkForPending}
             />
           )
         }

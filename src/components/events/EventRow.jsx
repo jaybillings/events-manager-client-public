@@ -24,12 +24,12 @@ export default class EventRow extends ListingRow {
     super(props);
 
     const event = this.props.listing;
-    const venueUUID = typeof this.props.venue === 'undefined' ? '' : this.props.venue.uuid;
-    const orgUUID = typeof this.props.org === 'undefined' ? '' : this.props.org.uuid;
+    const venueID = typeof this.props.venue === 'undefined' ? '' : this.props.venue.id;
+    const orgID = typeof this.props.org === 'undefined' ? '' : this.props.org.id;
 
     Object.assign(this.state, {
       is_published: false, eventStart: event.start_date, eventEnd: event.end_date,
-      eventVenue: venueUUID, eventOrg: orgUUID
+      eventVenue: venueID, eventOrg: orgID
     });
 
     this.listingIsLive = this.listingIsLive.bind(this);
@@ -86,29 +86,28 @@ export default class EventRow extends ListingRow {
       name: this.state.listingName,
       start_date: Moment(this.state.eventStart).valueOf(),
       end_date: Moment(this.state.eventStart).valueOf(),
-      venue_uuid: this.state.eventVenue,
-      org_uuid: this.state.eventOrg
+      venue_id: this.state.eventVenue,
+      org_id: this.state.eventOrg
     };
 
-    this.props.updateListing(this.props.listing.id, {newData: newData, doPublish: this.state.is_published}).then(() => {
-      this.setState({editable: false});
-    });
+    this.props.updateListing(this.props.listing.id, {newData: newData, doPublish: this.state.is_published})
+      .then(() => {
+        this.setState({editable: false});
+      });
   }
 
   /**
    * Handles the copy button click by parsing the listing data and triggering a function to create a pending
    * event with the parsed data.
    */
-  handleCopyClick() {
-    let pendingListingData = Object.assign({
-      org_uuid: this.props.org.uuid || null,
-      venue_uuid: this.props.venue.uuid || null
-    }, this.props.listing);
+  handleCopyClick(e) {
+    e.stopPropagation();
 
-    delete (pendingListingData.org_id);
-    delete (pendingListingData.venue_id);
+    let {id, org_id, venue_id, ...eventData} = this.props.listing;
+    eventData.org_uuid = this.props.org.uuid;
+    eventData.venue_uuid = this.props.venue.uuid;
 
-    this.props.copyAsPending(pendingListingData).then(() => {
+    this.props.createPendingListing(eventData).then(() => {
       this.listingHasPending();
     });
   }
@@ -129,8 +128,8 @@ export default class EventRow extends ListingRow {
     if (this.state.editable) {
       const startDateVal = Moment(this.state.eventStart).format('YYYY-MM-DD');
       const endDateVal = Moment(this.state.eventEnd).format('YYYY-MM-DD');
-      const defaultVenue = this.state.eventVenue || this.props.venues[0].uuid;
-      const defaultOrg = this.state.eventOrg || this.props.orgs[0].uuid;
+      const defaultVenue = this.state.eventVenue || this.props.venues[0].id;
+      const defaultOrg = this.state.eventOrg || this.props.orgs[0].id;
 
       return (
         <tr className={'schema-row'}>

@@ -92,22 +92,23 @@ export default class ListingRow extends Component {
   }
 
   /**
+   * Handles the copy button click by triggering a function to create a pending listing that duplicates the listing.
+   */
+  handleCopyClick(e) {
+    e.stopPropagation();
+
+    let {id, ...listingData} = this.props.listing;
+
+    this.props.createPendingListing(listingData).then(() => {
+      this.listingHasPending();
+    });
+  }
+
+  /**
    * Handles the delete button click by triggering a function to delete the listing.
    */
   handleDeleteClick() {
     this.props.deleteListing(this.props.listing.id);
-  }
-
-  /**
-   * Handles the copy button click by triggering a function to create a pending listing that duplicates the listing.
-   */
-  handleCopyClick() {
-    let listingData = Object.assign({}, this.props.listing);
-    delete (listingData.id);
-
-    this.props.copyAsPending(listingData).then(() => {
-      this.listingHasPending();
-    });
   }
 
   /**
