@@ -57,12 +57,11 @@ export default class OrganizerAddForm extends ListingAddForm {
    * @returns {*}
    */
   render() {
-    const saveButton = this.user.is_admin
-      ? <button type={'button'} className={'button-primary'} onClick={this.handleAddClick}>Publish Organizer</button>
-      : <button type={'button'} onClick={this.handleAddPendingClick}>Add Pending Organizer</button>;
+    const submitAction = this.user.is_admin ? this.handleAddClick : this.handleAddPendingClick;
+    const submitLabel = this.user.is_admin ? 'Publish Organizer' : 'Add Pending Organizer';
 
     return (
-      <form id={'organizers-add-form'} className={'add-form'}>
+      <form id={'organizers-add-form'} className={'add-form'} action={submitAction}>
         <label className={'required'}>
           Name
           <input type={'text'} ref={this.nameInput} required maxLength={100} />
@@ -81,7 +80,7 @@ export default class OrganizerAddForm extends ListingAddForm {
         </label>
         <div>
           <button type={'button'} onClick={this.clearForm}>Reset</button>
-          {saveButton}
+          <button type={'button'} className={'button-primary'}>{submitLabel}</button>
         </div>
       </form>
     );

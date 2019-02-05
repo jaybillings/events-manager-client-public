@@ -38,8 +38,6 @@ export default class AddUserForm extends Component {
   }
 
   createUser(e) {
-    console.log('SUBMIT');
-
     e.preventDefault();
 
     this.props.createUser({
@@ -59,7 +57,7 @@ export default class AddUserForm extends Component {
     const pwHiddenClass = this.state.showPWField ? '' : ' hidden';
 
     return (
-      <form key={'user-add-form'} className={'user-add-form'}>
+      <form key={'user-add-form'} className={'user-add-form'} onSubmit={this.createUser}>
         <label className={'emailInput'}>
           <span>Email Address</span>
           <input type={'email'} name={'email'} value={this.state.email} required maxLength={100}
@@ -82,7 +80,7 @@ export default class AddUserForm extends Component {
         </label>
         <div className={'buttons'}>
           <button type={'button'} onClick={this.clearForm}>Reset</button>
-          <button type={'button'} className={'button-primary'} onClick={this.createUser}>Add User</button>
+          <button type={'submit'} className={'button-primary'}>Add User</button>
         </div>
       </form>
     );

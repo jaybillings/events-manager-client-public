@@ -78,12 +78,11 @@ export default class VenueAddForm extends ListingAddForm {
    * @returns {*}
    */
   render() {
-    const saveButton = this.user.is_admin
-      ? <button type={'button'} className={'button-primary'} onClick={this.handleAddClick}>Publish Venue</button>
-      : <button type={'button'} onClick={this.handleAddPendingClick}>Add Pending Venue</button>;
+    const submitAction = this.user.is_admin ? this.handleAddClick : this.handleAddPendingClick;
+    const submitLabel = this.user.is_admin ? 'Publish Venue' : 'Add Pending Venue';
 
     return (
-      <form id={'venue-add-form'} className={'add-form'}>
+      <form id={'venue-add-form'} className={'add-form'} onSubmit={submitAction}>
         <label className={'required'}>
           Name
           <input type={'text'} ref={this.nameInput} required maxLength={100} />
@@ -127,7 +126,7 @@ export default class VenueAddForm extends ListingAddForm {
         </label>
         <div>
           <button type={'button'} onClick={this.clearForm}>Reset</button>
-          {saveButton}
+          <button type={'submit'} className={'button-primary'}>{submitLabel}</button>
         </div>
       </form>
     );

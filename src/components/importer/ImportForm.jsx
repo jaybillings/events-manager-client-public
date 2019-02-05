@@ -46,7 +46,7 @@ export default class ImportForm extends Component {
   render() {
     /** @var {object} this.props.fileInputRef */
     return (
-      <form id={'import-from-csv-form'} className={'import-form'} onSubmit={this.props.handleSubmit}>
+      <form id={'import-from-csv-form'} className={'import-form'} onSubmit={this.props.handleSaveClick}>
         <div>
           <label htmlFor="fileInput">Select CSV file to import:</label>
           <input type={'file'} ref={this.props.fileInputRef} id={'fileInput'} accept={".csv"} multiple required />

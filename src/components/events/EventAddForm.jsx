@@ -103,12 +103,11 @@ export default class EventAddForm extends ListingAddForm {
    */
   render() {
     const currentDate = Moment().format('YYYY-MM-DD');
-    const saveButton = this.user.is_admin
-      ? <button type={'button'} className={'button-primary'} onClick={this.handleAddClick}>Publish Event</button>
-      : <button type={'button'} onClick={this.handleAddPendingClick}>Add Pending Event</button>;
+    const submitAction = this.user.is_admin ? this.handleAddClick : this.handleAddPendingClick;
+    const submitLabel = this.user.is_admin ? 'Publish Event': 'Add Pending Event';
 
     return (
-      <form id={'event-add-form'} className={'add-form'}>
+      <form id={'event-add-form'} className={'add-form'} onSubmit={submitAction}>
         <label className={'required'}>
           Name
           <input type={'text'} ref={this.nameInput} required maxLength={100} />
@@ -172,7 +171,7 @@ export default class EventAddForm extends ListingAddForm {
         </label>
         <div>
           <button type={'button'} onClick={this.clearForm}>Reset</button>
-          {saveButton}
+          <button type={'submit'} className={'button-primary'}>{submitLabel}</button>
         </div>
       </form>
     );

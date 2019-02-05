@@ -31,11 +31,15 @@ export default class ListingAddForm extends Component {
   /**
    * Handles the submit event by parsing data and calling a function to create a new listing.
    */
-  handleAddClick() {
+  handleAddClick(e) {
+    e.preventDefault();
+
     this.props.createListing(this.buildNewListing()).then(() => this.clearForm());
   }
 
-  handleAddPendingClick() {
+  handleAddPendingClick(e) {
+    e.preventDefault();
+
     this.props.createPendingListing(this.buildNewListing()).then(() => {
       this.clearForm()
     });
@@ -61,19 +65,18 @@ export default class ListingAddForm extends Component {
    */
   render() {
     const schema = this.props.schema;
-    const addButton = this.user.is_admin
-      ? <button type={'button'} onClick={this.handleAddClick}>Publish {makeSingular(schema)}</button>
-      : <button type={'button'} onClick={this.handleAddPendingClick}>Add Pending {makeSingular(schema)}</button>;
+    const submitAction = this.user.is_admin ? this.handleAddClick : this.handleAddPendingClick;
+    const submitLabel = this.user.is_admin ? `Publish ${makeSingular(schema)}` : `Add Pending ${makeSingular(schema)}`;
 
     return (
-      <form id={`${schema}-add-form`} className={'add-form'}>
+      <form id={`${schema}-add-form`} className={'add-form'} onSubmit={submitAction}>
         <label className={'required'}>
           Name
           <input type={'text'} ref={this.nameInput} required maxLength={100} />
         </label>
         <div>
           <button type={'button'} onClick={this.clearForm}>Reset</button>
-          {addButton}
+          <button type={'submit'} className={'button-primary'}>{submitLabel}</button>
         </div>
       </form>
     );
