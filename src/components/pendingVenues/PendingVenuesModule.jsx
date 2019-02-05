@@ -46,25 +46,25 @@ export default class PendingVenuesModule extends PendingListingsModule {
           status: 'success',
           details: `Added "${message.name}" as new pending venue`
         });
-        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchPendingListings());
+        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchListings());
       })
       .on('updated', message => {
         this.props.updateMessagePanel({status: 'info', details: message.details});
-        this.fetchPendingListings();
+        this.fetchListings();
       })
       .on('patched', message => {
         this.props.updateMessagePanel({
           status: 'success',
           details: `Updated pending ${this.schema.slice(0, -1)} "${message.name}"`
         });
-        this.fetchPendingListings();
+        this.fetchListings();
       })
       .on('removed', message => {
         this.props.updateMessagePanel({
           status: 'info',
           details: `Discarded pending ${this.schema.slice(0, -1)} "${message.name}"`
         });
-        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchPendingListings());
+        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchListings());
       });
 
     this.hoodsService
@@ -105,7 +105,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
    * @override
    */
   fetchAllData() {
-    this.fetchPendingListings();
+    this.fetchListings();
     this.fetchHoods();
     this.fetchPendingHoods();
   }
@@ -125,6 +125,44 @@ export default class PendingVenuesModule extends PendingListingsModule {
   fetchPendingHoods() {
     this.pendingHoodsService.find({query: this.defaultQuery}).then(message => {
       this.setState({pendingHoods: message.data, pendingHoodsLoaded: true});
+    });
+  }
+
+  createLiveListing(pendingListing) {
+    let {id, hood_uuid, ...venueData} = pendingListing;
+    const venueHood = this.props.hoods.find(hood => {
+      return hood.uuid = hood_uuid
+    });
+
+    venueData.hood_id = venueHood.id || null;
+
+    this.listingsService.create(venueData).then(result => {
+      this.props.updateMessagePanel({
+        status: 'success',
+        details: `Published "${result.name}" as new venue #${result.id}`
+      });
+      this.removeListing(id);
+    }, err => {
+      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+    });
+  }
+
+  replaceLiveListing(pendingListing, target) {
+    let {id, hood_uuid, ...venueData} = pendingListing;
+    const venueHood = this.props.hoods.find(hood => {
+      return hood.uuid = hood_uuid
+    });
+
+    venueData.hood_id = venueHood.id || null;
+
+    this.listingsService.update(target.id, venueData).then(result => {
+      this.props.updateMessagePanel({
+        status: 'success',
+        details: `Published ${result.name} as an update to ${target.name}`
+      });
+      this.removeListing(id);
+    }, err => {
+      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
 
@@ -162,7 +200,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
 
     return ([
       <ShowHideToggle
-        key={'venues-module-showhide'} isVisible={this.state.moduleVisible} changeVisibility={this.toggleModuleVisibility}
+        key={'venues-module-showhide'} isVisible={this.state.moduleVisible}
+        changeVisibility={this.toggleModuleVisibility}
       />,
       <div key={'venues-module-body'}>
         <SelectionControl
@@ -183,7 +222,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
                 hood={(uniqueHoods.find(h => {
                   return h.uuid === venue.hood_uuid
                 }))} hoods={uniqueHoods}
-                updateListing={this.saveChanges} removeListing={this.removePendingListing}
+                updateListing={this.updateListing} removeListing={this.removeListing}
                 selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}
               />)
           }
