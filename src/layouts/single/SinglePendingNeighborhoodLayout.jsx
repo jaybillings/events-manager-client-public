@@ -12,6 +12,7 @@ export default class SinglePendingNeighborhoodLayout extends SingleListingLayout
   /**
    * The class's constructor.
    * @constructor
+   *
    * @param {object} props
    */
   constructor(props) {
@@ -21,14 +22,15 @@ export default class SinglePendingNeighborhoodLayout extends SingleListingLayout
   /**
    * Renders the neighborhood record.
    * @override
+   *
    * @returns {*}
    */
   renderRecord() {
     if (!this.state.listingLoaded) return <p>Data is loading... Please be patient...</p>;
 
     return <PendingNeighborhoodRecord
-      listing={this.state.listing} updateListing={this.updateListing} deleteListing={this.deleteListing}
-      queryForExisting={this.queryForExisting}
+      listing={this.state.listing} schema={this.schema} updateListing={this.updateListing}
+      deleteListing={this.deleteListing} queryForExisting={this.queryForExisting}
     />
   }
 }

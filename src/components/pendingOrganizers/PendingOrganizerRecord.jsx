@@ -13,10 +13,13 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
   /**
    * The class's constructor.
    * @constructor
+   *
    * @param {object} props
    */
   constructor(props) {
     super(props);
+
+    this.state = {writeStatus: ''};
 
     this.descInput = React.createRef();
     this.urlInput = React.createRef();
@@ -24,7 +27,7 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
   }
 
   /**
-   * Runs when the component mounts. Checks the event's write status.
+   * Runs when the component mounts. Checks the event's publish status.
    * @override
    */
   componentDidMount() {
@@ -34,47 +37,47 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
   /**
    * Handles the submit action by parsing new data and calling a function to create a new pending organizer.
    * @override
+   *
    * @param {Event} e
    */
-  handleSubmit(e) {
+  handleSaveClick(e) {
     e.preventDefault();
 
     const newData = {
-      name: this.nameInput.current.value.trim(),
-      description: this.descInput.current.value.trim()
+      name: this.nameInput.current.value,
+      description: this.descInput.current.value
     };
 
     // Only add non-required if they have a value
-    this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value.trim());
-    this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value.trim());
+    this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value);
+    this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value);
 
-    this.props.updateListing(newData).then(() => {
-      this.checkWriteStatus();
-    });
+    this.props.updateListing(newData).then(() => this.checkWriteStatus());
   }
 
   /**
    * Renders the component.
+   * @override
    * @render
+   *
    * @returns {*}
    */
   render() {
-    const pendingOrg = this.props.listing;
-    const createdAt = Moment(pendingOrg.created_at).calendar();
-    const updatedAt = Moment(pendingOrg.updated_at).calendar();
-    const writeStatus = this.state.writeStatus;
+    const org = this.props.listing;
+    const createdAt = Moment(org.created_at).calendar();
+    const updatedAt = Moment(org.updated_at).calendar();
 
     return (
-      <form id={'pending-org-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
+      <form id={'pending-org-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
         <label>
           Status
           <div>
-            <StatusLabel writeStatus={writeStatus} schema={'pending-events'} />
+            <StatusLabel writeStatus={this.state.writeStatus} schema={'pending-organizers'} />
           </div>
         </label>
         <label>
           UUID
-          <input type={'text'} value={pendingOrg.uuid} disabled />
+          <input type={'text'} value={org.uuid} disabled />
         </label>
         <label>
           Created
@@ -86,19 +89,19 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
         </label>
         <label className={'required'}>
           Name
-          <input type={'text'} ref={this.nameInput} defaultValue={pendingOrg.name} required maxLength={100} />
+          <input type={'text'} ref={this.nameInput} defaultValue={org.name} required maxLength={100} />
         </label>
         <label className={'required'}>
           Description
-          <textarea ref={this.descInput} defaultValue={pendingOrg.description} required maxLength={500} />
+          <textarea ref={this.descInput} defaultValue={org.description} required maxLength={500} />
         </label>
         <label>
           Url
-          <input type={'url'} ref={this.urlInput} defaultValue={pendingOrg.url} maxLength={100} />
+          <input type={'url'} ref={this.urlInput} defaultValue={org.url} maxLength={100} />
         </label>
         <label>
           Phone #
-          <input type={'tel'} ref={this.phoneInput} defaultValue={pendingOrg.phone} maxLength={20} />
+          <input type={'tel'} ref={this.phoneInput} defaultValue={org.phone} maxLength={20} />
         </label>
         <div className={'block-warning'}
              title={'Caution: This organizer is pending. It must be pushed live before it is visible on the site.'}>

@@ -3,6 +3,7 @@ import app from "../../services/socketio";
 
 import EventRecord from "../../components/events/EventRecord";
 import SingleListingLayoutUniversal from "../../components/SingleListingLayoutUniversal";
+import {displayErrorMessages} from "../../utilities";
 
 /**
  * SingleEventLayout is a component which lays out a single event page.
@@ -13,13 +14,14 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
   /**
    * The class's constructor.
    * @constructor
+   *
    * @param {object} props
    */
   constructor(props) {
     super(props, 'events');
 
     Object.assign(this.state, {
-      venues: [], orgs: [], tags: [], tagsForListing: [],
+      publishState: '', venues: [], orgs: [], tags: [], tagsForListing: [],
       venuesLoaded: false, orgsLoaded: false, tagsLoaded: false, tagAssociationsLoaded: false
     });
 
@@ -34,11 +36,10 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
     this.fetchOrgs = this.fetchOrgs.bind(this);
     this.fetchTags = this.fetchTags.bind(this);
     this.fetchTagAssociations = this.fetchTagAssociations.bind(this);
-    this.checkForLive = this.checkForLive.bind(this);
+    this.checkLiveStatus = this.checkLiveStatus.bind(this);
 
     this.createTagAssociations = this.createTagAssociations.bind(this);
     this.removeTagAssociations = this.removeTagAssociations.bind(this);
-
     this.registerEventLive = this.registerEventLive.bind(this);
     this.registerEventDropped = this.registerEventDropped.bind(this);
   }
@@ -73,8 +74,16 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
       .on('removed', () => this.updateMessagePanel({status: 'info', details: 'Event removed from dropped list'}));
 
     this.eventsTagsLookupService
-      .on('created', () => this.updateMessagePanel({status: 'info', details: 'Linked tag with event.'}))
-      .on('removed', () => this.updateMessagePanel({status: 'info', details: 'Unlinked tag from event.'}));
+      .on('created', message => {
+        if (message.event_id === this.listingID) {
+          this.updateMessagePanel({status: 'info', details: 'Linked tag with event.'})
+        }
+      })
+      .on('removed', message => {
+        if (message.event_id === this.listingID) {
+          this.updateMessagePanel({status: 'info', details: 'Unlinked tag from event.'})
+        }
+      });
   }
 
   /**
@@ -116,11 +125,13 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
    * @override
    */
   fetchAllData() {
-    this.fetchListing();
+    super.fetchAllData();
+
     this.fetchVenues();
     this.fetchOrgs();
     this.fetchTags();
     this.fetchTagAssociations();
+    this.checkLiveStatus();
   }
 
   /**
@@ -130,8 +141,8 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
     this.venuesService.find({query: this.defaultQuery}).then(message => {
       this.setState({venues: message.data, venuesLoaded: true})
     }, err => {
-      console.log('fetch venue error', JSON.stringify(err));
       this.setState({venuesLoaded: false});
+      displayErrorMessages('fetch', 'venues', err, this.updateMessagePanel, 'reload');
     });
   }
 
@@ -142,8 +153,8 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
     this.orgsService.find({query: this.defaultQuery}).then(message => {
       this.setState({orgs: message.data, orgsLoaded: true})
     }, err => {
-      console.log('fetch org error', JSON.stringify(err));
       this.setState({orgsLoaded: false});
+      displayErrorMessages('fetch', 'organizers', err, this.updateMessagePanel, 'reload');
     });
   }
 
@@ -154,8 +165,8 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
     this.tagsService.find({query: this.defaultQuery}).then(message => {
       this.setState({tags: message.data, tagsLoaded: true});
     }, err => {
-      console.log('find tags error', JSON.stringify(err));
       this.setState({tagsLoaded: false});
+      displayErrorMessages('fetch', 'tags', err, this.updateMessagePanel, 'reload');
     });
   }
 
@@ -163,99 +174,38 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
    * Fetches associations between published tags and the event.
    */
   fetchTagAssociations() {
-    this.eventsTagsLookupService.find({query: {event_id: this.state.listing.id}, $select: ['tag_id']}).then(message => {
+    this.eventsTagsLookupService.find({query: {event_id: this.listingID}, $select: ['tag_id']}).then(message => {
       this.setState({tagsForListing: message.data, tagAssociationsLoaded: true});
     }, err => {
-      console.log('find tags associations error', JSON.stringify(err));
       this.setState({tagAssociationsLoaded: false});
+      displayErrorMessages('fetch', 'associations between tags and events', err, this.updateMessagePanel, 'reload');
     });
   }
 
-  /**
-   * Checks for event's presence in the live list
-   * @async
-   * @returns {Promise}
-   */
-  checkForLive() {
-    return this.liveEventService.find({query: {event_id: this.state.listing.id}});
-  }
-
-  /**
-   * Creates associations between tags and event.
-   * @param {object[]} tagsToSave
-   */
-  createTagAssociations(tagsToSave) {
-    this.eventsTagsLookupService.create(tagsToSave).catch(err => {
-      const details = 'Could not associate tags with event. Please re-save listing. ' +
-        `Error is: ${JSON.stringify(err)}`;
-      this.updateMessagePanel({status: 'error', details: details});
-    });
-  }
-
-  /**
-   * Deletes associations between tags and the event.
-   * @param {object[]} tagsToRemove
-   */
-  removeTagAssociations(tagsToRemove) {
-    const query = tagsToRemove ? {event_id: {$in: tagsToRemove}} : {};
-
-    this.eventsTagsLookupService.remove(null, {query: query}).catch(err => {
-      const details = 'Could not de-associate tags from event. Please re-save listing. '
-        + `Error is: ${JSON.stringify(err)}`;
-      this.updateMessagePanel({status: 'error', details: details});
-    });
-  }
-
-  /**
-   * Registers event as live by removing it from the dropped list and adding it to the live list.
-   */
-  registerEventLive() {
-    const id = this.state.listing.id;
-
-    //noinspection JSCheckFunctionSignatures
-    Promise.all([
-      this.liveEventService.create({event_id: id}),
-      this.droppedEventService.remove(null, {query: {event_id: id}})
-    ]).catch(err => {
-      this.updateMessagePanel({
-        status: 'error',
-        details: `Failed to register event as live. Error is: ${JSON.stringify(err)}`
-      });
-    });
-  }
-
-  /**
-   * Register event as dropped by removing it from the live list and adding it to the dropped list.
-   */
-  registerEventDropped() {
-    const id = this.state.listing.id;
-
-    // noinspection JSCheckFunctionSignatures
-    Promise.all([
-      this.droppedEventService.create({event_id: id}),
-      this.liveEventService.remove(null, {query: {event_id: id}})
-    ]).catch(err => {
-      this.updateMessagePanel({
-        status: 'error',
-        details: `Failed to register event as live. Error is: ${JSON.stringify(err)}`
-      });
+  checkLiveStatus() {
+    this.liveEventService.find({query: {event_id: this.listingID}}).then(results => {
+      const publishState = results.total > 0 ? 'live' : 'dropped';
+      this.setState({publishState});
+    }, err => {
+      console.log('error in checking live status', JSON.stringify(err));
     });
   }
 
   /**
    * Updates the event's data by calling the service's PATCH method.
    * @override
+   *
    * @param {object} listingData
    */
   updateListing(listingData) {
-    this.listingsService.patch(this.state.listing.id, listingData.eventData).then(() => {
+    this.listingsService.patch(this.listingID, listingData.eventData).then(() => {
       if (listingData.tagsToSave) this.createTagAssociations(listingData.tagsToSave);
       if (listingData.tagsToRemove) this.removeTagAssociations(listingData.tagsToRemove);
 
       if (listingData.publishState === 'publish') this.registerEventLive();
       else if (listingData.publishState === 'drop') this.registerEventDropped();
     }, err => {
-      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      displayErrorMessages('save changes to', this.state.listing.name, err, this.updateMessagePanel, 'retry');
     });
   }
 
@@ -264,22 +214,78 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
    * @override
    */
   deleteListing() {
-    this.listingsService.remove(this.state.listing.id).then(() => {
-      // noinspection JSCheckFunctionSignatures
-      Promise.all([
-        this.removeTagAssociations([]),
-        this.registerEventDropped()
-      ]).then(() => {
+    this.listingsService.remove(this.state.listing.id)
+      .then(() => {
+        // noinspection JSCheckFunctionSignatures
+        return Promise.all([
+          this.removeTagAssociations([]),
+          this.registerEventDropped()
+        ]);
+      })
+      .then(() => {
         this.setState({hasDeleted: true});
-      }, err => {
+      })
+      .catch(err => {
+        // TODO: Custom error?
         this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
       });
+  }
+
+  /**
+   * Creates associations between tags and event.
+   *
+   * @param {object[]} tagsToSave
+   */
+  createTagAssociations(tagsToSave) {
+    this.eventsTagsLookupService.create(tagsToSave).catch(err => {
+      displayErrorMessages('associate', 'tags with event', err, this.updateMessagePanel, 'retry');
     });
   }
 
   /**
+   * Deletes associations between tags and the event.
+   *
+   * @param {object[]} tagsToRemove
+   */
+  removeTagAssociations(tagsToRemove) {
+    const query = tagsToRemove ? {event_id: {$in: tagsToRemove}} : {};
+
+    this.eventsTagsLookupService.remove(null, {query: query}).catch(err => {
+      displayErrorMessages('de-associate', 'tags from event', err, this.updateMessagePanel, 'retry');
+    });
+  }
+
+  /**
+   * Registers event as live by removing it from the dropped list and adding it to the live list.
+   */
+  registerEventLive() {
+    //noinspection JSCheckFunctionSignatures
+    Promise.all([
+      this.liveEventService.create({event_id: this.listingID}),
+      this.droppedEventService.remove(null, {query: {event_id: this.listingID}})
+    ]).catch(err => {
+      displayErrorMessages('register', 'event as live', err, this.updateMessagePanel);
+    });
+  }
+
+  /**
+   * Register event as dropped by removing it from the live list and adding it to the dropped list.
+   */
+  registerEventDropped() {
+    // noinspection JSCheckFunctionSignatures
+    Promise.all([
+      this.droppedEventService.create({event_id: this.listingID}),
+      this.liveEventService.remove(null, {query: {event_id: this.listingID}})
+    ]).catch(err => {
+      displayErrorMessages('register', 'event as dropped', err, this.updateMessagePanel);
+    });
+  }
+
+
+  /**
    * Renders the single event's record.
    * @override
+   *
    * @returns {*}
    */
   renderRecord() {
@@ -289,9 +295,10 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
     }
 
     return <EventRecord
-      listing={this.state.listing} venues={this.state.venues} orgs={this.state.orgs}
+      listing={this.state.listing} schema={this.schema} publishState={this.state.publishState}
+      venues={this.state.venues} orgs={this.state.orgs}
       tags={this.state.tags} tagsForListing={this.state.tagsForListing}
-      updateListing={this.updateListing} deleteListing={this.deleteListing} checkForLive={this.checkForLive}
+      updateListing={this.updateListing} deleteListing={this.deleteListing}
     />;
   }
 };

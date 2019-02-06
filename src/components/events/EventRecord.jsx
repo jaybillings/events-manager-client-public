@@ -15,12 +15,13 @@ export default class EventRecord extends ListingRecordUniversal {
   /**
    * The class's constructor.
    * @constructor
+   *
    * @param {object} props
    */
   constructor(props) {
     super(props);
 
-    this.state = {defaultPublish: false, newPublish: false};
+    this.state = {newPublishState: this.props.publishState};
 
     this.startInput = React.createRef();
     this.endInput = React.createRef();
@@ -38,41 +39,29 @@ export default class EventRecord extends ListingRecordUniversal {
     this.orgInput = React.createRef();
     this.liveToggle = React.createRef();
 
-    this.checkPublishOrDrop = this.checkPublishOrDrop.bind(this);
+    this.shouldPublishOrDrop = this.shouldPublishOrDrop.bind(this);
     this.toggleStatus = this.toggleStatus.bind(this);
-  }
-
-  /**
-   * Runs once the component mounts. Checks for the event's publish/live status.
-   * @override
-   */
-  componentDidMount() {
-    this.props.checkForLive().then(results => {
-      const publishState = results.total > 0;
-      this.setState({defaultPublish: publishState, newPublish: publishState});
-    }, err => {
-      console.log('error in checking for live', JSON.stringify(err));
-    });
   }
 
   /**
    * Handles the submit action by parsing new data and calling a function to create a new event. Also modifies
    * associations between the event and its tags.
    * @override
+   *
    * @param {Event} e
    */
-  handleSubmit(e) {
+  handleSaveClick(e) {
     e.preventDefault();
 
-    const doPublish = this.checkPublishOrDrop();
+    const publishOrDrop = this.shouldPublishOrDrop();
     const newData = {
       name: this.nameInput.current.value,
-      venue_id: parseInt(this.venueInput.current.value, 10),
-      org_id: parseInt(this.orgInput.current.value, 10),
       start_date: Moment(this.startInput.current.value).valueOf(),
       end_date: Moment(this.endInput.current.value).valueOf(),
+      venue_id: parseInt(this.venueInput.current.value, 10),
+      org_id: parseInt(this.orgInput.current.value, 10),
       description: this.descInput.current.value,
-      ongoing: this.ongoingInput.current.checked
+      flag_ongoing: this.ongoingInput.current.checked
     };
 
     // Optional data -- only include if set
@@ -104,31 +93,41 @@ export default class EventRecord extends ListingRecordUniversal {
       eventData: newData,
       tagsToSave: tagsToSave,
       tagsToRemove: tagsToRemove,
-      publishState: doPublish
+      publishState: publishOrDrop
     });
   }
 
   /**
-   * Flips the publish/live status of the event.
+   * Flips the publish status of the event.
+   *
+   * toggleStatus changes the new publish status of the event, depending on the previous status. It uses the new publish
+   * status if it is set, so the status can be properly toggled.
    */
   toggleStatus() {
-    this.setState(prevStatus => ({newPublish: !prevStatus.newPublish}));
+    this.setState(prevState => ({newPublishState: prevState.newPublishState === 'live' ? 'dropped' : 'live'}));
   }
 
   /**
-   * Determines whether the event should be published or dropped.
+   * Determines if the publish status of the listing should change, and if so, to what.
+   *
+   * shouldPublishOrDrop provides data to tell the save function whether it should publish the event (set its status
+   * to 'live') or drop it. There are actually three valid options, to cut down on extraneous server requests:
+   *   * 'live' - Event should be published/set as 'live'
+   *   * 'dropped' - Event should be dropped/set as 'dropped'
+   *   * <empty string> - Publish status should not change
+   *
    * @returns {string}
    */
-  checkPublishOrDrop() {
-    if (this.state.defaultPublish === this.state.newPublish) return '';
-    if (this.state.newPublish) return 'publish';
-    if (!this.state.newPublish) return 'drop';
+  shouldPublishOrDrop() {
+    if (this.state.newPublishState === this.props.publishState) return '';
+    return this.state.newPublishState;
   }
 
   /**
    * Renders the component.
    * @override
    * @render
+   *
    * @returns {*}
    */
   render() {
@@ -137,7 +136,7 @@ export default class EventRecord extends ListingRecordUniversal {
     const orgs = this.props.orgs;
     const tags = this.props.tags;
     const eventTags = this.props.tagsForListing;
-    const isPublished = this.state.newPublish;
+    const isPublished = this.state.newPublishState === 'live';
 
     const startDate = Moment(event.start_date).format('YYYY-MM-DD');
     const endDate = Moment(event.end_date).format('YYYY-MM-DD');
@@ -147,7 +146,7 @@ export default class EventRecord extends ListingRecordUniversal {
       ?  <button type={'button'} onClick={this.handleDeleteClick}>Delete Event</button> : '';
 
     return (
-      <form id={'event-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
+      <form id={'event-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
         <div>
           <p className={'label'}>Status - {isPublished ? 'Published' : 'Dropped'}</p>
           <input id={`toggle-${event.id}`} type={'checkbox'} ref={this.liveToggle} className={'toggle'}

@@ -27,7 +27,7 @@ export default class OrganizerRecord extends ListingRecordUniversal {
    * @override
    * @param {Event} e
    */
-  handleSubmit(e) {
+  handleSaveClick(e) {
     e.preventDefault();
 
     const newData = {
@@ -56,7 +56,7 @@ export default class OrganizerRecord extends ListingRecordUniversal {
       <button type={'button'} onClick={this.handleDeleteClick}>Delete Organizer</button> : '';
 
     return (
-      <form id={'organizer-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
+      <form id={'organizer-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
         <label>
           UUID
           <input type={'text'} value={org.uuid} readOnly />

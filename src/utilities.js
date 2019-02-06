@@ -203,13 +203,24 @@ const arrayUnique = function (arr) {
  * @param {string} action - The action the user tried to take.
  * @param {string} target - The target of the action.
  * @param {object} errors - The error object returned from the action.
- * @param {Function} displayMessage - The method used to display a message to the user.
+ * @param {Function} displayFunc - The method used to display a message to the user.
+ * @param {string} userPrompt - A code for additional prompts to add to the message.
  */
-const displayErrorMessages = function (action, target, errors, displayMessage) {
-  console.log('in displayErrorMessages');
+const displayErrorMessages = function (action, target, errors, displayFunc, userPrompt = '') {
+  const userPrompts = {
+    reload: 'Reload the page to try again.',
+    retry: 'Please try again.',
+    default: 'If this problem continues, please contact the Helpdesk.'
+  };
+  const subscript = (userPrompt ? userPrompts[userPrompt] : '') + userPrompts.default;
+
   for (let i = 0; i < errors.length; i++) {
     const subject = errors[i].dataPath.substring(1);
-    displayMessage({status: 'error', details: `Could not ${action} ${target} -- ${subject} ${errors[i].message}`});
+    displayFunc({
+
+      status: 'error',
+      details: `Could not ${action} ${target} -- ${subject}. ${errors[i].message}. ${subscript}`
+    });
   }
 };
 

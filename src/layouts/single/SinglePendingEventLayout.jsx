@@ -1,6 +1,6 @@
 import React from 'react';
 import app from "../../services/socketio";
-import {uniqueListingsOnly} from "../../utilities";
+import {displayErrorMessages, uniqueListingsOnly} from "../../utilities";
 
 import PendingEventRecord from "../../components/pendingEvents/PendingEventRecord";
 import SingleListingLayoutUniversal from "../../components/SingleListingLayoutUniversal";
@@ -11,6 +11,12 @@ import SingleListingLayoutUniversal from "../../components/SingleListingLayoutUn
  * @child
  */
 export default class SinglePendingEventLayout extends SingleListingLayoutUniversal {
+  /**
+   * The component's constructor.
+   * @constructor
+   *
+   * @param props
+   */
   constructor(props) {
     super(props, 'pending-events');
 
@@ -65,8 +71,16 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
     }
 
     this.pendingEventsTagsLookupService
-      .on('created', () => this.updateMessagePanel({status: 'info', details: 'Linked tag with pending event.'}))
-      .on('removed', () => this.updateMessagePanel({status: 'info', details: 'Unlinked tag from event'}));
+      .on('created', message => {
+        if (message.pending_event_id === this.listingID) {
+          this.updateMessagePanel({status: 'info', details: 'Linked tag with pending event.'});
+        }
+      })
+      .on('removed', message => {
+        if (message.pending_event_id === this.listingID) {
+          this.updateMessagePanel({status: 'info', details: 'Unlinked tag from pending event.'});
+        }
+      });
   }
 
   /**
@@ -74,8 +88,6 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
    * @override
    */
   componentWillUnmount() {
-    super.componentWillUnmount();
-
     const services = [
       this.venuesService,
       this.pendingVenuesService,
@@ -103,7 +115,8 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
    * @override
    */
   fetchAllData() {
-    this.fetchListing();
+    super.fetchAllData();
+
     this.fetchVenues();
     this.fetchPendingVenues();
     this.fetchOrgs();
@@ -120,8 +133,8 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
     this.venuesService.find({query: this.defaultQuery}).then(message => {
       this.setState({venues: message.data, venuesLoaded: true});
     }, err => {
-      console.log('fetch venue error', JSON.stringify(err));
       this.setState({venuesLoaded: false});
+      displayErrorMessages('fetch', 'venues', err, this.updateMessagePanel, 'reload');
     });
   }
 
@@ -132,8 +145,8 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
     this.pendingVenuesService.find({query: this.defaultQuery}).then(message => {
       this.setState({pendingVenues: message.data, pendingVenuesLoaded: true});
     }, err => {
-      console.log('fetch pending venue error', JSON.stringify(err));
       this.setState({pendingVenuesLoaded: false});
+      displayErrorMessages('fetch', 'pending venues', err, this.updateMessagePanel, 'reload');
     });
   }
 
@@ -144,8 +157,8 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
     this.orgsService.find({query: this.defaultQuery}).then(message => {
       this.setState({orgs: message.data, orgsLoaded: true});
     }, err => {
-      console.log('fetch org error', JSON.stringify(err));
       this.setState({orgsLoaded: false});
+      displayErrorMessages('fetch', 'organizers', err, this.updateMessagePanel, 'reload');
     });
   }
 
@@ -156,8 +169,8 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
     this.pendingOrgsService.find({query: this.defaultQuery}).then(message => {
       this.setState({pendingOrgs: message.data, pendingOrgsLoaded: true});
     }, err => {
-      console.log('fetch pending org error', JSON.stringify(err));
       this.setState({pendingOrgsLoaded: false});
+      displayErrorMessages('fetch', 'pending organizers', err, this.updateMessagePanel, 'reload');
     });
   }
 
@@ -168,8 +181,8 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
     this.tagsService.find({query: this.defaultQuery}).then(message => {
       this.setState({tags: message.data, tagsLoaded: true});
     }, err => {
-      console.log('fetch tag error', JSON.stringify(err));
       this.setState({tagsLoaded: false});
+      displayErrorMessages('fetch', 'tags', err, this.updateMessagePanel, 'reload');
     });
   }
 
@@ -180,8 +193,8 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
     this.pendingTagsService.find({query: this.defaultQuery}).then(message => {
       this.setState({pendingTags: message.data, pendingTagsLoaded: true})
     }, err => {
-      console.log('fetch pending tags error', JSON.stringify(err));
       this.setState({pendingTagsLoaded: false});
+      displayErrorMessages('fetch', 'pending tags', err, this.updateMessagePanel, 'reload');
     });
   }
 
@@ -195,8 +208,8 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
     }).then(message => {
       this.setState({tagsForListing: message.data, tagAssociationsLoaded: true});
     }, err => {
-      console.log('fetch tag associations error', JSON.stringify(err));
       this.setState({tagAssociationsLoaded: false});
+      displayErrorMessages('fetch', 'associations between tags and pending events', err, this.updateMessagePanel, 'reload');
     });
   }
 
@@ -204,6 +217,7 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
    * Determines whether the listing may duplicate an existing listing.
    * @override
    * @async
+   *
    * @returns {Promise}
    */
   queryForExisting() {
@@ -220,42 +234,17 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
   }
 
   /**
-   * Creates associations between tags and pending event.
-   * @param {object[]} tagsToSave
-   */
-  createTagAssociations(tagsToSave) {
-    this.pendingEventsTagsLookupService.create(tagsToSave).catch(err => {
-      const details = 'Could not associate tags with event. Please re-save listing. ' +
-        `Error is: ${JSON.stringify(err)}`;
-      this.updateMessagePanel({status: 'error', details: details});
-    });
-  }
-
-  /**
-   * Deletes associations between tags and the pending event.
-   * @param {object[]} tagsToRemove
-   */
-  removeTagAssociations(tagsToRemove) {
-    const query = tagsToRemove ? {pending_event_id: {$in: tagsToRemove}} : {};
-
-    this.pendingEventsTagsLookupService.remove(null, {query: query}).catch(err => {
-      const details = 'Could not de-associate tags from event. Please re-save listing. '
-        + `Error is: ${JSON.stringify(err)}`;
-      this.updateMessagePanel({status: 'error', details: details});
-    });
-  }
-
-  /**
    * Updates the event's data by calling the service's PATCH method.
    * @override
+   *
    * @param {object} listingData
    */
   updateListing(listingData) {
-    this.listingsService.patch(this.state.listing.id, listingData.eventData).then(() => {
+    this.listingsService.patch(this.listingID, listingData.eventData).then(() => {
       if (listingData.tagsToSave) this.createTagAssociations(listingData.tagsToSave);
       if (listingData.tagsToRemove) this.removeTagAssociations(listingData.tagsToRemove);
     }, err => {
-      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      displayErrorMessages('save changes to', this.state.listing.name, err, this.updateMessagePanel, 'retry');
     });
   }
 
@@ -264,18 +253,43 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
    * @override
    */
   deleteListing() {
-    this.listingsService.remove(this.state.listing.id).then(() => {
+    this.listingsService.remove(this.listingID).then(() => {
       this.removeTagAssociations([]).then(() => {
         this.setState({hasDeleted: true});
       });
     }, err => {
-      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      displayErrorMessages('delete', this.state.listing.name, err, this.updateMessagePanel, 'retry');
+    });
+  }
+
+  /**
+   * Creates associations between tags and pending event.
+   *
+   * @param {object[]} tagsToSave
+   */
+  createTagAssociations(tagsToSave) {
+    this.pendingEventsTagsLookupService.create(tagsToSave).catch(err => {
+      displayErrorMessages('associate', 'tags with pending event', err, this.updateMessagePanel, 'retry');
+    });
+  }
+
+  /**
+   * Deletes associations between tags and the pending event.
+   *
+   * @param {object[]} tagsToRemove
+   */
+  removeTagAssociations(tagsToRemove) {
+    const query = tagsToRemove ? {pending_event_id: {$in: tagsToRemove}} : {};
+
+    this.pendingEventsTagsLookupService.remove(null, {query: query}).catch(err => {
+      displayErrorMessages('de-associate', 'tags from pending event', err, this.updateMessagePanel, 'retry');
     });
   }
 
   /**
    * Renders the single pending event's record.
    * @override
+   *
    * @returns {*}
    */
   renderRecord() {
@@ -290,10 +304,9 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
     const uniqueTags = uniqueListingsOnly(this.state.tags, this.state.pendingTags);
 
     return <PendingEventRecord
-      listing={this.state.listing} venues={uniqueVenues} orgs={uniqueOrgs}
+      listing={this.state.listing} schema={this.schema} venues={uniqueVenues} orgs={uniqueOrgs}
       tags={uniqueTags} tagsForListing={this.state.tagsForListing}
-      updateListing={this.updateListing} deleteListing={this.deleteListing}
-      queryForExisting={this.queryForExisting}
+      updateListing={this.updateListing} deleteListing={this.deleteListing} queryForExisting={this.queryForExisting}
     />;
   }
 };

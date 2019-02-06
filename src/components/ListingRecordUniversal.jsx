@@ -19,13 +19,11 @@ export default class ListingRecordUniversal extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {writeStatus: ''};
-
     this.user = app.get('user');
     this.nameInput = React.createRef();
 
     this.checkWriteStatus = this.checkWriteStatus.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleSaveClick = this.handleSaveClick.bind(this);
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
   }
 
@@ -37,8 +35,6 @@ export default class ListingRecordUniversal extends Component {
    *   - new (will make a new listing)
    *   - update (will update a preexisting listing)
    *   - duplicate (will make a new listing that might duplicate an existing listing)
-   *
-   *   @returns {string} writeStatus
    */
   checkWriteStatus() {
     this.props.queryForExisting(this.state.listing).then(message => {
@@ -56,14 +52,17 @@ export default class ListingRecordUniversal extends Component {
       }
 
       this.setState({writeStatus});
+    }, err => {
+      console.log('error in checking write status', JSON.stringify(err));
     });
   }
 
   /**
    * Handles the submit action by parsing new data and calling a function to create a new listing.
+   *
    * @param {Event} e
    */
-  handleSubmit(e) {
+  handleSaveClick(e) {
     e.preventDefault();
 
     this.props.updateListing({name: this.nameInput.current.value});
@@ -78,8 +77,8 @@ export default class ListingRecordUniversal extends Component {
 
   /**
    * Renders the component.
-   *
    * @override
+   *
    * @render
    * @returns {*}
    */
@@ -89,10 +88,11 @@ export default class ListingRecordUniversal extends Component {
     const createdAt = Moment(listing.created_at).calendar();
     const updatedAt = Moment(listing.updated_at).calendar();
 
-    const deleteButton = schema.indexOf('pending') === -1 && app.get('user').is_admin
+    const deleteButton = schema.indexOf('pending') !== -1 || app.get('user').is_admin
       ? <button type={'button'} onClick={this.handleDeleteClick}>Delete {makeSingular(schema)}</button> : '';
+
     return (
-      <form id={`${schema}-listing-form`} className={'schema-record'} onSubmit={this.handleSubmit}>
+      <form id={`${schema}-listing-form`} className={'schema-record'} onSubmit={this.handleSaveClick}>
         <label>
           UUID
           <input type={'text'} value={listing.uuid} readOnly />
@@ -111,7 +111,7 @@ export default class ListingRecordUniversal extends Component {
         </label>
         <div>
           {deleteButton}
-          <button type={'submit'} className={'button-primary'}>Save Changes</button>
+          <button type={'button'} className={'button-primary'}>Save Changes</button>
         </div>
       </form>
     );

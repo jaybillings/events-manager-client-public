@@ -34,7 +34,7 @@ export default class VenueRecord extends ListingRecordUniversal {
    * @override
    * @param {Event} e
    */
-  handleSubmit(e) {
+  handleSaveClick(e) {
     e.preventDefault();
 
     const newData = {
@@ -70,7 +70,7 @@ export default class VenueRecord extends ListingRecordUniversal {
       <button type={'button'} onClick={this.handleDeleteClick}>Delete Venue</button>: '';
 
     return (
-      <form id={'venue-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
+      <form id={'venue-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
         <label>
           UUID
           <input type={'text'} value={venue.uuid} disabled />

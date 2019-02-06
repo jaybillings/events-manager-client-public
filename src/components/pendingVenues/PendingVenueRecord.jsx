@@ -14,10 +14,13 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
   /**
    * The class's constructor.
    * @constructor
+   *
    * @param {object} props
    */
   constructor(props) {
     super(props);
+
+    this.state = {writeStatus: ''};
 
     this.hoodInput = React.createRef();
     this.descInput = React.createRef();
@@ -41,53 +44,53 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
   /**
    * Handles the submit action by parsing new data and calling a function to create a new pending venue.
    * @override
+   *
    * @param {Event} e
    */
-  handleSubmit(e) {
+  handleSaveClick(e) {
     e.preventDefault();
 
     const newData = {
-      name: this.nameInput.current.value.trim(),
+      name: this.nameInput.current.value,
       hood_id: this.hoodInput.current.value,
-      description: this.descInput.current.value.trim()
+      description: this.descInput.current.value
     };
 
     // Only add non-required if they have value
-    this.emailInput.current.value !== '' && (newData.email = this.emailInput.current.value.trim());
-    this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value.trim());
-    this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value.trim());
-    this.streetInput.current.value !== '' && (newData.address_street = this.streetInput.current.value.trim());
-    this.cityInput.current.value !== '' && (newData.address_city = this.cityInput.current.value.trim());
-    this.stateInput.current.value !== '' && (newData.address_state = this.stateInput.current.value.trim());
-    this.zipInput.current.value !== '' && (newData.address_zip = this.zipInput.current.value.trim());
+    this.emailInput.current.value !== '' && (newData.email = this.emailInput.current.value);
+    this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value);
+    this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value);
+    this.streetInput.current.value !== '' && (newData.address_street = this.streetInput.current.value);
+    this.cityInput.current.value !== '' && (newData.address_city = this.cityInput.current.value);
+    this.stateInput.current.value !== '' && (newData.address_state = this.stateInput.current.value);
+    this.zipInput.current.value !== '' && (newData.address_zip = this.zipInput.current.value);
 
-    this.props.updateListing(newData);
+    this.props.updateListing(newData).then(() => this.checkWriteStatus());
   }
 
   /**
    * Renders the component.
-   *
+   * @override
    * @render
+   *
    * @returns {*}
    */
   render() {
-    const pendingVenue = this.props.listing;
-    const hoods = this.props.hoods;
-    const createdAt = Moment(pendingVenue.created_at).calendar();
-    const updatedAt = Moment(pendingVenue.updated_at).calendar();
-    const writeStatus = this.state.writeStatus;
+    const venue = this.props.listing;
+    const createdAt = Moment(venue.created_at).calendar();
+    const updatedAt = Moment(venue.updated_at).calendar();
 
     return (
-      <form id={'pending-venue-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
+      <form id={'pending-venue-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
         <label>
           Status
           <div>
-            <StatusLabel writeStatus={writeStatus} schema={'pending-events'} />
+            <StatusLabel writeStatus={this.state.writeStatus} schema={'pending-events'} />
           </div>
         </label>
         <label>
           UUID
-          <input type={'text'} value={pendingVenue.uuid} disabled />
+          <input type={'text'} value={venue.uuid} disabled />
         </label>
         <label>
           Created
@@ -99,45 +102,45 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
         </label>
         <label className={'required'}>
           Name
-          <input type={'text'} ref={this.nameInput} defaultValue={pendingVenue.name} required maxLength={100} />
+          <input type={'text'} ref={this.nameInput} defaultValue={venue.name} required maxLength={100} />
         </label>
         <label className={'required'}>
           Neighborhood
-          <select ref={this.hoodInput} defaultValue={pendingVenue.hood_id || ''} required>
-            {renderOptionList(hoods)}
+          <select ref={this.hoodInput} defaultValue={venue.hood_id || ''} required>
+            {renderOptionList(this.props.hoods)}
           </select>
         </label>
         <label className={'required'}>
           Description
-          <textarea ref={this.descInput} defaultValue={pendingVenue.description} required maxLength={500} />
+          <textarea ref={this.descInput} defaultValue={venue.description} required maxLength={500} />
         </label>
         <label>
           Email
-          <input type={'email'} ref={this.emailInput} defaultValue={pendingVenue.email} />
+          <input type={'email'} ref={this.emailInput} defaultValue={venue.email} />
         </label>
         <label>
           Url
-          <input type={'url'} ref={this.urlInput} defaultValue={pendingVenue.url} />
+          <input type={'url'} ref={this.urlInput} defaultValue={venue.url} />
         </label>
         <label>
           Phone #
-          <input type={'tel'} ref={this.phoneInput} defaultValue={pendingVenue.phone} />
+          <input type={'tel'} ref={this.phoneInput} defaultValue={venue.phone} />
         </label>
         <label>
           Street Address
-          <input type={'text'} ref={this.streetInput} defaultValue={pendingVenue.address_street} />
+          <input type={'text'} ref={this.streetInput} defaultValue={venue.address_street} />
         </label>
         <label>
           City
-          <input type={'text'} ref={this.cityInput} defaultValue={pendingVenue.address_city} />
+          <input type={'text'} ref={this.cityInput} defaultValue={venue.address_city} />
         </label>
         <label>
           State
-          <input type={'text'} ref={this.stateInput} defaultValue={pendingVenue.address_state} />
+          <input type={'text'} ref={this.stateInput} defaultValue={venue.address_state} />
         </label>
         <label>
           Zip Code
-          <input type={'text'} ref={this.zipInput} defaultValue={pendingVenue.address_zip} />
+          <input type={'text'} ref={this.zipInput} defaultValue={venue.address_zip} />
         </label>
         <div className={'block-warning'}
              title={'Caution: This venue is pending. It must be pushed live before it is visible on the site.'}>

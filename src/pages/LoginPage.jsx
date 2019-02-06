@@ -70,7 +70,8 @@ export default class LoginPage extends Component {
    * Runs when the login button is clicked. Logs in an existing user using the credentials supplied in the login form.
    * Verifies user data and sets the app's user parameter.
    */
-  handleFormLogin() {
+  handleFormLogin(e) {
+    e.preventDefault();
     app
       .authenticate({
         strategy: 'local',
@@ -158,7 +159,7 @@ export default class LoginPage extends Component {
         <p className={'message success-message' + successMsgClass}>Logged in. Redirecting in {this.state.redirectCount}
           {redirectCount === 1 ? 'second' : 'seconds'}. </p>
         <p className={'message warning-message' + warningMsgClass}>You must log in to continue.</p>
-        <form>
+        <form onSubmit={this.handleFormLogin}>
           <div className={'input-container'}>
             <label htmlFor={'emailInput'}>Email Address</label>
             <input id={'emailInput'} type={'text'} name={'email'} value={this.state.email}
@@ -169,7 +170,7 @@ export default class LoginPage extends Component {
           </div>
           <div className={'button-container'}>
             <button type={'button'} onClick={this.handleUserCreate}>Create Account</button>
-            <button className={'button-primary'} type={'button'} onClick={this.handleFormLogin}>Log In</button>
+            <button type={'submit'} className={'button-primary'}>Log In</button>
           </div>
         </form>
       </div>
