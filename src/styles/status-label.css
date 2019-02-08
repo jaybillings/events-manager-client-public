@@ -1,6 +1,6 @@
 .status-label {
   padding: 1rem;
-  border-radius: 4px;
+  border-radius: 20px;
   display: inline-block;
   color: var(--dark-bg-text-color);
   cursor: help;

@@ -47,9 +47,11 @@ export default class MessagePanel extends Component {
 
     return (
       <div className={`messageContainer ${visibleClass}`}>
-        <h3>Messages</h3>
-        <button className={'dismiss'} onClick={this.props.dismissPanel}>X</button>
-        <ul>{this.renderMessages()}</ul>
+        <header>
+          <h3>Messages</h3>
+          <button className={'dismiss'} onClick={this.props.dismissPanel}>X</button>
+        </header>
+        <div><ul>{this.renderMessages()}</ul></div>
       </div>
     );
   }

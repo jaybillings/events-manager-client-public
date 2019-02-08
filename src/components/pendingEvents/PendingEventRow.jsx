@@ -71,18 +71,18 @@ export default class PendingEventRow extends PendingListingRow {
       return (
         <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
           <td>
-            <button type={'button'} onClick={this.handleSaveClick}>Save</button>
+            <button type={'button'} className={'emphasize'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
-          <td><input type={'text'} ref={this.nameInput} defaultValue={pendingListing.name} /></td>
-          <td><input type={'date'} ref={this.startInput} defaultValue={startDateVal} /></td>
-          <td><input type={'date'} ref={this.endInput} defaultValue={endDateVal} /></td>
+          <td><input type={'text'} ref={this.nameInput} defaultValue={pendingListing.name} onClick={e => e.stopPropagation()} /></td>
+          <td><input type={'date'} ref={this.startInput} defaultValue={startDateVal} onClick={e => e.stopPropagation()} /></td>
+          <td><input type={'date'} ref={this.endInput} defaultValue={endDateVal} onClick={e => e.stopPropagation()} /></td>
           <td>
-            <select ref={this.venueList} defaultValue={pendingListing.venue_id || ''}>
+            <select ref={this.venueList} defaultValue={pendingListing.venue_uuid || ''} onClick={e => e.stopPropagation()}>
               {renderOptionList(venues, 'uuid')}
             </select>
           </td>
-          <td><select ref={this.orgList} defaultValue={pendingListing.org_id || ''} required>
+          <td><select ref={this.orgList} defaultValue={pendingListing.org_uuid || ''} onClick={e => e.stopPropagation()} required>
             {renderOptionList(orgs, 'uuid')}
           </select>
           </td>
@@ -98,8 +98,8 @@ export default class PendingEventRow extends PendingListingRow {
     return (
       <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
         <td>
-          <button type={'button'} onClick={this.startEdit}>Edit</button>
-          <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Discard</button>
+          <button type={'button'} className={'emphasize'} onClick={this.startEdit}>Edit</button>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard</button>
         </td>
         <td><Link to={`/pendingEvents/${pendingListing.id}`}>{pendingListing.name}</Link></td>
         <td>{startDate}</td>

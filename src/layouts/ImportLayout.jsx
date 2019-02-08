@@ -151,23 +151,23 @@ export default class ImportLayout extends Component {
         <h2>Review Unpublished Data</h2>
         <PendingEventsModule
           ref={this.eventsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
-          updateMessageList={this.updateMessagePanel}
+          updateMessagePanel={this.updateMessagePanel}
         />
         <PendingVenuesModule
           ref={this.venuesModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
-          updateMessageList={this.updateMessagePanel}
+          updateMessagePanel={this.updateMessagePanel}
         />
         <PendingOrganizersModule
           ref={this.orgsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
-          updateMessageList={this.updateMessagePanel}
+          updateMessagePanel={this.updateMessagePanel}
         />
         <PendingNeighborhoodsModule
           ref={this.hoodsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
-          updateMessageList={this.updateMessagePanel}
+          updateMessagePanel={this.updateMessagePanel}
         />
         <PendingTagsModule
           ref={this.tagsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
-          updateMessageList={this.updateMessagePanel}
+          updateMessagePanel={this.updateMessagePanel}
         />
         {publishButton}
       </div>

@@ -212,14 +212,14 @@ const displayErrorMessages = function (action, target, errors, displayFunc, user
     retry: 'Please try again.',
     default: 'If this problem continues, please contact the Helpdesk.'
   };
-  const subscript = (userPrompt ? userPrompts[userPrompt] : '') + userPrompts.default;
+  const subscript = (userPrompt ? userPrompts[userPrompt] : '') + ' ' + userPrompts.default;
 
   for (let i = 0; i < errors.length; i++) {
     const subject = errors[i].dataPath.substring(1);
     displayFunc({
 
       status: 'error',
-      details: `Could not ${action} ${target} -- ${subject}. ${errors[i].message}. ${subscript}`
+      details: `Could not ${action} ${target} -- ${subject} ${errors[i].message}. ${subscript}`
     });
   }
 };

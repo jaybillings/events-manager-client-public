@@ -136,10 +136,10 @@ export default class PendingListingRow extends Component {
       return (
         <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
           <td>
-            <button type={'button'} onClick={this.handleSaveClick}>Save</button>
+            <button type={'button'} className={'emphasize'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
-          <td><input type={'text'} ref={this.nameInput} defaultValue={pendingListing.name} /></td>
+          <td><input type={'text'} ref={this.nameInput} defaultValue={pendingListing.name} onClick={e => e.stopPropagation()} /></td>
           <td>{createdAt}</td>
           <td><StatusLabel writeStatus={writeStatus} schema={schema} /></td>
         </tr>
@@ -149,8 +149,8 @@ export default class PendingListingRow extends Component {
     return (
       <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
         <td>
-          <button type={'button'} onClick={this.startEdit}>Edit</button>
-          <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Discard</button>
+          <button type={'button'} className={'emphasize'} onClick={this.startEdit}>Edit</button>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard</button>
         </td>
         <td><Link to={`/pending${schema}/${pendingListing.id}`}>{pendingListing.name}</Link></td>
         <td>{createdAt}</td>

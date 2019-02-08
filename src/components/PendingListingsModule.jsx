@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {buildColumnSort, buildSortQuery, makeSingular, renderTableHeader} from "../utilities";
+import {buildColumnSort, buildSortQuery, displayErrorMessages, makeSingular, renderTableHeader} from "../utilities";
 import app from '../services/socketio';
 
 import PaginationLayout from "./common/PaginationLayout";
@@ -211,7 +211,7 @@ export default class PendingListingsModule extends Component {
       });
       this.removeListing(id);
     }, err => {
-      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
     });
   }
 
@@ -223,6 +223,8 @@ export default class PendingListingsModule extends Component {
    * @param {object} target - The listing to update.
    */
   replaceLiveListing(pendingListing, target) {
+    console.log('in replace live listing');
+
     let {id, ...listingData} = pendingListing;
 
     this.listingsService.update(target.id, listingData).then(result => {
@@ -232,7 +234,7 @@ export default class PendingListingsModule extends Component {
       });
       this.removeListing(id);
     }, err => {
-      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
     });
   }
 
@@ -247,9 +249,14 @@ export default class PendingListingsModule extends Component {
 
     this.pendingListingsService.find(searchOptions).then(resultSet => {
       resultSet.data.forEach(listing => {
+        console.log('listing', listing);
         this.queryForExact(listing).then(result => {
-          if (result.total) this.replaceLiveListing(listing, result.data[0]);
-          else this.createLiveListing(listing);
+          console.log('result total', result.total);
+          if (result.total && result.total > 0) {
+            this.replaceLiveListing(listing, result.data[0]);
+          } else {
+            this.createLiveListing(listing);
+          }
         }, err => {
           this.props.updateMessagePanel({status: 'error', details: err});
           console.log(`Error querying for live event: ${err}`);

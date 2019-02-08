@@ -19,22 +19,6 @@
   border-bottom: 0;
 }
 
-.schema-table button {
-  color: var(--notice-color);
-  border-color: var(--notice-color);
-  padding: 0 2rem;
-}
-
 .schema-table button:first-of-type {
   margin-right: 1rem;
-}
-
-.schema-table button.delete {
-  color: var(--error-color);
-  border-color: var(--error-color);
-}
-
-.schema-table button.delete:hover {
-  color: white;
-  background-color: var(--error-color);
 }

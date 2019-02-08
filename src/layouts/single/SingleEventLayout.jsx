@@ -91,8 +91,6 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
    * @override
    */
   componentWillUnmount() {
-    super.componentWillUnmount();
-
     const services = [
       this.venuesService,
       this.orgsService,

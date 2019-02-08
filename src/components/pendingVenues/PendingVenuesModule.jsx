@@ -1,5 +1,5 @@
 import React from "react";
-import {renderTableHeader, uniqueListingsOnly} from "../../utilities";
+import {displayErrorMessages, makeSingular, renderTableHeader, uniqueListingsOnly} from "../../utilities";
 import app from "../../services/socketio";
 
 import PendingListingsModule from "../PendingListingsModule";
@@ -55,14 +55,14 @@ export default class PendingVenuesModule extends PendingListingsModule {
       .on('patched', message => {
         this.props.updateMessagePanel({
           status: 'success',
-          details: `Updated pending ${this.schema.slice(0, -1)} "${message.name}"`
+          details: `Updated pending ${makeSingular(this.schema)} "${message.name}"`
         });
         this.fetchListings();
       })
       .on('removed', message => {
         this.props.updateMessagePanel({
           status: 'info',
-          details: `Discarded pending ${this.schema.slice(0, -1)} "${message.name}"`
+          details: `Discarded pending ${makeSingular(this.schema)} "${message.name}"`
         });
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchListings());
       });
@@ -130,8 +130,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
 
   createLiveListing(pendingListing) {
     let {id, hood_uuid, ...venueData} = pendingListing;
-    const venueHood = this.props.hoods.find(hood => {
-      return hood.uuid = hood_uuid
+    const venueHood = this.state.hoods.find(hood => {
+      return hood.uuid === hood_uuid
     });
 
     venueData.hood_id = venueHood.id || null;
@@ -143,14 +143,14 @@ export default class PendingVenuesModule extends PendingListingsModule {
       });
       this.removeListing(id);
     }, err => {
-      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
     });
   }
 
   replaceLiveListing(pendingListing, target) {
     let {id, hood_uuid, ...venueData} = pendingListing;
-    const venueHood = this.props.hoods.find(hood => {
-      return hood.uuid = hood_uuid
+    const venueHood = this.state.hoods.find(hood => {
+      return hood.uuid === hood_uuid
     });
 
     venueData.hood_id = venueHood.id || null;
@@ -162,7 +162,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
       });
       this.removeListing(id);
     }, err => {
-      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
     });
   }
 

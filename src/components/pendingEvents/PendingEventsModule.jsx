@@ -1,5 +1,5 @@
 import React from "react";
-import {renderTableHeader, uniqueListingsOnly} from "../../utilities";
+import {displayErrorMessages, renderTableHeader, uniqueListingsOnly} from "../../utilities";
 import app from '../../services/socketio';
 
 import PendingListingsModule from "../PendingListingsModule";
@@ -181,11 +181,11 @@ export default class PendingEventsModule extends PendingListingsModule {
    */
   createLiveListing(pendingListing) {
     let {id, venue_uuid, org_uuid, ...eventData} = pendingListing;
-    const eventVenue = this.props.venues.find(venue => {
-      return venue.uuid = venue_uuid
+    const eventVenue = this.state.venues.find(venue => {
+      return venue.uuid === venue_uuid
     });
-    const eventOrg = this.props.orgs.find(org => {
-      return org.uuid = org_uuid
+    const eventOrg = this.state.orgs.find(org => {
+      return org.uuid === org_uuid
     });
 
     eventData.venue_id = eventVenue.id || null;
@@ -201,7 +201,7 @@ export default class PendingEventsModule extends PendingListingsModule {
       this.registerLiveListing(result.id, result.name);
       this.removeListing(id);
     }, err => {
-      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
     });
   }
 
@@ -213,12 +213,12 @@ export default class PendingEventsModule extends PendingListingsModule {
    * @param {object} target
    */
   replaceLiveListing(pendingListing, target) {
-    let [id, venue_uuid, org_uuid, ...eventData] = pendingListing;
-    const eventVenue = this.props.venues.find(venue => {
-      return venue.uuid = venue_uuid
+    let {id, venue_uuid, org_uuid, ...eventData} = pendingListing;
+    const eventVenue = this.state.venues.find(venue => {
+      return venue.uuid === venue_uuid
     });
-    const eventOrg = this.props.orgs.find(org => {
-      return org.uuid = org_uuid
+    const eventOrg = this.state.orgs.find(org => {
+      return org.uuid === org_uuid
     });
 
     eventData.venue_id = eventVenue.id || null;
@@ -233,7 +233,7 @@ export default class PendingEventsModule extends PendingListingsModule {
       this.copyTagAssociations(id, target.id);
       this.removeListing(id);
     }, err => {
-      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
     });
   }
 
@@ -284,7 +284,7 @@ export default class PendingEventsModule extends PendingListingsModule {
           tagAssociations.push({event_id: liveID, tag_id: tagRow.id});
         });
 
-        this.tagsLookupService.create(tagAssociations);
+        if (tagAssociations) this.tagsLookupService.create(tagAssociations);
       })
       .then(() => {
         this.props.updateMessagePanel({status: 'info', details: `Associated tags with event #${liveID}`});
@@ -319,7 +319,7 @@ export default class PendingEventsModule extends PendingListingsModule {
    */
   registerLiveListing(eventID, eventName) {
     this.liveEventsService.create({event_id: eventID}).then(() => {
-      this.props.updateMessagePanel({status: 'info', message: `${eventName} registered as live`});
+      this.props.updateMessagePanel({status: 'info', details: `${eventName} registered as live`});
     }, err => {
       console.log('error in events-live create', JSON.stringify(err));
       this.props.updateMessagePanel({
