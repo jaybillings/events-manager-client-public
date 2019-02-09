@@ -91,8 +91,7 @@ export default class PendingEventRecord extends ListingRecordUniversal {
       }
     });
 
-    this.props.updateListing({eventData: newData, tagsToSave: tagsToSave, tagsToRemove: tagsToRemove})
-      .then(() => this.checkWriteStatus());
+    this.props.updateListing({eventData: newData, tagsToSave: tagsToSave, tagsToRemove: tagsToRemove});
   }
 
   /**
@@ -104,6 +103,7 @@ export default class PendingEventRecord extends ListingRecordUniversal {
    */
   render() {
     const event = this.props.listing;
+    const writeStatus = this.state.writeStatus;
     const startDate = Moment(event.start_date).format('YYYY-MM-DD');
     const endDate = Moment(event.end_date).format('YYYY-MM-DD');
     const createdAt = Moment(event.created_at).calendar();
@@ -114,7 +114,7 @@ export default class PendingEventRecord extends ListingRecordUniversal {
         <label>
           Status
           <div>
-            <StatusLabel writeStatus={this.state.writeStatus} schema={'pending-events'} />
+            <StatusLabel writeStatus={writeStatus} schema={'pending-events'} />
           </div>
         </label>
         <label>

@@ -30,10 +30,10 @@ const renderOptionList = function (schemaMembers, keyType = 'id') {
  * @param {Array} schemaMembers
  * @param {Array} selectedIds - IDs of the members that should be selected,
  * @param {string} keyType - What to use as the key. ID or UUID.
- *
+ * @param {Boolean} disableAll - Whether checkboxes should be disabled (read-only)
  * @returns {*}
  */
-const renderCheckboxList = function (schemaMembers, selectedIds, keyType = 'id') {
+const renderCheckboxList = function (schemaMembers, selectedIds, keyType = 'id', disableAll=false) {
   let chkbxList = [];
 
   schemaMembers.forEach(record => {
@@ -43,7 +43,7 @@ const renderCheckboxList = function (schemaMembers, selectedIds, keyType = 'id')
         <label>
           <input
             type={'checkbox'} className={'js-checkbox'} value={inputValue}
-            defaultChecked={selectedIds.includes(inputValue)}
+            defaultChecked={selectedIds.includes(inputValue)} disabled={disableAll}
           />
           {record.name}
         </label>

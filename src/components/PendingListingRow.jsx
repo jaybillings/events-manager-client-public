@@ -50,14 +50,16 @@ export default class PendingListingRow extends Component {
    *   - duplicate (will make a new listing that might duplicate an existing listing)
    */
   checkWriteStatus() {
-    this.props.queryForExisting(this.props.listing).then(message => {
+    const listing = this.props.listing;
+
+    this.props.queryForExisting(listing).then(message => {
       let writeStatus;
 
       if (!message.total) {
         writeStatus = 'new';
       } else {
         const uuids = message.data.map(row => row.uuid);
-        if (uuids.includes(this.props.listing.uuid)) {
+        if (uuids.includes(listing.uuid)) {
           writeStatus = 'update';
         } else {
           writeStatus = 'duplicate';
@@ -65,6 +67,8 @@ export default class PendingListingRow extends Component {
       }
 
       this.setState({writeStatus});
+    }, err => {
+      console.log('error checking write status', JSON.stringify(err));
     });
   }
 
@@ -139,7 +143,8 @@ export default class PendingListingRow extends Component {
             <button type={'button'} className={'emphasize'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
-          <td><input type={'text'} ref={this.nameInput} defaultValue={pendingListing.name} onClick={e => e.stopPropagation()} /></td>
+          <td><input type={'text'} ref={this.nameInput} defaultValue={pendingListing.name}
+                     onClick={e => e.stopPropagation()} /></td>
           <td>{createdAt}</td>
           <td><StatusLabel writeStatus={writeStatus} schema={schema} /></td>
         </tr>

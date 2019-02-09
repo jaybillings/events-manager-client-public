@@ -11,18 +11,6 @@ import StatusLabel from "../common/StatusLabel";
  */
 export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
   /**
-   * The class's constructor.
-   * @constructor
-   *
-   * @param {object} props
-   */
-  constructor(props) {
-    super(props);
-
-    this.state = {writeStatus: ''};
-  }
-
-  /**
    * Runs when the component mounts. Checks for write status of listing.
    * @override
    */
@@ -39,6 +27,7 @@ export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
    */
   render() {
     const hood = this.props.listing;
+    const writeStatus = this.state.writeStatus;
     const createdAt = Moment(hood.created_at).calendar();
     const updatedAt = Moment(hood.updated_at).calendar();
 
@@ -47,7 +36,7 @@ export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
         <label>
           Status
           <div>
-            <StatusLabel writeStatus={this.state.writeStatus} schema={'pending-neighborhoods'} />
+            <StatusLabel writeStatus={writeStatus} schema={'pending-neighborhoods'} />
           </div>
         </label>
         <label>

@@ -32,7 +32,9 @@ export default class SingleListingLayoutUniversal extends Component {
       messagePanelVisible: false, messages: []
     };
 
-    this.listingsService = app.service(schema);
+    const schemaArr = schema.split("-");
+    this.listingsService = schemaArr[1] ? app.service(schemaArr[1]) : app.service(schema);
+    this.pendingListingsService = schemaArr[1] ? app.service(schema) : app.service(`pending-${schema}`);
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.fetchListing = this.fetchListing.bind(this);
@@ -67,7 +69,7 @@ export default class SingleListingLayoutUniversal extends Component {
    * Fetches data for the single listing.
    */
   fetchListing() {
-    this.listingsService.get(this.listingID).then(result => {
+    app.service(this.schema).get(this.listingID).then(result => {
       this.setState({listing: result, listingLoaded: true});
     }, errors => {
       this.setState({notFound: true});
@@ -96,7 +98,7 @@ export default class SingleListingLayoutUniversal extends Component {
    * @param {object} newData
    */
   updateListing(newData) {
-    this.listingsService.patch(this.listingID, newData).then(result => {
+    app.service(this.schema).patch(this.listingID, newData).then(result => {
       this.setState({listing: result, listingLoaded: true});
       this.updateMessagePanel({status: 'success', details: `Saved changes to "${result.name}"`});
     }, errors => {
@@ -108,7 +110,7 @@ export default class SingleListingLayoutUniversal extends Component {
    * Removes the listing from the database by calling the service's REMOVE method.
    */
   deleteListing() {
-    this.listingsService.remove(this.listingID).then(() => {
+    app.service(this.schema).remove(this.listingID).then(() => {
       this.setState({hasDeleted: true});
     }, errors => {
       displayErrorMessages('delete', this.state.listing.name || '', errors, this.updateMessagePanel);

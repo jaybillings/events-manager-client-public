@@ -74,6 +74,10 @@ a.current {
   color: var(--current-link-color);
 }
 
+[disabled], [readonly] {
+  color: var(--disabled-color);
+}
+
 button {
   background-color: white;
   padding: 0 2rem;

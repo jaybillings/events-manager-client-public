@@ -172,7 +172,7 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
    * Fetches associations between published tags and the event.
    */
   fetchTagAssociations() {
-    this.eventsTagsLookupService.find({query: {event_id: this.listingID}, $select: ['tag_id']}).then(message => {
+    this.eventsTagsLookupService.find({query: {event_id: this.listingID}}).then(message => {
       this.setState({tagsForListing: message.data, tagAssociationsLoaded: true});
     }, err => {
       this.setState({tagAssociationsLoaded: false});
@@ -196,12 +196,15 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
    * @param {object} listingData
    */
   updateListing(listingData) {
-    this.listingsService.patch(this.listingID, listingData.eventData).then(() => {
+    this.listingsService.patch(this.listingID, listingData.eventData).then((result) => {
       if (listingData.tagsToSave) this.createTagAssociations(listingData.tagsToSave);
       if (listingData.tagsToRemove) this.removeTagAssociations(listingData.tagsToRemove);
 
       if (listingData.publishState === 'publish') this.registerEventLive();
       else if (listingData.publishState === 'drop') this.registerEventDropped();
+
+      this.setState({listing: result, listingLoaded: true});
+      this.updateMessagePanel({status: 'success', details: `Saved changes to "${result.name}"`});
     }, err => {
       displayErrorMessages('save changes to', this.state.listing.name, err, this.updateMessagePanel, 'retry');
     });
@@ -212,20 +215,19 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
    * @override
    */
   deleteListing() {
-    this.listingsService.remove(this.state.listing.id)
+    this.listingsService.remove(this.listingID)
       .then(() => {
         // noinspection JSCheckFunctionSignatures
-        return Promise.all([
+        Promise.all([
           this.removeTagAssociations([]),
           this.registerEventDropped()
-        ]);
-      })
-      .then(() => {
+        ]).catch(err => {
+          this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+        });
         this.setState({hasDeleted: true});
-      })
-      .catch(err => {
-        // TODO: Custom error?
+      }, err => {
         this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+        displayErrorMessages('delete', this.state.listing.name, err, this.updateMessagePanel, 'retry');
       });
   }
 
@@ -295,7 +297,7 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
     return <EventRecord
       listing={this.state.listing} schema={this.schema} publishState={this.state.publishState}
       venues={this.state.venues} orgs={this.state.orgs}
-      tags={this.state.tags} tagsForListing={this.state.tagsForListing}
+      tags={this.state.tags} tagsForListing={this.state.tagsForListing.map(row => row.tag_id)}
       updateListing={this.updateListing} deleteListing={this.deleteListing}
     />;
   }

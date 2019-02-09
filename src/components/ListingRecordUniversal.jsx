@@ -14,6 +14,7 @@ export default class ListingRecordUniversal extends Component {
   /**
    * The class's constructor.
    * @constructor
+   *
    * @param {object} props
    */
   constructor(props) {
@@ -37,14 +38,16 @@ export default class ListingRecordUniversal extends Component {
    *   - duplicate (will make a new listing that might duplicate an existing listing)
    */
   checkWriteStatus() {
-    this.props.queryForExisting(this.state.listing).then(message => {
+    const listing = this.props.listing;
+
+    this.props.queryForExisting(listing).then(message => {
       let writeStatus;
 
       if (!message.total) {
         writeStatus = 'new';
       } else {
         const uuids = message.data.map(row => row.uuid);
-        if (uuids.includes(this.props.listing.uuid)) {
+        if (uuids.includes(listing.uuid)) {
           writeStatus = 'update';
         } else {
           writeStatus = 'duplicate';
@@ -64,7 +67,6 @@ export default class ListingRecordUniversal extends Component {
    */
   handleSaveClick(e) {
     e.preventDefault();
-
     this.props.updateListing({name: this.nameInput.current.value});
   }
 
@@ -78,8 +80,8 @@ export default class ListingRecordUniversal extends Component {
   /**
    * Renders the component.
    * @override
-   *
    * @render
+   *
    * @returns {*}
    */
   render() {
@@ -88,8 +90,11 @@ export default class ListingRecordUniversal extends Component {
     const createdAt = Moment(listing.created_at).calendar();
     const updatedAt = Moment(listing.updated_at).calendar();
 
-    const deleteButton = schema.indexOf('pending') !== -1 || app.get('user').is_admin
+    const publishButton = schema.indexOf('pending') !== -1 || this.user.is_su
+      ? <button type={'button'} className={'button-primary'}>Save Changes</button> : '';
+    const deleteButton = schema.indexOf('pending') !== -1 || this.user.is_admin
       ? <button type={'button'} onClick={this.handleDeleteClick}>Delete {makeSingular(schema)}</button> : '';
+    const disableAll = schema.indexOf('pending') !== -1 && !this.user.is_su;
 
     return (
       <form id={`${schema}-listing-form`} className={'schema-record'} onSubmit={this.handleSaveClick}>
@@ -107,11 +112,12 @@ export default class ListingRecordUniversal extends Component {
         </label>
         <label className={'required'}>
           Name
-          <input type={'text'} ref={this.nameInput} defaultValue={listing.name} required maxLength={100} />
+          <input type={'text'} ref={this.nameInput} defaultValue={listing.name} maxLength={100} disabled={disableAll}
+                 required />
         </label>
         <div>
+          {publishButton}
           {deleteButton}
-          <button type={'button'} className={'button-primary'}>Save Changes</button>
         </div>
       </form>
     );

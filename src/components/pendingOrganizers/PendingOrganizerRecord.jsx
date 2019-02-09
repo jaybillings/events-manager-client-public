@@ -19,8 +19,6 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
   constructor(props) {
     super(props);
 
-    this.state = {writeStatus: ''};
-
     this.descInput = React.createRef();
     this.urlInput = React.createRef();
     this.phoneInput = React.createRef();
@@ -52,7 +50,7 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
     this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value);
     this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value);
 
-    this.props.updateListing(newData).then(() => this.checkWriteStatus());
+    this.props.updateListing(newData);
   }
 
   /**
@@ -64,6 +62,7 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
    */
   render() {
     const org = this.props.listing;
+    const writeStatus = this.state.writeStatus;
     const createdAt = Moment(org.created_at).calendar();
     const updatedAt = Moment(org.updated_at).calendar();
 
@@ -72,7 +71,7 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
         <label>
           Status
           <div>
-            <StatusLabel writeStatus={this.state.writeStatus} schema={'pending-organizers'} />
+            <StatusLabel writeStatus={writeStatus} schema={'pending-organizers'} />
           </div>
         </label>
         <label>

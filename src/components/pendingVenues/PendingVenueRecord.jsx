@@ -20,8 +20,6 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
   constructor(props) {
     super(props);
 
-    this.state = {writeStatus: ''};
-
     this.hoodInput = React.createRef();
     this.descInput = React.createRef();
     this.emailInput = React.createRef();
@@ -65,7 +63,7 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
     this.stateInput.current.value !== '' && (newData.address_state = this.stateInput.current.value);
     this.zipInput.current.value !== '' && (newData.address_zip = this.zipInput.current.value);
 
-    this.props.updateListing(newData).then(() => this.checkWriteStatus());
+    this.props.updateListing(newData);
   }
 
   /**
@@ -77,6 +75,8 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
    */
   render() {
     const venue = this.props.listing;
+    const hoods = this.props.hoods;
+    const writeStatus = this.state.writeStatus;
     const createdAt = Moment(venue.created_at).calendar();
     const updatedAt = Moment(venue.updated_at).calendar();
 
@@ -85,7 +85,7 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
         <label>
           Status
           <div>
-            <StatusLabel writeStatus={this.state.writeStatus} schema={'pending-events'} />
+            <StatusLabel writeStatus={writeStatus} schema={'pending-events'} />
           </div>
         </label>
         <label>
@@ -107,7 +107,7 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
         <label className={'required'}>
           Neighborhood
           <select ref={this.hoodInput} defaultValue={venue.hood_id || ''} required>
-            {renderOptionList(this.props.hoods)}
+            {renderOptionList(hoods)}
           </select>
         </label>
         <label className={'required'}>

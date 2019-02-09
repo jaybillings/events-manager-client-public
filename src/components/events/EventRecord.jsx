@@ -142,15 +142,19 @@ export default class EventRecord extends ListingRecordUniversal {
     const endDate = Moment(event.end_date).format('YYYY-MM-DD');
     const createdAt = Moment(event.created_at).calendar();
     const updatedAt = Moment(event.updated_at).calendar();
+
+    const publishButton = this.user.is_su
+    ? <button type={'submit'} className={'button-primary'}>Save Changes</button> : '';
     const deleteButton = this.user.is_admin
       ?  <button type={'button'} onClick={this.handleDeleteClick}>Delete Event</button> : '';
+    const disableAll = !this.user.is_su;
 
     return (
-      <form id={'event-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
+      <form id={'event-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick} onClick={this.handleClick}>
         <div>
           <p className={'label'}>Status - {isPublished ? 'Published' : 'Dropped'}</p>
           <input id={`toggle-${event.id}`} type={'checkbox'} ref={this.liveToggle} className={'toggle'}
-                 checked={isPublished} onChange={this.toggleStatus}
+                 checked={isPublished} onChange={this.toggleStatus} disabled={disableAll}
           />
           <label className={'toggle-switch'} htmlFor={'toggle-' + event.id} />
         </div>
@@ -160,74 +164,74 @@ export default class EventRecord extends ListingRecordUniversal {
         </label>
         <label>
           Created
-          <input type={'text'} value={createdAt} disabled />
+          <input type={'text'} value={createdAt} readOnly />
         </label>
         <label>
           Last Updated
-          <input type={'text'} value={updatedAt} disabled />
+          <input type={'text'} value={updatedAt} readOnly />
         </label>
         <label className={'required'}>
           Name
-          <input type={'text'} ref={this.nameInput} defaultValue={event.name} required maxLength={100} />
+          <input type={'text'} ref={this.nameInput} defaultValue={event.name} required maxLength={100} disabled={disableAll} />
         </label>
         <label className={'required'}>
           Start Date
-          <input type={'date'} ref={this.startInput} defaultValue={startDate} required />
+          <input type={'date'} ref={this.startInput} defaultValue={startDate} disabled={disableAll} required />
         </label>
         <label className={'required'}>
           End Date
-          <input type={'date'} ref={this.endInput} defaultValue={endDate} required />
+          <input type={'date'} ref={this.endInput} defaultValue={endDate} disabled={disableAll} required />
         </label>
         <label className={'required'}>
           Venue
-          <select ref={this.venueInput} defaultValue={event.venue_id || ''} required>{renderOptionList(venues)}</select>
+          <select ref={this.venueInput} defaultValue={event.venue_id || ''} disabled={disableAll} required>{renderOptionList(venues)}</select>
         </label>
         <label className={'required'}>
           Organizer
-          <select ref={this.orgInput} defaultValue={event.org_id || ''} required>{renderOptionList(orgs)}</select>
+          <select ref={this.orgInput} defaultValue={event.org_id || ''} disabled={disableAll} required>{renderOptionList(orgs)}</select>
         </label>
         <label className={'required'}>
           Description
-          <textarea ref={this.descInput} defaultValue={event.description} maxLength={500} required />
+          <textarea ref={this.descInput} defaultValue={event.description} maxLength={500} disabled={disableAll} required />
         </label>
         <label>
           Tags
-          {renderCheckboxList(tags, eventTags)}
+          {renderCheckboxList(tags, eventTags, 'id', disableAll)}
         </label>
         <label>
           Email Address
-          <input type={'email'} ref={this.emailInput} defaultValue={event.email} maxLength={50} />
+          <input type={'email'} ref={this.emailInput} defaultValue={event.email} maxLength={50} disabled={disableAll} />
         </label>
         <label>
           URL
-          <input type={'url'} ref={this.urlInput} defaultValue={event.url} maxLength={100} />
+          <input type={'url'} ref={this.urlInput} defaultValue={event.url} maxLength={100} disabled={disableAll} />
         </label>
         <label>
           Phone Number
-          <input type={'tel'} ref={this.phoneInput} defaultValue={event.phone} maxLength={20} />
+          <input type={'tel'} ref={this.phoneInput} defaultValue={event.phone} maxLength={20} disabled={disableAll} />
         </label>
         <label>
           Event Hours
-          <input type={'text'} ref={this.hoursInput} defaultValue={event.hours} maxLength={100} />
+          <input type={'text'} ref={this.hoursInput} defaultValue={event.hours} maxLength={100} disabled={disableAll} />
         </label>
         <label>
           Ticketing URL
-          <input type={'url'} ref={this.ticketUrlInput} defaultValue={event.ticket_url} maxLength={150} />
+          <input type={'url'} ref={this.ticketUrlInput} defaultValue={event.ticket_url} maxLength={150} disabled={disableAll} />
         </label>
         <label>
           Ticketing Phone Number
-          <input type={'tel'} ref={this.ticketPhoneInput} defaultValue={event.ticket_phone} maxLength={20} />
+          <input type={'tel'} ref={this.ticketPhoneInput} defaultValue={event.ticket_phone} maxLength={20} disabled={disableAll} />
         </label>
         <label>
           Ticket Prices
-          <input type={'text'} ref={this.ticketPricesInput} defaultValue={event.ticket_prices} maxLength={50} />
+          <input type={'text'} ref={this.ticketPricesInput} defaultValue={event.ticket_prices} maxLength={50} disabled={disableAll} />
         </label>
         <label>
-          <input type='checkbox' ref={this.ongoingInput} defaultChecked={event.flag_ongoing} />
+          <input type='checkbox' ref={this.ongoingInput} defaultChecked={event.flag_ongoing} disabled={disableAll} />
           Ongoing Event
         </label>
         <div>
-          <button type={'submit'} className={'button-primary'}>Save Changes</button>
+          {publishButton}
           {deleteButton}
         </div>
       </form>
