@@ -56,7 +56,6 @@ export default class Filters extends Component {
    */
   render() {
     const currentFilter = this.state.currentFilter;
-    let filterType = currentFilter === 'none' ? 'All' : currentFilter;
     let buttons = [];
 
 
@@ -80,7 +79,6 @@ export default class Filters extends Component {
 
     return (
       <div className={'filter-container'}>
-        <h3>Filter Results - Showing {filterType}</h3>
         {buttons}
       </div>
     );

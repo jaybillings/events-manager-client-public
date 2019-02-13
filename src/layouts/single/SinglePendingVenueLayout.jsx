@@ -38,16 +38,16 @@ export default class SinglePendingVenueLayout extends SingleListingLayoutUnivers
     super.componentDidMount();
 
     this.hoodsService
-      .on('created', this.fetchHoods)
-      .on('patched', this.fetchHoods)
-      .on('updated', this.fetchHoods)
-      .on('removed', this.fetchHoods);
+      .on('created', () => this.fetchHoods)
+      .on('patched', () => this.fetchHoods)
+      .on('updated', () => this.fetchHoods)
+      .on('removed', () => this.fetchHoods);
 
     this.pendingHoodsService
-      .on('created', this.fetchPendingHoods)
-      .on('patched', this.fetchPendingHoods)
-      .on('updated', this.fetchPendingHoods)
-      .on('removed', this.fetchPendingHoods);
+      .on('created', () => this.fetchPendingHoods)
+      .on('patched', () => this.fetchPendingHoods)
+      .on('updated', () => this.fetchPendingHoods)
+      .on('removed', () => this.fetchPendingHoods);
   }
 
   /**

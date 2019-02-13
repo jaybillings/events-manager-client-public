@@ -61,7 +61,7 @@ export default class OrganizerAddForm extends ListingAddForm {
     const submitLabel = this.user.is_admin ? 'Publish Organizer' : 'Add Pending Organizer';
 
     return (
-      <form id={'organizers-add-form'} className={'add-form'} action={submitAction}>
+      <form id={'organizers-add-form'} className={'add-form'} onSubmit={submitAction}>
         <label className={'required'}>
           Name
           <input type={'text'} ref={this.nameInput} required maxLength={100} />
@@ -80,7 +80,7 @@ export default class OrganizerAddForm extends ListingAddForm {
         </label>
         <div>
           <button type={'button'} onClick={this.clearForm}>Reset</button>
-          <button type={'button'} className={'button-primary'}>{submitLabel}</button>
+          <button type={'submit'} className={'button-primary'}>{submitLabel}</button>
         </div>
       </form>
     );

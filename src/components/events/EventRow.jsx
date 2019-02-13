@@ -24,15 +24,13 @@ export default class EventRow extends ListingRow {
     super(props);
 
     const event = this.props.listing;
-    const venueID = typeof this.props.venue === 'undefined' ? '' : this.props.venue.id;
-    const orgID = typeof this.props.org === 'undefined' ? '' : this.props.org.id;
+    const venueID = typeof this.props.venue === 'undefined' ? this.props.venues[0].id : this.props.venue.id;
+    const orgID = typeof this.props.org === 'undefined' ? this.props.orgs[0].id : this.props.org.id;
 
     Object.assign(this.state, {
-      is_published: false, eventStart: event.start_date, eventEnd: event.end_date,
+      is_published: this.props.listingIsLive, eventStart: event.start_date, eventEnd: event.end_date,
       eventVenue: venueID, eventOrg: orgID
     });
-
-    this.listingIsLive = this.listingIsLive.bind(this);
   }
 
   /**
@@ -41,20 +39,7 @@ export default class EventRow extends ListingRow {
    */
   componentDidMount() {
     super.componentDidMount();
-    this.listingIsLive();
   }
-
-  /**
-   * Determines whether the event is live by triggering a function to query the live service for the event's
-   * presence.
-   */
-  listingIsLive() {
-    this.props.checkForLive(this.props.listing.id).then(results => {
-      this.setState({is_published: results.total > 0});
-    }, err => {
-      console.log('error in checking for live', JSON.stringify(err));
-    });
-  };
 
   /**
    * Handles changes to input block by saving the data as a state parameter.
@@ -85,7 +70,7 @@ export default class EventRow extends ListingRow {
       uuid: this.props.listing.uuid,
       name: this.state.listingName,
       start_date: Moment(this.state.eventStart).valueOf(),
-      end_date: Moment(this.state.eventStart).valueOf(),
+      end_date: Moment(this.state.eventEnd).valueOf(),
       venue_id: this.state.eventVenue,
       org_id: this.state.eventOrg
     };
@@ -104,10 +89,13 @@ export default class EventRow extends ListingRow {
     e.stopPropagation();
 
     let {id, org_id, venue_id, ...eventData} = this.props.listing;
+
     eventData.org_uuid = this.props.org.uuid;
     eventData.venue_uuid = this.props.venue.uuid;
+    eventData.created_at = Moment(eventData.created_at).valueOf();
+    eventData.updated_at = Moment(eventData.updated_at).valueOf();
 
-    this.props.createPendingListing(eventData).then(() => {
+    this.props.createPendingListing(id, eventData).then(() => {
       this.listingHasPending();
     });
   }

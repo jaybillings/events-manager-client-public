@@ -33,12 +33,12 @@ export default class VenueAddForm extends ListingAddForm {
    * Compiles the data required for creating a new listing from the form fields.
    * @override
    *
-   * @returns {{hood_uuid: string, name: string, description: string}}
+   * @returns {{hood_id: number, name: string, description: string}}
    */
   buildNewListing() {
     const venueObj = {
       name: this.nameInput.current.value.trim(),
-      hood_uuid: this.hoodList.current.value,
+      hood_id: parseInt(this.hoodList.current.value, 10),
       description: this.descInput.current.value.trim()
     };
 

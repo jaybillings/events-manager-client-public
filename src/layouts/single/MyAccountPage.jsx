@@ -12,6 +12,7 @@ export default class MyAccountPage extends Component {
 
     this.state = {oldPass: '', newPass: '', messages: [], messagePanelVisible: false};
 
+    this.user = app.get('user');
     this.userService = app.service('users');
 
     this.updatePassword = this.updatePassword.bind(this);
@@ -32,10 +33,10 @@ export default class MyAccountPage extends Component {
 
     app.authenticate({
       strategy: 'local',
-      email: app.get('user').email,
+      email: this.user.email,
       password: this.state.oldPass
     }).then(() => {
-      this.userService.patch(app.get('user').id, {password: this.state.newPass}).then(() => {
+      this.userService.patch(this.user.id, {password: this.state.newPass}).then(() => {
         this.updateMessagePanel({status: 'success', details: 'Your password has been changed successfully.'});
       });
     }, err => {
@@ -75,7 +76,7 @@ export default class MyAccountPage extends Component {
     return (
       <div className="container account-page">
         <Header />
-        <h2>My Account</h2>
+        <h2>{this.user.email}'s Account</h2>
         <MessagePanel messages={this.state.messages} isVisible={this.state.messagePanelVisible} dismissPabel={this.dismissMessagePanel}/>
         <div className={'button-container'}>
           <button type={'button'} className={'button-primary emphasis'} onClick={this.logout}>Log Out</button>

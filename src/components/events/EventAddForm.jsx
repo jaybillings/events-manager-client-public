@@ -39,15 +39,15 @@ export default class EventAddForm extends ListingAddForm {
    * Compiles the data required for creating a new listing from the form fields.
    * @override
    *
-   * @returns {{tagsToSave: Array, eventObj: {end_date: number, venue_uuid: *, name: *, description: *, org_uuid: *, start_date: number, flag_ongoing: *}}}
+   * @returns {{tagsToSave: Array, eventObj: {end_date: number, venue_id: number, name: string, description: string, org_id: number, start_date: number, flag_ongoing: Boolean}}}
    */
   buildNewListing() {
     const eventObj = {
       name: this.nameInput.current.value,
       start_date: Moment(this.startInput.current.value).valueOf(),
       end_date: Moment(this.endInput.current.value).valueOf(),
-      venue_uuid: this.venueList.current.value,
-      org_uuid: this.orgList.current.value,
+      venue_id: parseInt(this.venueList.current.value, 10),
+      org_id: parseInt(this.orgList.current.value, 10),
       description: this.descInput.current.value,
       flag_ongoing: this.ongoingInput.current.checked
     };

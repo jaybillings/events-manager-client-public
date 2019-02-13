@@ -61,10 +61,10 @@ export default class PendingEventsModule extends PendingListingsModule {
 
     for (let [service, dataFetcher] of services) {
       service
-        .on('created', dataFetcher)
-        .on('updated', dataFetcher)
-        .on('patched', dataFetcher)
-        .on('removed', dataFetcher);
+        .on('created', () => dataFetcher)
+        .on('updated', () => dataFetcher)
+        .on('patched', () => dataFetcher)
+        .on('removed', () => dataFetcher);
     }
   }
 

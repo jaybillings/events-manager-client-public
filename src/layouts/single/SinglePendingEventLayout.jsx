@@ -64,10 +64,10 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
 
     for (let [service, dataFetcher] of services) {
       service
-        .on('created', dataFetcher)
-        .on('updated', dataFetcher)
-        .on('patched', dataFetcher)
-        .on('removed', dataFetcher);
+        .on('created', () => dataFetcher)
+        .on('updated', () => dataFetcher)
+        .on('patched', () => dataFetcher)
+        .on('removed', () => dataFetcher);
     }
 
     this.pendingEventsTagsLookupService
@@ -269,6 +269,7 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
   createTagAssociations(tagsToSave) {
     this.pendingEventsTagsLookupService.create(tagsToSave).then(() => {
       this.updateMessagePanel({status: 'info', details: 'Associated tags with event'});
+      this.fetchTagAssociations();
     }, err => {
       displayErrorMessages('associate', 'tags with pending event', err, this.updateMessagePanel, 'retry');
     });
@@ -280,10 +281,11 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
    * @param {object[]} tagsToRemove
    */
   removeTagAssociations(tagsToRemove) {
-    const query = tagsToRemove ? {pending_event_id: {$in: tagsToRemove}} : {};
+    const query = {pending_event_id: this.state.listing.id, tag_uuid: {$in: tagsToRemove}};
 
     this.pendingEventsTagsLookupService.remove(null, {query: query}).then(() => {
       this.updateMessagePanel({status: 'info', details: 'Disassociated tags from event'});
+      this.fetchTagAssociations();
     }, err => {
         displayErrorMessages('de-associate', 'tags from pending event', err, this.updateMessagePanel, 'retry');
     });

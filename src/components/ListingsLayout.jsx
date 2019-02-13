@@ -195,10 +195,11 @@ export default class ListingsLayout extends Component {
   /**
    * Creates a pending listing that duplicates the given data from a live listing.
    *
+   * @param {string} id
    * @param {object} listingData
    * @returns {Promise}
    */
-  createPendingListing(listingData) {
+  createPendingListing(id, listingData) {
     return app.service(`pending-${this.schema}`).create(listingData).then(message => {
       this.setState({newPendingListing: message});
       this.updateMessagePanel({
@@ -325,6 +326,7 @@ export default class ListingsLayout extends Component {
     const messages = this.state.messages;
     const schema = this.schema;
     const pendingListing = this.state.newPendingListing;
+    const filterType = (!this.state.filterLabel || this.state.filterLabel === 'none') ? 'All' : this.state.filterLabel;
 
     let pendingListingLink = pendingListing.id ? <div className={'pending-link'}>
       <Link to={`/pending${this.schema}/${pendingListing.id}`}>Click here to edit {pendingListing.name}</Link>
@@ -335,7 +337,7 @@ export default class ListingsLayout extends Component {
         <Header />
         <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
         {pendingListingLink}
-        <h2>All {schema}</h2>
+        <h2>{filterType} {schema}</h2>
         {this.renderTable()}
         <h3>Add New {makeSingular(schema)}</h3>
         {this.renderAddForm()}

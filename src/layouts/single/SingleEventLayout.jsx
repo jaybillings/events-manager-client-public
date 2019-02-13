@@ -59,10 +59,10 @@ export default class SingleEventLayout extends SingleListingLayoutUniversal {
 
     for (let [service, dataFetcher] of services) {
       service
-        .on('created', dataFetcher)
-        .on('patched', dataFetcher)
-        .on('updated', dataFetcher)
-        .on('removed', dataFetcher);
+        .on('created', () => dataFetcher)
+        .on('patched', () => dataFetcher)
+        .on('updated', () => dataFetcher)
+        .on('removed', () => dataFetcher);
     }
 
     this.liveEventService

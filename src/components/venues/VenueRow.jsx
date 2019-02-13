@@ -20,7 +20,7 @@ export default class VenueRow extends ListingRow {
   constructor(props) {
     super(props);
 
-    const hoodID = typeof this.props.hood === 'undefined' ? '' : this.props.hood.id;
+    const hoodID = typeof this.props.hood === 'undefined' ? this.props.hoods[0].id : this.props.hood.id;
 
     Object.assign(this.state, {venueHood: hoodID});
   }
@@ -48,9 +48,12 @@ export default class VenueRow extends ListingRow {
     e.stopPropagation();
 
     let {id, hood_id, ...venueData} = this.props.listing;
-    venueData.hood_uuid = this.props.hood.uuid;
 
-    this.props.createPendingListing(venueData).then(() => {
+    venueData.hood_uuid = this.props.hood.uuid;
+    venueData.created_at = Moment(venueData.created_at).valueOf();
+    venueData.updated_at = Moment(venueData.updated_at).valueOf();
+
+    this.props.createPendingListing(id, venueData).then(() => {
       this.listingHasPending();
     });
   }
@@ -68,7 +71,7 @@ export default class VenueRow extends ListingRow {
     const updatedAt = Moment(this.props.listing.updated_at).calendar();
 
     if (this.state.editable) {
-      const defaultHood = this.state.venueHood || this.props.hoods[0].uuid;
+      const defaultHood = this.state.venueHood || this.props.hoods[0].id;
 
       return (
         <tr className={'schema-row'}>

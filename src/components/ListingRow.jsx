@@ -99,7 +99,10 @@ export default class ListingRow extends Component {
 
     let {id, ...listingData} = this.props.listing;
 
-    this.props.createPendingListing(listingData).then(() => {
+    listingData.created_at = Moment(listingData.created_at).valueOf();
+    listingData.updated_at = Moment(listingData.updated_at).valueOf();
+
+    this.props.createPendingListing(id, listingData).then(() => {
       this.listingHasPending();
     });
   }
