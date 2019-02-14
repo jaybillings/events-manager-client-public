@@ -15,7 +15,7 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
    * The class's constructor.
    * @constructor
    *
-   * @param {object} props
+   * @param {{listing: Object, schema: String, hoods: Array, updateListing: Function, deleteListing: Function, queryForExisting: Function}} props
    */
   constructor(props) {
     super(props);
@@ -50,7 +50,7 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
 
     const newData = {
       name: this.nameInput.current.value,
-      hood_id: this.hoodInput.current.value,
+      hood_uuid: this.hoodInput.current.value,
       description: this.descInput.current.value
     };
 
@@ -106,8 +106,8 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
         </label>
         <label className={'required'}>
           Neighborhood
-          <select ref={this.hoodInput} defaultValue={venue.hood_id || ''} required>
-            {renderOptionList(hoods)}
+          <select ref={this.hoodInput} defaultValue={venue.hood_uuid || ''} required>
+            {renderOptionList(hoods, 'uuid')}
           </select>
         </label>
         <label className={'required'}>

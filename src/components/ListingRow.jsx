@@ -14,7 +14,8 @@ export default class ListingRow extends Component {
   /**
    * The component's constructor.
    * @constructor
-   * @param {object} props
+   *
+   * @param {{schema: String, listing: Object, updateListing: Function, deleteListing: Function, createPendingListing: Function, checkForPending: Function}} props
    */
   constructor(props) {
     super(props);
@@ -74,7 +75,9 @@ export default class ListingRow extends Component {
    * @param {Event} e
    */
   handleInputChange(e) {
-    this.setState({[e.target.name]: e.target.value.trim()});
+    if (!e.target.name) return;
+
+    this.setState({[e.target.name]: e.target.value});
   }
 
   /**
@@ -97,12 +100,13 @@ export default class ListingRow extends Component {
   handleCopyClick(e) {
     e.stopPropagation();
 
+    // noinspection JSUnusedLocalSymbols
     let {id, ...listingData} = this.props.listing;
 
     listingData.created_at = Moment(listingData.created_at).valueOf();
     listingData.updated_at = Moment(listingData.updated_at).valueOf();
 
-    this.props.createPendingListing(id, listingData).then(() => {
+    this.props.createPendingListing(listingData).then(() => {
       this.listingHasPending();
     });
   }
@@ -134,6 +138,7 @@ export default class ListingRow extends Component {
    * @note The render has two different paths depending on whether the row can be edited.
    * @override
    * @render
+   *
    * @returns {*}
    */
   render() {

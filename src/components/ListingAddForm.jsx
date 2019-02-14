@@ -14,7 +14,7 @@ export default class ListingAddForm extends Component {
    * The class's constructor.
    *
    * @constructor
-   * @param {object} props
+   * @param {{schema: String, createListing: Function, createPendingListing: Function}} props
    */
   constructor(props) {
     super(props);
@@ -25,26 +25,36 @@ export default class ListingAddForm extends Component {
 
     this.handleAddClick = this.handleAddClick.bind(this);
     this.handleAddPendingClick = this.handleAddPendingClick.bind(this);
+    this.buildNewListing = this.buildNewListing.bind(this);
     this.clearForm = this.clearForm.bind(this);
   }
 
   /**
-   * Handles the submit event by parsing data and calling a function to create a new listing.
+   * Handles the submit action by triggering the creation of a new listing.
+   * @param {Event} e
    */
   handleAddClick(e) {
     e.preventDefault();
-
-    this.props.createListing(this.buildNewListing()).then(() => this.clearForm());
+    const listingData = this.buildNewListing();
+    this.props.createListing(listingData);
   }
 
+  /**
+   * Handles the submit action by triggering the creation of a new pending listing.
+   *
+   * @param {Event} e
+   */
   handleAddPendingClick(e) {
     e.preventDefault();
-
-    this.props.createPendingListing(this.buildNewListing()).then(() => {
-      this.clearForm()
-    });
+    const listingData = this.buildNewListing();
+    this.props.createPendingListing(listingData);
   }
 
+  /**
+   * Compiles the data required for building a new listing.
+   *
+   * @returns {{name: String}}
+   */
   buildNewListing() {
     return {name: this.nameInput.current.value};
   }
@@ -58,9 +68,9 @@ export default class ListingAddForm extends Component {
 
   /**
    * Renders the component.
-   *
    * @override
    * @render
+   *
    * @returns {*}
    */
   render() {

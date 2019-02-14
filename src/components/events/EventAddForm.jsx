@@ -14,7 +14,7 @@ export default class EventAddForm extends ListingAddForm {
    * The class's constructor.
    *
    * @constructor
-   * @param {object} props
+   * @param {{venues: Array, orgs: Array, tags: Array, createListing: Function, createPendingListing: Function}} props
    */
   constructor(props) {
     super(props);
@@ -33,21 +33,34 @@ export default class EventAddForm extends ListingAddForm {
     this.ongoingInput = React.createRef();
     this.venueList = React.createRef();
     this.orgList = React.createRef();
+
+    this.buildPendingListing = this.buildPendingListing.bind(this);
   }
 
   /**
-   * Compiles the data required for creating a new listing from the form fields.
+   * Handles the submit action by triggering the creation of a new pending listing.
+   *
+   * @param {Event} e
+   */
+  handleAddPendingClick(e) {
+    e.preventDefault();
+    const listingData = this.buildPendingListing();
+    this.props.createPendingListing(listingData);
+  }
+
+  /**
+   * Compiles the data required for creating a new listing.
    * @override
    *
-   * @returns {{tagsToSave: Array, eventObj: {end_date: number, venue_id: number, name: string, description: string, org_id: number, start_date: number, flag_ongoing: Boolean}}}
+   * @returns {{eventID: Number, eventObj: Object, tagsToSave: Array}}
    */
   buildNewListing() {
     const eventObj = {
       name: this.nameInput.current.value,
       start_date: Moment(this.startInput.current.value).valueOf(),
       end_date: Moment(this.endInput.current.value).valueOf(),
-      venue_id: parseInt(this.venueList.current.value, 10),
-      org_id: parseInt(this.orgList.current.value, 10),
+      venue_id: parseInt(this.venueList.current.value, 10) || this.props.venues[0].id,
+      org_id: parseInt(this.orgList.current.value, 10) || this.props.orgs[0].id,
       description: this.descInput.current.value,
       flag_ongoing: this.ongoingInput.current.checked
     };
@@ -65,11 +78,58 @@ export default class EventAddForm extends ListingAddForm {
     const checkedBoxes = document.querySelectorAll('.js-checkbox:checked');
     let tagsToSave = [];
 
-    checkedBoxes.forEach(input => {
-      tagsToSave.push(input.value);
+    checkedBoxes.forEach(chkbx => {
+      tagsToSave.push(chkbx.value);
     });
 
-    return {eventObj: eventObj, tagsToSave: tagsToSave};
+    return {eventID: null, eventObj: eventObj, tagsToSave: tagsToSave};
+  }
+
+  /**
+   * Compiles the data required for building a new pending listing.
+   *
+   * @returns {{eventID: Number, eventObj: Object, tagsToSave: Array}}
+   */
+  buildPendingListing() {
+    const eventObj = {
+      name: this.nameInput.current.value,
+      start_date: Moment(this.startInput.current.value).valueOf(),
+      end_date: Moment(this.endInput.current.value).valueOf(),
+      description: this.descInput.current.value,
+      flag_ongoing: this.ongoingInput.current.checked
+    };
+
+    // Linked schema
+    const eventVenue = this.props.venues.find(venue => {
+      return venue.id === parseInt(this.venueList.current.value, 10)
+    });
+    const eventOrg = this.props.orgs.find(org => {
+      return org.id === parseInt(this.orgList.current.value, 10)
+    });
+    eventObj.venue_uuid = eventVenue.uuid || this.props.venues[0].uuid;
+    eventObj.org_uuid = eventOrg.uuid || this.props.orgs[0].uuid;
+
+    // Optional data
+    this.emailInput.current.value !== '' && (eventObj.email = this.emailInput.current.value);
+    this.urlInput.current.value !== '' && (eventObj.url = this.urlInput.current.value);
+    this.phoneInput.current.value !== '' && (eventObj.phone = this.phoneInput.current.value);
+    this.hoursInput.current.value !== '' && (eventObj.hours = this.hoursInput.current.value);
+    this.ticketUrlInput.current.value !== '' && (eventObj.ticket_url = this.ticketUrlInput.current.value);
+    this.ticketPhoneInput.current.value !== '' && (eventObj.ticket_phone = this.ticketPhoneInput.current.value);
+    this.ticketPricesInput.current.value !== '' && (eventObj.ticket_prices = this.ticketPricesInput.current.value);
+
+    // Tag Data
+    const checkedBoxes = document.querySelectorAll('.js-checkbox:checked');
+    let tagsToSave = [];
+
+    checkedBoxes.forEach(chkbx => {
+      const tagObj = this.props.tags.find(tag => {
+        return tag.id === parseInt(chkbx.value, 10);
+      });
+      tagsToSave.push(tagObj.uuid);
+    });
+
+    return {eventID: null, eventObj: eventObj, tagsToSave: tagsToSave};
   }
 
   /**
@@ -96,15 +156,15 @@ export default class EventAddForm extends ListingAddForm {
 
   /**
    * Renders the component.
-   *
    * @override
    * @render
+   *
    * @returns {*}
    */
   render() {
     const currentDate = Moment().format('YYYY-MM-DD');
     const submitAction = this.user.is_admin ? this.handleAddClick : this.handleAddPendingClick;
-    const submitLabel = this.user.is_admin ? 'Publish Event': 'Add Pending Event';
+    const submitLabel = this.user.is_admin ? 'Publish Event' : 'Add Pending Event';
 
     return (
       <form id={'event-add-form'} className={'add-form'} onSubmit={submitAction}>
@@ -127,7 +187,7 @@ export default class EventAddForm extends ListingAddForm {
         </label>
         <label className={'required'}>
           Organizers
-          <select ref={this.orgList}>{renderOptionList(this.props.orgs)}</select>
+          <select ref={this.orgList} defaultValue={this.props.orgs[0].id}>{renderOptionList(this.props.orgs)}</select>
         </label>
         <label className={'required'}>
           Description

@@ -18,7 +18,7 @@ export default class EventRow extends ListingRow {
    * The component's constructor.
    * @constructor
    *
-   * @param {object} props
+   * @param {{schema: String, listing: Object, venues: Array, orgs: Array, venue: Object, org: Object, updateListing: Function, deleteListing: Function, createPendingListing: Function, listingIsLive: Boolean, checkForPending: Function}} props
    */
   constructor(props) {
     super(props);
@@ -88,6 +88,7 @@ export default class EventRow extends ListingRow {
   handleCopyClick(e) {
     e.stopPropagation();
 
+    // noinspection JSUnusedLocalSymbols
     let {id, org_id, venue_id, ...eventData} = this.props.listing;
 
     eventData.org_uuid = this.props.org.uuid;
@@ -95,7 +96,7 @@ export default class EventRow extends ListingRow {
     eventData.created_at = Moment(eventData.created_at).valueOf();
     eventData.updated_at = Moment(eventData.updated_at).valueOf();
 
-    this.props.createPendingListing(id, eventData).then(() => {
+    this.props.createPendingListing({eventID: id, eventObj: eventData, tagsToSave: null}).then(() => {
       this.listingHasPending();
     });
   }

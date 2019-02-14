@@ -15,13 +15,15 @@ export default class ListingRecordUniversal extends Component {
    * The class's constructor.
    * @constructor
    *
-   * @param {object} props
+   * @param {{listing: Object, schema: String, updateListing: Function, deleteListing: Function, queryForExisting: Function}} props
    */
   constructor(props) {
     super(props);
 
     this.user = app.get('user');
     this.nameInput = React.createRef();
+
+    this.state = {writeStatus: ''};
 
     this.checkWriteStatus = this.checkWriteStatus.bind(this);
     this.handleSaveClick = this.handleSaveClick.bind(this);

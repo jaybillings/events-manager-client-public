@@ -58,7 +58,7 @@ export default class PendingTagRecord extends ListingRecordUniversal {
         <div className={'block-warning'}
              title={'Caution: This tag is pending. It must be pushed live before it is visible on the site.'}>
           <button type={'button'} onClick={this.handleDeleteClick}>Discard Tag</button>
-          <button type={'button'} className={'button-primary'}>Save Changes</button>
+          <button type={'submit'} className={'button-primary'}>Save Changes</button>
         </div>
       </form>
     );

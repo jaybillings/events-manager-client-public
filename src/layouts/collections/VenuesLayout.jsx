@@ -78,18 +78,17 @@ export default class VenuesLayout extends ListingsLayout {
    * @override
    */
   fetchListings() {
-    const sort = this.state.sort;
-    const pageSize = this.state.pageSize;
-    const currentPage = this.state.currentPage;
+    const query = {
+      $sort: buildSortQuery(this.state.sort),
+      $limit: this.state.pageSize,
+      $skip: this.state.pageSize * (this.state.currentPage - 1)
+    };
 
-    this.listingsService.find({
-      query: {
-        $sort: buildSortQuery(sort),
-        $limit: pageSize,
-        $skip: pageSize * (currentPage - 1)
-      }
-    }).then(message => {
+    this.listingsService.find({query: query}).then(message => {
       this.setState({listings: message.data, listingsTotal: message.total, listingsLoaded: true});
+    }, err => {
+      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      this.setState({listingsLoaded: false});
     });
   }
 
@@ -99,6 +98,9 @@ export default class VenuesLayout extends ListingsLayout {
   fetchHoods() {
     this.hoodsService.find({query: this.defaultQuery}).then(message => {
       this.setState({hoods: message.data, hoodsLoaded: true});
+    }, err => {
+      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      this.setState({hoodsLoaded: false});
     });
   }
 
@@ -130,14 +132,15 @@ export default class VenuesLayout extends ListingsLayout {
         updateCurrentPage={this.props.updateCurrentPage}
       />,
       <table key={'venues-table'} className={'schema-table'}>
-        <thead>{renderTableHeader(titleMap, this.state.sort, this.props.updateColumnSort)}</thead>
+        <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColumnSort)}</thead>
         <tbody>
         {
           this.state.listings.map(venue =>
             <VenueRow
-              key={venue.id} listing={venue} hood={hoods.find(n => {
-              return n.id === venue.hood_id
-            })} hoods={hoods}
+              key={venue.id} schema={'venues'} listing={venue} hoods={hoods}
+              hood={hoods.find(n => {
+                return n.id === venue.hood_id
+              })}
               updateListing={this.updateListing} deleteListing={this.deleteListing}
               createPendingListing={this.createPendingListing} checkForPending={this.checkForPending}
             />
@@ -159,7 +162,8 @@ export default class VenuesLayout extends ListingsLayout {
     }
 
     return <VenueAddForm
-      hoods={this.state.hoods} createListing={this.createListing} createPendingListing={this.createPendingListing}
+      schema={'venues'} hoods={this.state.hoods}
+      createListing={this.createListing} createPendingListing={this.createPendingListing}
     />;
   }
 };

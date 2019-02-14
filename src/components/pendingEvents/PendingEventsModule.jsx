@@ -321,7 +321,6 @@ export default class PendingEventsModule extends PendingListingsModule {
     this.liveEventsService.create({event_id: eventID}).then(() => {
       this.props.updateMessagePanel({status: 'info', details: `${eventName} registered as live`});
     }, err => {
-      console.log('error in events-live create', JSON.stringify(err));
       this.props.updateMessagePanel({
         status: 'error',
         message: `${eventName} could not be registered as live. Go to the listing's page to resolve manually.`

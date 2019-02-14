@@ -15,7 +15,7 @@ export default class VenueRow extends ListingRow {
    * The component's constructor.
    * @constructor
    *
-   * @param {object} props
+   * @param {{schema: String, listing: Object, hood: Object, hoods: Array, updateListing: Function, deleteListing: Function, createPendingListing: Function, checkForPending: Function}} props
    */
   constructor(props) {
     super(props);
@@ -26,8 +26,9 @@ export default class VenueRow extends ListingRow {
   }
 
   /**
-   * Handles the save button click by parsing new data and triggering a function to update the event.
+   * Handles the save button click by triggering the updating of an existing listing.
    * @override
+   *
    * @param {Event} e
    */
   handleSaveClick(e) {
@@ -44,16 +45,22 @@ export default class VenueRow extends ListingRow {
     });
   }
 
+  /**
+   * Hands the copy button click by triggering the creation of a pending listing using the live listing's data.
+   *
+   * @param {Event} e
+   */
   handleCopyClick(e) {
     e.stopPropagation();
 
+    // noinspection JSUnusedLocalSymbols
     let {id, hood_id, ...venueData} = this.props.listing;
 
     venueData.hood_uuid = this.props.hood.uuid;
     venueData.created_at = Moment(venueData.created_at).valueOf();
     venueData.updated_at = Moment(venueData.updated_at).valueOf();
 
-    this.props.createPendingListing(id, venueData).then(() => {
+    this.props.createPendingListing(venueData).then(() => {
       this.listingHasPending();
     });
   }
@@ -63,6 +70,7 @@ export default class VenueRow extends ListingRow {
    * @note The render has two different paths depending on whether the row can be edited.
    * @override
    * @render
+   *
    * @returns {*}
    */
   render() {

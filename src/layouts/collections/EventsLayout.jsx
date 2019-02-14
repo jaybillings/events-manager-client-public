@@ -1,7 +1,6 @@
 import React from 'react';
 import {arrayUnique, buildSortQuery, renderTableHeader} from "../../utilities";
 import app from '../../services/socketio';
-import uuid from "uuid/v1";
 
 import EventAddForm from '../../components/events/EventAddForm';
 import EventRow from "../../components/events/EventRow";
@@ -24,7 +23,9 @@ export default class EventsLayout extends ListingsLayout {
     super(props, 'events');
 
     Object.assign(this.state, {
-      venues: [], orgs: [], tags: [], venuesLoaded: false, orgsLoaded: false, tagsLoaded: false, filterLabel: 'none', liveIDs: [], liveIDsLoaded: false
+      venues: [], orgs: [], tags: [],
+      venuesLoaded: false, orgsLoaded: false, tagsLoaded: false,
+      filterLabel: 'none', liveIDs: [], liveIDsLoaded: false
     });
 
     this.pendingEventService = app.service('pending-events');
@@ -42,6 +43,7 @@ export default class EventsLayout extends ListingsLayout {
     this.fetchLiveListings = this.fetchLiveListings.bind(this);
 
     this.createTagAssociations = this.createTagAssociations.bind(this);
+    this.createPendingTagAssociations = this.createPendingTagAssociations.bind(this);
     this.removeTagAssociations = this.removeTagAssociations.bind(this);
     this.registerEventLive = this.registerEventLive.bind(this);
     this.registerEventDropped = this.registerEventDropped.bind(this);
@@ -57,19 +59,37 @@ export default class EventsLayout extends ListingsLayout {
     super.componentDidMount();
 
     this.venuesService
-      .on('created', () => {this.fetchVenues()})
-      .on('patched', () => {this.fetchVenues()})
-      .on('removed', () => {this.fetchVenues()});
+      .on('created', () => {
+        this.fetchVenues()
+      })
+      .on('patched', () => {
+        this.fetchVenues()
+      })
+      .on('removed', () => {
+        this.fetchVenues()
+      });
 
     this.orgsSerivce
-      .on('created', () => {this.fetchOrgs()})
-      .on('patched', () => {this.fetchOrgs()})
-      .on('removed', () => {this.fetchOrgs()});
+      .on('created', () => {
+        this.fetchOrgs()
+      })
+      .on('patched', () => {
+        this.fetchOrgs()
+      })
+      .on('removed', () => {
+        this.fetchOrgs()
+      });
 
     this.tagsService
-      .on('created', () => {this.fetchTags()})
-      .on('patched', () => {this.fetchTags()})
-      .on('removed', () => {this.fetchTags()});
+      .on('created', () => {
+        this.fetchTags()
+      })
+      .on('patched', () => {
+        this.fetchTags()
+      })
+      .on('removed', () => {
+        this.fetchTags()
+      });
 
     this.liveEventService
       .on('created', message => {
@@ -223,12 +243,10 @@ export default class EventsLayout extends ListingsLayout {
    * new event to the live list.
    * @override
    *
-   * @param {object} eventData - Data for the new listing.
+   * @param {{eventID: Number, eventObj: Object, tagsToSave: Array}} eventData
    * @returns {Promise}
    */
   createListing(eventData) {
-    eventData.eventObj.uuid = uuid();
-
     return this.listingsService.create(eventData.eventObj).then(message => {
       this.createTagAssociations(message.id, eventData.tagsToSave);
       this.registerEventLive(message.id);
@@ -243,7 +261,7 @@ export default class EventsLayout extends ListingsLayout {
    * @override
    *
    * @param {int} id
-   * @param {object} newData
+   * @param {{newData: Object, doPublish: Boolean}} newData
    * @returns {Promise}
    */
   updateListing(id, newData) {
@@ -277,17 +295,20 @@ export default class EventsLayout extends ListingsLayout {
   /**
    * Creates a pending event that duplicates the data from the given live event.
    *
-   * @param {string} id
-   * @param {object} eventData
+   * @param {{eventID: Number, eventObj: Object, tagsToSave: Array}} eventData
    * @returns {Promise}
    */
-  createPendingListing(id, eventData) {
-    return this.pendingEventService.create(eventData).then(result => {
+  createPendingListing(eventData) {
+    return this.pendingEventService.create(eventData.eventObj).then(result => {
       this.setState({newPendingListing: result});
       this.updateMessagePanel({status: 'success', details: `Pending event "${result.name}" created.`});
-      this.copyTagAssociations(id, result.id);
+
+      if (eventData.tagsToSave) {
+        this.createPendingTagAssociations(result.id, eventData.tagsToSave);
+      } else {
+        this.copyTagAssociations(eventData.eventID, result.id);
+      }
     }, errors => {
-      console.log(errors);
       this.updateMessagePanel({status: 'error', details: JSON.stringify(errors)});
     });
   }
@@ -311,27 +332,44 @@ export default class EventsLayout extends ListingsLayout {
   }
 
   /**
+   * Creates associations between a given pending event and its tags.
+   *
+   * @param {Number} id
+   * @param {Array} tagList - A list of tag UUIDs to associate.
+   */
+  createPendingTagAssociations(id, tagList) {
+    let tagsToSave = [];
+
+    tagList.forEach(tagUUID => {
+      tagsToSave.push({pending_event_id: id, tag_uuid: tagUUID})
+    });
+
+    this.pendingEventsTagsLookupService.create(tagsToSave).then(() => {
+      this.updateMessagePanel({status: 'info', details: 'Tags associated with pending event'});
+    }, err => {
+      const details = `Could not save tags associated with pending event #${id}.`
+        + `Please re-save listing on its individual page. Error is: ${JSON.stringify(err)}`;
+      this.updateMessagePanel({status: 'error', details: details});
+    });
+  }
+
+  /**
    * Copies tag associations from the live event to the newly created pending event.
    *
-   * @param liveID
-   * @param pendingID
+   * @param {int} liveID
+   * @param {int} pendingID
    */
   copyTagAssociations(liveID, pendingID) {
-    console.log('jck liveid', liveID);
     // Find IDs of linked tags
     this.eventsTagsLookupService.find({query: {event_id: liveID}})
       .then(result => {
-        console.log('jck lookup find', result);
         const tagIDs = result.data.map(row => row.tag_id);
         // Fetch data for returned IDs, to get UUID
-        console.log('jck tagIDs', tagIDs);
         return this.tagsService.find({query: {id: {$in: tagIDs}}});
       })
       .then(result => {
-        console.log('jck tagsservce find', result);
         const tagsToLink = [];
         result.data.forEach(row => tagsToLink.push({pending_event_id: pendingID, tag_uuid: row.uuid}));
-        console.log('jck tagstolink', tagsToLink);
         // Create pending links
         return this.pendingEventsTagsLookupService.create(tagsToLink);
       })
@@ -340,14 +378,13 @@ export default class EventsLayout extends ListingsLayout {
       })
       .catch(err => {
         this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-        console.log(err);
       });
   }
 
   /**
    * Deletes associations between a given event and its tags.
    *
-   * @param id
+   * @param {int} id
    */
   removeTagAssociations(id) {
     this.eventsTagsLookupService.remove(null, {query: {event_id: id}}).catch(err => {
@@ -360,7 +397,7 @@ export default class EventsLayout extends ListingsLayout {
   /**
    * Registers a given event as live by removing it from the dropped list and adding it to the live list.
    *
-   * @param id
+   * @param {int} id
    */
   registerEventLive(id) {
     // noinspection JSCheckFunctionSignatures
@@ -378,7 +415,7 @@ export default class EventsLayout extends ListingsLayout {
   /**
    * Registers a given event as dropped by removing it from the live list and adding it to the dropped list.
    *
-   * @param id
+   * @param {int} id
    */
   registerEventDropped(id) {
     // noinspection JSCheckFunctionSignatures
@@ -393,7 +430,11 @@ export default class EventsLayout extends ListingsLayout {
     });
   }
 
-
+  /**
+   * Runs on filter button click. Updates the table's data to reflect the current filter.
+   *
+   * @param {String} filterType
+   */
   updateFilters(filterType) {
     this.setState({filterLabel: filterType, currentPage: 1}, () => {
       this.fetchListings();

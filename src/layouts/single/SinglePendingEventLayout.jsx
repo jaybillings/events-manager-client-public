@@ -287,7 +287,7 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
       this.updateMessagePanel({status: 'info', details: 'Disassociated tags from event'});
       this.fetchTagAssociations();
     }, err => {
-        displayErrorMessages('de-associate', 'tags from pending event', err, this.updateMessagePanel, 'retry');
+      displayErrorMessages('de-associate', 'tags from pending event', err, this.updateMessagePanel, 'retry');
     });
   }
 

@@ -2,7 +2,6 @@ import React, {Component} from "react";
 import {Link} from "react-router-dom";
 import {buildColumnSort, buildSortQuery, displayErrorMessages, makeSingular, renderTableHeader} from "../utilities";
 import app from "../services/socketio";
-import uuid from "uuid/v1";
 
 import Header from "./common/Header";
 import MessagePanel from "./common/MessagePanel";
@@ -161,8 +160,6 @@ export default class ListingsLayout extends Component {
    * @returns {Promise}
    */
   createListing(listingData) {
-    listingData.uuid = uuid();
-
     return this.listingsService.create(listingData).catch(err => {
       this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
@@ -195,11 +192,10 @@ export default class ListingsLayout extends Component {
   /**
    * Creates a pending listing that duplicates the given data from a live listing.
    *
-   * @param {string} id
    * @param {object} listingData
    * @returns {Promise}
    */
-  createPendingListing(id, listingData) {
+  createPendingListing(listingData) {
     return app.service(`pending-${this.schema}`).create(listingData).then(message => {
       this.setState({newPendingListing: message});
       this.updateMessagePanel({
@@ -207,10 +203,9 @@ export default class ListingsLayout extends Component {
         details: `Pending ${makeSingular(this.schema)} "${message.name}" created.`
       });
     }, errors => {
-      displayErrorMessages('copy', listingData.name, errors, this.updateMessagePanel);
+      displayErrorMessages('copy', listingData.name || 'listing', errors, this.updateMessagePanel);
     });
   }
-
 
   /**
    * Updates the component's page size, then fetches new listings.

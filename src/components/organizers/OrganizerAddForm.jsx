@@ -11,7 +11,7 @@ export default class OrganizerAddForm extends ListingAddForm {
    * The class's constructor.
    *
    * @constructor
-   * @param {object} props
+   * @param {{schema: String, listings: Object, createListing: Function, createPendingListing: Function}} props
    */
   constructor(props) {
     super(props);

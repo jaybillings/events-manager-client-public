@@ -27,7 +27,7 @@ export default class SinglePendingOrganizerLayout extends SingleListingLayoutUni
     if (!this.state.listingLoaded) return <p>Data is loading... Please be patient...</p>;
 
     return <PendingOrganizerRecord
-      listing={this.state.listing} schema={this.schema} saveListing={this.updateListing}
+      listing={this.state.listing} schema={this.schema} updateListing={this.updateListing}
       deleteListing={this.deleteListing} queryForExisting={this.queryForExisting}
     />;
   }

@@ -15,12 +15,10 @@ export default class PendingEventRecord extends ListingRecordUniversal {
    * The class's constructor.
    * @constructor
    *
-   * @param {object} props
+   * @param {{listing: Object, schema: String, venues: Array, orgs: Array, tags: Array, tagsForListing: Array, updateListing: Function, deleteListing: Function, queryForExisting: Function}} props
    */
   constructor(props) {
     super(props);
-
-    this.state = {writeStatus: ''};
 
     this.startInput = React.createRef();
     this.endInput = React.createRef();
@@ -104,6 +102,11 @@ export default class PendingEventRecord extends ListingRecordUniversal {
   render() {
     const event = this.props.listing;
     const writeStatus = this.state.writeStatus;
+    const venues = this.props.venues;
+    const orgs = this.props.orgs;
+    const tags = this.props.tags;
+    const tagsForListing = this.props.tagsForListing;
+
     const startDate = Moment(event.start_date).format('YYYY-MM-DD');
     const endDate = Moment(event.end_date).format('YYYY-MM-DD');
     const createdAt = Moment(event.created_at).calendar();
@@ -144,13 +147,13 @@ export default class PendingEventRecord extends ListingRecordUniversal {
         <label className={'required'}>
           Venue
           <select ref={this.venueInput} defaultValue={event.venue_uuid || ''} required>
-            {renderOptionList(this.props.venues, 'uuid')}
+            {renderOptionList(venues, 'uuid')}
           </select>
         </label>
         <label className={'required'}>
           Organizer
           <select ref={this.orgInput} defaultValue={event.org_uuid || ''} required>
-            {renderOptionList(this.props.orgs, 'uuid')}
+            {renderOptionList(orgs, 'uuid')}
           </select>
         </label>
         <label className={'required'}>
@@ -159,7 +162,7 @@ export default class PendingEventRecord extends ListingRecordUniversal {
         </label>
         <label>
           Tags
-          {renderCheckboxList(this.props.tags, this.props.tagsForListing, 'uuid')}
+          {renderCheckboxList(tags, tagsForListing, 'uuid')}
         </label>
         <label>
           Email Address
