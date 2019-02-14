@@ -3,18 +3,10 @@ import React, {Component} from 'react';
 /**
  * The ShowHideToggle component displays a button to hide or show modules.
  * @class
+ *
+ * @param {{isVisible: Boolean, changeVisibility: Function}} props
  */
 export default class ShowHideToggle extends Component {
-  /**
-   * The class's constructor.
-   * @constructor
-   *
-   * @param {{isVisible: Boolean, changeVisibility: Function}} props
-   */
-  constructor(props) {
-    super(props);
-  }
-
   /**
    * Renders the component.
    * @render

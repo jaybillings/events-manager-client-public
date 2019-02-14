@@ -4,20 +4,11 @@ import '../../styles/selection-control.css';
 
 /**
  * The SelectionControl component displays a button for selecting all/no rows.
- *
  * @class
+ *
+ * @param {{numSelected: int, selectAll: Function, selectNone: Function}} props
  */
 export default class SelectionControl extends Component {
-  /**
-   * The class's constructor.
-   * @constructor
-   *
-   * @param {{numSelected: int, selectAll: Function, selectNone: Function}} props
-   */
-  constructor(props) {
-    super(props);
-  }
-
   /**
    * Renders the component.
    * @override
