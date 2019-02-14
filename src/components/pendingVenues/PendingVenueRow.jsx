@@ -15,7 +15,8 @@ export default class PendingVenueRow extends PendingListingRow {
   /**
    * The component's constructor.
    * @constructor
-   * @param {object} props
+   *
+   * @param {{schema: String, listing: Object, selected: Boolean, hoods: Array, hood: Object, updateListing: Function, removeListing: Function, selectListing: Function, queryForExisting: Function}} props
    */
   constructor(props) {
     super(props);
@@ -64,9 +65,11 @@ export default class PendingVenueRow extends PendingListingRow {
             <button type={'button'} className={'emphasize'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
-          <td><input type={'text'} ref={this.nameInput} defaultValue={pendingListing.name} onClick={e => e.stopPropagation()} /></td>
+          <td><input type={'text'} ref={this.nameInput} defaultValue={pendingListing.name}
+                     onClick={e => e.stopPropagation()} /></td>
           <td>
-            <select ref={this.hoodList} defaultValue={pendingListing.hood_uuid || ''} onClick={e => e.stopPropagation()} required>
+            <select ref={this.hoodList} defaultValue={pendingListing.hood_uuid || ''} onClick={e => e.stopPropagation()}
+                    required>
               {renderOptionList(hoods, 'uuid')}
             </select>
           </td>

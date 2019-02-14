@@ -20,8 +20,8 @@ export default class PendingListingsModule extends Component {
    * The class's constructor.
    * @constructor
    *
-   * @param {object} props
-   * @param {string} schema
+   * @param {Object} props
+   * @param {String} schema
    */
   constructor(props, schema) {
     super(props);
@@ -185,6 +185,7 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Removes single main schema listing from the database.
+   *
    * @param {int} id
    */
   removeListing(id) {
@@ -284,6 +285,7 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Updates the module's table column sort.
+   *
    * @param {Event} e
    */
   updateColSort(e) {
@@ -293,6 +295,7 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Updates the modules's table page size.
+   *
    * @param {Event} e
    */
   updatePageSize(e) {
@@ -302,7 +305,8 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Updates the module's current table page.
-   * @param {string} page
+   *
+   * @param {String} page
    */
   updateCurrentPage(page) {
     this.setState({currentPage: parseInt(page, 10)}, () => this.fetchAllData());

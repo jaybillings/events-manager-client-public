@@ -9,7 +9,8 @@ export default class PendingOrganizersModule extends PendingListingsModule {
   /**
    * The class's constructor.
    * @constructor
-   * @param {object} props
+   *
+   * @param {{defaultPageSize: Number, defaultSortOrder: Object, updateMessagePanel: Function}} props
    */
   constructor(props) {
     super(props, 'organizers');

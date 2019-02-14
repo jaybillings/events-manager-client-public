@@ -14,7 +14,8 @@ import StatusLabel from "../common/StatusLabel";
 export default class PendingEventRow extends PendingListingRow {
   /**
    * The component's constructor.
-   * @param {object} props
+   *
+   * @param {{selected: Boolean, schema: String, listing: Object, venues: Array, orgs: Array, venue: Object, org: Object, updateListing: Function, removeListing: Function, selectListing: Function, queryForExisting: Function}} props
    */
   constructor(props) {
     super(props);

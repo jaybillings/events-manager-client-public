@@ -10,9 +10,9 @@ import "../../styles/filters.css";
 export default class Filters extends Component {
   /**
    * The class's constructor.
-   *
    * @constructor
-   * @param {object} props
+   *
+   * @param {{updateFilters: Function}} props
    */
   constructor(props) {
     super(props);
@@ -50,8 +50,9 @@ export default class Filters extends Component {
 
   /**
    * Renders the component.
-   *
+   * @override
    * @render
+   *
    * @returns {*}
    */
   render() {

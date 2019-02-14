@@ -17,7 +17,8 @@ export default class PendingEventsModule extends PendingListingsModule {
   /**
    * The class's constructor.
    * @constructor
-   * @param {object} props
+   *
+   * @param {{defaultPageSize: int, defaultSortOrder: Object, updateMessagePanel: Function}} props
    */
   constructor(props) {
     super(props, 'events');
@@ -384,7 +385,7 @@ export default class PendingEventsModule extends PendingListingsModule {
           {
             this.state.pendingListings.map(event =>
               <PendingEventRow
-                key={`event-${event.id}`} selected={selectedEvents.includes(event.id)}
+                key={`event-${event.id}`} selected={selectedEvents.includes(event.id)} schema={'pending-events'}
                 listing={event} venues={uniqueVenues} orgs={uniqueOrgs}
                 venue={uniqueVenues.find(v => {
                   return v.uuid === event.venue_uuid

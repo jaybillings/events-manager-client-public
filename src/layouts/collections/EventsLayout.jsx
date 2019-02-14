@@ -540,8 +540,8 @@ export default class EventsLayout extends ListingsLayout {
     const tags = this.state.tags;
 
     return <EventAddForm
-      venues={venues} orgs={orgs} tags={tags} createListing={this.createListing}
-      createPendingListing={this.createPendingListing}
+      schema={'events'} venues={venues} orgs={orgs} tags={tags}
+      createListing={this.createListing} createPendingListing={this.createPendingListing}
     />;
   }
 };

@@ -12,8 +12,9 @@ import "../../styles/header.css";
 export default class Header extends Component {
   /**
    * Renders the component.
-   *
    * @render
+   * @override
+   *
    * @returns {*}
    */
   render() {

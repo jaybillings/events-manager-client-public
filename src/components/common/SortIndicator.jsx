@@ -8,9 +8,20 @@ import React, {Component} from 'react';
  */
 export default class SortIndicator extends Component {
   /**
-   * Renders the component
+   * The class's constructor.
+   * @constructor
    *
+   * @param {{direction: int}} props
+   */
+  constructor(props) {
+    super(props);
+  }
+
+  /**
+   * Renders the component
+   * @override
    * @render
+   *
    * @returns {*}
    */
   render() {

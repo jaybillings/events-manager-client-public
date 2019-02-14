@@ -9,9 +9,20 @@ import '../../styles/selection-control.css';
  */
 export default class SelectionControl extends Component {
   /**
-   * Renders the component.
+   * The class's constructor.
+   * @constructor
    *
+   * @param {{numSelected: int, selectAll: Function, selectNone: Function}} props
+   */
+  constructor(props) {
+    super(props);
+  }
+
+  /**
+   * Renders the component.
+   * @override
    * @render
+   *
    * @returns {*}
    */
   render() {

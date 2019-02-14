@@ -15,7 +15,8 @@ export default class PendingListingRow extends Component {
   /**
    * The component's constructor.
    * @constructor
-   * @param {object} props
+   *
+   * @param {{schema: String, listing: Object, selected: Boolean, updateListing: Function, removeListing: Function, selectListing: Function, queryForExisting: Function}} props
    */
   constructor(props) {
     super(props);

@@ -14,7 +14,7 @@ export default class EventAddForm extends ListingAddForm {
    * The class's constructor.
    *
    * @constructor
-   * @param {{venues: Array, orgs: Array, tags: Array, createListing: Function, createPendingListing: Function}} props
+   * @param {{schema: String, venues: Array, orgs: Array, tags: Array, createListing: Function, createPendingListing: Function}} props
    */
   constructor(props) {
     super(props);

@@ -17,7 +17,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
   /**
    * The class's constructor.
    * @constructor
-   * @param {object} props
+   *
+   * @param {{defaultPageSize: Number, defaultSortOrder: Object, updateMessagePanel: Function}} props
    */
   constructor(props) {
     super(props, 'venues');
@@ -218,10 +219,11 @@ export default class PendingVenuesModule extends PendingListingsModule {
           {
             pendingVenues.map(venue =>
               <PendingVenueRow
-                key={`venue-${venue.id}`} listing={venue} selected={selectedVenues.includes(venue.id)}
+                key={`venue-${venue.id}`} schema={'pending-venues'} listing={venue}
+                selected={selectedVenues.includes(venue.id)} hoods={uniqueHoods}
                 hood={(uniqueHoods.find(h => {
                   return h.uuid === venue.hood_uuid
-                }))} hoods={uniqueHoods}
+                }))}
                 updateListing={this.updateListing} removeListing={this.removeListing}
                 selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}
               />)

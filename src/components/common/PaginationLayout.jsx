@@ -11,9 +11,9 @@ import "../../styles/pagination.css";
 export default class PaginationLayout extends Component {
   /**
    * The class's constructor.
-   *
    * @constructor
-   * @param {object} props
+   *
+   * @param {{schema: String, total: int, pageSize: int, activePage: int, updatePageSize: Function, updateCurrentPage: Function}} props
    */
   constructor(props) {
     super(props);

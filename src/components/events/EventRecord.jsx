@@ -16,7 +16,7 @@ export default class EventRecord extends ListingRecordUniversal {
    * The class's constructor.
    * @constructor
    *
-   * @param {object} props
+   * @param {Object} props
    */
   constructor(props) {
     super(props);
