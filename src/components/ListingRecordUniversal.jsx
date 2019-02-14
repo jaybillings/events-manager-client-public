@@ -1,6 +1,7 @@
 import React, {Component} from "react";
 import Moment from "moment";
-import {makeSingular, makeTitleCase} from "../utilities";
+import {makeSingular} from "../utilities";
+import app from '../services/socketio';
 
 import "../styles/schema-record.css";
 
@@ -13,17 +14,19 @@ export default class ListingRecordUniversal extends Component {
   /**
    * The class's constructor.
    * @constructor
-   * @param {object} props
+   *
+   * @param {{listing: Object, schema: String, updateListing: Function, deleteListing: Function, queryForExisting: Function}} props
    */
   constructor(props) {
     super(props);
 
-    this.state({writeStatus: ''});
-
+    this.user = app.get('user');
     this.nameInput = React.createRef();
 
+    this.state = {writeStatus: ''};
+
     this.checkWriteStatus = this.checkWriteStatus.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleSaveClick = this.handleSaveClick.bind(this);
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
   }
 
@@ -35,35 +38,37 @@ export default class ListingRecordUniversal extends Component {
    *   - new (will make a new listing)
    *   - update (will update a preexisting listing)
    *   - duplicate (will make a new listing that might duplicate an existing listing)
-   *
-   *   @returns {string} writeStatus
    */
   checkWriteStatus() {
-    this.props.queryForExisting(this.state.listing).then(message => {
+    const listing = this.props.listing;
+
+    this.props.queryForExisting(listing).then(message => {
       let writeStatus;
 
       if (!message.total) {
         writeStatus = 'new';
       } else {
         const uuids = message.data.map(row => row.uuid);
-        if (uuids.includes(this.props.listing.uuid)) {
+        if (uuids.includes(listing.uuid)) {
           writeStatus = 'update';
         } else {
           writeStatus = 'duplicate';
         }
       }
 
-      this.state({writeStatus: writeStatus});
+      this.setState({writeStatus});
+    }, err => {
+      console.log('error in checking write status', JSON.stringify(err));
     });
   }
 
   /**
    * Handles the submit action by parsing new data and calling a function to create a new listing.
+   *
    * @param {Event} e
    */
-  handleSubmit(e) {
+  handleSaveClick(e) {
     e.preventDefault();
-
     this.props.updateListing({name: this.nameInput.current.value});
   }
 
@@ -76,22 +81,25 @@ export default class ListingRecordUniversal extends Component {
 
   /**
    * Renders the component.
-   *
    * @override
    * @render
+   *
    * @returns {*}
    */
   render() {
     const listing = this.props.listing;
     const schema = this.props.schema;
-    const singularTitleCaseSchema = makeSingular(makeTitleCase(schema));
-    /** @var {string} listing.created_at */
     const createdAt = Moment(listing.created_at).calendar();
-    /** @var {string} listing.updated_at */
     const updatedAt = Moment(listing.updated_at).calendar();
 
+    const publishButton = schema.indexOf('pending') !== -1 || this.user.is_su
+      ? <button type={'button'} className={'button-primary'}>Save Changes</button> : '';
+    const deleteButton = schema.indexOf('pending') !== -1 || this.user.is_admin
+      ? <button type={'button'} onClick={this.handleDeleteClick}>Delete {makeSingular(schema)}</button> : '';
+    const disableAll = schema.indexOf('pending') !== -1 && !this.user.is_su;
+
     return (
-      <form id={`${schema}-listing-form`} className={'schema-record'} onSubmit={this.handleSubmit}>
+      <form id={`${schema}-listing-form`} className={'schema-record'} onSubmit={this.handleSaveClick}>
         <label>
           UUID
           <input type={'text'} value={listing.uuid} readOnly />
@@ -106,11 +114,12 @@ export default class ListingRecordUniversal extends Component {
         </label>
         <label className={'required'}>
           Name
-          <input type={'text'} ref={this.nameInput} defaultValue={listing.name} required maxLength={100} />
+          <input type={'text'} ref={this.nameInput} defaultValue={listing.name} maxLength={100} disabled={disableAll}
+                 required />
         </label>
         <div>
-          <button type={'submit'} className={'button-primary'}>Save Changes</button>
-          <button type={'button'} onClick={this.handleDeleteClick}>Delete {singularTitleCaseSchema}</button>
+          {publishButton}
+          {deleteButton}
         </div>
       </form>
     );

@@ -1,0 +1,9 @@
+.schema-module.manage-users h3 {
+  width: fit-content;
+}
+
+.manage-users h4 {
+  font-weight: 900;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--light-gray);
+}

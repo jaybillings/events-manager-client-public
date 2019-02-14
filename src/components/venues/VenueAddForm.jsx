@@ -13,7 +13,7 @@ export default class VenueAddForm extends ListingAddForm {
    * The class's constructor.
    *
    * @constructor
-   * @param {object} props
+   * @param {{schema: String, hoods: Array, createListing: Function, createPendingListing: Function}} props
    */
   constructor(props) {
     super(props);
@@ -27,23 +27,35 @@ export default class VenueAddForm extends ListingAddForm {
     this.cityInput = React.createRef();
     this.stateInput = React.createRef();
     this.zipInput = React.createRef();
+
+    this.buildPendingListing = this.buildPendingListing.bind(this);
   }
 
   /**
-   * Handles the submit event by parsing data and calling a function to create a new venue.
+   * Handles the submit action by triggering the creation of a new pending listing.
    *
-   * @override
    * @param {Event} e
    */
-  handleSubmit(e) {
+  handleAddPendingClick(e) {
     e.preventDefault();
+    const listingData = this.buildPendingListing();
+    this.props.createPendingListing(listingData);
+  }
 
+  /**
+   * Compiles the data required for creating a new listing.
+   * @override
+   *
+   * @returns {Object}
+   */
+  buildNewListing() {
     const venueObj = {
-      name: this.nameInput.current.value.trim(),
-      hood_uuid: this.hoodList.current.value,
-      description: this.descInput.current.value.trim()
+      name: this.nameInput.current.value,
+      description: this.descInput.current.value,
+      hood_id: parseInt(this.hoodList.current.value, 10) || this.props.hoods[0].id
     };
 
+    // Optional data
     this.emailInput.current.value !== '' && (venueObj.email = this.emailInput.current.value);
     this.urlInput.current.value !== '' && (venueObj.url = this.urlInput.current.value);
     this.phoneInput.current.value !== '' && (venueObj.phone = this.phoneInput.current.value);
@@ -52,7 +64,36 @@ export default class VenueAddForm extends ListingAddForm {
     this.stateInput.current.value !== '' && (venueObj.address_state = this.stateInput.current.value);
     this.zipInput.current.value !== '' && (venueObj.address_zip = this.zipInput.current.value);
 
-    this.props.createListing(venueObj).then(() => this.clearForm());
+    return venueObj;
+  }
+
+  /**
+   * Compiles the data required for creating a new pending listing.
+   *
+   * @returns {Object}
+   */
+  buildPendingListing() {
+    const venueObj = {
+      name: this.nameInput.current.value,
+      description: this.descInput.current.value
+    };
+
+    // Linked schema
+    const venueHood = this.props.hoods.find(hood => {
+      return hood.id === parseInt(this.hoodList.current.value, 10)
+    });
+    venueObj.hood_uuid = venueHood.uuid || this.props.hoods[0].uuid;
+
+    // Optional data
+    this.emailInput.current.value !== '' && (venueObj.email = this.emailInput.current.value);
+    this.urlInput.current.value !== '' && (venueObj.url = this.urlInput.current.value);
+    this.phoneInput.current.value !== '' && (venueObj.phone = this.phoneInput.current.value);
+    this.streetInput.current.value !== '' && (venueObj.address_street = this.streetInput.current.value);
+    this.cityInput.current.value !== '' && (venueObj.address_city = this.cityInput.current.value);
+    this.stateInput.current.value !== '' && (venueObj.address_state = this.stateInput.current.value);
+    this.zipInput.current.value !== '' && (venueObj.address_zip = this.zipInput.current.value);
+
+    return venueObj;
   }
 
   /**
@@ -80,15 +121,19 @@ export default class VenueAddForm extends ListingAddForm {
    * @returns {*}
    */
   render() {
+    const submitAction = this.user.is_admin ? this.handleAddClick : this.handleAddPendingClick;
+    const submitLabel = this.user.is_admin ? 'Publish Venue' : 'Add Pending Venue';
+
     return (
-      <form id={'venue-add-form'} className={'add-form'} onSubmit={this.handleSubmit}>
+      <form id={'venue-add-form'} className={'add-form'} onSubmit={submitAction}>
         <label className={'required'}>
           Name
           <input type={'text'} ref={this.nameInput} required maxLength={100} />
         </label>
         <label className={'required'}>
           Neighborhood
-          <select ref={this.hoodList} defaultValue={this.props.hoods[0].id}>{renderOptionList(this.props.hoods)}</select>
+          <select ref={this.hoodList}
+                  defaultValue={this.props.hoods[0].id}>{renderOptionList(this.props.hoods)}</select>
         </label>
         <label className={'required'}>
           Description
@@ -124,7 +169,7 @@ export default class VenueAddForm extends ListingAddForm {
         </label>
         <div>
           <button type={'button'} onClick={this.clearForm}>Reset</button>
-          <button type={'submit'} className={'button-primary'}>Add Venue</button>
+          <button type={'submit'} className={'button-primary'}>{submitLabel}</button>
         </div>
       </form>
     );

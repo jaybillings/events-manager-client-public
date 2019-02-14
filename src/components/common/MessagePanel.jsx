@@ -10,9 +10,9 @@ import "../../styles/message-panel.css";
 export default class MessagePanel extends Component {
   /**
    * The class's constructor.
-   *
    * @constructor
-   * @param {object} props
+   *
+   * @param {{messages: Array, isVisible: Boolean, dismissPanel: Function}} props
    */
   constructor(props) {
     super(props);
@@ -22,6 +22,8 @@ export default class MessagePanel extends Component {
 
   /**
    * Renders the list of messages.
+   * @render
+   * @override
    *
    * @returns {*}
    */
@@ -47,9 +49,11 @@ export default class MessagePanel extends Component {
 
     return (
       <div className={`messageContainer ${visibleClass}`}>
-        <h3>Messages</h3>
-        <button className={'dismiss'} onClick={this.props.dismissPanel}>X</button>
-        <ul>{this.renderMessages()}</ul>
+        <header>
+          <h3>Messages</h3>
+          <button className={'dismiss'} onClick={this.props.dismissPanel}>X</button>
+        </header>
+        <div><ul>{this.renderMessages()}</ul></div>
       </div>
     );
   }

@@ -1,18 +1,3 @@
 .schema-row.is-selected {
   background-color: var(--pale-blue);
 }
-
-.schema-row span {
-  padding: 1rem;
-  border-radius: 4px;
-  color: var(--dark-bg-text-color);
-  display: inline-block;
-}
-
-.schema-row span.muted {
-  background-color: var(--muted-bg-color);
-}
-
-.schema-row span.bolded {
-  background-color: var(--bolded-bg-color);
-}

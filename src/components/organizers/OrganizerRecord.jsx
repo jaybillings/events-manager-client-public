@@ -27,15 +27,17 @@ export default class OrganizerRecord extends ListingRecordUniversal {
    * @override
    * @param {Event} e
    */
-  handleSubmit(e) {
+  handleSaveClick(e) {
     e.preventDefault();
 
     const newData = {
       name: this.nameInput.current.value,
-      description: this.descInput.current.value,
-      url: this.urlInput.current.value,
-      phone: this.phoneInput.current.value
+      description: this.descInput.current.value
     };
+
+    // Optional data -- only include if set (prevents validation errors)
+    this.urlInput.current.value && (newData.url = this.urlInput.current.value);
+    this.phoneInput.current.value && (newData.phone = this.phoneInput.current.value);
 
     this.props.updateListing(newData);
   }
@@ -51,8 +53,14 @@ export default class OrganizerRecord extends ListingRecordUniversal {
     const createdAt = Moment(org.created_at).calendar();
     const updatedAt = Moment(org.updated_at).calendar();
 
+    const publishButton = this.user.is_su ?
+      <button type={'submit'} className={'button-primary'}>Save Changes</button> : '';
+    const deleteButton = this.user.is_admin ?
+      <button type={'button'} onClick={this.handleDeleteClick}>Delete Organizer</button> : '';
+    const disableAll = !this.user.is_su;
+
     return (
-      <form id={'organizer-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
+      <form id={'organizer-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
         <label>
           UUID
           <input type={'text'} value={org.uuid} readOnly />
@@ -67,23 +75,23 @@ export default class OrganizerRecord extends ListingRecordUniversal {
         </label>
         <label className={'required'}>
           Name
-          <input type={'text'} ref={this.nameInput} defaultValue={org.name} required maxLength={100} />
+          <input type={'text'} ref={this.nameInput} defaultValue={org.name} maxLength={100} disabled={disableAll} required />
         </label>
         <label className={'required'}>
           Description
-          <textarea ref={this.descInput} defaultValue={org.description} required maxLength={500} />
+          <textarea ref={this.descInput} defaultValue={org.description} maxLength={500} disabled={disableAll} required  />
         </label>
         <label>
           URL
-          <input type={'text'} ref={this.urlInput} defaultValue={org.url} maxLength={100} />
+          <input type={'text'} ref={this.urlInput} defaultValue={org.url} maxLength={100} disabled={disableAll} />
         </label>
         <label>
           Phone Number
-          <input type={'text'} ref={this.phoneInput} defaultValue={org.phone} maxLength={20} />
+          <input type={'text'} ref={this.phoneInput} defaultValue={org.phone} maxLength={20} disabled={disableAll} />
         </label>
         <div>
-          <button type={'submit'} className={'button-primary'}>Save Changes</button>
-          <button type={'button'} onClick={this.handleDeleteClick}>Delete Organizer</button>
+          {publishButton}
+          {deleteButton}
         </div>
       </form>
     );

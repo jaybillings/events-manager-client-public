@@ -33,10 +33,10 @@ export default class SingleVenueLayout extends SingleListingLayoutUniversal {
     super.componentDidMount();
 
     this.hoodsService
-      .on('created', this.fetchHoods)
-      .on('patched', this.fetchHoods)
-      .on('updated', this.fetchHoods)
-      .on('removed', this.fetchHoods);
+      .on('created', () => this.fetchHoods)
+      .on('patched', () => this.fetchHoods)
+      .on('updated', () => this.fetchHoods)
+      .on('removed', () => this.fetchHoods);
   }
 
   /**

@@ -1,4 +1,5 @@
-/* Declare color variables */
+/* Declare CSS variables */
+
 :root {
   --black: #222;
   --dark-gray: #3e3e3e;
@@ -6,12 +7,15 @@
   --light-gray: #bbb;
   --white: #efefef;
   --true-white: #fff;
+
+  --dark-blue: #2c83ab;
   --true-blue: #33c3f0;
   --pale-blue: #c2edfa;
   --dull-orange: #dd6e42;
   --bright-pink: #fc2e53;
+  --dark-pink: #d12d50;
   --bright-yellow: #ffc22e;
-  --true-green: #6af92d;
+  --true-green: #00cf46;
 
   --disabled-color: var(--medium-gray);
   --notice-color: var(--true-blue);
@@ -34,9 +38,7 @@
   --pagination-active-link-color: var(--true-white);
 }
 
-button {
-  background-color: white;
-}
+/* Theme customization styles */
 
 h1 {
   padding: 2rem 0 0;
@@ -48,30 +50,111 @@ h1 {
 }
 
 h2 {
-  font-size: 3rem;
+  font-size: 3.5rem;
   padding: 2rem 0 1rem;
+  text-transform: capitalize;
 }
 
 h2:first-of-type {
   padding-top: 0;
 }
 
+h3 {
+  font-size: 2.5rem;
+}
+
+h4 {
+  font-size: 2rem;
+}
+
+a:hover {
+  color: var(--dark-blue);
+}
+
 a.current {
   color: var(--current-link-color);
 }
 
-/* Override to parent theme */
-.container {
-  max-width: 1200px;
+[disabled], [readonly] {
+  color: var(--disabled-color);
+}
+
+button {
+  background-color: white;
+  padding: 0 2rem;
+}
+
+button.default:hover {
+  background: linear-gradient(170deg, rgba(0,0,0,0), rgba(0,0,0,.05));
+}
+
+button[disabled] {
+  background: var(--light-gray);
+  border-color: var(--light-gray);
+  color: var(--medium-gray);
+  cursor: not-allowed;
+}
+
+button[disabled]:hover {
+  border-color: var(--light-gray);
+  background: var(--light-gray);
+  color: var(--medium-gray);
+}
+
+button.emphasize {
+  padding: 0 2rem;
+  color: var(--true-blue);
+  border-color: var(--true-blue);
+  background: var(--true-white);
+}
+
+button.emphasize:hover, button.emphasize:active {
+  background: var(--true-blue);
+  color: var(--true-white);
+}
+
+button.warn {
+  color: var(--bright-pink);
+  border-color: var(--bright-pink);
+  background: var(--true-white);
+}
+
+button.warn:hover, button.warn:active {
+  color: var(--true-white);
+  background: var(--bright-pink);
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 .visible {
   display: block;
 }
+
+.container {
+  max-width: 1200px;
+  margin-bottom: 2em;
+}
+
+.button-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-column-gap: 2rem;
+}
+
+.input-container {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  grid-template-rows: auto;
+  margin-top: 2.5rem;
+}
+
+th:last-child, td:last-child {
+  padding-right: 15px;
+}
+
+/* The following are container-specific styles that weren't worth putting in their own file */
 
 .block-warning {
   color: white;

@@ -1,9 +1,11 @@
 import React, {Component} from 'react';
-import {BrowserRouter, Switch, Route} from 'react-router-dom';
+import {BrowserRouter, Route, Switch} from 'react-router-dom';
+
+import PrivateRoute from './components/PrivateRoute';
 
 import ImportLayout from './layouts/ImportLayout';
 import AdminToolsLayout from './layouts/AdminToolsLayout';
-import MyAccountLayout from './layouts/MyAccountLayout';
+import MyAccountPage from './layouts/single/MyAccountPage';
 
 import EventsLayout from './layouts/collections/EventsLayout';
 import VenuesLayout from './layouts/collections/VenuesLayout';
@@ -24,38 +26,40 @@ import SinglePendingNeighborhoodLayout from './layouts/single/SinglePendingNeigh
 import SinglePendingTagLayout from './layouts/single/SinglePendingTagLayout';
 
 import NotFound from './pages/NotFound';
+import LoginPage from './pages/LoginPage';
 
 class App extends Component {
   render() {
     return (
       <BrowserRouter>
         <Switch>
-          <Route exact path={'/(import)?'} component={ImportLayout}/>
+          <PrivateRoute exact path={'/(import)?'} component={ImportLayout} />
 
-          <Route exact path={'/events'} component={EventsLayout}/>
-          <Route exact path={'/events/:id'} component={SingleEventLayout}/>
+          <PrivateRoute exact path={'/events'} component={EventsLayout} />
+          <PrivateRoute exact path={'/events/:id'} component={SingleEventLayout} />
 
-          <Route exact path={'/venues'} component={VenuesLayout}/>
-          <Route exact path={'/venues/:id'} component={SingleVenueLayout}/>
+          <PrivateRoute exact path={'/venues'} component={VenuesLayout} />
+          <PrivateRoute exact path={'/venues/:id'} component={SingleVenueLayout} />
 
-          <Route exact path={'/organizers'} component={OrganizersLayout}/>
-          <Route exact path={'/organizers/:id'} component={SingleOrganizerLayout}/>
+          <PrivateRoute exact path={'/organizers'} component={OrganizersLayout} />
+          <PrivateRoute exact path={'/organizers/:id'} component={SingleOrganizerLayout} />
 
-          <Route exact path={'/neighborhoods'} component={NeighborhoodsLayout}/>
-          <Route exact path={'/neighborhoods/:id'} component={SingleNeighborhoodLayout}/>
+          <PrivateRoute exact path={'/neighborhoods'} component={NeighborhoodsLayout} />
+          <PrivateRoute exact path={'/neighborhoods/:id'} component={SingleNeighborhoodLayout} />
 
-          <Route exact path={'/tags'} component={TagsLayout}/>
-          <Route exact path={'/tags/:id'} component={SingleTagLayout}/>
+          <PrivateRoute exact path={'/tags'} component={TagsLayout} />
+          <PrivateRoute exact path={'/tags/:id'} component={SingleTagLayout} />
 
-          <Route exact path={'/pendingEvents/:id'} component={SinglePendingEventLayout} />
-          <Route exact path={'/pendingVenues/:id'} component={SinglePendingVenueLayout} />
-          <Route exact path={'/pendingOrganizers/:id'} component={SinglePendingOrganizerLayout} />
-          <Route exact path={'/pendingNeighborhoods/:id'} component={SinglePendingNeighborhoodLayout} />
-          <Route exact path={'/pendingTags/:id'} component={SinglePendingTagLayout} />
+          <PrivateRoute exact path={'/pendingEvents/:id'} component={SinglePendingEventLayout} />
+          <PrivateRoute exact path={'/pendingVenues/:id'} component={SinglePendingVenueLayout} />
+          <PrivateRoute exact path={'/pendingOrganizers/:id'} component={SinglePendingOrganizerLayout} />
+          <PrivateRoute exact path={'/pendingNeighborhoods/:id'} component={SinglePendingNeighborhoodLayout} />
+          <PrivateRoute exact path={'/pendingTags/:id'} component={SinglePendingTagLayout} />
 
-          <Route exact path={'/account'} component={MyAccountLayout}/>
-          <Route exact path={'/admin'} component={AdminToolsLayout}/>
+          <PrivateRoute exact path={'/account'} component={MyAccountPage} />
+          <PrivateRoute exact path={'/admin'} component={AdminToolsLayout} />
 
+          <Route path={'/login/:redirectUrl*'} component={LoginPage} />
           <Route component={NotFound} />
         </Switch>
       </BrowserRouter>

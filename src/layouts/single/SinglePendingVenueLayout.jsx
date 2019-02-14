@@ -4,7 +4,7 @@ import app from "../../services/socketio";
 import PendingVenueRecord from "../../components/pendingVenues/PendingVenueRecord";
 import SingleListingLayoutUniversal from "../../components/SingleListingLayoutUniversal";
 
-import {uniqueListingsOnly} from "../../utilities";
+import {displayErrorMessages, uniqueListingsOnly} from "../../utilities";
 
 /**
  * SinglePendingVenueLayout is a component which lays out a single pending venue page.
@@ -15,12 +15,13 @@ export default class SinglePendingVenueLayout extends SingleListingLayoutUnivers
   /**
    * The class's constructor.
    * @constructor
+   *
    * @param {object} props
    */
   constructor(props) {
     super(props, 'pending-venues');
 
-    Object.assign(this.state, {hoods: [], hoodsLoaded: false});
+    Object.assign(this.state, {hoods: [], hoodsLoaded: false, pendingHoods: [], pendingHoodsLoaded: false});
 
     this.hoodsService = app.service('neighborhoods');
     this.pendingHoodsService = app.service('pending-neighborhoods');
@@ -37,16 +38,16 @@ export default class SinglePendingVenueLayout extends SingleListingLayoutUnivers
     super.componentDidMount();
 
     this.hoodsService
-      .on('created', this.fetchHoods)
-      .on('patched', this.fetchHoods)
-      .on('updated', this.fetchHoods)
-      .on('removed', this.fetchHoods);
+      .on('created', () => this.fetchHoods)
+      .on('patched', () => this.fetchHoods)
+      .on('updated', () => this.fetchHoods)
+      .on('removed', () => this.fetchHoods);
 
     this.pendingHoodsService
-      .on('created', this.fetchPendingHoods)
-      .on('patched', this.fetchPendingHoods)
-      .on('updated', this.fetchPendingHoods)
-      .on('removed', this.fetchPendingHoods);
+      .on('created', () => this.fetchPendingHoods)
+      .on('patched', () => this.fetchPendingHoods)
+      .on('updated', () => this.fetchPendingHoods)
+      .on('removed', () => this.fetchPendingHoods);
   }
 
   /**
@@ -54,8 +55,6 @@ export default class SinglePendingVenueLayout extends SingleListingLayoutUnivers
    * @override
    */
   componentWillUnmount() {
-    super.componentWillUnmount();
-
     this.hoodsService
       .removeAllListeners('created')
       .removeAllListeners('updated')
@@ -74,7 +73,8 @@ export default class SinglePendingVenueLayout extends SingleListingLayoutUnivers
    * @override
    */
   fetchAllData() {
-    this.fetchListing();
+    super.fetchAllData();
+
     this.fetchHoods();
     this.fetchPendingHoods();
   }
@@ -85,6 +85,9 @@ export default class SinglePendingVenueLayout extends SingleListingLayoutUnivers
   fetchHoods() {
     this.hoodsService.find({query: this.defaultQuery}).then(message => {
       this.setState({hoods: message.data, hoodsLoaded: true});
+    }, err => {
+      this.setState({hoodsLoaded: false});
+      displayErrorMessages('fetch', 'neighborhoods', err, this.updateMessagePanel, 'reload');
     });
   }
 
@@ -94,6 +97,9 @@ export default class SinglePendingVenueLayout extends SingleListingLayoutUnivers
   fetchPendingHoods() {
     this.pendingHoodsService.find({query: this.defaultQuery}).then(message => {
       this.setState({pendingHoods: message.data, pendingHoodsLoaded: true});
+    }, err => {
+      this.setState({pendingHoodsLoaded: false});
+      displayErrorMessages('fetch', 'pending neighborhoods', err, this.pendingHoodsService, 'reload');
     });
   }
 
@@ -110,7 +116,7 @@ export default class SinglePendingVenueLayout extends SingleListingLayoutUnivers
     const uniqueHoods = uniqueListingsOnly(this.state.hoods, this.state.pendingHoods);
 
     return <PendingVenueRecord
-      listing={this.state.listing} hoods={uniqueHoods}
+      listing={this.state.listing} schema={this.schema} hoods={uniqueHoods}
       updateListing={this.updateListing} deleteListing={this.deleteListing} queryForExisting={this.queryForExisting}
     />;
   }

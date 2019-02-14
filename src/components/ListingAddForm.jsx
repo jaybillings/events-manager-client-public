@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
-import {makeTitleCase} from "../utilities";
+import app from "../services/socketio";
+import {makeSingular} from "../utilities";
 
 import '../styles/add-form.css';
 
@@ -13,28 +14,49 @@ export default class ListingAddForm extends Component {
    * The class's constructor.
    *
    * @constructor
-   * @param {object} props
+   * @param {{schema: String, createListing: Function, createPendingListing: Function}} props
    */
   constructor(props) {
     super(props);
 
+    this.user = app.get('user');
+
     this.nameInput = React.createRef();
 
-    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleAddClick = this.handleAddClick.bind(this);
+    this.handleAddPendingClick = this.handleAddPendingClick.bind(this);
+    this.buildNewListing = this.buildNewListing.bind(this);
     this.clearForm = this.clearForm.bind(this);
   }
 
   /**
-   * Handles the submit event by parsing data and calling a function to create a new listing.
+   * Handles the submit action by triggering the creation of a new listing.
+   * @param {Event} e
+   */
+  handleAddClick(e) {
+    e.preventDefault();
+    const listingData = this.buildNewListing();
+    this.props.createListing(listingData);
+  }
+
+  /**
+   * Handles the submit action by triggering the creation of a new pending listing.
    *
    * @param {Event} e
    */
-  handleSubmit(e) {
+  handleAddPendingClick(e) {
     e.preventDefault();
+    const listingData = this.buildNewListing();
+    this.props.createPendingListing(listingData);
+  }
 
-    const listingObj = {name: this.nameInput.current.value};
-
-    this.props.createListing(listingObj).then(() => this.clearForm());
+  /**
+   * Compiles the data required for building a new listing.
+   *
+   * @returns {{name: String}}
+   */
+  buildNewListing() {
+    return {name: this.nameInput.current.value};
   }
 
   /**
@@ -46,24 +68,25 @@ export default class ListingAddForm extends Component {
 
   /**
    * Renders the component.
-   *
    * @override
    * @render
+   *
    * @returns {*}
    */
   render() {
     const schema = this.props.schema;
-    const titleCaseSchema = makeTitleCase(schema);
+    const submitAction = this.user.is_admin ? this.handleAddClick : this.handleAddPendingClick;
+    const submitLabel = this.user.is_admin ? `Publish ${makeSingular(schema)}` : `Add Pending ${makeSingular(schema)}`;
 
     return (
-      <form id={`${schema}-add-form`} className={'add-form'} onSubmit={this.handleSubmit}>
+      <form id={`${schema}-add-form`} className={'add-form'} onSubmit={submitAction}>
         <label className={'required'}>
           Name
           <input type={'text'} ref={this.nameInput} required maxLength={100} />
         </label>
         <div>
           <button type={'button'} onClick={this.clearForm}>Reset</button>
-          <button type={'submit'} className={'button-primary'}>Add {titleCaseSchema.slice(0, -1)}</button>
+          <button type={'submit'} className={'button-primary'}>{submitLabel}</button>
         </div>
       </form>
     );
