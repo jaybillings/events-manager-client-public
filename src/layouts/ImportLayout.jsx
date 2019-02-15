@@ -1,14 +1,15 @@
 import React, {Component} from "react";
 import app from "../services/socketio";
+import fetch from "node-fetch";
 
 import Header from "../components/common/Header";
-import ImportForm from "../components/importer/ImportForm";
 import MessagePanel from "../components/common/MessagePanel";
 import PendingEventsModule from "../components/pendingEvents/PendingEventsModule";
 import PendingTagsModule from "../components/pendingTags/PendingTagsModule";
 import PendingVenuesModule from "../components/pendingVenues/PendingVenuesModule";
 import PendingOrganizersModule from "../components/pendingOrganizers/PendingOrganizersModule";
 import PendingNeighborhoodsModule from "../components/pendingNeighborhoods/PendingNeighborhoodsModule";
+import ImportXMLForm from "../components/common/ImportXMLForm";
 
 /**
  * The ImportLayout component lays out the page that handles importing and processing external data.
@@ -23,15 +24,14 @@ export default class ImportLayout extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {messages: [], messagePanelVisible: false};
-
     this.API_URI = 'http://localhost:3030/importer';
     this.defaultPageSize = 5;
     this.defaultSortOrder = ['created_at', -1];
     this.user = app.get('user');
 
+    this.state = {messages: [], messagePanelVisible: false};
+
     this.fileInput = React.createRef();
-    this.schemaSelect = React.createRef();
     this.eventsModule = React.createRef();
     this.venuesModule = React.createRef();
     this.orgsModule = React.createRef();
@@ -73,20 +73,26 @@ export default class ImportLayout extends Component {
   importData(e) {
     e.preventDefault();
 
-    const importUrl = `${this.API_URI}?schema=${this.schemaSelect.current.value}`;
     let importData = new FormData();
 
     importData.append('file', this.fileInput.current.files[0]);
     importData.append('filename', this.fileInput.current.files[0].name);
 
-    fetch(importUrl, {
-      method: 'POST',
-      body: importData
-    }).then((response) => {
-      response.json().then((body) => {
-        if (body.code >= 400) {
-          this.updateMessagePanel({status: 'error', details: body.message});
-        }
+    console.log(this.user);
+
+    app.passport.getJWT().then(token => {
+      console.log(token);
+      fetch(this.API_URI,{
+        method: 'POST',
+        body: importData,
+        headers: {'Authorization': token}
+      }).then((response) => {
+        response.json().then((body) => {
+          console.log(body);
+          if (body.code >= 400) {
+            this.updateMessagePanel({status: 'error', details: body.message});
+          }
+        });
       });
     });
   }
@@ -146,8 +152,8 @@ export default class ImportLayout extends Component {
       <div className="container">
         <Header />
         <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
-        <h2>Import Data From CSV File</h2>
-        <ImportForm fileInputRef={this.fileInput} schemaSelectRef={this.schemaSelect} handleSubmit={this.importData} />
+        <h2>Import Data From BeDynamic XML File</h2>
+        <ImportXMLForm fileInputRef={this.fileInput} handleImportClick={this.importData} />
         <h2>Review Unpublished Data</h2>
         <PendingEventsModule
           ref={this.eventsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}

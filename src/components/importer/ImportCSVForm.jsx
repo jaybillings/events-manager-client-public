@@ -3,10 +3,10 @@ import React, {Component} from 'react';
 import '../../styles/import-form.css';
 
 /**
- * The ImportForm component displays a form used for importing external data.
+ * The ImportCSVForm component displays a form used for importing external data.
  * @class
  */
-export default class ImportForm extends Component {
+export default class ImportCSVForm extends Component {
   /**
    * The class's constructor.
    * @constructor
