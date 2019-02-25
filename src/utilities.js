@@ -95,22 +95,14 @@ const renderTableHeader = function (headerMap, sortState, clickHandler) {
  * listing exists.
  *
  * @param {object} listing
- * @param {string} schema
+ * @param {string} baseSchema
  *
  * @returns {*}
  */
-const renderSchemaLink = function (listing, schema) {
-  let linkString;
+const renderSchemaLink = function (listing, baseSchema) {
+  const schemaPath = listing.fromPending ? `pending${baseSchema}` : baseSchema;
 
-  if (listing.source === 'pending') {
-    linkString = `/pending${schema}/${listing.uuid}`;
-  } else if (listing.source === 'live') {
-    linkString = `/${schema}/${listing.uuid}`;
-  } else {
-    linkString = '/404';
-  }
-
-  return <Link to={linkString}>{listing.name}</Link>;
+  return <Link to={`/${schemaPath}/${listing.id}`}>{listing.name}</Link>;
 };
 
 /**
@@ -129,7 +121,7 @@ const uniqueListingsOnly = function (schemaMembers, pendingSchemaMembers) {
 
   pendingSchemaMembers.forEach(listing => {
     if ((!schemaUUIDs.includes(listing.uuid) && !schemaNames.includes(listing.name))) {
-      uniqueSchema.push(listing);
+      uniqueSchema.push({...listing, fromPending: true});
       schemaUUIDs.push(listing.uuid);
       schemaNames.push(listing.name);
     }

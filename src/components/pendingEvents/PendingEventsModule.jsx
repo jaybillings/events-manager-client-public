@@ -324,7 +324,7 @@ export default class PendingEventsModule extends PendingListingsModule {
     }, err => {
       this.props.updateMessagePanel({
         status: 'error',
-        message: `${eventName} could not be registered as live. Go to the listing's page to resolve manually.`
+        message: `${eventName} could not be registered as live. Go to the listing's page to resolve manually. Error is: ${err.message}`
       })
     });
   }
@@ -388,10 +388,14 @@ export default class PendingEventsModule extends PendingListingsModule {
                 key={`event-${event.id}`} selected={selectedEvents.includes(event.id)} schema={'pending-events'}
                 listing={event} venues={uniqueVenues} orgs={uniqueOrgs}
                 venue={uniqueVenues.find(v => {
-                  return v.uuid === event.venue_uuid
+                  // This may be a numeric ID or a UUID
+                  // noinspection EqualityComparisonWithCoercionJS
+                  return v.uuid == event.venue_uuid
                 })}
                 org={uniqueOrgs.find(o => {
-                  return o.uuid === event.org_uuid
+                  // This may be a numeric ID or a UUID
+                  // noinspection EqualityComparisonWithCoercionJS
+                  return o.uuid == event.org_uuid
                 })}
                 updateListing={this.updateListing} removeListing={this.removeListing}
                 selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}

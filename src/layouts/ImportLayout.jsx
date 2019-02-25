@@ -52,7 +52,7 @@ export default class ImportLayout extends Component {
    */
   componentDidMount() {
     this.importerService.on('status', message => {
-      this.updateMessagePanel({status: 'info', details: message.details});
+      this.updateMessagePanel({status: message.status, details: message.details});
     });
   }
 
@@ -80,21 +80,22 @@ export default class ImportLayout extends Component {
 
     console.log(this.user);
 
-    app.passport.getJWT().then(token => {
-      console.log(token);
-      fetch(this.API_URI,{
-        method: 'POST',
-        body: importData,
-        headers: {'Authorization': token}
-      }).then((response) => {
-        response.json().then((body) => {
-          console.log(body);
-          if (body.code >= 400) {
-            this.updateMessagePanel({status: 'error', details: body.message});
-          }
+    app.passport.getJWT()
+      .then(token => {
+        return fetch(this.API_URI, {
+          method: 'POST',
+          body: importData,
+          headers: {'Authorization': token}
         });
+      })
+      .then(response => {
+        return response.json();
+      })
+      .then(body => {
+        if (body.code >= 400) {
+          this.updateMessagePanel({status: 'error', details: body.message});
+        }
       });
-    });
   }
 
   /**

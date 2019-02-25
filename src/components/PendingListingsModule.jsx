@@ -98,6 +98,9 @@ export default class PendingListingsModule extends Component {
           details: `Discarded pending ${schemaSingular} "${message.name}"`
         });
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
+      })
+      .on('error', message => {
+        this.props.updateMessagePanel({status: 'error', details: message.details});
       });
   }
 
