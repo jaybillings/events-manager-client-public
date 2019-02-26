@@ -3,6 +3,8 @@ import React, {Component} from 'react';
 import Header from '../components/common/Header';
 import MessagePanel from "../components/common/MessagePanel";
 import ManageUsersModule from "../components/admin/ManageUsersModule";
+import ReplaceNeighborhoodsModule from "../components/admin/ReplaceNeighborhoodsModule";
+import ReplaceTagsModule from "../components/admin/ReplaceTagsModule";
 
 export default class AdminToolsLayout extends Component {
   constructor(props) {
@@ -38,6 +40,8 @@ export default class AdminToolsLayout extends Component {
                       dismissPanel={this.dismissMessagePanel} />
         <h2>Admin Tools</h2>
         <ManageUsersModule updateMessagePanel={this.updateMessagePanel} />
+        <ReplaceNeighborhoodsModule updateMessagePane={this.updateMessagePanel} />
+        <ReplaceTagsModule updateMessagePanel={this.updateMessagePanel} />
         <div className={'schema-module'}>
           <h3>Import/Export</h3>
           <a className="button" href={'http://localhost:3030/exporter/json'} target={'_blank'}>Export All Data</a>

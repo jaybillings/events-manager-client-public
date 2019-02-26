@@ -6,7 +6,7 @@
 }
 
 .schema-module h3 {
-  width: min-content;
+  width: max-content;
   font-size: 2rem;
   font-weight: bold;
   background-color: white;

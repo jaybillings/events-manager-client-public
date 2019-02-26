@@ -388,14 +388,12 @@ export default class PendingEventsModule extends PendingListingsModule {
                 key={`event-${event.id}`} selected={selectedEvents.includes(event.id)} schema={'pending-events'}
                 listing={event} venues={uniqueVenues} orgs={uniqueOrgs}
                 venue={uniqueVenues.find(v => {
-                  // This may be a numeric ID or a UUID
-                  // noinspection EqualityComparisonWithCoercionJS
-                  return v.uuid == event.venue_uuid
+                  // Coerce to string for equality
+                  return `${v.uuid}` === `${event.venue_uuid}`;
                 })}
                 org={uniqueOrgs.find(o => {
-                  // This may be a numeric ID or a UUID
-                  // noinspection EqualityComparisonWithCoercionJS
-                  return o.uuid == event.org_uuid
+                  // Coerce to string for equality
+                  return `${o.uuid}` === `${event.org_uuid}`
                 })}
                 updateListing={this.updateListing} removeListing={this.removeListing}
                 selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}

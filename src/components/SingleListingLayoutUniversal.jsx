@@ -25,7 +25,7 @@ export default class SingleListingLayoutUniversal extends Component {
 
     this.schema = schema;
     this.listingID = this.props.match.params.id;
-    this.defaultQuery = {$sort: {name: 1}, $select: ['name', 'uuid'], $limit: 100};
+    this.defaultQuery = {$sort: {name: 1}, $select: ['name', 'uuid'], $limit: 1000};
 
     this.state = {
       listing: {}, listingLoaded: false, hasDeleted: false, notFound: false,

@@ -18,7 +18,8 @@ const renderOptionList = function (schemaMembers, keyType = 'id') {
 
   schemaMembers.forEach(record => {
     const optionValue = keyType === 'uuid' ? record.uuid : record.id;
-    optionsList.push(<option key={optionValue} value={optionValue}>{record.name}</option>);
+    const optionKey = `${record.fromPending ? 'pending-' : ''}${optionValue}`;
+    optionsList.push(<option key={optionKey} value={optionValue}>{record.name}</option>);
   });
 
   return optionsList;
