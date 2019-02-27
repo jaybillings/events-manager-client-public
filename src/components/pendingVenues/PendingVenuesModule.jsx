@@ -1,5 +1,5 @@
 import React from "react";
-import {displayErrorMessages, makeSingular, renderTableHeader, uniqueListingsOnly} from "../../utilities";
+import {displayErrorMessages, renderTableHeader, uniqueListingsOnly} from "../../utilities";
 import app from "../../services/socketio";
 
 import PendingListingsModule from "../PendingListingsModule";
@@ -39,46 +39,24 @@ export default class PendingVenuesModule extends PendingListingsModule {
    * @override
    */
   componentDidMount() {
-    this.fetchAllData();
+    super.componentDidMount();
 
-    this.pendingListingsService
-      .on('created', message => {
-        this.props.updateMessagePanel({
-          status: 'success',
-          details: `Added "${message.name}" as new pending venue`
-        });
-        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchListings());
-      })
-      .on('updated', message => {
-        this.props.updateMessagePanel({status: 'info', details: message.details});
-        this.fetchListings();
-      })
-      .on('patched', message => {
-        this.props.updateMessagePanel({
-          status: 'success',
-          details: `Updated pending ${makeSingular(this.schema)} "${message.name}"`
-        });
-        this.fetchListings();
-      })
-      .on('removed', message => {
-        this.props.updateMessagePanel({
-          status: 'info',
-          details: `Discarded pending ${makeSingular(this.schema)} "${message.name}"`
-        });
-        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchListings());
-      });
+    const services = new Map([
+      [this.hoodsService, this.fetchHoods],
+      [this.pendingHoodsService, this.fetchPendingHoods]
+    ]);
 
-    this.hoodsService
-      .on('created', () => this.fetchHoods())
-      .on('updated', () => this.fetchHoods())
-      .on('patched', () => this.fetchHoods())
-      .on('removed', () => this.fetchHoods());
-
-    this.pendingHoodsService
-      .on('created', () => this.fetchPendingHoods())
-      .on('updated', () => this.fetchPendingHoods())
-      .on('patched', () => this.fetchPendingHoods())
-      .on('removed', () => this.fetchPendingHoods());
+    for (let [service, dataFetcher] of services) {
+      service
+        .on('updated', () => dataFetcher())
+        .on('patched', () => dataFetcher())
+        .on('removed', () => dataFetcher())
+        .on('status', message => {
+          if (message.status === 'success') dataFetcher();
+          this.props.updateMessagePanel({status: message.status, details: message.details});
+          if (message.rawError) console.log(message.rawError);
+        });
+    }
   }
 
   /**
@@ -86,18 +64,19 @@ export default class PendingVenuesModule extends PendingListingsModule {
    * @override
    */
   componentWillUnmount() {
+    super.componentWillUnmount();
+
     const services = [
-      this.pendingListingsService,
       this.hoodsService,
       this.pendingHoodsService
     ];
 
     services.forEach(service => {
       service
-        .removeAllListeners('created')
         .removeAllListeners('updated')
         .removeAllListeners('patched')
-        .removeAllListeners('removed');
+        .removeAllListeners('removed')
+        .removeAllListeners('status');
     });
   }
 
@@ -222,7 +201,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
                 key={`venue-${venue.id}`} schema={'pending-venues'} listing={venue}
                 selected={selectedVenues.includes(venue.id)} hoods={uniqueHoods}
                 hood={(uniqueHoods.find(h => {
-                  return h.uuid === venue.hood_uuid
+                  // eslint-disable-next-line
+                  return h.uuid == venue.hood_uuid
                 }))}
                 updateListing={this.updateListing} removeListing={this.removeListing}
                 selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}

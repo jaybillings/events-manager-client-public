@@ -54,6 +54,7 @@ export default class ImportLayout extends Component {
     this.importerService.on('status', message => {
       this.updateMessagePanel({status: message.status, details: message.details});
     });
+    // TODO: On created, start spinner?
   }
 
   /**

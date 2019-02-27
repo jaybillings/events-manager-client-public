@@ -62,10 +62,14 @@ export default class PendingEventsModule extends PendingListingsModule {
 
     for (let [service, dataFetcher] of services) {
       service
-        .on('created', () => dataFetcher)
-        .on('updated', () => dataFetcher)
-        .on('patched', () => dataFetcher)
-        .on('removed', () => dataFetcher);
+        .on('updated', () => dataFetcher())
+        .on('patched', () => dataFetcher())
+        .on('removed', () => dataFetcher())
+        .on('status', message => {
+          if (message.status === 'success') dataFetcher();
+          this.props.updateMessagePanel({status: message.status, details: message.details});
+          if (message.rawError) console.log(message.rawError);
+        });
     }
   }
 
@@ -88,7 +92,7 @@ export default class PendingEventsModule extends PendingListingsModule {
         .removeAllListeners('created')
         .removeAllListeners('updated')
         .removeAllListeners('patched')
-        .removeAllListeners('removed');
+        .removeAllListeners('status');
     });
   }
 
@@ -389,11 +393,13 @@ export default class PendingEventsModule extends PendingListingsModule {
                 listing={event} venues={uniqueVenues} orgs={uniqueOrgs}
                 venue={uniqueVenues.find(v => {
                   // Coerce to string for equality
-                  return `${v.uuid}` === `${event.venue_uuid}`;
+                  // eslint-disable-next-line
+                  return v.uuid == event.venue_uuid;
                 })}
                 org={uniqueOrgs.find(o => {
                   // Coerce to string for equality
-                  return `${o.uuid}` === `${event.org_uuid}`
+                  // eslint-disable-next-line
+                  return o.uuid== event.org_uuid;
                 })}
                 updateListing={this.updateListing} removeListing={this.removeListing}
                 selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}

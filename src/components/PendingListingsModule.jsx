@@ -28,7 +28,7 @@ export default class PendingListingsModule extends Component {
 
     this.schema = schema;
     this.user = app.get('user');
-    this.defaultQuery = {$sort: {name: 1}, $limit: 100};
+    this.defaultQuery = {$sort: {name: 1}, $limit: 1000};
 
     this.state = {
       moduleVisible: true, pendingListings: [], pendingListingsTotal: 0, listingsLoaded: false, selectedListings: [],
@@ -74,13 +74,12 @@ export default class PendingListingsModule extends Component {
 
     /** @var {Function} this.pendingListingsService.on */
     this.pendingListingsService
-      .on('created', message => {
+      /*.on('created', message => {
         this.props.updateMessagePanel({
           status: 'success',
           details: `Added "${message.name}" as new pending ${schemaSingular}`
         });
-        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
-      })
+      })*/
       .on('updated', message => {
         this.props.updateMessagePanel({status: 'info', details: message.details});
         this.fetchAllData();
@@ -99,8 +98,10 @@ export default class PendingListingsModule extends Component {
         });
         this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
       })
-      .on('error', message => {
-        this.props.updateMessagePanel({status: 'error', details: message.details});
+      .on('status', message => {
+        if (message.status === 'success') this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchListings());
+        this.props.updateMessagePanel({status: message.status, details: message.details});
+        if (message.rawError) console.log(message.rawError);
       });
   }
 
