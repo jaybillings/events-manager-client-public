@@ -60,8 +60,8 @@ export default class UserRow extends Component {
     return (
       <tr className={'schema-row'}>
         <td>
-          <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete User</button>
-          <button type={'button'} onClick={this.handleSaveClick}>Save Changes</button>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete User</button>
+          <button type={'button'} className={'emphasize'} onClick={this.handleSaveClick}>Save Changes</button>
         </td>
         <td>{this.props.user.email}</td>
         <td>

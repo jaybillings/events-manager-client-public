@@ -80,7 +80,7 @@ export default class AddUserForm extends Component {
         </label>
         <div className={'buttons'}>
           <button type={'button'} onClick={this.clearForm}>Reset</button>
-          <button type={'submit'} className={'button-primary'}>Add User</button>
+          <button type={'submit'} className={'emphasize'}>Add User</button>
         </div>
       </form>
     );

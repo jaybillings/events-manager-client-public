@@ -44,7 +44,7 @@ export default class AdminToolsLayout extends Component {
         <ReplaceTagsModule updateMessagePanel={this.updateMessagePanel} />
         <div className={'schema-module'}>
           <h3>Import/Export</h3>
-          <a className="button" href={'http://localhost:3030/exporter/json'} target={'_blank'}>Export All Data</a>
+          <a className={'button emphasize'} href={'http://localhost:3030/exporter/json'} target={'_blank'}>Export All Data</a>
           <span> as a JSON file.</span>
         </div>
       </div>

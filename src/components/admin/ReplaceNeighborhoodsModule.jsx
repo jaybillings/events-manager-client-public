@@ -6,7 +6,7 @@ export default class ReplaceNeighborhoodsModule extends Component {
   constructor(props) {
     super(props);
 
-    this.defaultQuery = {$sort: {name: 1}, $limit: 100};
+    this.defaultQuery = {$sort: {name: 1}, $limit: 1000};
 
     this.state = {
       liveHoods: [], uniqueHoods: [], pendingHoods: [], hoodToReplace: {}, hoodReplacingWith: {},
@@ -21,9 +21,9 @@ export default class ReplaceNeighborhoodsModule extends Component {
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.fetchHoods = this.fetchHoods.bind(this);
+    this.fetchLiveHoodsToReplace = this.fetchLiveHoodsToReplace.bind(this);
     this.fetchPendingHoods = this.fetchPendingHoods.bind(this);
     this.fetchPendingHoodsToReplace = this.fetchPendingHoodsToReplace.bind(this);
-    this.fetchLiveHoodsToReplace = this.fetchLiveHoodsToReplace.bind(this);
 
     this.createNeighborhoodLookup = this.createNeighborhoodLookup.bind(this);
     this.replaceAndDeleteLive = this.replaceAndDeleteLive.bind(this);
@@ -50,7 +50,7 @@ export default class ReplaceNeighborhoodsModule extends Component {
     return this.hoodsService.find({query: this.defaultQuery}).then(result => {
       this.setState({liveHoods: result.data});
     }, err => {
-      displayErrorMessages('fetch', 'neighborhoods', err, this.props.updateMessagePanel, 'reload');
+      displayErrorMessages('fetch', 'neighborhoods', err, this.props.updateMessagePanel);
       this.setState({hoodsLoaded: false});
     });
   }
@@ -59,7 +59,7 @@ export default class ReplaceNeighborhoodsModule extends Component {
     return this.pendingHoodsService.find({query: this.defaultQuery}).then(result => {
       this.setState({pendingHoods: result.data});
     }, err => {
-      displayErrorMessages('fetch', 'pending neighborhoods', err, this.props.updateMessagePanel, 'reload');
+      displayErrorMessages('fetch', 'pending neighborhoods', err, this.props.updateMessagePanel);
       this.setState({pendingHoodsLoaded: false});
     });
   }
@@ -74,7 +74,6 @@ export default class ReplaceNeighborhoodsModule extends Component {
     return this.pendingHoodsService.find({query: {name: this.state.hoodToReplace.name}}).catch(err => {
       console.log("~~~ COE Logger ~~~ Could not fetch matching pending hoods: ");
       console.log(JSON.stringify(err));
-      return null;
     });
   }
 
@@ -92,10 +91,10 @@ export default class ReplaceNeighborhoodsModule extends Component {
     const hoodIDs = matchingHoods.map(row => row.id);
     const target = this.state.hoodToReplace;
 
-    // Replace with target
+    // Relink venues to new hood
     this.venuesService.patch(null, {hood_id: target.id}, {query: {hood_id: {$in: hoodIDs}}})
       .then(() => {
-        // Remove originals
+        // Remove original hood listings
         this.hoodsService.remove(null, {query: {id: {$in: hoodIDs}}}).catch(err => {
           this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
         });
@@ -109,9 +108,10 @@ export default class ReplaceNeighborhoodsModule extends Component {
     let hoodUUIDs = [...matchingLiveHoods.map(row => row.uuid), ...matchingPendingHoods.map(row => row.uuid)];
     hoodUUIDs = arrayUnique(hoodUUIDs);
 
+    // Relink pending venues to new hood
     this.pendingVenuesService.patch(null, {hood_uuid: target.uuid}, {query: {hood_uuid: {$in: hoodUUIDs}}})
       .then(() => {
-        // Remove (pending) originals
+        // Remove original pending hood listings
         this.pendingHoodsService.remove(null, {query: {uuid: {$in: hoodUUIDs}}}).catch(err => {
           this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
         });
@@ -131,7 +131,7 @@ export default class ReplaceNeighborhoodsModule extends Component {
     const replacement = this.state.hoodReplacingWith;
 
     if (target.name.toLowerCase() === replacement.name.toLowerCase()) {
-      this.props.updateMessagePanel({status: 'error', details: 'Cannot replace hood with same hood.'});
+      this.props.updateMessagePanel({status: 'info', details: 'Cannot replace hood with same hood.'});
       return;
     }
 
@@ -154,15 +154,15 @@ export default class ReplaceNeighborhoodsModule extends Component {
   }
 
   render() {
-    const defaultHoodToReplace = this.state.hoodToReplace || this.state.uniqueHoods[0].id;
-    const defaultHoodReplacingWith = this.state.hoodReplacingWith || this.state.liveHoods[0].id;
+    const defaultHoodToReplace = this.state.uniqueHoods[0] ? this.state.uniqueHoods[0].id : '';
+    const defaultHoodReplacingWith = this.state.liveHoods[0] ? this.state.liveHoods[0].id : '';
 
     return (
       <div className={'schema-module manage-hoods'}>
         <form id={'neighborhood-replace-form'} className={'add-form'} onSubmit={this.handleSubmit}>
           <h3>Replace Neighborhoods</h3>
           <label>
-            <span>Replace all neighborhoods named this:</span>
+            <span>Replace all neighborhoods (pending and live) named this:</span>
             <select name={'hoodToReplace'} value={defaultHoodToReplace} onChange={this.handleListSelect}>
               {renderOptionList(this.state.uniqueHoods)}
             </select>
@@ -173,7 +173,7 @@ export default class ReplaceNeighborhoodsModule extends Component {
               {renderOptionList(this.state.liveHoods)}
             </select>
           </label>
-          <button type={'submit'}>Replace and Delete Neighborhood</button>
+          <button type={'submit'} className={'emphasize'}>Replace and Delete Neighborhood</button>
         </form>
       </div>
     );

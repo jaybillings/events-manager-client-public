@@ -101,25 +101,25 @@ button[disabled]:hover {
   color: var(--medium-gray);
 }
 
-button.emphasize {
+.emphasize {
   padding: 0 2rem;
   color: var(--true-blue);
   border-color: var(--true-blue);
   background: var(--true-white);
 }
 
-button.emphasize:hover, button.emphasize:active {
+.emphasize:hover, .emphasize:active {
   background: var(--true-blue);
   color: var(--true-white);
 }
 
-button.warn {
+.warn {
   color: var(--bright-pink);
   border-color: var(--bright-pink);
   background: var(--true-white);
 }
 
-button.warn:hover, button.warn:active {
+.warn:hover, .warn:active {
   color: var(--true-white);
   background: var(--bright-pink);
 }
