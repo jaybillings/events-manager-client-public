@@ -41,7 +41,7 @@ export default class LoginPage extends Component {
       })
       .catch(err => {
         if (err.code === 401) return;
-        this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+        this.updateMessagePanel({status: 'error', details: err});
       });
   }
 
@@ -102,6 +102,11 @@ export default class LoginPage extends Component {
    * @note For security reasons, user is required to log in manually after account creation.
    */
   handleUserCreate() {
+    if (!this.state.email || !this.state.password) {
+      this.updateMessagePanel({status: 'error', details: 'A valid email address and password is required to create an account. Please try again.'});
+      return;
+    }
+
     // TODO: Email/SMS verification
     this.usersService.create({
       email: this.state.email,
@@ -114,7 +119,6 @@ export default class LoginPage extends Component {
       });
     }, err => {
       this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-      console.log('account create error');
     });
   }
 
@@ -157,16 +161,16 @@ export default class LoginPage extends Component {
         <MessagePanel messages={this.state.messages} isVisible={this.state.messagePanelVisible}
                       dismissPanel={this.dismissMessagePanel} />
         <p className={'message success-message' + successMsgClass}>Logged in. Redirecting in {this.state.redirectCount}
-          {redirectCount === 1 ? 'second' : 'seconds'}. </p>
+          {redirectCount === 1 ? ' second' : ' seconds'}. </p>
         <p className={'message warning-message' + warningMsgClass}>You must log in to continue.</p>
         <form onSubmit={this.handleFormLogin}>
           <div className={'input-container'}>
             <label htmlFor={'emailInput'}>Email Address</label>
             <input id={'emailInput'} type={'text'} name={'email'} value={this.state.email}
-                   onChange={this.handleInputChange} />
+                   onChange={this.handleInputChange} required />
             <label htmlFor={'passInput'}>Password</label>
             <input id={'passInput'} type={'password'} name={'password'} value={this.state.password}
-                   onChange={this.handleInputChange} />
+                   onChange={this.handleInputChange} required />
           </div>
           <div className={'button-container'}>
             <button type={'button'} onClick={this.handleUserCreate}>Create Account</button>
