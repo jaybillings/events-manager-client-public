@@ -53,8 +53,6 @@ export default class PendingVenuesModule extends PendingListingsModule {
         .on('removed', () => dataFetcher())
         .on('status', message => {
           if (message.status === 'success') dataFetcher();
-          this.props.updateMessagePanel({status: message.status, details: message.details});
-          if (message.rawError) console.log(message.rawError);
         });
     }
   }

@@ -51,10 +51,16 @@ export default class ImportLayout extends Component {
    * @override
    */
   componentDidMount() {
-    this.importerService.on('status', message => {
-      this.updateMessagePanel({status: message.status, details: message.details});
-    });
-    // TODO: On created, start spinner?
+    this.importerService
+      .on('created', () => {
+        // TODO: On created, start spinner?
+        // TODO: Unregister listeners and lazy pull data every second or so?
+        this.updateMessagePanel({status: 'info', details: 'Importer is running. This may take several minutes.'});
+      })
+      .on('status', message => {
+        // TODO: If success, import all data?
+        this.updateMessagePanel({status: message.status, details: message.details});
+      });
   }
 
   /**

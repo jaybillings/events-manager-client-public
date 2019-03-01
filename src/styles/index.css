@@ -7,6 +7,7 @@
   --light-gray: #bbb;
   --white: #efefef;
   --true-white: #fff;
+  --pale-cream: #fefefd;
 
   --dark-blue: #2c83ab;
   --true-blue: #33c3f0;
@@ -40,6 +41,9 @@
 
 /* Theme customization styles */
 
+body {
+  background: var(--pale-cream);
+}
 h1 {
   padding: 2rem 0 0;
   font-size: 3rem;

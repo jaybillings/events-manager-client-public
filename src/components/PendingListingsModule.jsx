@@ -74,34 +74,33 @@ export default class PendingListingsModule extends Component {
 
     /** @var {Function} this.pendingListingsService.on */
     this.pendingListingsService
-      /*.on('created', message => {
-        this.props.updateMessagePanel({
-          status: 'success',
-          details: `Added "${message.name}" as new pending ${schemaSingular}`
-        });
-      })*/
       .on('updated', message => {
         this.props.updateMessagePanel({status: 'info', details: message.details});
-        this.fetchAllData();
+        this.fetchListings();
       })
       .on('patched', message => {
         this.props.updateMessagePanel({
           status: 'success',
           details: `Updated pending ${schemaSingular} "${message.name}"`
         });
-        this.fetchAllData();
+        this.fetchListings();
       })
       .on('removed', message => {
         this.props.updateMessagePanel({
           status: 'info',
           details: `Discarded pending ${schemaSingular} "${message.name}"`
         });
-        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchAllData());
+        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchListings());
       })
       .on('status', message => {
-        if (message.status === 'success') this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchListings());
-        this.props.updateMessagePanel({status: message.status, details: message.details});
         if (message.rawError) console.log(message.rawError);
+        let userMessage = message.details;
+        if (message.rawData) userMessage += ": " + message.rawData.dataPath + " " + message.rawData.message;
+        this.props.updateMessagePanel({status: message.status, details: userMessage});
+        if (message.status === 'success') {
+          this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchListings());
+          // TODO: WHen importing, disable normal created monitor and grab every few seconds?
+        }
       });
   }
 
