@@ -80,7 +80,7 @@ export default class PendingEventRecord extends ListingRecordUniversal {
 
     checkedBoxes.forEach(input => {
       if (!this.props.tagsForListing.includes(input.value)) {
-        tagsToSave.push({pending_event_id: this.props.listing.id, tag_uuid: input.value});
+        tagsToSave.push({event_uuid: this.props.listing.uuid, tag_uuid: input.value});
       }
     });
     uncheckedBoxes.forEach(input => {
@@ -114,6 +114,11 @@ export default class PendingEventRecord extends ListingRecordUniversal {
 
     return (
       <form id={'pending-event-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
+        <div className={'block-warning'}
+             title={'Caution: This event is pending. It must be pushed live before it is visible on the site.'}>
+          <button type={'button'} onClick={this.handleDeleteClick}>Discard Event</button>
+          <button type={'submit'} className={"button-primary"}>Save Changes</button>
+        </div>
         <label>
           Status
           <div>
@@ -147,13 +152,13 @@ export default class PendingEventRecord extends ListingRecordUniversal {
         <label className={'required'}>
           Venue
           <select ref={this.venueInput} defaultValue={event.venue_uuid || ''} required>
-            {renderOptionList(venues, 'uuid')}
+            {renderOptionList(venues, 'venues', 'uuid')}
           </select>
         </label>
         <label className={'required'}>
           Organizer
           <select ref={this.orgInput} defaultValue={event.org_uuid || ''} required>
-            {renderOptionList(orgs, 'uuid')}
+            {renderOptionList(orgs, 'orgs', 'uuid')}
           </select>
         </label>
         <label className={'required'}>

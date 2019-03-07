@@ -8,17 +8,20 @@ import {Link} from "react-router-dom";
 /**
  * Generates a list of <option> elements representing members of given schema.
  *
- * @param {Array} schemaMembers
- * @param {string} keyType - What to use as the key. ID or UUID.
+ * @param {Array} schemaData
  *
+ * @param schema
+ * @param keyType
  * @returns {Array}
  */
-const renderOptionList = function (schemaMembers, keyType = 'id') {
+const renderOptionList = function (schemaData, schema, keyType='id') {
   let optionsList = [];
+  let schemaSingular = makeSingular(schema);
+  let recordsToDisplay = [{uuid: null, id: null, name: `NO ${schemaSingular.toUpperCase()} SELECTED`}, ...schemaData];
 
-  schemaMembers.forEach(record => {
+  recordsToDisplay.forEach(record => {
     const optionValue = keyType === 'uuid' ? record.uuid : record.id;
-    const optionKey = `${record.fromPending ? 'pending-' : ''}${optionValue}`;
+    const optionKey = optionValue ? `${record.fromPending ? 'pending-' : ''}${optionValue}` : `default-${schemaSingular}`;
     optionsList.push(<option key={optionKey} value={optionValue}>{record.name}</option>);
   });
 
@@ -207,12 +210,13 @@ const displayErrorMessages = function (action, target, errors, displayFunc, user
   };
   const subscript = (userPrompt ? userPrompts[userPrompt] : '') + ' ' + userPrompts.default;
 
-  for (let i = 0; i < errors.length; i++) {
-    const subject = errors[i].dataPath.substring(1);
-    displayFunc({
+  if (!Array.isArray(errors)) errors = [errors];
 
+  for (let i = 0; i < errors.length; i++) {
+    const subject = errors[i].dataPath ? errors[i].dataPath.substring(1) : '';
+    displayFunc({
       status: 'error',
-      details: `Could not ${action} ${target} -- ${subject} ${errors[i].message}. ${subscript}`
+      details: `Could not ${action} ${target} -- ${subject} ${errors[i].message} ${subscript}`
     });
   }
 };
