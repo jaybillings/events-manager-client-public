@@ -121,13 +121,11 @@ const renderSchemaLink = function (listing, baseSchema) {
 const uniqueListingsOnly = function (schemaMembers, pendingSchemaMembers) {
   let uniqueSchema = [...schemaMembers];
   let schemaUUIDs = uniqueSchema.map(x => x.uuid);
-  let schemaNames = uniqueSchema.map(x => x.name);
 
   pendingSchemaMembers.forEach(listing => {
-    if ((!schemaUUIDs.includes(listing.uuid) && !schemaNames.includes(listing.name))) {
+    if (!schemaUUIDs.includes(listing.uuid)) {
       uniqueSchema.push({...listing, fromPending: true});
       schemaUUIDs.push(listing.uuid);
-      schemaNames.push(listing.name);
     }
   });
 

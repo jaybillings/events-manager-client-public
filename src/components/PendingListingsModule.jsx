@@ -28,11 +28,11 @@ export default class PendingListingsModule extends Component {
 
     this.schema = schema;
     this.user = app.get('user');
-    this.defaultQuery = {$sort: {name: 1}, $limit: 1000};
+    this.defaultQuery = {$sort: {name: 1}, $limit: 1000, $select: ['id', 'uuid', 'name']};
 
     this.state = {
       moduleVisible: true, pendingListings: [], pendingListingsTotal: 0, listingsLoaded: false, selectedListings: [],
-      pageSize: this.props.defaultPageSize, currentPage: 1, sort: this.props.defaultSortOrder
+      pageSize: this.props.defaultPageSize, currentPage: 1, sort: this.props.defaultSortOrder, allIDs: []
     };
 
     this.pendingListingsService = app.service(`pending-${this.schema}`);
@@ -42,6 +42,7 @@ export default class PendingListingsModule extends Component {
     this.fetchListings = this.fetchListings.bind(this);
     this.queryForExisting = this.queryForExisting.bind(this);
     this.queryForExact = this.queryForExact.bind(this);
+    this.queryForIDs = this.queryForIDs.bind(this);
 
     this.updateListing = this.updateListing.bind(this);
     this.removeListing = this.removeListing.bind(this);
@@ -57,6 +58,7 @@ export default class PendingListingsModule extends Component {
 
     this.handleListingSelect = this.handleListingSelect.bind(this);
     this.toggleModuleVisibility = this.toggleModuleVisibility.bind(this);
+    this.selectPageOfListings = this.selectPageOfListings.bind(this);
     this.selectAllListings = this.selectAllListings.bind(this);
     this.selectNoListings = this.selectNoListings.bind(this);
 
@@ -69,6 +71,10 @@ export default class PendingListingsModule extends Component {
    */
   componentDidMount() {
     this.fetchAllData();
+
+    this.queryForIDs().then(result => {
+      this.setState({allIDs: result.data.map(row => row.id)});
+    });
 
     const schemaSingular = makeSingular(this.schema);
 
@@ -167,11 +173,19 @@ export default class PendingListingsModule extends Component {
    * @note Used when publishing.
    *
    * @param {object} pendingListing
-   * @returns {Promise<>}
+   * @returns {Promise<*>}
    */
   queryForExact(pendingListing) {
     return this.listingsService.find({query: {uuid: pendingListing.uuid}});
   };
+
+  /**
+   * Queries the listing service for a list of all IDs;
+   * @returns {Promise<*>}
+   */
+  queryForIDs() {
+    return this.pendingListingsService.find({query: {$select: ['id'], $limit: 5000}, paginate: false});
+  }
 
   /**
    * Saves changes to main schema listing. Used in row quick-edits.
@@ -343,12 +357,17 @@ export default class PendingListingsModule extends Component {
     }
   }
 
+  selectPageOfListings() {
+    const currentPageIDs = this.state.pendingListings.map(listing => listing.id);
+    this.setState({selectedListings: currentPageIDs});
+  }
+
   /**
    * Registers all listings as selected.
    */
   selectAllListings() {
-    const allListingIDs = this.state.pendingListings.map(listing => listing.id);
-    this.setState({selectedListings: allListingIDs});
+    const allIds = [...this.state.allIDs];
+    this.setState({selectedListings: allIds});
   }
 
   /**
@@ -388,7 +407,8 @@ export default class PendingListingsModule extends Component {
       />,
       <div key={`${schema}-module-body`}>
         <SelectionControl
-          numSelected={selectedListings.length} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
+          numSelected={selectedListings.length} total={this.state.listingsTotal} schema={this.schema}
+          selectPage={this.selectPageOfListings} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
         />
         <PaginationLayout
           key={`pending-${schema}-pagination`} schema={`pending-${schema}`}

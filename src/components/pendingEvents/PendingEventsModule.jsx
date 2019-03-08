@@ -174,7 +174,7 @@ export default class PendingEventsModule extends PendingListingsModule {
         details: `Published "${result.name}" as new event #${result.id}`
       });
       this.registerLiveListing(result.id, result.name);
-      this.removeListing(id);
+      this.removeListing(pendingListing);
     }, err => {
       displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
     });
@@ -196,7 +196,7 @@ export default class PendingEventsModule extends PendingListingsModule {
         status: 'success',
         details: `Published ${result.name} as an update to ${target.name}`
       });
-      this.removeListing(id);
+      this.removeListing(pendingListing);
     }, err => {
       displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
     });
@@ -303,7 +303,8 @@ export default class PendingEventsModule extends PendingListingsModule {
       />,
       <div key={'events-module-body'}>
         <SelectionControl
-          numSelected={selectedEvents.length} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
+          numSelected={selectedEvents.length} total={this.state.pendingListingsTotal} schema={this.schema}
+          selectPage={this.selectPageOfListings} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
         />
         <PaginationLayout
           key={'pending-events-pagination'} schema={'pending-events'}
