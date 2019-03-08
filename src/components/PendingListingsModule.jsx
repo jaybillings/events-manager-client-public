@@ -189,10 +189,10 @@ export default class PendingListingsModule extends Component {
   /**
    * Removes single main schema listing from the database.
    *
-   * @param {int} id
+   * @param {Object} listing
    */
-  removeListing(id) {
-    this.pendingListingsService.remove(id).then(message => {
+  removeListing(listing) {
+    this.pendingListingsService.remove(listing.id).then(message => {
       console.log(`removing ${this.schema}`, message);
     }, err => {
       this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});

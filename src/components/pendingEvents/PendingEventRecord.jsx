@@ -64,6 +64,8 @@ export default class PendingEventRecord extends ListingRecordUniversal {
       flag_ongoing: this.ongoingInput.current.checked
     };
 
+    console.log('newData', newData);
+
     // Add non-required only if it has changed
     this.emailInput.current.value !== '' && (newData.email = this.emailInput.current.value);
     this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value);
@@ -141,29 +143,29 @@ export default class PendingEventRecord extends ListingRecordUniversal {
           Name
           <input type="text" ref={this.nameInput} defaultValue={event.name} required maxLength={100} />
         </label>
-        <label className={'required'}>
+        <label className={'required-ish'}>
           Start Date
-          <input type="date" ref={this.startInput} defaultValue={startDate} required />
+          <input type="date" ref={this.startInput} defaultValue={startDate} />
         </label>
-        <label className={'required'}>
+        <label className={'required-ish'}>
           End Date
-          <input type="date" ref={this.endInput} defaultValue={endDate} required />
+          <input type="date" ref={this.endInput} defaultValue={endDate} />
         </label>
-        <label className={'required'}>
+        <label className={'required-ish'}>
           Venue
-          <select ref={this.venueInput} defaultValue={event.venue_uuid || ''} required>
+          <select ref={this.venueInput} defaultValue={event.venue_uuid || ''}>
             {renderOptionList(venues, 'venues', 'uuid')}
           </select>
         </label>
-        <label className={'required'}>
+        <label className={'required-ish'}>
           Organizer
-          <select ref={this.orgInput} defaultValue={event.org_uuid || ''} required>
+          <select ref={this.orgInput} defaultValue={event.org_uuid || ''}>
             {renderOptionList(orgs, 'orgs', 'uuid')}
           </select>
         </label>
-        <label className={'required'}>
+        <label className={'required-ish'}>
           Description
-          <textarea ref={this.descInput} defaultValue={event.description} required maxLength={500} />
+          <textarea ref={this.descInput} defaultValue={event.description} maxLength={500} />
         </label>
         <label>
           Tags

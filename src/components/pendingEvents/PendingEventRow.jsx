@@ -42,6 +42,8 @@ export default class PendingEventRow extends PendingListingRow {
       org_uuid: this.orgList.current.value
     };
 
+    console.log('newData', newData);
+
     this.props.updateListing(this.props.listing.id, newData).then(() => {
       this.checkWriteStatus();
       this.setState({editable: false});
@@ -80,11 +82,11 @@ export default class PendingEventRow extends PendingListingRow {
           <td><input type={'date'} ref={this.endInput} defaultValue={endDateVal} onClick={e => e.stopPropagation()} /></td>
           <td>
             <select ref={this.venueList} defaultValue={pendingListing.venue_uuid || ''} onClick={e => e.stopPropagation()}>
-              {renderOptionList(venues, 'uuid')}
+              {renderOptionList(venues, 'venues', 'uuid')}
             </select>
           </td>
           <td><select ref={this.orgList} defaultValue={pendingListing.org_uuid || ''} onClick={e => e.stopPropagation()} required>
-            {renderOptionList(orgs, 'uuid')}
+            {renderOptionList(orgs, 'orgs', 'uuid')}
           </select>
           </td>
           <td>{createdAt}</td>

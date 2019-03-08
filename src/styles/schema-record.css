@@ -44,6 +44,12 @@
   margin-right: .5rem;
 }
 
+.schema-record label.required-ish:before {
+  content: '*';
+  color: var(--dull-orange);
+  margin-right: .5rem;
+}
+
 .schema-record p.label {
   margin-bottom: 0.5rem;
   font-weight: 600;

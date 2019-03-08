@@ -17,7 +17,7 @@ import {Link} from "react-router-dom";
 const renderOptionList = function (schemaData, schema, keyType='id') {
   let optionsList = [];
   let schemaSingular = makeSingular(schema);
-  let recordsToDisplay = [{uuid: null, id: null, name: `NO ${schemaSingular.toUpperCase()} SELECTED`}, ...schemaData];
+  let recordsToDisplay = [{uuid: '', id: '', name: `NO ${schemaSingular.toUpperCase()} SELECTED`}, ...schemaData];
 
   recordsToDisplay.forEach(record => {
     const optionValue = keyType === 'uuid' ? record.uuid : record.id;
@@ -119,7 +119,7 @@ const renderSchemaLink = function (listing, baseSchema) {
  * @returns {*}
  */
 const uniqueListingsOnly = function (schemaMembers, pendingSchemaMembers) {
-  let uniqueSchema = schemaMembers;
+  let uniqueSchema = [...schemaMembers];
   let schemaUUIDs = uniqueSchema.map(x => x.uuid);
   let schemaNames = uniqueSchema.map(x => x.name);
 
