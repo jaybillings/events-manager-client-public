@@ -66,12 +66,13 @@ export default class PendingListingsModule extends Component {
   }
 
   /**
-   * Code to run one component is mounted. Fetches all data and registers data serivce listeners.
+   * Code to run one component is mounted. Fetches all data and registers data service listeners.
    * @override
    */
   componentDidMount() {
     this.fetchAllData();
 
+    // Get IDs of all listings
     this.queryForIDs().then(result => {
       this.setState({allIDs: result.data.map(row => row.id)});
     });
@@ -123,6 +124,12 @@ export default class PendingListingsModule extends Component {
       .removeAllListeners('removed');
   }
 
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (this.state.selectedListings.count === 0 && prevState.selectedListings.count < 0) {
+      this.setState({selectedListings: prevState.selectedListings});
+    }
+  }
+
   /**
    * Fetches all data for the module.
    * @note This architecture exists for listings with linked schema, so the app can be judicious about what it
@@ -145,7 +152,7 @@ export default class PendingListingsModule extends Component {
     }).then(message => {
       this.setState({
         pendingListings: message.data, pendingListingsTotal: message.total,
-        listingsLoaded: true, selectedListings: []
+        listingsLoaded: true
       });
     });
   }
@@ -207,7 +214,7 @@ export default class PendingListingsModule extends Component {
    */
   removeListing(listing) {
     this.pendingListingsService.remove(listing.id).then(message => {
-      console.log(`removing ${this.schema}`, message);
+      console.log(`removing pending ${this.schema}`, message);
     }, err => {
       this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });

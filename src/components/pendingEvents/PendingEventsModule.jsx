@@ -147,11 +147,14 @@ export default class PendingEventsModule extends PendingListingsModule {
   queryForExisting(pendingListing) {
     return this.listingsService.find({
       query: {
-        $or: [{uuid: pendingListing.uuid}, {description: pendingListing.description}, {
-          name: pendingListing.name,
-          start_date: pendingListing.start_date,
-          end_date: pendingListing.end_date
-        }],
+        $or: [
+          {uuid: pendingListing.uuid},
+          {
+            name: pendingListing.name,
+            start_date: pendingListing.start_date,
+            end_date: pendingListing.end_date
+          }
+        ],
         $select: ['uuid']
       }
     });
@@ -241,7 +244,7 @@ export default class PendingEventsModule extends PendingListingsModule {
    */
   registerLiveListing(eventID, eventName) {
     this.liveEventsService.create({event_id: eventID}).then(() => {
-      this.props.updateMessagePanel({status: 'info', details: `${eventName} registered as live`});
+      console.log({status: 'info', details: `${eventName} registered as live`});
     }, err => {
       this.props.updateMessagePanel({
         status: 'error',

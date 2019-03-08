@@ -119,6 +119,12 @@ button[disabled]:hover {
 .emphasize:hover, .emphasize:active {
   background: var(--true-blue);
   color: var(--true-white);
+  border-color: var(--true-blue);
+}
+
+.emphasize:focus {
+  border-color: var(--true-blue);
+  box-shadow: 0 0 5px 0 var(--true-blue);
 }
 
 .warn {
@@ -130,6 +136,12 @@ button[disabled]:hover {
 .warn:hover, .warn:active {
   color: var(--true-white);
   background: var(--bright-pink);
+  border-color: var(--bright-pink);
+}
+
+.warn:focus {
+  border-color: var(--bright-pink);
+  box-shadow: 0 0 5px 0 var(--bright-pink);
 }
 
 .hidden {
