@@ -32,7 +32,7 @@ export default class MessagePanel extends Component {
 
     return messages.map((message, index) =>
       <li className={`message ${message.status}`} key={index}>
-        <span className={message.status}>{message.status}</span>
+        <span className={message.status}><strong>{message.status}</strong></span>
         {message.details.message || message.details}
       </li>
     );

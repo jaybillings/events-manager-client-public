@@ -34,9 +34,12 @@
 }
 
 .messageContainer span {
+  padding-right: 1rem;
+}
+
+.messageContainer strong {
   font-size: 1.1em;
   font-weight: 600;
-  padding-right: 1rem;
 }
 
 .messageContainer ul {
@@ -66,15 +69,15 @@
   color: var(--medium-gray);
 }
 
-.messageContainer li.success span {
+.messageContainer li.success strong {
   color: var(--success-color);
 }
 
-.messageContainer li.error span {
+.messageContainer li.error strong {
   color: var(--error-color);
 }
 
-.messageContainer li.warning span {
+.messageContainer li.warning strong {
   color: var(--warning-color);
 }
 
@@ -85,4 +88,11 @@
 .messageContainer > div {
   max-height: 500px;
   overflow: auto;
+}
+
+.messageContainer .timestamp {
+  float: right;
+  color: var(--medium-gray);
+  font-weight: 600;
+  line-height: 30px;
 }
