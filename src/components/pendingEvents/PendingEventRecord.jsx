@@ -129,7 +129,7 @@ export default class PendingEventRecord extends ListingRecordUniversal {
         </label>
         <label>
           UUID
-          <input type={'text'} value={event.uuid} disabled />
+          <input type={'text'} value={event.uuid} readOnly />
         </label>
         <label>
           Created

@@ -41,7 +41,7 @@ export default class PendingTagRecord extends ListingRecordUniversal {
         </label>
         <label>
           UUID
-          <input type={'text'} value={tag.uuid} disabled />
+          <input type={'text'} value={tag.uuid} readOnly />
         </label>
         <label>
           Created

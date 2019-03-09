@@ -90,7 +90,7 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
         </label>
         <label>
           UUID
-          <input type={'text'} value={venue.uuid} disabled />
+          <input type={'text'} value={venue.uuid} readOnly />
         </label>
         <label>
           Created
@@ -104,13 +104,13 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
           Name
           <input type={'text'} ref={this.nameInput} defaultValue={venue.name} required maxLength={100} />
         </label>
-        <label className={'required'}>
+        <label className={'required-ish'}>
           Neighborhood
           <select ref={this.hoodInput} defaultValue={venue.hood_uuid || ''} required>
-            {renderOptionList(hoods, 'uuid')}
+            {renderOptionList(hoods, 'hoods', 'uuid')}
           </select>
         </label>
-        <label className={'required'}>
+        <label className={'required-ish'}>
           Description
           <textarea ref={this.descInput} defaultValue={venue.description} required maxLength={500} />
         </label>

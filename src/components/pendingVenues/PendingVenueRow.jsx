@@ -27,6 +27,7 @@ export default class PendingVenueRow extends PendingListingRow {
   /**
    * Handles the save button click by parsing new data and triggering a function to update the venue.
    * @override
+   *
    * @param {Event} e
    */
   handleSaveClick(e) {
@@ -37,8 +38,8 @@ export default class PendingVenueRow extends PendingListingRow {
       hood_uuid: this.hoodList.current.value
     };
 
-    this.props.updateListing(this.props.listing.id, newData).then(result => {
-      this.checkWriteStatus(result);
+    this.props.updateListing(this.props.listing.id, newData).then(() => {
+      this.checkWriteStatus();
       this.setState({editable: false});
     });
   }
@@ -48,6 +49,7 @@ export default class PendingVenueRow extends PendingListingRow {
    * @note The render has two different paths depending on whether the row can be edited.
    * @override
    * @render
+   *
    * @returns {*}
    */
   render() {
@@ -70,7 +72,7 @@ export default class PendingVenueRow extends PendingListingRow {
           <td>
             <select ref={this.hoodList} defaultValue={pendingListing.hood_uuid || ''} onClick={e => e.stopPropagation()}
                     required>
-              {renderOptionList(hoods, 'uuid')}
+              {renderOptionList(hoods, 'hoods', 'uuid')}
             </select>
           </td>
           <td>{createdAt}</td>
@@ -79,7 +81,6 @@ export default class PendingVenueRow extends PendingListingRow {
       );
     }
 
-    /** @var {object} this.props.hood */
     const hoodLink = this.props.hood ? renderSchemaLink(this.props.hood, 'neighborhoods') : 'NO NEIGHBORHOOD';
 
     return (

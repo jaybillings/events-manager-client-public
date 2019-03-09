@@ -128,6 +128,14 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
     this.fetchPendingTags();
   }
 
+  /**
+   * Fetches data for the single listings.
+   * @note Unlike default, this returns a promise.
+   * @async
+   * @override
+   *
+   * @returns {Promise<*>}
+   */
   fetchListing() {
     return app.service(this.schema).get(this.listingID).catch(errors => {
       this.setState({notFound: true});
@@ -229,11 +237,14 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
   queryForExisting() {
     return this.listingsService.find({
       query: {
-        $or: [{uuid: this.state.listing.uuid}, {description: this.state.listing.description}, {
-          name: this.state.listing.name,
-          start_date: this.state.listing.start_date,
-          end_date: this.state.listing.end_date
-        }],
+        $or: [
+          {uuid: this.state.listing.uuid},
+          {
+            name: this.state.listing.name,
+            start_date: this.state.listing.start_date,
+            end_date: this.state.listing.end_date
+          }
+        ],
         $select: ['uuid']
       }
     });
@@ -291,11 +302,9 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
   removeTagAssociations(tagsToRemove) {
     const query = {event_uuid: this.state.listing.uuid, tag_uuid: {$in: tagsToRemove}};
 
-    console.log('tagsToRemove', tagsToRemove);
     this.eventsTagsLookupService.remove(null, {query: query}).then(() => {
       this.fetchTagAssociations();
     }, err => {
-      console.log('~~~error:~~~', err);
       displayErrorMessages('de-associate', 'tags from pending event', err, this.updateMessagePanel, 'retry');
     });
   }

@@ -29,6 +29,7 @@ export default class PendingEventRow extends PendingListingRow {
   /**
    * Handles the save button click by parsing new data and triggering a function to update the pending event.
    * @override
+   *
    * @param {Event} e
    */
   handleSaveClick(e) {
@@ -42,8 +43,6 @@ export default class PendingEventRow extends PendingListingRow {
       org_uuid: this.orgList.current.value
     };
 
-    console.log('newData', newData);
-
     this.props.updateListing(this.props.listing.id, newData).then(() => {
       this.checkWriteStatus();
       this.setState({editable: false});
@@ -53,7 +52,9 @@ export default class PendingEventRow extends PendingListingRow {
   /**
    * Renders the component.
    * @note The render has two different paths depending on whether the row can be edited.
+   * @override
    * @render
+   *
    * @returns {*}
    */
   render() {

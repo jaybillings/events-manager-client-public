@@ -41,7 +41,7 @@ export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
         </label>
         <label>
           UUID
-          <input type={'text'} value={hood.uuid} disabled />
+          <input type={'text'} value={hood.uuid} readOnly />
         </label>
         <label>
           Created

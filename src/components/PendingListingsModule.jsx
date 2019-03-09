@@ -124,6 +124,12 @@ export default class PendingListingsModule extends Component {
       .removeAllListeners('removed');
   }
 
+  /**
+   * Runs after the component is updated. Preserves selected listings.
+   * @param {Object} prevProps
+   * @param {Object} prevState
+   * @param {*} snapshot
+   */
   componentDidUpdate(prevProps, prevState, snapshot) {
     if (this.state.selectedListings.count === 0 && prevState.selectedListings.count < 0) {
       this.setState({selectedListings: prevState.selectedListings});
@@ -187,7 +193,9 @@ export default class PendingListingsModule extends Component {
   };
 
   /**
-   * Queries the listing service for a list of all IDs;
+   * Queries the listing service for a list of all IDs.
+   * @async
+   *
    * @returns {Promise<*>}
    */
   queryForIDs() {
@@ -200,7 +208,7 @@ export default class PendingListingsModule extends Component {
    *
    * @param {int} id
    * @param {object} newData
-   * @returns {Promise}
+   * @returns {Promise<*>}
    */
   updateListing(id, newData) {
     /** @var {Function} this.pendingListingsService.patch */
@@ -234,7 +242,7 @@ export default class PendingListingsModule extends Component {
         status: 'success',
         details: `Published "${message.name}" as new ${makeSingular(this.schema)} #${message.id}`
       });
-      this.removeListing(id);
+      this.removeListing(pendingListing);
     }, err => {
       displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
     });
@@ -248,8 +256,6 @@ export default class PendingListingsModule extends Component {
    * @param {object} target - The listing to update.
    */
   replaceLiveListing(pendingListing, target) {
-    console.log('in replace live listing');
-
     let {id, ...listingData} = pendingListing;
 
     this.listingsService.update(target.id, listingData).then(result => {
@@ -257,7 +263,7 @@ export default class PendingListingsModule extends Component {
         status: 'success',
         details: `Published ${result.name} as an update to ${target.name}`
       });
-      this.removeListing(id);
+      this.removeListing(pendingListing);
     }, err => {
       displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
     });
@@ -268,15 +274,13 @@ export default class PendingListingsModule extends Component {
    */
   publishListings() {
     const query = this.state.selectedListings.length === 0 ? {} : {id: {$in: this.state.selectedListings}};
+    const searchOptions = {paginate: false};
 
-    let searchOptions = {paginate: false};
     if (query) searchOptions.query = query;
 
     this.pendingListingsService.find(searchOptions).then(resultSet => {
       resultSet.data.forEach(listing => {
-        console.log('listing', listing);
         this.queryForExact(listing).then(result => {
-          console.log('result total', result.total);
           if (result.total && result.total > 0) {
             this.replaceLiveListing(listing, result.data[0]);
           } else {
@@ -297,10 +301,9 @@ export default class PendingListingsModule extends Component {
    * Removes selected main schema listings from the database. Used in row quick-edits.
    */
   discardListings() {
-    const query = this.state.selectedListings.length === 0 ? {} : {id: {$in: this.state.selectedListings}};
+    if (this.state.selectedListings.length === 0) return;
 
-    let searchOptions = {paginate: false};
-    if (query) searchOptions.query = query;
+    const searchOptions = {paginate: false, query: {id: {$in: this.state.selectedListings}}};
 
     this.pendingListingsService.remove(null, searchOptions).catch(err => {
       this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
@@ -345,6 +348,7 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Registers a listing as selected.
+   *
    * @param {int} id
    * @param {boolean} shouldAdd - True = select / False = deselect
    */
@@ -364,6 +368,9 @@ export default class PendingListingsModule extends Component {
     }
   }
 
+  /**
+   * Registers the current page of listings as selected.
+   */
   selectPageOfListings() {
     const currentPageIDs = this.state.pendingListings.map(listing => listing.id);
     this.setState({selectedListings: currentPageIDs});
@@ -386,6 +393,7 @@ export default class PendingListingsModule extends Component {
 
   /**
    * Renders the module's table.
+   *
    * @returns {[*]}
    */
   renderTable() {
@@ -448,6 +456,7 @@ export default class PendingListingsModule extends Component {
    * Renders the component.
    * @override
    * @render
+   *
    * @returns {*}
    */
   render() {

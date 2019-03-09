@@ -1,10 +1,9 @@
 import React from 'react';
 import app from "../../services/socketio";
+import {displayErrorMessages, uniqueListingsOnly} from "../../utilities";
 
 import PendingVenueRecord from "../../components/pendingVenues/PendingVenueRecord";
 import SingleListingLayoutUniversal from "../../components/SingleListingLayoutUniversal";
-
-import {displayErrorMessages, uniqueListingsOnly} from "../../utilities";
 
 /**
  * SinglePendingVenueLayout is a component which lays out a single pending venue page.
@@ -73,8 +72,7 @@ export default class SinglePendingVenueLayout extends SingleListingLayoutUnivers
    * @override
    */
   fetchAllData() {
-    super.fetchAllData();
-
+    this.fetchListing();
     this.fetchHoods();
     this.fetchPendingHoods();
   }

@@ -76,7 +76,7 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
         </label>
         <label>
           UUID
-          <input type={'text'} value={org.uuid} disabled />
+          <input type={'text'} value={org.uuid} readOnly />
         </label>
         <label>
           Created
@@ -90,7 +90,7 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
           Name
           <input type={'text'} ref={this.nameInput} defaultValue={org.name} required maxLength={100} />
         </label>
-        <label className={'required'}>
+        <label className={'required-ish'}>
           Description
           <textarea ref={this.descInput} defaultValue={org.description} required maxLength={500} />
         </label>

@@ -1,5 +1,5 @@
 import React from "react";
-import {displayErrorMessages, renderTableHeader, uniqueListingsOnly} from "../../utilities";
+import {renderTableHeader, uniqueListingsOnly} from "../../utilities";
 import app from "../../services/socketio";
 
 import PendingListingsModule from "../PendingListingsModule";
@@ -92,8 +92,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
    * Fetches published neighborhoods.
    */
   fetchHoods() {
-    this.hoodsService.find({query: this.defaultQuery}).then(message => {
-      this.setState({hoods: message.data, hoodsLoaded: true});
+    this.hoodsService.find({query: this.defaultQuery, paginate: false}).then(result => {
+      this.setState({hoods: result.data, hoodsLoaded: true});
     });
   }
 
@@ -101,46 +101,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
    * Fetches pending neighborhoods.
    */
   fetchPendingHoods() {
-    this.pendingHoodsService.find({query: this.defaultQuery}).then(message => {
-      this.setState({pendingHoods: message.data, pendingHoodsLoaded: true});
-    });
-  }
-
-  createLiveListing(pendingListing) {
-    let {id, hood_uuid, ...venueData} = pendingListing;
-    const venueHood = this.state.hoods.find(hood => {
-      return hood.uuid === hood_uuid
-    });
-
-    venueData.hood_id = venueHood.id || null;
-
-    this.listingsService.create(venueData).then(result => {
-      this.props.updateMessagePanel({
-        status: 'success',
-        details: `Published "${result.name}" as new venue #${result.id}`
-      });
-      this.removeListing(id);
-    }, err => {
-      displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
-    });
-  }
-
-  replaceLiveListing(pendingListing, target) {
-    let {id, hood_uuid, ...venueData} = pendingListing;
-    const venueHood = this.state.hoods.find(hood => {
-      return hood.uuid === hood_uuid
-    });
-
-    venueData.hood_id = venueHood.id || null;
-
-    this.listingsService.update(target.id, venueData).then(result => {
-      this.props.updateMessagePanel({
-        status: 'success',
-        details: `Published ${result.name} as an update to ${target.name}`
-      });
-      this.removeListing(id);
-    }, err => {
-      displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
+    this.pendingHoodsService.find({query: this.defaultQuery, paginate: false}).then(result => {
+      this.setState({pendingHoods: result.data, pendingHoodsLoaded: true});
     });
   }
 
@@ -152,11 +114,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
   renderTable() {
     const pendingVenuesTotal = this.state.pendingListingsTotal;
 
-    if (!(this.state.listingsLoaded && this.state.hoodsLoaded)) {
-      return <p>Data is loading... Please be patient...</p>;
-    } else if (pendingVenuesTotal === 0) {
-      return <p>No pending venues to list.</p>;
-    }
+    if (!(this.state.listingsLoaded && this.state.hoodsLoaded)) return <p>Data is loading... Please be patient...</p>;
+    if (pendingVenuesTotal === 0) return <p>No pending venues to list.</p>;
 
     const pendingVenues = this.state.pendingListings;
     const titleMap = new Map([
@@ -166,7 +125,6 @@ export default class PendingVenuesModule extends PendingListingsModule {
       ['created_at', 'Imported On'],
       ['status_NOSORT', 'Status']
     ]);
-
     const uniqueHoods = uniqueListingsOnly(this.state.hoods, this.state.pendingHoods);
     const selectedVenues = this.state.selectedListings;
     const schemaLabel = selectedVenues.length === 1 ? 'venue' : 'venues';
@@ -183,7 +141,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
       />,
       <div key={'venues-module-body'}>
         <SelectionControl
-          numSelected={selectedVenues.length} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
+          numSelected={selectedVenues.length} total={this.state.pendingListingsTotal} schema={this.schema}
+          selectPage={this.selectPageOfListings} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
         />
         <PaginationLayout
           key={'pending-venues-pagination'} schema={'pending-venues'}
@@ -200,7 +159,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
                 selected={selectedVenues.includes(venue.id)} hoods={uniqueHoods}
                 hood={(uniqueHoods.find(h => {
                   // eslint-disable-next-line
-                  return h.uuid == venue.hood_uuid
+                  return ('' + h.uuid) == ('' + venue.hood_uuid);
                 }))}
                 updateListing={this.updateListing} removeListing={this.removeListing}
                 selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}

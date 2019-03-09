@@ -141,6 +141,7 @@ export default class PendingEventsModule extends PendingListingsModule {
    * Determines whether a given listing may duplicate an existing listing.
    * @async
    * @override
+   *
    * @param {object} pendingListing
    * @returns {Promise<*>}
    */
@@ -177,28 +178,6 @@ export default class PendingEventsModule extends PendingListingsModule {
         details: `Published "${result.name}" as new event #${result.id}`
       });
       this.registerLiveListing(result.id, result.name);
-      this.removeListing(pendingListing);
-    }, err => {
-      displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
-    });
-  }
-
-  /**
-   * Updates the matching live event with the pending event's data. Used when publishing listings.
-   * @override
-   *
-   * @param {object} pendingListing
-   * @param {object} target
-   */
-  replaceLiveListing(pendingListing, target) {
-    let {id, ...eventData} = pendingListing;
-
-    this.listingsService.update(target.id, eventData).then(result => {
-      // This isn't a listener because I only want to send a message for this specific create event.
-      this.props.updateMessagePanel({
-        status: 'success',
-        details: `Published ${result.name} as an update to ${target.name}`
-      });
       this.removeListing(pendingListing);
     }, err => {
       displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
@@ -253,6 +232,11 @@ export default class PendingEventsModule extends PendingListingsModule {
     });
   }
 
+  /**
+   * Removes the tag associations of a given pending listing, if no matching live listing is present.
+   *
+   * @param {string} eventUUID
+   */
   removeTagAssociations(eventUUID) {
     // Check for matching live event
     this.liveEventsService.find({query: {uuid: eventUUID}}).then(results => {
@@ -270,14 +254,12 @@ export default class PendingEventsModule extends PendingListingsModule {
    * @returns {[*]}
    */
   renderTable() {
-    const pendingEventsTotal = this.state.pendingListingsTotal;
-
     if (!(this.state.listingsLoaded && this.state.venuesLoaded && this.state.pendingVenuesLoaded &&
       this.state.orgsLoaded && this.state.pendingOrgsLoaded)) {
       return <p>Data is loading... Please be patient...</p>;
-    } else if (pendingEventsTotal === 0) {
-      return <p>No pending events to list.</p>
     }
+
+    if (this.state.pendingListingsTotal === 0) return <p>No pending events to list.</p>;
 
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
@@ -311,7 +293,7 @@ export default class PendingEventsModule extends PendingListingsModule {
         />
         <PaginationLayout
           key={'pending-events-pagination'} schema={'pending-events'}
-          total={pendingEventsTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
+          total={this.state.pendingListingsTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
           updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
         />
         <table className={'schema-table'} key={'pending-events-table'}>
@@ -320,8 +302,8 @@ export default class PendingEventsModule extends PendingListingsModule {
           {
             this.state.pendingListings.map(event =>
               <PendingEventRow
-                key={`event-${event.id}`} selected={selectedEvents.includes(event.id)} schema={'pending-events'}
-                listing={event} venues={uniqueVenues} orgs={uniqueOrgs}
+                key={`event-${event.id}`} schema={'pending-events'} listing={event}
+                selected={selectedEvents.includes(event.id)} venues={uniqueVenues} orgs={uniqueOrgs}
                 venue={uniqueVenues.find(v => {
                   return ('' + v.uuid) === ('' + event.venue_uuid);
                 })}

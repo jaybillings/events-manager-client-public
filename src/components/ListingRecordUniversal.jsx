@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import Moment from "moment";
-import {makeSingular} from "../utilities";
 import app from '../services/socketio';
+import {makeSingular} from "../utilities";
 
 import "../styles/schema-record.css";
 
