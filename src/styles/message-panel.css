@@ -53,7 +53,7 @@
 }
 
 .messageContainer li.success {
-  border: 3px solid var(--success-color);
+  border: 3px solid var(--true-green);
 }
 
 .messageContainer li.error {
@@ -65,7 +65,7 @@
 }
 
 .messageContainer li.notice {
-  border: 2px solid var(--true-green);
+  border: 2px solid var(--true-blue);
 }
 
 .messageContainer li.info {
@@ -74,7 +74,7 @@
 }
 
 .messageContainer li.success strong {
-  color: var(--success-color);
+  color: var(--true-green);
 }
 
 .messageContainer li.error strong {
@@ -86,7 +86,7 @@
 }
 
 .messageContainer li.notice strong {
-  color: var(--true-green);
+  color: var(--true-blue);
 }
 
 .messageContainer li.info span {

@@ -98,7 +98,7 @@ export default class PendingListingRow extends Component {
   handleSaveClick(e) {
     e.stopPropagation();
 
-    this.props.updateListing(this.props.listing.id, {name: this.nameInput.current.value}).then(() => {
+    this.props.updateListing(this.props.listing, {name: this.nameInput.current.value}).then(() => {
       this.checkWriteStatus();
       this.setState({editable: false});
     });

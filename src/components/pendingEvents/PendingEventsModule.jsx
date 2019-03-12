@@ -167,14 +167,12 @@ export default class PendingEventsModule extends PendingListingsModule {
    * @param {Object} listing
    */
   removeListing(listing) {
-    console.log('~ removing listing for events!');
-
     return this.pendingListingsService.remove(listing.id)
       .then(() => {
         return this.removeTagAssociations(listing.uuid);
       })
       .catch(err => {
-        this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+        displayErrorMessages('remove', `"${listing.name}"`, err, this.props.updateMessagePanel);
       });
   }
 
@@ -188,14 +186,8 @@ export default class PendingEventsModule extends PendingListingsModule {
   createLiveListing(pendingListing) {
     let {id, ...eventData} = pendingListing;
 
-    console.log('~ creating live listing in events!');
-
     return this.listingsService.create(eventData)
       .then(result => {
-        this.props.updateMessagePanel({
-          status: 'success',
-          details: `Published "${result.name}" as new event #${result.id}`
-        });
         return Promise.all([
           this.registerLiveListing(result.id, result.name),
           this.removeListing(pendingListing)
@@ -211,17 +203,22 @@ export default class PendingEventsModule extends PendingListingsModule {
    * @override
    */
   discardListings() {
-    if (this.state.selectedListings.length === 0) return;
+    const selectedCount = this.state.selectedListings.length;
 
-    let searchOptions = {paginate: false, query: {id: {$in: this.state.selectedListings}}};
+    if (selectedCount === 0) return;
 
-    this.pendingListingsService.remove(null, searchOptions).then(message => {
-      message.forEach(listing => {
-        this.removeTagAssociations(listing.uuid);
+    const searchOptions = {paginate: false, query: {id: {$in: this.state.selectedListings}, $limit: selectedCount}};
+
+    return this.pendingListingsService.remove(null, searchOptions)
+      .then(resultSet => {
+        return Promise.all(resultSet.data.map(listing => {
+          return this.removeTagAssociations(listing.uuid);
+        }));
+      })
+      .catch(err => {
+        displayErrorMessages('delete', `pending ${this.schema}`, err, this.props.updateMessagePanel);
+        console.log(`~ error in discardListings`, err);
       });
-    }, err => {
-      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-    });
   }
 
   /**
@@ -231,24 +228,33 @@ export default class PendingEventsModule extends PendingListingsModule {
    * @param {string} eventName
    */
   registerLiveListing(eventID, eventName) {
-    this.liveEventsService.create({event_id: eventID}).then(() => {
-      console.log(`~ ${eventName} registered as live`);
-    }, err => {
-      this.props.updateMessagePanel({
-        status: 'error',
-        message: `${eventName} could not be registered as live. Go to the listing's page to resolve manually. Error is: ${err.message}`
-      })
-    });
+    return this.liveEventsService.create({event_id: eventID})
+      .catch(err => {
+        displayErrorMessages('register as live', `"${eventName}"`, err, this.props.updateMessagePanel);
+        console.log(`~ error in registerLiveListing`, err);
+      });
   }
 
   /**
    * Removes the tag associations of a given pending listing, if no matching live listing is present.
-   * @note This assumes there is no live event using these. CHECK FIRST!
    *
    * @param {string} eventUUID
    */
   removeTagAssociations(eventUUID) {
-    return this.tagsLookupService.remove(null, {query: {event_uuid: eventUUID}});
+    // Check for matching live event
+    return this.listingsService.find({query: {uuid: eventUUID}})
+      .then(results => {
+        if (!results.total) {
+          // Safe to delete tag associations
+          return this.tagsLookupService.remove(null, {query: {event_uuid: eventUUID}});
+        } else {
+          // Not used, but might be useful in future
+          return {matchingEventCount: results.total};
+        }
+      })
+      .catch(err => {
+        console.log(`~ error in removeTagAssociations`, err);
+      });
   }
 
   /**

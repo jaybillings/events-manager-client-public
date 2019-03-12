@@ -12,7 +12,7 @@
 }
 
 .schema-table td:first-child {
-  padding-left: 15px; /* Overwrites skeleton.css */
+  padding-left: 0; /* Overwrites skeleton.css */
 }
 
 .schema-table tr:last-of-type td {

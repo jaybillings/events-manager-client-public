@@ -38,7 +38,7 @@ export default class PendingVenueRow extends PendingListingRow {
       hood_uuid: this.hoodList.current.value
     };
 
-    this.props.updateListing(this.props.listing.id, newData).then(() => {
+    this.props.updateListing(this.props.listing, newData).then(() => {
       this.checkWriteStatus();
       this.setState({editable: false});
     });

@@ -28,7 +28,9 @@ export default class PendingListingsModule extends Component {
 
     this.schema = schema;
     this.user = app.get('user');
-    this.defaultQuery = {$sort: {name: 1}, $limit: 1000, $select: ['id', 'uuid', 'name']};
+    this.defaultLimit = 1000;
+    this.maxLimit = 5000;
+    this.defaultQuery = {$sort: {name: 1}, $limit: this.maxLimit, $select: ['id', 'uuid', 'name']};
 
     this.state = {
       moduleVisible: true, pendingListings: [], pendingListingsTotal: 0, listingsLoaded: false, selectedListings: [],
@@ -75,10 +77,16 @@ export default class PendingListingsModule extends Component {
 
     const schemaSingular = makeSingular(this.schema);
 
+    // TODO: Get 'created' events without getting creation on import
+    // TODO: Get 'removed' event without getting removal on publish
+
     /** @var {Function} this.pendingListingsService.on */
     this.pendingListingsService
       .on('updated', message => {
-        this.props.updateMessagePanel({status: 'info', details: message.details});
+        this.props.updateMessagePanel({
+          status: 'success',
+          details: `Updated pending ${schemaSingular} "${message.name}"`
+        });
         this.fetchListings();
       })
       .on('patched', message => {
@@ -88,13 +96,6 @@ export default class PendingListingsModule extends Component {
         });
         this.fetchListings();
       })
-      .on('removed', message => {
-        this.props.updateMessagePanel({
-          status: 'info',
-          details: `Discarded pending ${schemaSingular} "${message.name}"`
-        });
-        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchListings());
-      })
       .on('status', message => {
         if (message.rawError) console.log(message.rawError);
         let userMessage = message.details;
@@ -102,7 +103,6 @@ export default class PendingListingsModule extends Component {
         this.props.updateMessagePanel({status: message.status, details: userMessage});
         if (message.status === 'success') {
           this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchListings());
-          // TODO: WHen importing, disable normal created monitor and grab every few seconds?
         }
       });
   }
@@ -114,10 +114,9 @@ export default class PendingListingsModule extends Component {
   componentWillUnmount() {
     /** @var {Function} this.pendingListingsService.removeAllListeners */
     this.pendingListingsService
-      .removeAllListeners('created')
       .removeAllListeners('updated')
       .removeAllListeners('patched')
-      .removeAllListeners('removed');
+      .removeAllListeners('status');
   }
 
   /**
@@ -131,6 +130,7 @@ export default class PendingListingsModule extends Component {
       this.setState({selectedListings: prevState.selectedListings});
     }
   }
+
 
   /**
    * Fetches all data for the module.
@@ -200,7 +200,7 @@ export default class PendingListingsModule extends Component {
    * @returns {Promise<*>}
    */
   queryForIDs() {
-    return this.pendingListingsService.find({query: {$select: ['id'], $limit: 5000}, paginate: false});
+    return this.pendingListingsService.find({query: {$select: ['id'], $limit: this.maxLimit}, paginate: false});
   }
 
   /**
@@ -210,20 +210,23 @@ export default class PendingListingsModule extends Component {
    * @returns {Promise<*>}
    */
   queryForLiveUUIDs() {
-    return this.listingsService.find({query: {$select: ['uuid', 'name'], $limit: 5000}, paginate: false});
+    return this.listingsService.find({query: {$select: ['uuid', 'name'], $limit: this.maxLimit}, paginate: false});
   }
 
   /**
    * Saves changes to main schema listing. Used in row quick-edits.
    * @async
    *
-   * @param {int} id
+   * @param {object} oldListing
    * @param {object} newData
    * @returns {Promise<*>}
    */
-  updateListing(id, newData) {
+  updateListing(oldListing, newData) {
     /** @var {Function} this.pendingListingsService.patch */
-    return this.pendingListingsService.patch(id, newData);
+    return this.pendingListingsService.patch(oldListing.id, newData)
+      .catch(err => {
+        displayErrorMessages('update', `"${oldListing.name}"`, err, this.props.updateMessagePanel);
+      });
   }
 
   /**
@@ -232,10 +235,9 @@ export default class PendingListingsModule extends Component {
    * @param {Object} listing
    */
   removeListing(listing) {
-    console.log(`~ removing listing for ${this.schema}!`);
     return this.pendingListingsService.remove(listing.id)
       .catch(err => {
-        this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+        displayErrorMessages('remove', `"${listing.name}"`, err, this.props.updateMessagePanel);
       });
   }
 
@@ -248,14 +250,8 @@ export default class PendingListingsModule extends Component {
   createLiveListing(pendingListing) {
     let {id, ...listingData} = pendingListing;
 
-    console.log(`~ creating live listing in ${this.schema}!`);
-
     return this.listingsService.create(listingData)
-      .then(result => {
-        this.props.updateMessagePanel({
-          status: 'success',
-          details: `Published "${result.name}" as new ${makeSingular(this.schema)} #${result.id}`
-        });
+      .then(() => {
         return this.removeListing(pendingListing);
       })
       .catch(err => {
@@ -273,14 +269,8 @@ export default class PendingListingsModule extends Component {
   replaceLiveListing(pendingListing, target) {
     let {id, ...listingData} = pendingListing;
 
-    console.log('~ updating live listing!');
-
     return this.listingsService.update(target.id, listingData)
-      .then(result => {
-        this.props.updateMessagePanel({
-          status: 'success',
-          details: `Published ${result.name} as an update to ${target.name}`
-        });
+      .then(() => {
         return this.removeListing(pendingListing);
       })
       .catch(err => {
@@ -293,8 +283,10 @@ export default class PendingListingsModule extends Component {
    * Publishes selected listings by creating or updating live listings of the same schema.
    */
   publishListings() {
-    const query = this.state.selectedListings.length === 0 ? {$limit: 3000}
-      : {id: {$in: this.state.selectedListings}, $limit: 3000};
+    this.props.updateMessagePanel({status: 'notice', details: `Started publishing ${this.schema}. Please wait...`});
+
+    const query = this.state.selectedListings.length === 0 ? {$limit: this.defaultLimit}
+      : {id: {$in: this.state.selectedListings}, $limit: this.defaultLimit};
 
     return Promise
       .all([
@@ -302,14 +294,11 @@ export default class PendingListingsModule extends Component {
         this.pendingListingsService.find({query, paginate: false})
       ])
       .then(([liveIDs, listingsToPublish]) => {
-        console.log('~ liveIDs', liveIDs);
-        console.log('~ listingsToPublish', listingsToPublish);
         return Promise.all(listingsToPublish.data.map(listing => {
           const liveMatch = liveIDs.data.find(row => {
             return row.uuid === listing.uuid
           });
           if (liveMatch) {
-            console.log('~ matched!', liveMatch);
             return this.replaceLiveListing(listing, liveMatch);
           } else {
             return this.createLiveListing(listing);
@@ -317,13 +306,14 @@ export default class PendingListingsModule extends Component {
         }));
       })
       .then(allResults => {
-        console.log(`~ done publishing ${this.schema}`, allResults);
-        this.props.updateMessagePanel({status: 'notice', details: `Done publishing ${this.schema}`});
+        this.props.updateMessagePanel({status: 'success', details: `Finished publishing ${this.schema}`});
+        this.fetchAllData();
         return allResults;
       })
       .catch(error => {
         console.log('~ error publishing caught at top level', error);
         this.props.updateMessagePanel({status: 'error', details: JSON.stringify(error)});
+        this.fetchAllData();
       });
   }
 
@@ -331,13 +321,16 @@ export default class PendingListingsModule extends Component {
    * Removes selected main schema listings from the database. Used in row quick-edits.
    */
   discardListings() {
-    if (this.state.selectedListings.length === 0) return;
+    const selectedCount = this.state.selectedListings.length;
 
-    const searchOptions = {paginate: false, query: {id: {$in: this.state.selectedListings}}};
+    if (selectedCount === 0) return;
 
-    this.pendingListingsService.remove(null, searchOptions).catch(err => {
-      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-    });
+    const searchOptions = {paginate: false, query: {id: {$in: this.state.selectedListings}, $limit: selectedCount}};
+
+    return this.pendingListingsService.remove(null, searchOptions)
+      .catch(err => {
+        displayErrorMessages('delete', `pending ${this.schema}`, err, this.props.updateMessagePanel);
+      });
   }
 
   /**
