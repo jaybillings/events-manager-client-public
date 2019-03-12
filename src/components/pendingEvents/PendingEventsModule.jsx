@@ -162,6 +162,23 @@ export default class PendingEventsModule extends PendingListingsModule {
   }
 
   /**
+   * Removes a given pending listing from the database.
+   * @override
+   * @param {Object} listing
+   */
+  removeListing(listing) {
+    console.log('~ removing listing for events!');
+
+    return this.pendingListingsService.remove(listing.id)
+      .then(() => {
+        return this.removeTagAssociations(listing.uuid);
+      })
+      .catch(err => {
+        this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      });
+  }
+
+  /**
    * Creates a new live event from the data of a pending event.
    * @override
    * @note Used when publishing listings.
@@ -171,30 +188,22 @@ export default class PendingEventsModule extends PendingListingsModule {
   createLiveListing(pendingListing) {
     let {id, ...eventData} = pendingListing;
 
-    this.listingsService.create(eventData).then(result => {
-      // This isn't a listener because I only want to send a message for this specific create event.
-      this.props.updateMessagePanel({
-        status: 'success',
-        details: `Published "${result.name}" as new event #${result.id}`
-      });
-      this.registerLiveListing(result.id, result.name);
-      this.removeListing(pendingListing);
-    }, err => {
-      displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
-    });
-  }
+    console.log('~ creating live listing in events!');
 
-  /**
-   * Removes a given pending listing from the database.
-   * @override
-   * @param {Object} listing
-   */
-  removeListing(listing) {
-    this.pendingListingsService.remove(listing.id).then(() => {
-      this.removeTagAssociations(listing.uuid);
-    }, err => {
-      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-    });
+    return this.listingsService.create(eventData)
+      .then(result => {
+        this.props.updateMessagePanel({
+          status: 'success',
+          details: `Published "${result.name}" as new event #${result.id}`
+        });
+        return Promise.all([
+          this.registerLiveListing(result.id, result.name),
+          this.removeListing(pendingListing)
+        ]);
+      })
+      .catch(err => {
+        displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
+      });
   }
 
   /**
@@ -223,7 +232,7 @@ export default class PendingEventsModule extends PendingListingsModule {
    */
   registerLiveListing(eventID, eventName) {
     this.liveEventsService.create({event_id: eventID}).then(() => {
-      console.log({status: 'info', details: `${eventName} registered as live`});
+      console.log(`~ ${eventName} registered as live`);
     }, err => {
       this.props.updateMessagePanel({
         status: 'error',
@@ -234,17 +243,12 @@ export default class PendingEventsModule extends PendingListingsModule {
 
   /**
    * Removes the tag associations of a given pending listing, if no matching live listing is present.
+   * @note This assumes there is no live event using these. CHECK FIRST!
    *
    * @param {string} eventUUID
    */
   removeTagAssociations(eventUUID) {
-    // Check for matching live event
-    this.liveEventsService.find({query: {uuid: eventUUID}}).then(results => {
-      if (!results.total) {
-        // If none, safe to delete tag associations
-        this.tagsLookupService.remove(null, {query: {event_uuid: eventUUID}});
-      }
-    });
+    return this.tagsLookupService.remove(null, {query: {event_uuid: eventUUID}});
   }
 
   /**

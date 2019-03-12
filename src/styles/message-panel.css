@@ -64,6 +64,10 @@
   border: 2px solid var(--warning-color);
 }
 
+.messageContainer li.notice {
+  border: 2px solid var(--true-green);
+}
+
 .messageContainer li.info {
   border: 2px solid var(--light-gray);
   color: var(--medium-gray);
@@ -79,6 +83,10 @@
 
 .messageContainer li.warning strong {
   color: var(--warning-color);
+}
+
+.messageContainer li.notice strong {
+  color: var(--true-green);
 }
 
 .messageContainer li.info span {

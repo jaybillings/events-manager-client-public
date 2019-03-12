@@ -113,17 +113,32 @@ export default class ImportLayout extends Component {
    * large datasets.
    */
   publishListings() {
-    // noinspection JSCheckFunctionSignatures
+    this.updateMessagePanel({status: 'notice', details: 'Publish starting'});
+
     Promise
       .all([
         this.hoodsModule.current.publishListings(),
-        this.tagsModule.current.publishListings(),
-        this.orgsModule.current.publishListings()
+        this.tagsModule.current.publishListings()
       ])
-      .then(this.venuesModule.current.publishListings())
-      .then(this.eventsModule.current.publishListings())
-      .catch((err) => {
-        this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      .then(() => {
+        // On its own b/c of high I/O load
+        return this.orgsModule.current.publishListings();
+      })
+      .then(() => {
+        // On its own b/c of high I/O load
+        return this.venuesModule.current.publishListings();
+      })
+      .then(() => {
+        // On its own b/c of high I/O load
+        return this.eventsModule.current.publishListings();
+      })
+      .then(() => {
+        console.log('~ all done!');
+        this.updateMessagePanel({status: 'notice', details: 'Publish complete'});
+      })
+      .catch(error => {
+        console.log('~ very top level error', error);
+        this.updateMessagePanel({status: 'error', details: JSON.stringify(error)});
       });
   }
 

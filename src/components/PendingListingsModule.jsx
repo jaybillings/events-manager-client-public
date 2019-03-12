@@ -43,6 +43,7 @@ export default class PendingListingsModule extends Component {
     this.queryForExisting = this.queryForExisting.bind(this);
     this.queryForExact = this.queryForExact.bind(this);
     this.queryForIDs = this.queryForIDs.bind(this);
+    this.queryForLiveUUIDs = this.queryForLiveUUIDs.bind(this);
 
     this.updateListing = this.updateListing.bind(this);
     this.removeListing = this.removeListing.bind(this);
@@ -71,11 +72,6 @@ export default class PendingListingsModule extends Component {
    */
   componentDidMount() {
     this.fetchAllData();
-
-    // Get IDs of all listings
-    this.queryForIDs().then(result => {
-      this.setState({allIDs: result.data.map(row => row.id)});
-    });
 
     const schemaSingular = makeSingular(this.schema);
 
@@ -149,6 +145,11 @@ export default class PendingListingsModule extends Component {
    * Fetches the main schema's data. Handles table page size, page skipping, and column sorting.
    */
   fetchListings() {
+    // Get IDs of all listings
+    this.queryForIDs().then(result => {
+      this.setState({allIDs: result.data.map(row => row.id)});
+    });
+
     this.pendingListingsService.find({
       query: {
         $sort: buildSortQuery(this.state.sort),
@@ -203,6 +204,16 @@ export default class PendingListingsModule extends Component {
   }
 
   /**
+   * Queries for the listing service for a list of all live IDs.
+   * @async
+   *
+   * @returns {Promise<*>}
+   */
+  queryForLiveUUIDs() {
+    return this.listingsService.find({query: {$select: ['uuid', 'name'], $limit: 5000}, paginate: false});
+  }
+
+  /**
    * Saves changes to main schema listing. Used in row quick-edits.
    * @async
    *
@@ -221,11 +232,11 @@ export default class PendingListingsModule extends Component {
    * @param {Object} listing
    */
   removeListing(listing) {
-    this.pendingListingsService.remove(listing.id).then(message => {
-      console.log(`removing pending ${this.schema}`, message);
-    }, err => {
-      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-    });
+    console.log(`~ removing listing for ${this.schema}!`);
+    return this.pendingListingsService.remove(listing.id)
+      .catch(err => {
+        this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      });
   }
 
   /**
@@ -237,15 +248,19 @@ export default class PendingListingsModule extends Component {
   createLiveListing(pendingListing) {
     let {id, ...listingData} = pendingListing;
 
-    this.listingsService.create(listingData).then(message => {
-      this.props.updateMessagePanel({
-        status: 'success',
-        details: `Published "${message.name}" as new ${makeSingular(this.schema)} #${message.id}`
+    console.log(`~ creating live listing in ${this.schema}!`);
+
+    return this.listingsService.create(listingData)
+      .then(result => {
+        this.props.updateMessagePanel({
+          status: 'success',
+          details: `Published "${result.name}" as new ${makeSingular(this.schema)} #${result.id}`
+        });
+        return this.removeListing(pendingListing);
+      })
+      .catch(err => {
+        displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
       });
-      this.removeListing(pendingListing);
-    }, err => {
-      displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
-    });
   }
 
   /**
@@ -258,43 +273,58 @@ export default class PendingListingsModule extends Component {
   replaceLiveListing(pendingListing, target) {
     let {id, ...listingData} = pendingListing;
 
-    this.listingsService.update(target.id, listingData).then(result => {
-      this.props.updateMessagePanel({
-        status: 'success',
-        details: `Published ${result.name} as an update to ${target.name}`
+    console.log('~ updating live listing!');
+
+    return this.listingsService.update(target.id, listingData)
+      .then(result => {
+        this.props.updateMessagePanel({
+          status: 'success',
+          details: `Published ${result.name} as an update to ${target.name}`
+        });
+        return this.removeListing(pendingListing);
+      })
+      .catch(err => {
+        displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
       });
-      this.removeListing(pendingListing);
-    }, err => {
-      displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
-    });
   }
+
 
   /**
    * Publishes selected listings by creating or updating live listings of the same schema.
    */
   publishListings() {
-    const query = this.state.selectedListings.length === 0 ? {} : {id: {$in: this.state.selectedListings}};
-    const searchOptions = {paginate: false};
+    const query = this.state.selectedListings.length === 0 ? {$limit: 3000}
+      : {id: {$in: this.state.selectedListings}, $limit: 3000};
 
-    if (query) searchOptions.query = query;
-
-    this.pendingListingsService.find(searchOptions).then(resultSet => {
-      resultSet.data.forEach(listing => {
-        this.queryForExact(listing).then(result => {
-          if (result.total && result.total > 0) {
-            this.replaceLiveListing(listing, result.data[0]);
+    return Promise
+      .all([
+        this.queryForLiveUUIDs(),
+        this.pendingListingsService.find({query, paginate: false})
+      ])
+      .then(([liveIDs, listingsToPublish]) => {
+        console.log('~ liveIDs', liveIDs);
+        console.log('~ listingsToPublish', listingsToPublish);
+        return Promise.all(listingsToPublish.data.map(listing => {
+          const liveMatch = liveIDs.data.find(row => {
+            return row.uuid === listing.uuid
+          });
+          if (liveMatch) {
+            console.log('~ matched!', liveMatch);
+            return this.replaceLiveListing(listing, liveMatch);
           } else {
-            this.createLiveListing(listing);
+            return this.createLiveListing(listing);
           }
-        }, err => {
-          this.props.updateMessagePanel({status: 'error', details: err});
-          console.log(`Error querying for live event: ${err}`);
-        });
+        }));
+      })
+      .then(allResults => {
+        console.log(`~ done publishing ${this.schema}`, allResults);
+        this.props.updateMessagePanel({status: 'notice', details: `Done publishing ${this.schema}`});
+        return allResults;
+      })
+      .catch(error => {
+        console.log('~ error publishing caught at top level', error);
+        this.props.updateMessagePanel({status: 'error', details: JSON.stringify(error)});
       });
-    }, err => {
-      this.props.updateMessagePanel({status: 'error', details: err});
-      console.log(`error publishing ${this.schema}: ${err}`);
-    });
   }
 
   /**
