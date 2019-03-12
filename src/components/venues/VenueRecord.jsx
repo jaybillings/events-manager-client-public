@@ -96,8 +96,9 @@ export default class VenueRecord extends ListingRecordUniversal {
         </label>
         <label className={'required'}>
           Neighborhood
-          <select ref={this.hoodList} defaultValue={venue.hood_id || ''} disabled={disableAll}
-                  required>{renderOptionList(hoods)}</select>
+          <select ref={this.hoodList} defaultValue={venue.hood_id || ''} disabled={disableAll} required>
+            {renderOptionList(hoods, 'neighborhoods')}
+          </select>
         </label>
         <label className={'required'}>
           Description

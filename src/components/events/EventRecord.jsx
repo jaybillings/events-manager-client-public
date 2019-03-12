@@ -184,11 +184,15 @@ export default class EventRecord extends ListingRecordUniversal {
         </label>
         <label className={'required'}>
           Venue
-          <select ref={this.venueInput} defaultValue={event.venue_id || ''} disabled={disableAll} required>{renderOptionList(venues)}</select>
+          <select ref={this.venueInput} defaultValue={event.venue_id || ''} disabled={disableAll} required>
+            {renderOptionList(venues, 'venues')}
+          </select>
         </label>
         <label className={'required'}>
           Organizer
-          <select ref={this.orgInput} defaultValue={event.org_id || ''} disabled={disableAll} required>{renderOptionList(orgs)}</select>
+          <select ref={this.orgInput} defaultValue={event.org_id || ''} disabled={disableAll} required>
+            {renderOptionList(orgs, 'organizers')}
+          </select>
         </label>
         <label className={'required'}>
           Description

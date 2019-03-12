@@ -9,9 +9,8 @@ import {Link} from "react-router-dom";
  * Generates a list of <option> elements representing members of given schema.
  *
  * @param {Array} schemaData
- *
- * @param schema
- * @param keyType
+ * @param {string} schema
+ * @param {string} keyType
  * @returns {Array}
  */
 const renderOptionList = function (schemaData, schema, keyType='id') {

@@ -53,7 +53,7 @@ export default class ListingAddForm extends Component {
   /**
    * Compiles the data required for building a new listing.
    *
-   * @returns {{name: String}}
+   * @returns {*}
    */
   buildNewListing() {
     return {name: this.nameInput.current.value};

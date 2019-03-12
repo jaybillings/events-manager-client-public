@@ -160,7 +160,7 @@ export default class PendingEventRecord extends ListingRecordUniversal {
         <label className={'required-ish'}>
           Organizer
           <select ref={this.orgInput} defaultValue={event.org_uuid || ''}>
-            {renderOptionList(orgs, 'orgs', 'uuid')}
+            {renderOptionList(orgs, 'organizers', 'uuid')}
           </select>
         </label>
         <label className={'required-ish'}>

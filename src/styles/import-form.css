@@ -1,6 +1,7 @@
 .import-form {
   display: grid;
   grid-template-columns: 2fr 1fr;
+  margin-bottom: 0;
 }
 
 .import-form button {

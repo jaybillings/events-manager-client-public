@@ -87,7 +87,7 @@ export default class PendingEventRow extends PendingListingRow {
             </select>
           </td>
           <td><select ref={this.orgList} defaultValue={pendingListing.org_uuid || ''} onClick={e => e.stopPropagation()} required>
-            {renderOptionList(orgs, 'orgs', 'uuid')}
+            {renderOptionList(orgs, 'organizers', 'uuid')}
           </select>
           </td>
           <td>{createdAt}</td>

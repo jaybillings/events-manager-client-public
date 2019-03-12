@@ -129,10 +129,16 @@ export default class EventRow extends ListingRow {
           <td><input type={'text'} name={'listingName'} value={name} onChange={this.handleInputChange} /></td>
           <td><input type={'date'} name={'eventStart'} value={startDateVal} onChange={this.handleInputChange} /></td>
           <td><input type={'date'} name={'eventEnd'} value={endDateVal} onChange={this.handleInputChange} /></td>
-          <td><select name={'eventVenue'} value={defaultVenue}
-                      onChange={this.handleInputChange}>{renderOptionList(this.props.venues)}</select></td>
-          <td><select name={'eventOrg'} value={defaultOrg}
-                      onChange={this.handleInputChange}>{renderOptionList(this.props.orgs)}</select></td>
+          <td>
+            <select name={'eventVenue'} value={defaultVenue} onChange={this.handleInputChange}>
+              {renderOptionList(this.props.venues, 'venues')}
+            </select>
+          </td>
+          <td>
+            <select name={'eventOrg'} value={defaultOrg} onChange={this.handleInputChange}>
+              {renderOptionList(this.props.orgs, 'organizers')}
+            </select>
+          </td>
           <td>{updatedAt}</td>
           <td>
             <input id={'toggle-' + id} name={'is_published'} type={'checkbox'} className={'toggle'}

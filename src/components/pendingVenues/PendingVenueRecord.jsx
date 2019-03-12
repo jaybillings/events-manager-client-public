@@ -107,7 +107,7 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
         <label className={'required-ish'}>
           Neighborhood
           <select ref={this.hoodInput} defaultValue={venue.hood_uuid || ''} required>
-            {renderOptionList(hoods, 'hoods', 'uuid')}
+            {renderOptionList(hoods, 'neighborhoods', 'uuid')}
           </select>
         </label>
         <label className={'required-ish'}>

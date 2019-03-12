@@ -52,7 +52,7 @@ export default class EventAddForm extends ListingAddForm {
    * Compiles the data required for creating a new listing.
    * @override
    *
-   * @returns {{eventID: Number, eventObj: Object, tagsToSave: Array}}
+   * @returns {*}
    */
   buildNewListing() {
     const eventObj = {
@@ -162,6 +162,8 @@ export default class EventAddForm extends ListingAddForm {
    * @returns {*}
    */
   render() {
+    const defaultVenue = this.props.venues.length > 0 ? this.props.venues[0].id : '';
+    const defaultOrg = this.props.orgs.length > 0 ? this.props.orgs[0].id : '';
     const currentDate = Moment().format('YYYY-MM-DD');
     const submitAction = this.user.is_admin ? this.handleAddClick : this.handleAddPendingClick;
     const submitLabel = this.user.is_admin ? 'Publish Event' : 'Add Pending Event';
@@ -182,12 +184,15 @@ export default class EventAddForm extends ListingAddForm {
         </label>
         <label className={'required'}>
           Venue
-          <select ref={this.venueList}
-                  defaultValue={this.props.venues[0].id}>{renderOptionList(this.props.venues)}</select>
+          <select ref={this.venueList} defaultValue={defaultVenue}>
+            {renderOptionList(this.props.venues, 'venues')}
+          </select>
         </label>
         <label className={'required'}>
           Organizers
-          <select ref={this.orgList} defaultValue={this.props.orgs[0].id}>{renderOptionList(this.props.orgs)}</select>
+          <select ref={this.orgList} defaultValue={defaultOrg}>
+            {renderOptionList(this.props.orgs, 'organizers')}
+          </select>
         </label>
         <label className={'required'}>
           Description

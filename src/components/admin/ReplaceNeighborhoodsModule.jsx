@@ -164,13 +164,13 @@ export default class ReplaceNeighborhoodsModule extends Component {
           <label>
             <span>Replace all neighborhoods (pending and live) named this:</span>
             <select name={'hoodToReplace'} value={defaultHoodToReplace} onChange={this.handleListSelect}>
-              {renderOptionList(this.state.uniqueHoods)}
+              {renderOptionList(this.state.uniqueHoods, 'neighborhoods')}
             </select>
           </label>
           <label>
             <span>With this neighborhood listing:</span>
             <select name={'hoodReplacingWith'} value={defaultHoodReplacingWith} onChange={this.handleListSelect}>
-              {renderOptionList(this.state.liveHoods)}
+              {renderOptionList(this.state.liveHoods, 'neighborhoods')}
             </select>
           </label>
           <button type={'submit'} className={'emphasize'}>Replace and Delete Neighborhood</button>

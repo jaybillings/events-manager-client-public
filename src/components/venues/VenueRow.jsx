@@ -88,8 +88,11 @@ export default class VenueRow extends ListingRow {
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
           <td><input type={'text'} name={'listingName'} value={name} onChange={this.handleInputChange} /></td>
-          <td><select name={'venueHood'} value={defaultHood}
-                      onChange={this.handleInputChange}>{renderOptionList(this.props.hoods)}</select></td>
+          <td>
+            <select name={'venueHood'} value={defaultHood} onChange={this.handleInputChange}>
+              {renderOptionList(this.props.hoods, 'neighborhoods')}
+            </select>
+          </td>
           <td>{updatedAt}</td>
         </tr>
       );

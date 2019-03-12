@@ -72,7 +72,7 @@ export default class PendingVenueRow extends PendingListingRow {
           <td>
             <select ref={this.hoodList} defaultValue={pendingListing.hood_uuid || ''} onClick={e => e.stopPropagation()}
                     required>
-              {renderOptionList(hoods, 'hoods', 'uuid')}
+              {renderOptionList(hoods, 'neighborhoods', 'uuid')}
             </select>
           </td>
           <td>{createdAt}</td>

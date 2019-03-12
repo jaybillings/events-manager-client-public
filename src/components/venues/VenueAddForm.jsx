@@ -121,6 +121,7 @@ export default class VenueAddForm extends ListingAddForm {
    * @returns {*}
    */
   render() {
+    const defaultHood = this.props.hoods.length > 0 ? this.props.hoods[0].id : '';
     const submitAction = this.user.is_admin ? this.handleAddClick : this.handleAddPendingClick;
     const submitLabel = this.user.is_admin ? 'Publish Venue' : 'Add Pending Venue';
 
@@ -132,8 +133,9 @@ export default class VenueAddForm extends ListingAddForm {
         </label>
         <label className={'required'}>
           Neighborhood
-          <select ref={this.hoodList}
-                  defaultValue={this.props.hoods[0].id}>{renderOptionList(this.props.hoods)}</select>
+          <select ref={this.hoodList} defaultValue={defaultHood}>
+            {renderOptionList(this.props.hoods, 'neighborhoods')}
+          </select>
         </label>
         <label className={'required'}>
           Description

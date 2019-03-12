@@ -162,13 +162,13 @@ export default class ReplaceTagsModule extends Component {
           <label>
             <span>Replace all tags (pending and live) named this:</span>
             <select name={'tagToReplace'} value={defaultTagToReplace} onChange={this.handleListSelect}>
-              {renderOptionList(this.state.uniqueTags)}
+              {renderOptionList(this.state.uniqueTags, 'tags')}
             </select>
           </label>
           <label>
             <span>With this tag listing:</span>
             <select name={'tagReplacingWith'} value={defaultTagReplacingWith} onChange={this.handleListSelect}>
-              {renderOptionList(this.state.liveTags)}
+              {renderOptionList(this.state.liveTags, 'tags')}
             </select>
           </label>
           <button type={'submit'} className={'emphasize'}>Replace and Delete Tag</button>

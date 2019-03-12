@@ -175,7 +175,7 @@ export default class ImportLayout extends Component {
       <div className="container">
         <Header />
         <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
-        <h2>Import Data From BeDynamic XML File</h2>
+        <h2>Import Data From BeDynamic</h2>
         <ImportXMLForm fileInputRef={this.fileInput} handleImportClick={this.importData} />
         <h2>Review Unpublished Data</h2>
         <PendingEventsModule
