@@ -283,7 +283,7 @@ export default class PendingListingsModule extends Component {
    * Publishes selected listings by creating or updating live listings of the same schema.
    */
   publishListings() {
-    this.props.updateMessagePanel({status: 'notice', details: `Started publishing ${this.schema}. Please wait...`});
+    this.props.updateMessagePanel({status: 'info', details: `Started publishing ${this.schema}. Please wait...`});
 
     const query = this.state.selectedListings.length === 0 ? {$limit: this.defaultLimit}
       : {id: {$in: this.state.selectedListings}, $limit: this.defaultLimit};

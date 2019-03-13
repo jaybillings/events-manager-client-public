@@ -205,7 +205,7 @@ const displayErrorMessages = function (action, target, errors, displayFunc, user
     retry: 'Please try again.',
     default: 'If this problem continues, please contact the Helpdesk.'
   };
-  const subscript = (userPrompt ? userPrompts[userPrompt] : '') + ' ' + userPrompts.default;
+  const subscript = (userPrompts[userPrompt] || '') + ' ' + userPrompts.default;
 
   if (!Array.isArray(errors)) errors = [errors];
 

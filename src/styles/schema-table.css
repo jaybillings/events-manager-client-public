@@ -1,6 +1,6 @@
 .schema-table {
   width: 100%;
-  margin-bottom: 2rem;
+  margin-bottom: 4rem;
 }
 
 .schema-table td {
@@ -13,10 +13,6 @@
 
 .schema-table td:first-child {
   padding-left: 0; /* Overwrites skeleton.css */
-}
-
-.schema-table tr:last-of-type td {
-  border-bottom: 0;
 }
 
 .schema-table button:first-of-type {

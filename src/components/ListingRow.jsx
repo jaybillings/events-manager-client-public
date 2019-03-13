@@ -124,12 +124,12 @@ export default class ListingRow extends Component {
    */
   renderEditButton() {
     if (this.user.is_su) {
-      return <button type={'button'} onClick={this.startEdit}>Edit</button>;
+      return <button type={'button'} className={'emphasize'} onClick={this.startEdit}>Edit</button>;
     } else if (this.state.pendingID) {
-      return <Link to={`/pending${this.props.schema}/${this.state.pendingID}`} className={'button'}>Edit Pending
+      return <Link to={`/pending${this.props.schema}/${this.state.pendingID}`} className={'button emphasize'}>Edit Pending
         Copy</Link>;
     } else {
-      return <button type={'button'} onClick={this.handleCopyClick}>Copy For Editing</button>
+      return <button type={'button'} className={'emphasize'} onClick={this.handleCopyClick}>Copy For Editing</button>
     }
   }
 
@@ -151,7 +151,7 @@ export default class ListingRow extends Component {
       return (
         <tr className={'schema-row'}>
           <td>
-            <button type={'button'} onClick={this.handleSaveClick}>Save</button>
+            <button type={'button'} className={'emphasize'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
           <td><input type={'text'} name={'listingName'} value={name} onChange={this.handleInputChange} /></td>
@@ -161,7 +161,7 @@ export default class ListingRow extends Component {
     }
 
     const deleteButton = this.user.is_admin
-      ? <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button> : '';
+      ? <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete</button> : '';
 
     return (
       <tr className={'schema-row'}>

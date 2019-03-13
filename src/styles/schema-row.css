@@ -1,3 +1,8 @@
+.schema-row td {
+  background-color: var(--true-white);
+  border-bottom: 1px solid var(--warm-gray);
+}
+
 .schema-row.is-selected {
   background-color: var(--pale-blue);
 }

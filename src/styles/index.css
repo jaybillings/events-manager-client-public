@@ -3,8 +3,10 @@
 :root {
   --black: #222;
   --dark-gray: #3e3e3e;
+  --medium-dark-gray: #555;
   --medium-gray: #777;
   --light-gray: #bbb;
+  --warm-gray: #E1E1E1;
   --white: #efefef;
   --true-white: #fff;
   --pale-cream: #fefefd;
@@ -45,18 +47,19 @@ body {
   background: var(--pale-cream);
 }
 h1 {
-  padding: 2rem 0 0;
+  margin: 2rem 0 1rem;
+  color: var(--dark-gray);
   font-size: 3rem;
-  color: var(--text-color);
+  font-weight: 600;
   text-align: center;
   text-transform: uppercase;
-  text-shadow: 0 1px 0 #ccc, 0 2px 0 #c9c9c9, 0 3px 0 #bbb, 0 4px 0 #b9b9b9, 0 5px 0 #aaa, 0 6px 1px rgba(0, 0, 0, .1), 0 0 5px rgba(0, 0, 0, .1), 0 1px 3px rgba(0, 0, 0, .3), 0 3px 5px rgba(0, 0, 0, .2), 0 5px 10px rgba(0, 0, 0, .25), 0 10px 10px rgba(0, 0, 0, .2), 0 20px 20px rgba(0, 0, 0, .15);
 }
 
 h2 {
-  font-size: 3.5rem;
-  padding: 2rem 0 1rem;
-  text-transform: capitalize;
+  color: var(--medium-dark-gray);
+  font-size: 2.5rem;
+  text-transform: uppercase;
+  font-weight: 600;
 }
 
 h2:first-of-type {
@@ -142,6 +145,13 @@ button[disabled]:hover {
 .warn:focus {
   border-color: var(--bright-pink);
   box-shadow: 0 0 5px 0 var(--bright-pink);
+}
+
+.load-message {
+  font-weight: 600;
+  padding: 2rem 0;
+  font-size: 1.75rem;
+  color: var(--dark-gray);
 }
 
 .hidden {

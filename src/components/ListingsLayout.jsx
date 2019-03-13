@@ -332,9 +332,9 @@ export default class ListingsLayout extends Component {
         <Header />
         <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
         {pendingListingLink}
-        <h2>{filterType} {schema}</h2>
+        <h2>Browse {filterType} {schema}</h2>
         {this.renderTable()}
-        <h3>Add New {makeSingular(schema)}</h3>
+        <h2>Add New {makeSingular(schema)}</h2>
         {this.renderAddForm()}
       </div>
     );
