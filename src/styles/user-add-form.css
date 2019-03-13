@@ -1,0 +1,37 @@
+.user-add-form {
+  display: grid;
+  grid-auto-columns: 1fr 1fr;
+  grid-template-areas: "email permissions" "password password" "buttons buttons";
+}
+.user-add-form span {
+  display: block;
+}
+
+.user-add-form input, .user-add-form select {
+  min-width: 350px;
+}
+
+.user-add-form input + button {
+  margin-left: 1rem;
+}
+
+.user-add-form .emailInput {
+  grid-area: email;
+}
+
+.user-add-form .permsInput {
+  grid-area: permissions;
+}
+
+.user-add-form .pwInput {
+  grid-area: password;
+}
+
+.user-add-form .buttons {
+  grid-area: buttons;
+}
+
+.user-add-form .pwInput button {
+  color: var(--true-green);
+  border-color: var(--true-green);
+}

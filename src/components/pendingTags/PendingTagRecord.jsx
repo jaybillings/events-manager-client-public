@@ -2,7 +2,7 @@ import React from 'react';
 import Moment from 'moment';
 
 import ListingRecordUniversal from "../ListingRecordUniversal";
-import StatusLabel from "../pendingEvents/PendingEventRecord";
+import StatusLabel from "../common/StatusLabel";
 
 /**
  * PendingTagRecord is a component which displays a single pending tag's record.
@@ -11,25 +11,37 @@ import StatusLabel from "../pendingEvents/PendingEventRecord";
  */
 export default class PendingTagRecord extends ListingRecordUniversal {
   /**
+   * Runs when the component mounts. Checks the publish status of the listing.
+   * @override
+   */
+  componentDidMount() {
+    this.checkWriteStatus();
+  }
+
+  /**
    * Renders the component.
+   * @override
    * @render
+   *
    * @returns {*}
    */
   render() {
-    const pendingTag = this.props.listing;
-    const createdAt = Moment(pendingTag.created_at).calendar();
-    const updatedAt = Moment(pendingTag.updated_at).calendar();
-    const writeStatus = this.props.writeStatus;
+    const tag = this.props.listing;
+    const writeStatus = this.state.writeStatus;
+    const createdAt = Moment(tag.created_at).calendar();
+    const updatedAt = Moment(tag.updated_at).calendar();
 
     return (
-      <form id={'pending-tag-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
-        <label>
-          UUID
-          <input type={'text'} value={pendingTag.uuid} disabled />
-        </label>
+      <form id={'pending-tag-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
         <label>
           Status
-          <StatusLabel writeStatus={writeStatus} schema={'pending-events'} />
+          <div>
+            <StatusLabel writeStatus={writeStatus} schema={'pending-tags'} />
+          </div>
+        </label>
+        <label>
+          UUID
+          <input type={'text'} value={tag.uuid} readOnly />
         </label>
         <label>
           Created
@@ -41,12 +53,12 @@ export default class PendingTagRecord extends ListingRecordUniversal {
         </label>
         <label className={'required'}>
           Name
-          <input type={'text'} ref={this.nameInput} defaultValue={pendingTag.name} required maxLength={100} />
+          <input type={'text'} ref={this.nameInput} defaultValue={tag.name} required maxLength={100} />
         </label>
         <div className={'block-warning'}
              title={'Caution: This tag is pending. It must be pushed live before it is visible on the site.'}>
-          <button type={'submit'} className={'button-primary'}>Save Changes</button>
           <button type={'button'} onClick={this.handleDeleteClick}>Discard Tag</button>
+          <button type={'submit'} className={'button-primary'}>Save Changes</button>
         </div>
       </form>
     );

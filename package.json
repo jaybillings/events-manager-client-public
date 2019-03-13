@@ -20,8 +20,10 @@
     "eject": "react-scripts eject"
   },
   "dependencies": {
+    "@feathersjs/authentication-client": "^1.0.10",
     "@feathersjs/client": "^3.7.7",
     "ajv": "^6.6.2",
+    "generate-password": "^1.4.1",
     "moment": "^2.23.0",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
@@ -30,6 +32,7 @@
     "react-router-dom": "^4.3.1",
     "react-scripts": "1.1.4",
     "socket.io-client": "^2.2.0",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "node-fetch": "latest"
   }
 }

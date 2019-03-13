@@ -1,12 +1,15 @@
 import React, {Component} from "react";
-import {buildColumnSort, buildSortQuery, makeTitleCase} from "../utilities";
+import {Link} from "react-router-dom";
+import {buildColumnSort, buildSortQuery, displayErrorMessages, makeSingular, renderTableHeader} from "../utilities";
 import app from "../services/socketio";
-import uuid from "uuid/v1";
 
 import Header from "./common/Header";
-import ListingsTable from "./ListingsTable";
-import ListingAddForm from "./ListingAddForm";
 import MessagePanel from "./common/MessagePanel";
+import ListingAddForm from "./ListingAddForm";
+import ListingRow from "./ListingRow";
+import PaginationLayout from "./common/PaginationLayout";
+
+import '../styles/schema-table.css';
 
 /**
  * ListingsLayout is a generic component that lays out a listing collection page.
@@ -26,22 +29,25 @@ export default class ListingsLayout extends Component {
     this.schema = schema;
     this.defaultPageSize = 5;
     this.defaultTableSort = ['updated_at', -1];
-    this.defaultQuery = {$sort: {name: 1}, $select: ['name', 'uuid'], $limit: 100};
+    this.defaultQuery = {$sort: {name: 1}, $select: ['name', 'uuid'], $limit: 1000};
 
     this.state = {
-      listings: [], listingsTotal: 0, listingsLoaded: false,
+      listings: [], listingsTotal: 0, listingsLoaded: false, newPendingListing: {},
       pageSize: this.defaultPageSize, currentPage: 1, sort: this.defaultTableSort,
       messagePanelVisible: false, messages: []
     };
 
     this.listingsService = app.service(this.schema);
+    this.pendingListingsService = app.service(`pending-${this.schema}`);
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.fetchListings = this.fetchListings.bind(this);
+    this.checkForPending = this.checkForPending.bind(this);
 
     this.createListing = this.createListing.bind(this);
     this.updateListing = this.updateListing.bind(this);
     this.deleteListing = this.deleteListing.bind(this);
+    this.createPendingListing = this.createPendingListing.bind(this);
 
     this.updatePageSize = this.updatePageSize.bind(this);
     this.updateCurrentPage = this.updateCurrentPage.bind(this);
@@ -60,7 +66,7 @@ export default class ListingsLayout extends Component {
   componentDidMount() {
     const schemaSingular = this.schema.slice(0, -1);
     const reloadData = () => {
-      this.setState({currentPage: 1}, () => this.fetchAllData())
+      this.setState({currentPage: 1}, () => this.fetchListings())
     };
 
     this.fetchAllData();
@@ -137,14 +143,23 @@ export default class ListingsLayout extends Component {
   }
 
   /**
+   * Queries for pending schema listings that have a given UUID. Used to check for pending listings duplicating
+   * a live listing.
+   *
+   * @param {string} uuid
+   * @returns {Promise}
+   */
+  checkForPending(uuid) {
+    return this.pendingListingsService.find({query: {uuid}});
+  }
+
+  /**
    * Creates a new listing by generating a new UUID and calling the service's CREATE method with passed-in data.
    *
    * @param {object} listingData - Data for the new listing.
    * @returns {Promise}
    */
   createListing(listingData) {
-    listingData.uuid = uuid();
-
     return this.listingsService.create(listingData).catch(err => {
       this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
@@ -171,6 +186,24 @@ export default class ListingsLayout extends Component {
   deleteListing(id) {
     this.listingsService.remove(id).catch(err => {
       this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+    });
+  }
+
+  /**
+   * Creates a pending listing that duplicates the given data from a live listing.
+   *
+   * @param {object} listingData
+   * @returns {Promise}
+   */
+  createPendingListing(listingData) {
+    return app.service(`pending-${this.schema}`).create(listingData).then(message => {
+      this.setState({newPendingListing: message});
+      this.updateMessagePanel({
+        status: 'success',
+        details: `Pending ${makeSingular(this.schema)} "${message.name}" created.`
+      });
+    }, errors => {
+      displayErrorMessages('copy', listingData.name || 'listing', errors, this.updateMessagePanel);
     });
   }
 
@@ -232,19 +265,33 @@ export default class ListingsLayout extends Component {
       return <p>No {schema} to list.</p>
     }
 
-    const listings = this.state.listings;
-    const pageSize = this.state.pageSize;
-    const currentPage = this.state.currentPage;
-    const total = this.state.listingsTotal;
-    const sort = this.state.sort;
+    const titleMap = new Map([
+      ['actions_NOSORT', 'Actions'],
+      ['name', 'Name'],
+      ['updated_at', 'Last Modified']
+    ]);
 
-    return <ListingsTable
-      listings={listings} listingsTotal={total} schema={schema}
-      pageSize={pageSize} currentPage={currentPage} sort={sort}
-      updateColumnSort={this.updateColumnSort} updatePageSize={this.updatePageSize}
-      updateCurrentPage={this.updateCurrentPage}
-      updateListing={this.updateListing} deleteListing={this.deleteListing}
-    />;
+    return ([
+      <PaginationLayout
+        key={`${schema}-pagination`} schema={schema} total={this.state.listingsTotal}
+        pageSize={this.state.pageSize} activePage={this.state.currentPage}
+        updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
+      />,
+      <table key={`${schema}-table`} className={'schema-table'}>
+        <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColumnSort)}</thead>
+        <tbody>
+        {
+          this.state.listings.map(listing =>
+            <ListingRow
+              key={listing.id} schema={schema} listing={listing}
+              updateListing={this.updateListing} deleteListing={this.deleteListing}
+              createPendingListing={this.createPendingListing} checkForPending={this.checkForPending}
+            />
+          )
+        }
+        </tbody>
+      </table>
+    ]);
   }
 
   /**
@@ -257,28 +304,37 @@ export default class ListingsLayout extends Component {
       return <p>Data is loading... Please be patient...</p>;
     }
 
-    return <ListingAddForm schema={this.schema} createListing={this.createListing} />;
+    return <ListingAddForm
+      schema={this.schema} createListing={this.createListing} createPendingListing={this.createPendingListing}
+    />;
   }
 
   /**
    * Renders the component.
-   *
    * @override
    * @render
+   *
    * @returns {*}
    */
   render() {
     const showMessagePanel = this.state.messagePanelVisible;
     const messages = this.state.messages;
-    const titleCaseSchema = makeTitleCase(this.schema);
+    const schema = this.schema;
+    const pendingListing = this.state.newPendingListing;
+    const filterType = (!this.state.filterLabel || this.state.filterLabel === 'none') ? 'All' : this.state.filterLabel;
+
+    let pendingListingLink = pendingListing.id ? <div className={'pending-link'}>
+      <Link to={`/pending${this.schema}/${pendingListing.id}`}>Click here to edit {pendingListing.name}</Link>
+    </div> : '';
 
     return (
       <div className={'container'}>
         <Header />
         <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
-        <h2>All {titleCaseSchema}</h2>
+        {pendingListingLink}
+        <h2>{filterType} {schema}</h2>
         {this.renderTable()}
-        <h3>Add New {titleCaseSchema.slice(0, -1)}</h3>
+        <h3>Add New {makeSingular(schema)}</h3>
         {this.renderAddForm()}
       </div>
     );

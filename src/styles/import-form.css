@@ -1,8 +1,14 @@
 .import-form {
   display: grid;
-  grid-template-columns: 2fr 2fr 1fr;
+  grid-template-columns: 2fr 1fr;
+  margin-bottom: 0;
 }
 
 .import-form button {
   margin: auto;
+}
+
+.import-form div:last-child {
+  justify-self: end;
+  align-self: center;
 }

@@ -17,7 +17,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
   /**
    * The class's constructor.
    * @constructor
-   * @param {object} props
+   *
+   * @param {{defaultPageSize: Number, defaultSortOrder: Object, updateMessagePanel: Function}} props
    */
   constructor(props) {
     super(props, 'venues');
@@ -38,46 +39,22 @@ export default class PendingVenuesModule extends PendingListingsModule {
    * @override
    */
   componentDidMount() {
-    this.fetchAllData();
+    super.componentDidMount();
 
-    this.pendingListingsService
-      .on('created', message => {
-        this.props.updateMessagePanel({
-          status: 'success',
-          details: `Added "${message.name}" as new pending venue`
-        });
-        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchPendingListings());
-      })
-      .on('updated', message => {
-        this.props.updateMessagePanel({status: 'info', details: message.details});
-        this.fetchPendingListings();
-      })
-      .on('patched', message => {
-        this.props.updateMessagePanel({
-          status: 'success',
-          details: `Updated pending ${this.schema.slice(0, -1)} "${message.name}"`
-        });
-        this.fetchPendingListings();
-      })
-      .on('removed', message => {
-        this.props.updateMessagePanel({
-          status: 'info',
-          details: `Discarded pending ${this.schema.slice(0, -1)} "${message.name}"`
-        });
-        this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchPendingListings());
-      });
+    const services = new Map([
+      [this.hoodsService, this.fetchHoods],
+      [this.pendingHoodsService, this.fetchPendingHoods]
+    ]);
 
-    this.hoodsService
-      .on('created', () => this.fetchHoods())
-      .on('updated', () => this.fetchHoods())
-      .on('patched', () => this.fetchHoods())
-      .on('removed', () => this.fetchHoods());
-
-    this.pendingHoodsService
-      .on('created', () => this.fetchPendingHoods())
-      .on('updated', () => this.fetchPendingHoods())
-      .on('patched', () => this.fetchPendingHoods())
-      .on('removed', () => this.fetchPendingHoods());
+    for (let [service, dataFetcher] of services) {
+      service
+        .on('updated', () => dataFetcher())
+        .on('patched', () => dataFetcher())
+        .on('removed', () => dataFetcher())
+        .on('status', message => {
+          if (message.status === 'success') dataFetcher();
+        });
+    }
   }
 
   /**
@@ -85,18 +62,19 @@ export default class PendingVenuesModule extends PendingListingsModule {
    * @override
    */
   componentWillUnmount() {
+    super.componentWillUnmount();
+
     const services = [
-      this.pendingListingsService,
       this.hoodsService,
       this.pendingHoodsService
     ];
 
     services.forEach(service => {
       service
-        .removeAllListeners('created')
         .removeAllListeners('updated')
         .removeAllListeners('patched')
-        .removeAllListeners('removed');
+        .removeAllListeners('removed')
+        .removeAllListeners('status');
     });
   }
 
@@ -105,7 +83,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
    * @override
    */
   fetchAllData() {
-    this.fetchPendingListings();
+    this.fetchListings();
     this.fetchHoods();
     this.fetchPendingHoods();
   }
@@ -114,8 +92,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
    * Fetches published neighborhoods.
    */
   fetchHoods() {
-    this.hoodsService.find({query: this.defaultQuery}).then(message => {
-      this.setState({hoods: message.data, hoodsLoaded: true});
+    this.hoodsService.find({query: this.defaultQuery, paginate: false}).then(result => {
+      this.setState({hoods: result.data, hoodsLoaded: true});
     });
   }
 
@@ -123,8 +101,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
    * Fetches pending neighborhoods.
    */
   fetchPendingHoods() {
-    this.pendingHoodsService.find({query: this.defaultQuery}).then(message => {
-      this.setState({pendingHoods: message.data, pendingHoodsLoaded: true});
+    this.pendingHoodsService.find({query: this.defaultQuery, paginate: false}).then(result => {
+      this.setState({pendingHoods: result.data, pendingHoodsLoaded: true});
     });
   }
 
@@ -136,11 +114,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
   renderTable() {
     const pendingVenuesTotal = this.state.pendingListingsTotal;
 
-    if (!(this.state.listingsLoaded && this.state.hoodsLoaded)) {
-      return <p>Data is loading... Please be patient...</p>;
-    } else if (pendingVenuesTotal === 0) {
-      return <p>No pending venues to list.</p>;
-    }
+    if (!(this.state.listingsLoaded && this.state.hoodsLoaded)) return <p>Data is loading... Please be patient...</p>;
+    if (pendingVenuesTotal === 0) return <p>No pending venues to list.</p>;
 
     const pendingVenues = this.state.pendingListings;
     const titleMap = new Map([
@@ -150,48 +125,49 @@ export default class PendingVenuesModule extends PendingListingsModule {
       ['created_at', 'Imported On'],
       ['status_NOSORT', 'Status']
     ]);
-
     const uniqueHoods = uniqueListingsOnly(this.state.hoods, this.state.pendingHoods);
-    const sort = this.state.sort;
-    const pageSize = this.state.pageSize;
-    const currentPage = this.state.currentPage;
-    const isVisible = this.state.moduleVisible;
     const selectedVenues = this.state.selectedListings;
     const schemaLabel = selectedVenues.length === 1 ? 'venue' : 'venues';
+    const publishButton = this.user.is_su ?
+      <button type={'button'} className={'button-primary'} onClick={this.publishListings}
+              disabled={selectedVenues.length === 0}>
+        Publish {selectedVenues.length || ''} {schemaLabel}
+      </button> : '';
 
     return ([
       <ShowHideToggle
-        key={'venues-module-showhide'} isVisible={isVisible} changeVisibility={this.toggleModuleVisibility}
+        key={'venues-module-showhide'} isVisible={this.state.moduleVisible}
+        changeVisibility={this.toggleModuleVisibility}
       />,
       <div key={'venues-module-body'}>
         <SelectionControl
-          numSelected={selectedVenues.length} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
+          numSelected={selectedVenues.length} total={this.state.pendingListingsTotal} schema={this.schema}
+          selectPage={this.selectPageOfListings} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
         />
         <PaginationLayout
           key={'pending-venues-pagination'} schema={'pending-venues'}
-          total={pendingVenuesTotal} pageSize={pageSize} activePage={currentPage}
+          total={pendingVenuesTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
           updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
         />
         <table className={'schema-table'} key={'pending-venues-table'}>
-          <thead>{renderTableHeader(titleMap, sort, this.updateColSort)}</thead>
+          <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColSort)}</thead>
           <tbody>
           {
             pendingVenues.map(venue =>
               <PendingVenueRow
-                key={`venue-${venue.id}`} listing={venue} selected={selectedVenues.includes(venue.id)}
+                key={`venue-${venue.id}`} schema={'pending-venues'} listing={venue}
+                selected={selectedVenues.includes(venue.id)} hoods={uniqueHoods}
                 hood={(uniqueHoods.find(h => {
-                  return h.uuid === venue.hood_uuid
-                }))} hoods={uniqueHoods}
-                updateListing={this.saveChanges} removeListing={this.removePendingListing}
+                  // eslint-disable-next-line
+                  return ('' + h.uuid) == ('' + venue.hood_uuid);
+                }))}
+                updateListing={this.updateListing} removeListing={this.removeListing}
                 selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}
               />)
           }
           </tbody>
         </table>
-        <button type={'button'} className={'button-primary'} onClick={this.publishListings}
-                disabled={selectedVenues.length === 0}>
-          Publish {selectedVenues.length || ''} {schemaLabel}
-        </button>
+        {publishButton}
         <button type={'button'} onClick={this.discardListings} disabled={selectedVenues.length === 0}>
           Discard {selectedVenues.length || ''} {schemaLabel}
         </button>

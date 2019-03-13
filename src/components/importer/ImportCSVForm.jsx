@@ -3,10 +3,10 @@ import React, {Component} from 'react';
 import '../../styles/import-form.css';
 
 /**
- * The ImportForm component displays a form used for importing external data.
+ * The ImportCSVForm component displays a form used for importing external data.
  * @class
  */
-export default class ImportForm extends Component {
+export default class ImportCSVForm extends Component {
   /**
    * The class's constructor.
    * @constructor
@@ -46,7 +46,7 @@ export default class ImportForm extends Component {
   render() {
     /** @var {object} this.props.fileInputRef */
     return (
-      <form id={'import-from-csv-form'} className={'import-form'} onSubmit={this.props.handleSubmit}>
+      <form id={'import-from-csv-form'} className={'import-form'} onSubmit={this.props.handleSaveClick}>
         <div>
           <label htmlFor="fileInput">Select CSV file to import:</label>
           <input type={'file'} ref={this.props.fileInputRef} id={'fileInput'} accept={".csv"} multiple required />
@@ -55,7 +55,7 @@ export default class ImportForm extends Component {
           <label htmlFor={'schema-select'}>Select a schema to update:</label>
           {this.renderSchemaSelect()}
         </div>
-        <button type={'submit'}>Import Data From File</button>
+        <button type={'submit'} className={'button-primary'}>Import Data From File</button>
       </form>
     );
   }

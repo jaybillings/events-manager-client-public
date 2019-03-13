@@ -2,15 +2,17 @@ import React, {Component} from 'react';
 
 /**
  * SortIndicator displays XML icons indicating sort order.
+ * @class
  * @note From Typicon set -- https://simplesvg.com/icon-sets/typcn/
  *
- * @class
+ * @param {{direction: int}} props
  */
 export default class SortIndicator extends Component {
   /**
    * Renders the component
-   *
+   * @override
    * @render
+   *
    * @returns {*}
    */
   render() {

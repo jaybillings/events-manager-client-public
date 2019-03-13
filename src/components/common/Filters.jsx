@@ -10,9 +10,9 @@ import "../../styles/filters.css";
 export default class Filters extends Component {
   /**
    * The class's constructor.
-   *
    * @constructor
-   * @param {object} props
+   *
+   * @param {{updateFilters: Function}} props
    */
   constructor(props) {
     super(props);
@@ -50,13 +50,13 @@ export default class Filters extends Component {
 
   /**
    * Renders the component.
-   *
+   * @override
    * @render
+   *
    * @returns {*}
    */
   render() {
     const currentFilter = this.state.currentFilter;
-    let filterType = currentFilter === 'none' ? 'All' : currentFilter;
     let buttons = [];
 
 
@@ -80,7 +80,6 @@ export default class Filters extends Component {
 
     return (
       <div className={'filter-container'}>
-        <h3>Filter Results - Showing {filterType}</h3>
         {buttons}
       </div>
     );

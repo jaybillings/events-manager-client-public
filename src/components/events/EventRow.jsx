@@ -4,6 +4,7 @@ import {Link} from "react-router-dom";
 import {renderOptionList} from "../../utilities";
 
 import ListingRow from "../ListingRow";
+import StatusLabel from "../common/StatusLabel";
 
 import "../../styles/toggle.css";
 
@@ -16,19 +17,20 @@ export default class EventRow extends ListingRow {
   /**
    * The component's constructor.
    * @constructor
-   * @param {object} props
+   *
+   * @param {{schema: String, listing: Object, venues: Array, orgs: Array, venue: Object, org: Object, updateListing: Function, deleteListing: Function, createPendingListing: Function, listingIsLive: Boolean, checkForPending: Function}} props
    */
   constructor(props) {
     super(props);
 
     const event = this.props.listing;
-    const venueUUID = typeof this.props.venue === 'undefined' ? '' : this.props.venue.uuid;
-    const orgUUID = typeof this.props.org === 'undefined' ? '' : this.props.org.uuid;
+    const venueID = typeof this.props.venue === 'undefined' ? this.props.venues[0].id : this.props.venue.id;
+    const orgID = typeof this.props.org === 'undefined' ? this.props.orgs[0].id : this.props.org.id;
 
-    this.state = {
-      listingName: event.name, eventStart: event.start_date, eventEnd: event.end_date,
-      eventVenue: venueUUID, eventOrg: orgUUID, is_published: false, editable: false
-    };
+    Object.assign(this.state, {
+      is_published: this.props.listingIsLive, eventStart: event.start_date, eventEnd: event.end_date,
+      eventVenue: venueID, eventOrg: orgID
+    });
   }
 
   /**
@@ -36,16 +38,13 @@ export default class EventRow extends ListingRow {
    * @override
    */
   componentDidMount() {
-    this.props.checkForLive(this.props.listing.id).then(results => {
-      this.setState({is_published: results.total > 0});
-    }, err => {
-      console.log('error in checking for live', JSON.stringify(err));
-    });
+    super.componentDidMount();
   }
 
   /**
    * Handles changes to input block by saving the data as a state parameter.
    * @override
+   *
    * @param {Event} e
    */
   handleInputChange(e) {
@@ -61,7 +60,7 @@ export default class EventRow extends ListingRow {
   /**
    * Handles the save button click by parsing new data and triggering a function to update the event.
    * @override
-   * @override
+   *
    * @param {Event} e
    */
   handleSaveClick(e) {
@@ -71,13 +70,34 @@ export default class EventRow extends ListingRow {
       uuid: this.props.listing.uuid,
       name: this.state.listingName,
       start_date: Moment(this.state.eventStart).valueOf(),
-      end_date: Moment(this.state.eventStart).valueOf(),
-      venue_uuid: this.state.eventVenue,
-      org_uuid: this.state.eventOrg
+      end_date: Moment(this.state.eventEnd).valueOf(),
+      venue_id: this.state.eventVenue,
+      org_id: this.state.eventOrg
     };
 
-    this.props.updateListing(this.props.listing.id, {newData: newData, doPublish: this.state.is_published}).then(() => {
-      this.setState({editable: false});
+    this.props.updateListing(this.props.listing.id, {newData: newData, doPublish: this.state.is_published})
+      .then(() => {
+        this.setState({editable: false});
+      });
+  }
+
+  /**
+   * Handles the copy button click by parsing the listing data and triggering a function to create a pending
+   * event with the parsed data.
+   */
+  handleCopyClick(e) {
+    e.stopPropagation();
+
+    // noinspection JSUnusedLocalSymbols
+    let {id, org_id, venue_id, ...eventData} = this.props.listing;
+
+    eventData.org_uuid = this.props.org.uuid;
+    eventData.venue_uuid = this.props.venue.uuid;
+    eventData.created_at = Moment(eventData.created_at).valueOf();
+    eventData.updated_at = Moment(eventData.updated_at).valueOf();
+
+    this.props.createPendingListing({eventID: id, eventObj: eventData, tagsToSave: null}).then(() => {
+      this.listingHasPending();
     });
   }
 
@@ -86,24 +106,20 @@ export default class EventRow extends ListingRow {
    * @note The render has two different paths depending on whether the row can be edited.
    * @override
    * @render
+   *
    * @returns {*}
    */
   render() {
     const id = this.props.listing.id;
     const name = this.state.listingName;
-    const venues = this.props.venues;
-    const orgs = this.props.orgs;
-    const isPublished = this.state.is_published;
-
-    const startDate = Moment(this.state.eventStart).format('MM/DD/YYYY');
-    const startDateVal = Moment(this.state.eventStart).format('YYYY-MM-DD');
-    const endDate = Moment(this.state.eventEnd).format('MM/DD/YYYY');
-    const endDateVal = Moment(this.state.eventEnd).format('YYYY-MM-DD');
     const updatedAt = Moment(this.props.listing.updated_at).calendar();
-    const defaultVenue = this.state.eventVenue || this.props.venues[0].uuid;
-    const defaultOrg = this.state.eventOrg || this.props.orgs[0].uuid;
 
     if (this.state.editable) {
+      const startDateVal = Moment(this.state.eventStart).format('YYYY-MM-DD');
+      const endDateVal = Moment(this.state.eventEnd).format('YYYY-MM-DD');
+      const defaultVenue = this.state.eventVenue || this.props.venues[0].id;
+      const defaultOrg = this.state.eventOrg || this.props.orgs[0].id;
+
       return (
         <tr className={'schema-row'}>
           <td>
@@ -113,32 +129,41 @@ export default class EventRow extends ListingRow {
           <td><input type={'text'} name={'listingName'} value={name} onChange={this.handleInputChange} /></td>
           <td><input type={'date'} name={'eventStart'} value={startDateVal} onChange={this.handleInputChange} /></td>
           <td><input type={'date'} name={'eventEnd'} value={endDateVal} onChange={this.handleInputChange} /></td>
-          <td><select name={'eventVenue'} value={defaultVenue}
-                      onChange={this.handleInputChange}>{renderOptionList(venues)}</select></td>
-          <td><select name={'eventOrg'} value={defaultOrg}
-                      onChange={this.handleInputChange}>{renderOptionList(orgs)}</select></td>
+          <td>
+            <select name={'eventVenue'} value={defaultVenue} onChange={this.handleInputChange}>
+              {renderOptionList(this.props.venues, 'venues')}
+            </select>
+          </td>
+          <td>
+            <select name={'eventOrg'} value={defaultOrg} onChange={this.handleInputChange}>
+              {renderOptionList(this.props.orgs, 'organizers')}
+            </select>
+          </td>
           <td>{updatedAt}</td>
           <td>
             <input id={'toggle-' + id} name={'is_published'} type={'checkbox'} className={'toggle'}
-                   checked={isPublished} onChange={this.handleInputChange} />
+                   checked={this.state.is_published} onChange={this.handleInputChange} />
             <label className={'toggle-switch'} htmlFor={'toggle-' + id} />
           </td>
         </tr>
       );
     }
 
+    const endDate = Moment(this.state.eventEnd).format('MM/DD/YYYY');
+    const startDate = Moment(this.state.eventStart).format('MM/DD/YYYY');
+    const eventStatus = this.state.is_published ? 'live' : 'dropped';
     const venueLink = this.props.venue
       ? <Link to={`/venues/${this.props.venue.id}`}>{this.props.venue.name}</Link> : 'NO VENUE';
     const orgLink = this.props.org
       ? <Link to={`/organizers/${this.props.org.id}`}>{this.props.org.name}</Link> : 'NO ORGANIZER';
-    const eventStatus = this.state.is_published ? <span className="bolded">Published</span> :
-      <span className="muted">Dropped</span>;
+    const deleteButton = this.user.is_admin ?
+      <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button> : '';
 
     return (
       <tr className={'schema-row'}>
         <td>
-          <button type={'button'} onClick={this.startEdit}>Edit</button>
-          <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button>
+          {this.renderEditButton()}
+          {deleteButton}
         </td>
         <td><Link to={`/events/${id}`}>{name}</Link></td>
         <td>{startDate}</td>
@@ -146,7 +171,7 @@ export default class EventRow extends ListingRow {
         <td>{venueLink}</td>
         <td>{orgLink}</td>
         <td>{updatedAt}</td>
-        <td>{eventStatus}</td>
+        <td><StatusLabel writeStatus={eventStatus} schema={'events'} /></td>
       </tr>
     );
   }

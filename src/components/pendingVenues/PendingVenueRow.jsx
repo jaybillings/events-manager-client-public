@@ -15,7 +15,8 @@ export default class PendingVenueRow extends PendingListingRow {
   /**
    * The component's constructor.
    * @constructor
-   * @param {object} props
+   *
+   * @param {{schema: String, listing: Object, selected: Boolean, hoods: Array, hood: Object, updateListing: Function, removeListing: Function, selectListing: Function, queryForExisting: Function}} props
    */
   constructor(props) {
     super(props);
@@ -26,6 +27,7 @@ export default class PendingVenueRow extends PendingListingRow {
   /**
    * Handles the save button click by parsing new data and triggering a function to update the venue.
    * @override
+   *
    * @param {Event} e
    */
   handleSaveClick(e) {
@@ -36,8 +38,8 @@ export default class PendingVenueRow extends PendingListingRow {
       hood_uuid: this.hoodList.current.value
     };
 
-    this.props.updateListing(this.props.listing.id, newData).then(result => {
-      this.checkWriteStatus(result);
+    this.props.updateListing(this.props.listing, newData).then(() => {
+      this.checkWriteStatus();
       this.setState({editable: false});
     });
   }
@@ -47,6 +49,7 @@ export default class PendingVenueRow extends PendingListingRow {
    * @note The render has two different paths depending on whether the row can be edited.
    * @override
    * @render
+   *
    * @returns {*}
    */
   render() {
@@ -61,13 +64,15 @@ export default class PendingVenueRow extends PendingListingRow {
       return (
         <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
           <td>
-            <button type={'button'} onClick={this.handleSaveClick}>Save</button>
+            <button type={'button'} className={'emphasize'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
-          <td><input type={'text'} ref={this.nameInput} defaultValue={pendingListing.name} /></td>
+          <td><input type={'text'} ref={this.nameInput} defaultValue={pendingListing.name}
+                     onClick={e => e.stopPropagation()} /></td>
           <td>
-            <select ref={this.hoodList} defaultValue={pendingListing.hood_uuid || ''} required>
-              {renderOptionList(hoods)}
+            <select ref={this.hoodList} defaultValue={pendingListing.hood_uuid || ''} onClick={e => e.stopPropagation()}
+                    required>
+              {renderOptionList(hoods, 'neighborhoods', 'uuid')}
             </select>
           </td>
           <td>{createdAt}</td>
@@ -76,14 +81,13 @@ export default class PendingVenueRow extends PendingListingRow {
       );
     }
 
-    /** @var {object} this.props.hood */
     const hoodLink = this.props.hood ? renderSchemaLink(this.props.hood, 'neighborhoods') : 'NO NEIGHBORHOOD';
 
     return (
       <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
         <td>
-          <button type={'button'} onClick={this.startEdit}>Edit</button>
-          <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Discard</button>
+          <button type={'button'} className={'emphasize'} onClick={this.startEdit}>Edit</button>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard</button>
         </td>
         <td><Link to={`/pendingVenues/${pendingListing.id}`}>{pendingListing.name}</Link></td>
         <td>{hoodLink}</td>

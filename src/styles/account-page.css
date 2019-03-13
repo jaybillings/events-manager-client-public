@@ -1,0 +1,51 @@
+.account-page > div {
+  max-width: 600px;
+}
+
+.account-page button {
+  margin-bottom: 0;
+}
+
+.account-page button.emphasis {
+  font-size: 1.5rem;
+}
+
+.account-page .panel {
+  position: relative;
+  margin-top: 2.5rem;
+  border: 2px solid var(--light-gray);
+  padding: 2rem;
+  border-radius: 4px;
+}
+
+.account-page .panel.danger {
+  border: 2px solid var(--bright-pink);
+  cursor: help;
+}
+
+.account-page .panel h3 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: .5rem;
+  transform: translate(10%, -50%);
+  background: var(--true-white);
+  font-size: .75em;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.account-page .panel .input-container, .account-page .panel .button-container {
+  margin-top: 1rem;
+}
+
+.account-page .danger button {
+  background: var(--bright-pink);
+  border-color: var(--bright-pink);
+  color: var(--true-white);
+}
+
+.account-page button + span {
+  margin: auto 0;
+}

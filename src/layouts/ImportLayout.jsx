@@ -1,14 +1,15 @@
 import React, {Component} from "react";
 import app from "../services/socketio";
+import fetch from "node-fetch";
 
 import Header from "../components/common/Header";
-import ImportForm from "../components/importer/ImportForm";
 import MessagePanel from "../components/common/MessagePanel";
 import PendingEventsModule from "../components/pendingEvents/PendingEventsModule";
 import PendingTagsModule from "../components/pendingTags/PendingTagsModule";
 import PendingVenuesModule from "../components/pendingVenues/PendingVenuesModule";
 import PendingOrganizersModule from "../components/pendingOrganizers/PendingOrganizersModule";
 import PendingNeighborhoodsModule from "../components/pendingNeighborhoods/PendingNeighborhoodsModule";
+import ImportXMLForm from "../components/common/ImportXMLForm";
 
 /**
  * The ImportLayout component lays out the page that handles importing and processing external data.
@@ -23,14 +24,14 @@ export default class ImportLayout extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {messages: [], messagePanelVisible: false};
-
     this.API_URI = 'http://localhost:3030/importer';
     this.defaultPageSize = 5;
     this.defaultSortOrder = ['created_at', -1];
+    this.user = app.get('user');
+
+    this.state = {messages: [], messagePanelVisible: false};
 
     this.fileInput = React.createRef();
-    this.schemaSelect = React.createRef();
     this.eventsModule = React.createRef();
     this.venuesModule = React.createRef();
     this.orgsModule = React.createRef();
@@ -50,9 +51,16 @@ export default class ImportLayout extends Component {
    * @override
    */
   componentDidMount() {
-    this.importerService.on('status', message => {
-      this.updateMessagePanel({status: 'info', details: message.details});
-    });
+    this.importerService
+      .on('created', () => {
+        // TODO: On created, start spinner?
+        // TODO: Unregister listeners and lazy pull data every second or so?
+        this.updateMessagePanel({status: 'info', details: 'Importer is running. This may take several minutes.'});
+      })
+      .on('status', message => {
+        // TODO: If success, import all data?
+        this.updateMessagePanel({status: message.status, details: message.details});
+      });
   }
 
   /**
@@ -72,22 +80,29 @@ export default class ImportLayout extends Component {
   importData(e) {
     e.preventDefault();
 
-    const importUrl = `${this.API_URI}?schema=${this.schemaSelect.current.value}`;
     let importData = new FormData();
 
     importData.append('file', this.fileInput.current.files[0]);
     importData.append('filename', this.fileInput.current.files[0].name);
 
-    fetch(importUrl, {
-      method: 'POST',
-      body: importData
-    }).then((response) => {
-      response.json().then((body) => {
+    console.log(this.user);
+
+    app.passport.getJWT()
+      .then(token => {
+        return fetch(this.API_URI, {
+          method: 'POST',
+          body: importData,
+          headers: {'Authorization': token}
+        });
+      })
+      .then(response => {
+        return response.json();
+      })
+      .then(body => {
         if (body.code >= 400) {
           this.updateMessagePanel({status: 'error', details: body.message});
         }
       });
-    });
   }
 
   /**
@@ -98,17 +113,32 @@ export default class ImportLayout extends Component {
    * large datasets.
    */
   publishListings() {
-    // noinspection JSCheckFunctionSignatures
+    this.updateMessagePanel({status: 'notice', details: 'Publish started. This make take several minutes.'});
+
     Promise
       .all([
         this.hoodsModule.current.publishListings(),
-        this.tagsModule.current.publishListings(),
-        this.orgsModule.current.publishListings()
+        this.tagsModule.current.publishListings()
       ])
-      .then(this.venuesModule.current.publishListings())
-      .then(this.eventsModule.current.publishListings())
-      .catch((err) => {
-        this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      .then(() => {
+        // On its own b/c of high I/O load
+        return this.orgsModule.current.publishListings();
+      })
+      .then(() => {
+        // On its own b/c of high I/O load
+        return this.venuesModule.current.publishListings();
+      })
+      .then(() => {
+        // On its own b/c of high I/O load
+        return this.eventsModule.current.publishListings();
+      })
+      .then(() => {
+        console.log('~ all done!');
+        this.updateMessagePanel({status: 'success', details: 'Publish complete.'});
+      })
+      .catch(error => {
+        console.log('~ very top level error', error);
+        this.updateMessagePanel({status: 'error', details: JSON.stringify(error)});
       });
   }
 
@@ -136,37 +166,39 @@ export default class ImportLayout extends Component {
   render() {
     const showMessagePanel = this.state.messagePanelVisible;
     const messages = this.state.messages;
+    const publishButton = this.user.is_su ?
+      <button type={'button'} className={'button-primary button-publish'} onClick={this.publishListings}>
+        Publish All Pending Listings
+      </button> : '';
 
     return (
       <div className="container">
         <Header />
         <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
-        <h2>Import Data From CSV File</h2>
-        <ImportForm fileInputRef={this.fileInput} schemaSelectRef={this.schemaSelect} handleSubmit={this.importData} />
+        <h2>Import Data From BeDynamic</h2>
+        <ImportXMLForm fileInputRef={this.fileInput} handleImportClick={this.importData} />
         <h2>Review Unpublished Data</h2>
         <PendingEventsModule
           ref={this.eventsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
-          updateMessageList={this.updateMessagePanel}
+          updateMessagePanel={this.updateMessagePanel}
         />
         <PendingVenuesModule
           ref={this.venuesModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
-          updateMessageList={this.updateMessagePanel}
+          updateMessagePanel={this.updateMessagePanel}
         />
         <PendingOrganizersModule
           ref={this.orgsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
-          updateMessageList={this.updateMessagePanel}
+          updateMessagePanel={this.updateMessagePanel}
         />
         <PendingNeighborhoodsModule
           ref={this.hoodsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
-          updateMessageList={this.updateMessagePanel}
+          updateMessagePanel={this.updateMessagePanel}
         />
         <PendingTagsModule
           ref={this.tagsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
-          updateMessageList={this.updateMessagePanel}
+          updateMessagePanel={this.updateMessagePanel}
         />
-        <button type={'button'} className={'button-primary button-publish'} onClick={this.publishListings}>
-          Publish All Pending Listings
-        </button>
+        {publishButton}
       </div>
     );
   }

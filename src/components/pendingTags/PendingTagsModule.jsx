@@ -7,9 +7,9 @@ import PendingListingsModule from "../PendingListingsModule";
  */
 export default class PendingTagsModule extends PendingListingsModule {
   /**
-   * The class's constructor.
-   * @constructor
-   * @param {object} props
+   * The component's constructor.
+   *
+   * @param {{defaultPageSize: Number, defaultSortOrder: Object, updateMessagePanel: Function}} props
    */
   constructor(props) {
     super(props, 'tags');

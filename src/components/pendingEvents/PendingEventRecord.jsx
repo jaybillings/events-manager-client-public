@@ -5,8 +5,6 @@ import {renderCheckboxList, renderOptionList} from "../../utilities";
 import ListingRecordUniversal from "../ListingRecordUniversal";
 import StatusLabel from "../common/StatusLabel";
 
-import '../../styles/toggle.css';
-
 /**
  * PendingEventRecord is a component which displays a single pending event's record.
  * @class
@@ -16,7 +14,8 @@ export default class PendingEventRecord extends ListingRecordUniversal {
   /**
    * The class's constructor.
    * @constructor
-   * @param {object} props
+   *
+   * @param {{listing: Object, schema: String, venues: Array, orgs: Array, tags: Array, tagsForListing: Array, updateListing: Function, deleteListing: Function, queryForExisting: Function}} props
    */
   constructor(props) {
     super(props);
@@ -38,7 +37,7 @@ export default class PendingEventRecord extends ListingRecordUniversal {
   }
 
   /**
-   * Runs when the component mounts. Checks the event's write status.
+   * Runs when the component mounts. Checks the event's publish status.
    * @override
    */
   componentDidMount() {
@@ -49,20 +48,23 @@ export default class PendingEventRecord extends ListingRecordUniversal {
    * Handles the submit action by parsing new data and calling a function to create a new pending organizer. Also
    * modifies associations between the pending event and its tags.
    * @override
+   *
    * @param {Event} e
    */
-  handleSubmit(e) {
+  handleSaveClick(e) {
     e.preventDefault();
 
     const newData = {
       name: this.nameInput.current.value,
       start_date: Moment(this.startInput.current.value).valueOf(),
       end_date: Moment(this.endInput.current.value).valueOf(),
-      venue_id: this.venueInput.current.value,
-      org_id: this.orgInput.current.value,
+      venue_uuid: this.venueInput.current.value,
+      org_uuid: this.orgInput.current.value,
       description: this.descInput.current.value,
       flag_ongoing: this.ongoingInput.current.checked
     };
+
+    console.log('newData', newData);
 
     // Add non-required only if it has changed
     this.emailInput.current.value !== '' && (newData.email = this.emailInput.current.value);
@@ -79,49 +81,55 @@ export default class PendingEventRecord extends ListingRecordUniversal {
     let uncheckedBoxes = document.querySelectorAll('.js-checkbox:not(:checked)');
 
     checkedBoxes.forEach(input => {
-      if (!this.props.tagsForListing.includes(parseInt(input.value, 10))) {
-        tagsToSave.push({pending_event_id: this.props.listing.id, tag_uuid: input.value});
+      if (!this.props.tagsForListing.includes(input.value)) {
+        tagsToSave.push({event_uuid: this.props.listing.uuid, tag_uuid: input.value});
       }
     });
     uncheckedBoxes.forEach(input => {
-      if (this.props.tagsForListing.includes(parseInt(input.value, 10))) {
+      if (this.props.tagsForListing.includes(input.value)) {
         tagsToRemove.push(input.value)
       }
     });
 
-    this.props.updateListing({eventData: newData, tagsToSave: tagsToSave, tagsToRemove: tagsToRemove}).then(message => {
-      this.checkWriteStatus();
-    });
+    this.props.updateListing({eventData: newData, tagsToSave: tagsToSave, tagsToRemove: tagsToRemove});
   }
 
   /**
    * Renders the component.
    * @override
    * @render
+   *
    * @returns {*}
    */
   render() {
-    const pendingEvent = this.props.listing;
+    const event = this.props.listing;
+    const writeStatus = this.state.writeStatus;
     const venues = this.props.venues;
     const orgs = this.props.orgs;
     const tags = this.props.tags;
-    const eventTags = this.props.tagsForListing;
-    const writeStatus = this.state.writeStatus;
+    const tagsForListing = this.props.tagsForListing;
 
-    const startDate = Moment(pendingEvent.start_date).format('YYYY-MM-DD');
-    const endDate = Moment(pendingEvent.end_date).format('YYYY-MM-DD');
-    const createdAt = Moment(pendingEvent.created_at).calendar();
-    const updatedAt = Moment(pendingEvent.updated_at).calendar();
+    const startDate = Moment(event.start_date).format('YYYY-MM-DD');
+    const endDate = Moment(event.end_date).format('YYYY-MM-DD');
+    const createdAt = Moment(event.created_at).calendar();
+    const updatedAt = Moment(event.updated_at).calendar();
 
     return (
-      <form id={'pending-event-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
-        <label>
-          UUID
-          <input type={'text'} value={pendingEvent.uuid} disabled />
-        </label>
+      <form id={'pending-event-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
+        <div className={'block-warning'}
+             title={'Caution: This event is pending. It must be pushed live before it is visible on the site.'}>
+          <button type={'button'} onClick={this.handleDeleteClick}>Discard Event</button>
+          <button type={'submit'} className={"button-primary"}>Save Changes</button>
+        </div>
         <label>
           Status
-          <StatusLabel writeStatus={writeStatus} schema={'pending-events'} />
+          <div>
+            <StatusLabel writeStatus={writeStatus} schema={'pending-events'} />
+          </div>
+        </label>
+        <label>
+          UUID
+          <input type={'text'} value={event.uuid} readOnly />
         </label>
         <label>
           Created
@@ -133,72 +141,72 @@ export default class PendingEventRecord extends ListingRecordUniversal {
         </label>
         <label className={'required'}>
           Name
-          <input type="text" ref={this.nameInput} defaultValue={pendingEvent.name} required maxLength={100} />
+          <input type="text" ref={this.nameInput} defaultValue={event.name} required maxLength={100} />
         </label>
-        <label className={'required'}>
+        <label className={'required-ish'}>
           Start Date
-          <input type="date" ref={this.startInput} defaultValue={startDate} required />
+          <input type="date" ref={this.startInput} defaultValue={startDate} />
         </label>
-        <label className={'required'}>
+        <label className={'required-ish'}>
           End Date
-          <input type="date" ref={this.endInput} defaultValue={endDate} required />
+          <input type="date" ref={this.endInput} defaultValue={endDate} />
         </label>
-        <label className={'required'}>
+        <label className={'required-ish'}>
           Venue
-          <select ref={this.venueInput} defaultValue={pendingEvent.venue_uuid || ''} required>
-            {renderOptionList(venues, 'uuid')}
+          <select ref={this.venueInput} defaultValue={event.venue_uuid || ''}>
+            {renderOptionList(venues, 'venues', 'uuid')}
           </select>
         </label>
-        <label className={'required'}>
+        <label className={'required-ish'}>
           Organizer
-          <select ref={this.orgInput} defaultValue={pendingEvent.org_uuid || ''} required>
-            {renderOptionList(orgs, 'uuid')}
+          <select ref={this.orgInput} defaultValue={event.org_uuid || ''}>
+            {renderOptionList(orgs, 'organizers', 'uuid')}
           </select>
         </label>
-        <label className={'required'}>
+        <label className={'required-ish'}>
           Description
-          <textarea ref={this.descInput} defaultValue={pendingEvent.description} required maxLength={500} />
+          <textarea ref={this.descInput} defaultValue={event.description} maxLength={500} />
         </label>
         <label>
           Tags
-          {renderCheckboxList(tags, eventTags, 'uuid')}
+          {renderCheckboxList(tags, tagsForListing, 'uuid')}
         </label>
         <label>
           Email Address
-          <input type={"email"} ref={this.emailInput} defaultValue={pendingEvent.email} />
+          <input type={"email"} ref={this.emailInput} defaultValue={event.email} />
         </label>
         <label>
           URL
-          <input type={"url"} ref={this.urlInput} defaultValue={pendingEvent.url} />
+          <input type={"url"} ref={this.urlInput} defaultValue={event.url} />
         </label>
         <label>
           Phone Number
-          <input type={"tel"} ref={this.phoneInput} defaultValue={pendingEvent.phone} />
+          <input type={"tel"} ref={this.phoneInput} defaultValue={event.phone} />
         </label>
         <label>
           Event Hours
-          <input type={"text"} ref={this.hoursInput} defaultValue={pendingEvent.hours} />
+          <input type={"text"} ref={this.hoursInput} defaultValue={event.hours} />
         </label>
         <label>
           Ticketing URL
-          <input type={"url"} ref={this.ticketUrlInput} defaultValue={pendingEvent.ticket_url} />
+          <input type={"url"} ref={this.ticketUrlInput} defaultValue={event.ticket_url} />
         </label>
         <label>
           Ticketing Phone Number
-          <input type={"tel"} ref={this.ticketPhoneInput} defaultValue={pendingEvent.ticket_phone} />
+          <input type={"tel"} ref={this.ticketPhoneInput} defaultValue={event.ticket_phone} />
         </label>
         <label>
           Ticket Prices
-          <input type={"text"} ref={this.ticketPricesInput} defaultValue={pendingEvent.ticket_prices} />
+          <input type={"text"} ref={this.ticketPricesInput} defaultValue={event.ticket_prices} />
         </label>
         <label>
-          <input type={"checkbox"} ref={this.ongoingInput} defaultChecked={pendingEvent.flag_ongoing} />
+          <input type={"checkbox"} ref={this.ongoingInput} defaultChecked={event.flag_ongoing} />
           Ongoing Event
         </label>
         <div className={'block-warning'}
              title={'Caution: This event is pending. It must be pushed live before it is visible on the site.'}>
-          <button type={"submit"} className={"button-primary"}>Save Changes</button>
-          <button type={"button"} onClick={this.handleDeleteClick}>Discard Event</button>
+          <button type={'button'} onClick={this.handleDeleteClick}>Discard Event</button>
+          <button type={'submit'} className={"button-primary"}>Save Changes</button>
         </div>
       </form>
     );

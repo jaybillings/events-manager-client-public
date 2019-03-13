@@ -1,0 +1,21 @@
+.login-page form {
+  max-width: 600px;
+  margin-top: 2.5rem;
+}
+
+.login-page .message {
+  display: inline-block;
+  font-weight: 700;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.login-page .success-message {
+  color: var(--true-blue);
+  border: 2px solid var(--true-blue);
+}
+
+.login-page .warning-message {
+  color: var(--dull-orange);
+  border: 1px solid var(--dull-orange);
+}

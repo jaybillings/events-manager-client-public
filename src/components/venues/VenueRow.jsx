@@ -14,19 +14,21 @@ export default class VenueRow extends ListingRow {
   /**
    * The component's constructor.
    * @constructor
-   * @param {object} props
+   *
+   * @param {{schema: String, listing: Object, hood: Object, hoods: Array, updateListing: Function, deleteListing: Function, createPendingListing: Function, checkForPending: Function}} props
    */
   constructor(props) {
     super(props);
 
-    const hoodUUID = typeof this.props.hood === 'undefined' ? '' : this.props.hood.uuid;
+    const hoodID = typeof this.props.hood === 'undefined' ? this.props.hoods[0].id : this.props.hood.id;
 
-    Object.assign(this.state, { venueHood: hoodUUID });
+    Object.assign(this.state, {venueHood: hoodID});
   }
 
   /**
-   * Handles the save button click by parsing new data and triggering a function to update the event.
+   * Handles the save button click by triggering the updating of an existing listing.
    * @override
+   *
    * @param {Event} e
    */
   handleSaveClick(e) {
@@ -35,7 +37,7 @@ export default class VenueRow extends ListingRow {
     const newData = {
       uuid: this.props.listing.uuid,
       name: this.state.listingName,
-      hood_uuid: this.state.venueHood
+      hood_id: this.state.venueHood
     };
 
     this.props.updateListing(this.props.listing.id, newData).then(() => {
@@ -44,21 +46,41 @@ export default class VenueRow extends ListingRow {
   }
 
   /**
+   * Hands the copy button click by triggering the creation of a pending listing using the live listing's data.
+   *
+   * @param {Event} e
+   */
+  handleCopyClick(e) {
+    e.stopPropagation();
+
+    // noinspection JSUnusedLocalSymbols
+    let {id, hood_id, ...venueData} = this.props.listing;
+
+    venueData.hood_uuid = this.props.hood.uuid;
+    venueData.created_at = Moment(venueData.created_at).valueOf();
+    venueData.updated_at = Moment(venueData.updated_at).valueOf();
+
+    this.props.createPendingListing(venueData).then(() => {
+      this.listingHasPending();
+    });
+  }
+
+  /**
    * Renders the component.
    * @note The render has two different paths depending on whether the row can be edited.
    * @override
    * @render
+   *
    * @returns {*}
    */
   render() {
     const id = this.props.listing.id;
     const name = this.state.listingName;
-    const hoods = this.props.hoods;
     const updatedAt = Moment(this.props.listing.updated_at).calendar();
 
-    const defaultHood = this.state.venueHood || this.props.hoods[0].uuid;
-
     if (this.state.editable) {
+      const defaultHood = this.state.venueHood || this.props.hoods[0].id;
+
       return (
         <tr className={'schema-row'}>
           <td>
@@ -66,21 +88,26 @@ export default class VenueRow extends ListingRow {
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
           <td><input type={'text'} name={'listingName'} value={name} onChange={this.handleInputChange} /></td>
-          <td><select name={'venueHood'} value={defaultHood}
-                      onChange={this.handleInputChange}>{renderOptionList(hoods)}</select></td>
+          <td>
+            <select name={'venueHood'} value={defaultHood} onChange={this.handleInputChange}>
+              {renderOptionList(this.props.hoods, 'neighborhoods')}
+            </select>
+          </td>
           <td>{updatedAt}</td>
         </tr>
       );
     }
 
     const hoodNameLink = this.props.hood
-      ? <Link to={`/neighborhoods/${this.props.hood.id}`}>{ this.props.hood.name }</Link> : 'NO NEIGHBORHOOD';
+      ? <Link to={`/neighborhoods/${this.props.hood.id}`}>{this.props.hood.name}</Link> : 'NO NEIGHBORHOOD';
+    const deleteButton = this.user.is_admin
+      ? <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button> : '';
 
     return (
       <tr className={'schema-row'}>
         <td>
-          <button type={'button'} onClick={this.startEdit}>Edit</button>
-          <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button>
+          {this.renderEditButton()}
+          {deleteButton}
         </td>
         <td><Link to={`/venues/${id}`}>{name}</Link></td>
         <td>{hoodNameLink}</td>

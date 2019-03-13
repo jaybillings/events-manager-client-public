@@ -5,6 +5,11 @@
   border: 1px solid var(--border-color);
 }
 
+.messageContainer header {
+  margin-bottom: 1.5rem;
+  border-width: 1px;
+}
+
 .messageContainer h3 {
   margin: 0;
   padding: 0 0 1rem;
@@ -27,6 +32,16 @@
   border: none;
   cursor: pointer;
 }
+
+.messageContainer span {
+  padding-right: 1rem;
+}
+
+.messageContainer strong {
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
 .messageContainer ul {
   margin-bottom: 0;
 }
@@ -37,14 +52,8 @@
   padding: 1rem;
 }
 
-.messageContainer span {
-  font-size: 1.1em;
-  font-weight: 600;
-  padding-right: 1rem;
-}
-
 .messageContainer li.success {
-  border: 3px solid var(--success-color);
+  border: 3px solid var(--true-green);
 }
 
 .messageContainer li.error {
@@ -55,23 +64,43 @@
   border: 2px solid var(--warning-color);
 }
 
+.messageContainer li.notice {
+  border: 2px solid var(--true-blue);
+}
+
 .messageContainer li.info {
   border: 2px solid var(--light-gray);
   color: var(--medium-gray);
 }
 
-.messageContainer li.success span {
-  color: var(--success-color);
+.messageContainer li.success strong {
+  color: var(--true-green);
 }
 
-.messageContainer li.error span {
+.messageContainer li.error strong {
   color: var(--error-color);
 }
 
-.messageContainer li.warning span {
+.messageContainer li.warning strong {
   color: var(--warning-color);
+}
+
+.messageContainer li.notice strong {
+  color: var(--true-blue);
 }
 
 .messageContainer li.info span {
   color: var(--light-gray);
+}
+
+.messageContainer > div {
+  max-height: 500px;
+  overflow: auto;
+}
+
+.messageContainer .timestamp {
+  float: right;
+  color: var(--medium-gray);
+  font-weight: 600;
+  line-height: 30px;
 }

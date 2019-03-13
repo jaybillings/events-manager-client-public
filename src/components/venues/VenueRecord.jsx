@@ -13,6 +13,7 @@ export default class VenueRecord extends ListingRecordUniversal {
   /**
    * The class's constructor.
    * @constructor
+   *
    * @param {object} props
    */
   constructor(props) {
@@ -32,31 +33,34 @@ export default class VenueRecord extends ListingRecordUniversal {
   /**
    * Handles the submit action by parsing new data and calling a function to create a new venue.
    * @override
+   *
    * @param {Event} e
    */
-  handleSubmit(e) {
+  handleSaveClick(e) {
     e.preventDefault();
 
     const newData = {
       name: this.nameInput.current.value,
       hood_id: parseInt(this.hoodList.current.value, 10),
-      description: this.descInput.current.value,
-      email: this.emailInput.current.value,
-      url: this.urlInput.current.value,
-      phone: this.phoneInput.current.value,
-      address_street: this.streetInput.current.value,
-      address_city: this.cityInput.current.value,
-      address_state: this.stateInput.current.value,
-      address_zip: this.zipInput.current.value
+      description: this.descInput.current.value
     };
+
+    // Optional data -- only include if set
+    this.emailInput.current.value !== '' && (newData.email = this.emailInput.current.value);
+    this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value);
+    this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value);
+    this.streetInput.current.value !== '' && (newData.street = this.streetInput.current.value);
+    this.cityInput.current.value !== '' && (newData.city = this.cityInput.current.value);
+    this.stateInput.current.value !== '' && (newData.state = this.stateInput.current.value);
+    this.zipInput.current.value !== '' && (newData.zip = this.zipInput.current.value);
 
     this.props.updateListing(newData);
   }
 
   /**
    * Renders the component.
-   *
    * @render
+   *
    * @returns {*}
    */
   render() {
@@ -65,63 +69,77 @@ export default class VenueRecord extends ListingRecordUniversal {
     const createdAt = Moment(venue.created_at).calendar();
     const updatedAt = Moment(venue.updated_at).calendar();
 
+    const publishButton = this.user.is_su
+      ? <button type={'submit'} className={'button-primary'}>Save Changes</button> : '';
+    const deleteButton = this.user.is_admin ?
+      <button type={'button'} onClick={this.handleDeleteClick}>Delete Venue</button> : '';
+    const disableAll = !this.user.is_su;
+
     return (
-      <form id={'venue-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
+      <form id={'venue-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
         <label>
           UUID
-          <input type={'text'} value={venue.uuid} disabled />
+          <input type={'text'} value={venue.uuid} readOnly />
         </label>
         <label>
           Created
-          <input type={'text'} value={createdAt} disabled />
+          <input type={'text'} value={createdAt} readOnly />
         </label>
         <label>
           Last Updated
-          <input type={'text'} value={updatedAt} disabled />
+          <input type={'text'} value={updatedAt} readOnly />
         </label>
         <label className={'required'}>
           Name
-          <input type={'text'} ref={this.nameInput} defaultValue={venue.name} required maxLength={100} />
+          <input type={'text'} ref={this.nameInput} defaultValue={venue.name} disabled={disableAll} required
+                 maxLength={100} />
         </label>
         <label className={'required'}>
           Neighborhood
-          <select ref={this.hoodList} defaultValue={venue.hood_id || ''} required>{renderOptionList(hoods)}</select>
+          <select ref={this.hoodList} defaultValue={venue.hood_id || ''} disabled={disableAll} required>
+            {renderOptionList(hoods, 'neighborhoods')}
+          </select>
         </label>
         <label className={'required'}>
           Description
-          <textarea ref={this.descInput} defaultValue={venue.description} required maxLength={500} />
+          <textarea ref={this.descInput} defaultValue={venue.description} disabled={disableAll} required
+                    maxLength={500} />
         </label>
         <label>
           Email
-          <input type={'email'} ref={this.emailInput} defaultValue={venue.email} maxLength={50} />
+          <input type={'email'} ref={this.emailInput} defaultValue={venue.email} maxLength={50} disabled={disableAll} />
         </label>
         <label>
           URL
-          <input type={'url'} ref={this.urlInput} defaultValue={venue.url} maxLength={100} />
+          <input type={'url'} ref={this.urlInput} defaultValue={venue.url} maxLength={100} disabled={disableAll} />
         </label>
         <label>
           Phone Number
-          <input type={'tel'} ref={this.phoneInput} defaultValue={venue.phone} maxLength={20} />
+          <input type={'tel'} ref={this.phoneInput} defaultValue={venue.phone} maxLength={20} disabled={disableAll} />
         </label>
         <label>
           Street Address
-          <input type={'text'} ref={this.streetInput} defaultValue={venue.address_street} maxLength={100} />
+          <input type={'text'} ref={this.streetInput} defaultValue={venue.address_street} maxLength={100}
+                 disabled={disableAll} />
         </label>
         <label>
           City
-          <input type={'text'} ref={this.cityInput} defaultValue={venue.address_city} maxLength={50} />
+          <input type={'text'} ref={this.cityInput} defaultValue={venue.address_city} maxLength={50}
+                 disabled={disableAll} />
         </label>
         <label>
           State
-          <input type={'text'} ref={this.stateInput} defaultValue={venue.address_state} maxLength={50} />
+          <input type={'text'} ref={this.stateInput} defaultValue={venue.address_state} maxLength={50}
+                 disabled={disableAll} />
         </label>
         <label>
           Zip Code
-          <input type={'text'} ref={this.zipInput} defaultValue={venue.address_zip} maxLength={20} />
+          <input type={'text'} ref={this.zipInput} defaultValue={venue.address_zip} maxLength={20}
+                 disabled={disableAll} />
         </label>
         <div>
-          <button type={'submit'} className={'button-primary'}>Save Changes</button>
-          <button type={'button'} onClick={this.handleDeleteClick}>Delete Venue</button>
+          {publishButton}
+          {deleteButton}
         </div>
       </form>
     );

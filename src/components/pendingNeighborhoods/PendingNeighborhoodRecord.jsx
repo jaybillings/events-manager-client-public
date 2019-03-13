@@ -11,25 +11,37 @@ import StatusLabel from "../common/StatusLabel";
  */
 export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
   /**
+   * Runs when the component mounts. Checks for write status of listing.
+   * @override
+   */
+  componentDidMount() {
+    this.checkWriteStatus();
+  }
+
+  /**
    * Renders the component.
+   * @override
    * @render
+   *
    * @returns {*}
    */
   render() {
-    const pendingHood = this.props.listing;
-    const createdAt = Moment(pendingHood.created_at).calendar();
-    const updatedAt = Moment(pendingHood.updated_at).calendar();
-    const writeStatus = this.props.writeStatus;
+    const hood = this.props.listing;
+    const writeStatus = this.state.writeStatus;
+    const createdAt = Moment(hood.created_at).calendar();
+    const updatedAt = Moment(hood.updated_at).calendar();
 
     return (
-      <form id={'pending-hood-listing-form'} className={'schema-record'} onSubmit={this.handleSubmit}>
-        <label>
-          UUID
-          <input type={'text'} value={pendingHood.uuid} disabled />
-        </label>
+      <form id={'pending-hood-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
         <label>
           Status
-          <StatusLabel writeStatus={writeStatus} schema={'pending-neighborhoods'} />
+          <div>
+            <StatusLabel writeStatus={writeStatus} schema={'pending-neighborhoods'} />
+          </div>
+        </label>
+        <label>
+          UUID
+          <input type={'text'} value={hood.uuid} readOnly />
         </label>
         <label>
           Created
@@ -41,11 +53,12 @@ export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
         </label>
         <label className={'required'}>
           Name
-          <input type={'text'} ref={this.nameInput} defaultValue={pendingHood.name} required maxLength={100} />
+          <input type={'text'} ref={this.nameInput} defaultValue={hood.name} required maxLength={100} />
         </label>
-        <div className={'block-warning'} title={'Caution: This neighborhood is pending. It must be pushed live before it is visible on the site.'}>
-          <button type="submit" className={'button-primary'}>Save Changes</button>
-          <button type="button" onClick={this.handleDeleteClick}>Discard Neighborhood</button>
+        <div className={'block-warning'}
+             title={'Caution: This neighborhood is pending. It must be pushed live before it is visible on the site.'}>
+          <button type={'button'} onClick={this.handleDeleteClick}>Discard Neighborhood</button>
+          <button type={'submit'} className={'button-primary'}>Save Changes</button>
         </div>
       </form>
     );

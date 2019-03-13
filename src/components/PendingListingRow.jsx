@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import Moment from 'moment';
 import {Link} from "react-router-dom";
-import {makeTitleCase} from "../utilities";
 
 import StatusLabel from "./common/StatusLabel";
 
@@ -16,7 +15,8 @@ export default class PendingListingRow extends Component {
   /**
    * The component's constructor.
    * @constructor
-   * @param {object} props
+   *
+   * @param {{schema: String, listing: Object, selected: Boolean, updateListing: Function, removeListing: Function, selectListing: Function, queryForExisting: Function}} props
    */
   constructor(props) {
     super(props);
@@ -51,21 +51,25 @@ export default class PendingListingRow extends Component {
    *   - duplicate (will make a new listing that might duplicate an existing listing)
    */
   checkWriteStatus() {
-    this.props.queryForExisting(this.props.listing).then(message => {
+    const listing = this.props.listing;
+
+    this.props.queryForExisting(listing).then(message => {
       let writeStatus;
 
       if (!message.total) {
         writeStatus = 'new';
       } else {
         const uuids = message.data.map(row => row.uuid);
-        if (uuids.includes(this.props.listing.uuid)) {
+        if (uuids.includes(listing.uuid)) {
           writeStatus = 'update';
         } else {
           writeStatus = 'duplicate';
         }
       }
 
-      this.setState({writeStatus: writeStatus});
+      this.setState({writeStatus});
+    }, err => {
+      console.log('error checking write status', JSON.stringify(err));
     });
   }
 
@@ -94,7 +98,7 @@ export default class PendingListingRow extends Component {
   handleSaveClick(e) {
     e.stopPropagation();
 
-    this.props.updateListing(this.props.listing.id, {name: this.nameInput.current.value}).then(() => {
+    this.props.updateListing(this.props.listing, {name: this.nameInput.current.value}).then(() => {
       this.checkWriteStatus();
       this.setState({editable: false});
     });
@@ -106,7 +110,7 @@ export default class PendingListingRow extends Component {
    */
   handleDeleteClick(e) {
     e.stopPropagation();
-    this.props.removePendingListing(this.props.listing.id);
+    this.props.removeListing(this.props.listing);
   }
 
   /**
@@ -131,18 +135,17 @@ export default class PendingListingRow extends Component {
     const selected = this.props.selected;
     const writeStatus = this.state.writeStatus;
     const selectClass = selected ? ' is-selected' : '';
-
     const schema = this.props.schema;
-    const titleCaseSchema = makeTitleCase(this.props.schema);
 
     if (this.state.editable) {
       return (
         <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
           <td>
-            <button type={'button'} onClick={this.handleSaveClick}>Save</button>
+            <button type={'button'} className={'emphasize'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
-          <td><input type={'text'} ref={this.nameInput} defaultValue={pendingListing.name} /></td>
+          <td><input type={'text'} ref={this.nameInput} defaultValue={pendingListing.name}
+                     onClick={e => e.stopPropagation()} /></td>
           <td>{createdAt}</td>
           <td><StatusLabel writeStatus={writeStatus} schema={schema} /></td>
         </tr>
@@ -152,10 +155,10 @@ export default class PendingListingRow extends Component {
     return (
       <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
         <td>
-          <button type={'button'} onClick={this.startEdit}>Edit</button>
-          <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Discard</button>
+          <button type={'button'} className={'emphasize'} onClick={this.startEdit}>Edit</button>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard</button>
         </td>
-        <td><Link to={`/pending${titleCaseSchema}/${pendingListing.id}`}>{pendingListing.name}</Link></td>
+        <td><Link to={`/pending${schema}/${pendingListing.id}`}>{pendingListing.name}</Link></td>
         <td>{createdAt}</td>
         <td><StatusLabel writeStatus={writeStatus} schema={schema} /></td>
       </tr>
