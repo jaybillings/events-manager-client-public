@@ -44,8 +44,6 @@ export default class SingleVenueLayout extends SingleListingLayoutUniversal {
    * @override
    */
   componentWillUnmount() {
-    super.componentWillUnmount();
-
     this.hoodsService
       .removeAllListeners('created')
       .removeAllListeners('updated')

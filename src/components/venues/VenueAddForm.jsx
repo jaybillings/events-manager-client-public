@@ -27,19 +27,6 @@ export default class VenueAddForm extends ListingAddForm {
     this.cityInput = React.createRef();
     this.stateInput = React.createRef();
     this.zipInput = React.createRef();
-
-    this.buildPendingListing = this.buildPendingListing.bind(this);
-  }
-
-  /**
-   * Handles the submit action by triggering the creation of a new pending listing.
-   *
-   * @param {Event} e
-   */
-  handleAddPendingClick(e) {
-    e.preventDefault();
-    const listingData = this.buildPendingListing();
-    this.props.createPendingListing(listingData);
   }
 
   /**
@@ -52,37 +39,8 @@ export default class VenueAddForm extends ListingAddForm {
     const venueObj = {
       name: this.nameInput.current.value,
       description: this.descInput.current.value,
-      hood_id: parseInt(this.hoodList.current.value, 10) || this.props.hoods[0].id
+      hood_uuid: this.hoodList.current.value || this.props.hoods[0].uuid
     };
-
-    // Optional data
-    this.emailInput.current.value !== '' && (venueObj.email = this.emailInput.current.value);
-    this.urlInput.current.value !== '' && (venueObj.url = this.urlInput.current.value);
-    this.phoneInput.current.value !== '' && (venueObj.phone = this.phoneInput.current.value);
-    this.streetInput.current.value !== '' && (venueObj.address_street = this.streetInput.current.value);
-    this.cityInput.current.value !== '' && (venueObj.address_city = this.cityInput.current.value);
-    this.stateInput.current.value !== '' && (venueObj.address_state = this.stateInput.current.value);
-    this.zipInput.current.value !== '' && (venueObj.address_zip = this.zipInput.current.value);
-
-    return venueObj;
-  }
-
-  /**
-   * Compiles the data required for creating a new pending listing.
-   *
-   * @returns {Object}
-   */
-  buildPendingListing() {
-    const venueObj = {
-      name: this.nameInput.current.value,
-      description: this.descInput.current.value
-    };
-
-    // Linked schema
-    const venueHood = this.props.hoods.find(hood => {
-      return hood.id === parseInt(this.hoodList.current.value, 10)
-    });
-    venueObj.hood_uuid = venueHood.uuid || this.props.hoods[0].uuid;
 
     // Optional data
     this.emailInput.current.value !== '' && (venueObj.email = this.emailInput.current.value);
@@ -134,7 +92,7 @@ export default class VenueAddForm extends ListingAddForm {
         <label className={'required'}>
           Neighborhood
           <select ref={this.hoodList} defaultValue={defaultHood}>
-            {renderOptionList(this.props.hoods, 'neighborhoods')}
+            {renderOptionList(this.props.hoods, 'neighborhoods', 'uuid')}
           </select>
         </label>
         <label className={'required'}>

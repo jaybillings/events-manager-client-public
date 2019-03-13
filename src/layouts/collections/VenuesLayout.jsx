@@ -139,7 +139,7 @@ export default class VenuesLayout extends ListingsLayout {
             <VenueRow
               key={venue.id} schema={'venues'} listing={venue} hoods={hoods}
               hood={hoods.find(n => {
-                return n.id === venue.hood_id
+                return n.uuid === venue.hood_uuid
               })}
               updateListing={this.updateListing} deleteListing={this.deleteListing}
               createPendingListing={this.createPendingListing} checkForPending={this.checkForPending}
