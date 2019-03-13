@@ -85,7 +85,7 @@ export default class ListingAddForm extends Component {
           <input type={'text'} ref={this.nameInput} required maxLength={100} />
         </label>
         <div>
-          <button type={'button'} onClick={this.clearForm}>Reset</button>
+          <button type={'button'} className={'default'} onClick={this.clearForm}>Reset</button>
           <button type={'submit'} className={'button-primary'}>{submitLabel}</button>
         </div>
       </form>

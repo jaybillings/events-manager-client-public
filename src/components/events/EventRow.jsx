@@ -123,8 +123,8 @@ export default class EventRow extends ListingRow {
       return (
         <tr className={'schema-row'}>
           <td>
-            <button type={'submit'} className={'emphasize'} onClick={this.handleSaveClick}>Save</button>
-            <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
+            <button type={'submit'} className={'emphasize more'} onClick={this.handleSaveClick}>Save</button>
+            <button type={'button'} className={'default'} onClick={this.cancelEdit}>Cancel</button>
           </td>
           <td><input type={'text'} name={'listingName'} value={name} onChange={this.handleInputChange} /></td>
           <td><input type={'date'} name={'eventStart'} value={startDateVal} onChange={this.handleInputChange} /></td>

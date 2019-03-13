@@ -112,7 +112,7 @@ button[disabled]:hover {
   color: var(--medium-gray);
 }
 
-.emphasize {
+.emphasize, .emphasize:focus {
   padding: 0 2rem;
   color: var(--true-blue);
   border-color: var(--true-blue);
@@ -125,9 +125,15 @@ button[disabled]:hover {
   border-color: var(--true-blue);
 }
 
-.emphasize:focus {
-  border-color: var(--true-blue);
+.emphasize.more {
+  color: var(--true-white);
+  background: var(--true-blue);
+}
+
+.emphasize.more:hover, button.button-primary:hover {
+  background: var(--true-blue);
   box-shadow: 0 0 5px 0 var(--true-blue);
+  border: 1px solid var(--true-white);
 }
 
 .warn {

@@ -79,7 +79,7 @@ export default class AddUserForm extends Component {
           <button type={'button'} onClick={this.generatePassword}>Generate Password</button>
         </label>
         <div className={'buttons'}>
-          <button type={'button'} onClick={this.clearForm}>Reset</button>
+          <button type={'button'} className={'default'} onClick={this.clearForm}>Reset</button>
           <button type={'submit'} className={'emphasize'}>Add User</button>
         </div>
       </form>

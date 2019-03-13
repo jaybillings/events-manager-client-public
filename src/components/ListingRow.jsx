@@ -151,8 +151,8 @@ export default class ListingRow extends Component {
       return (
         <tr className={'schema-row'}>
           <td>
-            <button type={'button'} className={'emphasize'} onClick={this.handleSaveClick}>Save</button>
-            <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
+            <button type={'button'} className={'emphasize more'} onClick={this.handleSaveClick}>Save</button>
+            <button type={'button'} className={'default'} onClick={this.cancelEdit}>Cancel</button>
           </td>
           <td><input type={'text'} name={'listingName'} value={name} onChange={this.handleInputChange} /></td>
           <td>{updatedAt}</td>

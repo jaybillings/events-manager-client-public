@@ -128,7 +128,7 @@ export default class VenueAddForm extends ListingAddForm {
           <input type={'text'} ref={this.zipInput} />
         </label>
         <div>
-          <button type={'button'} onClick={this.clearForm}>Reset</button>
+          <button type={'button'} className={'default'} onClick={this.clearForm}>Reset</button>
           <button type={'submit'} className={'button-primary'}>{submitLabel}</button>
         </div>
       </form>
