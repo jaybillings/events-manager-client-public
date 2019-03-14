@@ -142,9 +142,8 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
           Zip Code
           <input type={'text'} ref={this.zipInput} defaultValue={venue.address_zip} />
         </label>
-        <div className={'block-warning'}
-             title={'Caution: This venue is pending. It must be pushed live before it is visible on the site.'}>
-          <button type={'button'} onClick={this.handleDeleteClick}>Discard Venue</button>
+        <div>
+          <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Discard Venue</button>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
         </div>
       </form>

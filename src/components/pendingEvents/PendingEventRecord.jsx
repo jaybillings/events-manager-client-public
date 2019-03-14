@@ -116,9 +116,8 @@ export default class PendingEventRecord extends ListingRecordUniversal {
 
     return (
       <form id={'pending-event-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
-        <div className={'block-warning'}
-             title={'Caution: This event is pending. It must be pushed live before it is visible on the site.'}>
-          <button type={'button'} onClick={this.handleDeleteClick}>Discard Event</button>
+        <div>
+          <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Discard Event</button>
           <button type={'submit'} className={"button-primary"}>Save Changes</button>
         </div>
         <label>
@@ -203,9 +202,8 @@ export default class PendingEventRecord extends ListingRecordUniversal {
           <input type={"checkbox"} ref={this.ongoingInput} defaultChecked={event.flag_ongoing} />
           Ongoing Event
         </label>
-        <div className={'block-warning'}
-             title={'Caution: This event is pending. It must be pushed live before it is visible on the site.'}>
-          <button type={'button'} onClick={this.handleDeleteClick}>Discard Event</button>
+        <div>
+          <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Discard Event</button>
           <button type={'submit'} className={"button-primary"}>Save Changes</button>
         </div>
       </form>

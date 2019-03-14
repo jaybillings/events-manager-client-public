@@ -44,7 +44,7 @@ export default class Filters extends Component {
    * @returns {*}
    */
   renderButton(type, text, isActive) {
-    let activeClass = isActive ? 'button-primary' : '';
+    const activeClass = isActive ? 'button-primary' : 'default';
     return <button key={`${type}-${isActive}`} type={'button'} data-filter-type={type} className={activeClass} onClick={this.handleSelection}>{text}</button>
   }
 

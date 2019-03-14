@@ -6,10 +6,6 @@
   margin-bottom: 0;
 }
 
-.account-page button.emphasis {
-  font-size: 1.5rem;
-}
-
 .account-page .panel {
   position: relative;
   margin-top: 2.5rem;
@@ -25,6 +21,7 @@
 }
 
 .account-page .panel h3 {
+  position: absolute;
   width: max-content;
   font-size: 0.75em;
   background: linear-gradient(180deg, var(--pale-cream) 50%, var(--true-white) 50%);
@@ -37,8 +34,12 @@
   letter-spacing: 1px;
 }
 
-.account-page .panel .input-container, .account-page .panel .button-container {
+.account-page .panel .input-container {
   margin-top: 1rem;
+}
+
+.account-page .panel .button-container {
+  margin-top: 0;
 }
 
 .account-page .danger button {

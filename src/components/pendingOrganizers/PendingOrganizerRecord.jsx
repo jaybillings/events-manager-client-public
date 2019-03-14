@@ -102,9 +102,8 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
           Phone #
           <input type={'tel'} ref={this.phoneInput} defaultValue={org.phone} maxLength={20} />
         </label>
-        <div className={'block-warning'}
-             title={'Caution: This organizer is pending. It must be pushed live before it is visible on the site.'}>
-          <button type={'button'} onClick={this.handleDeleteClick}>Discard Organizer</button>
+        <div>
+          <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Discard Organizer</button>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
         </div>
       </form>

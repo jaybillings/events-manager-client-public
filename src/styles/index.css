@@ -112,14 +112,18 @@ button[disabled]:hover {
   color: var(--medium-gray);
 }
 
-.emphasize, .emphasize:focus {
+th:last-child, td:last-child {
+  padding-right: 15px;
+}
+
+.emphasize {
   padding: 0 2rem;
   color: var(--true-blue);
   border-color: var(--true-blue);
   background: var(--true-white);
 }
 
-.emphasize:hover, .emphasize:active {
+.emphasize:hover, .emphasize:focus, .emphasize:active {
   background: var(--true-blue);
   color: var(--true-white);
   border-color: var(--true-blue);
@@ -130,27 +134,34 @@ button[disabled]:hover {
   background: var(--true-blue);
 }
 
-.emphasize.more:hover, button.button-primary:hover {
+.emphasize.more:hover, button.button-primary:not([disabled]):hover {
   background: var(--true-blue);
   box-shadow: 0 0 5px 0 var(--true-blue);
   border: 1px solid var(--true-white);
 }
 
 .warn {
+  padding: 0 2rem;
   color: var(--bright-pink);
   border-color: var(--bright-pink);
   background: var(--true-white);
 }
 
-.warn:hover, .warn:active {
-  color: var(--true-white);
+.warn:hover, .warn:active, .warn:focus {
   background: var(--bright-pink);
+  color: var(--true-white);
   border-color: var(--bright-pink);
 }
 
-.warn:focus {
-  border-color: var(--bright-pink);
+.warn.more {
+  color: var(--true-white);
+  background: var(--bright-pink);
+}
+
+.warn.more:hover {
+  background: var(--bright-pink);
   box-shadow: 0 0 5px 0 var(--bright-pink);
+  border: 1px solid var(--true-white);
 }
 
 .load-message {
@@ -186,8 +197,12 @@ button[disabled]:hover {
   margin-top: 2.5rem;
 }
 
-th:last-child, td:last-child {
-  padding-right: 15px;
+.tags-container {
+  display: grid;
+  width: 50%;
+  margin: 1rem 0 0;
+  grid-column-gap: 2rem;
+  grid-template-columns: repeat(3, max-content);
 }
 
 /* The following are container-specific styles that weren't worth putting in their own file */

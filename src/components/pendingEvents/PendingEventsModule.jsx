@@ -327,7 +327,7 @@ export default class PendingEventsModule extends PendingListingsModule {
           </tbody>
         </table>
         {publishButton}
-        <button type={'button'} onClick={this.discardListings} disabled={selectedEvents.length === 0}>
+        <button type={'button'} className={'publish'} onClick={this.discardListings} disabled={selectedEvents.length === 0}>
           Discard {selectedEvents.length || ''} {schemaLabel}
         </button>
       </div>
