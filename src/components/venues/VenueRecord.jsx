@@ -41,7 +41,7 @@ export default class VenueRecord extends ListingRecordUniversal {
 
     const newData = {
       name: this.nameInput.current.value,
-      hood_id: parseInt(this.hoodList.current.value, 10),
+      hood_uuid: this.hoodList.current.value,
       description: this.descInput.current.value
     };
 
@@ -72,7 +72,7 @@ export default class VenueRecord extends ListingRecordUniversal {
     const publishButton = this.user.is_su
       ? <button type={'submit'} className={'button-primary'}>Save Changes</button> : '';
     const deleteButton = this.user.is_admin ?
-      <button type={'button'} onClick={this.handleDeleteClick}>Delete Venue</button> : '';
+      <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete Venue</button> : '';
     const disableAll = !this.user.is_su;
 
     return (
@@ -96,8 +96,8 @@ export default class VenueRecord extends ListingRecordUniversal {
         </label>
         <label className={'required'}>
           Neighborhood
-          <select ref={this.hoodList} defaultValue={venue.hood_id || ''} disabled={disableAll} required>
-            {renderOptionList(hoods, 'neighborhoods')}
+          <select ref={this.hoodList} defaultValue={venue.hood_uuid || ''} disabled={disableAll} required>
+            {renderOptionList(hoods, 'neighborhoods', 'uuid')}
           </select>
         </label>
         <label className={'required'}>
@@ -138,8 +138,8 @@ export default class VenueRecord extends ListingRecordUniversal {
                  disabled={disableAll} />
         </label>
         <div>
-          {publishButton}
           {deleteButton}
+          {publishButton}
         </div>
       </form>
     );

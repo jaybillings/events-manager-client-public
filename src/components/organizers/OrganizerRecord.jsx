@@ -56,7 +56,7 @@ export default class OrganizerRecord extends ListingRecordUniversal {
     const publishButton = this.user.is_su ?
       <button type={'submit'} className={'button-primary'}>Save Changes</button> : '';
     const deleteButton = this.user.is_admin ?
-      <button type={'button'} onClick={this.handleDeleteClick}>Delete Organizer</button> : '';
+      <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete Organizer</button> : '';
     const disableAll = !this.user.is_su;
 
     return (
@@ -90,8 +90,8 @@ export default class OrganizerRecord extends ListingRecordUniversal {
           <input type={'text'} ref={this.phoneInput} defaultValue={org.phone} maxLength={20} disabled={disableAll} />
         </label>
         <div>
-          {publishButton}
           {deleteButton}
+          {publishButton}
         </div>
       </form>
     );

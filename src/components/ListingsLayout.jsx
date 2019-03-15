@@ -29,7 +29,8 @@ export default class ListingsLayout extends Component {
     this.schema = schema;
     this.defaultPageSize = 5;
     this.defaultTableSort = ['updated_at', -1];
-    this.defaultQuery = {$sort: {name: 1}, $select: ['name', 'uuid'], $limit: 1000};
+    this.defaultLimit = 3000;
+    this.defaultQuery = {$sort: {name: 1}, $select: ['name', 'uuid'], $limit: this.defaultLimit};
 
     this.state = {
       listings: [], listingsTotal: 0, listingsLoaded: false, newPendingListing: {},

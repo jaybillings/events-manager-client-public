@@ -58,8 +58,8 @@ export default class EventRecord extends ListingRecordUniversal {
       name: this.nameInput.current.value,
       start_date: Moment(this.startInput.current.value).valueOf(),
       end_date: Moment(this.endInput.current.value).valueOf(),
-      venue_id: parseInt(this.venueInput.current.value, 10),
-      org_id: parseInt(this.orgInput.current.value, 10),
+      venue_uuid: this.venueInput.current.value,
+      org_uuid: this.orgInput.current.value,
       description: this.descInput.current.value,
       flag_ongoing: this.ongoingInput.current.checked
     };
@@ -74,25 +74,18 @@ export default class EventRecord extends ListingRecordUniversal {
     this.ticketPricesInput.current.value !== '' && (newData.ticket_prices = this.ticketPricesInput.current.value);
 
     // Tag Data
-    let tagsToSave = [], tagsToRemove = [];
+    let tagsToSave = [];
     const checkedBoxes = document.querySelectorAll('.js-checkbox:checked');
-    const uncheckedBoxes = document.querySelectorAll('.js-checkbox:not(:checked)');
 
     checkedBoxes.forEach(input => {
       if (!this.props.tagsForListing.includes(parseInt(input.value, 10))) {
-        tagsToSave.push({event_id: this.props.listing.id, tag_id: input.value});
-      }
-    });
-    uncheckedBoxes.forEach(input => {
-      if (this.props.tagsForListing.includes(parseInt(input.value, 10))) {
-        tagsToRemove.push(input.value)
+        tagsToSave.push({event_uuid: this.props.listing.uuid, tag_uuid: input.value});
       }
     });
 
     this.props.updateListing({
       eventData: newData,
       tagsToSave: tagsToSave,
-      tagsToRemove: tagsToRemove,
       publishState: publishOrDrop
     });
   }
@@ -146,11 +139,11 @@ export default class EventRecord extends ListingRecordUniversal {
     const publishButton = this.user.is_su
     ? <button type={'submit'} className={'button-primary'}>Save Changes</button> : '';
     const deleteButton = this.user.is_admin
-      ?  <button type={'button'} onClick={this.handleDeleteClick}>Delete Event</button> : '';
+      ?  <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Delete Event</button> : '';
     const disableAll = !this.user.is_su;
 
     return (
-      <form id={'event-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick} onClick={this.handleClick}>
+      <form id={'event-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
         <div>
           <p className={'label'}>Status - {isPublished ? 'Published' : 'Dropped'}</p>
           <input id={`toggle-${event.id}`} type={'checkbox'} ref={this.liveToggle} className={'toggle'}
@@ -184,14 +177,14 @@ export default class EventRecord extends ListingRecordUniversal {
         </label>
         <label className={'required'}>
           Venue
-          <select ref={this.venueInput} defaultValue={event.venue_id || ''} disabled={disableAll} required>
-            {renderOptionList(venues, 'venues')}
+          <select ref={this.venueInput} defaultValue={event.venue_uuid || ''} disabled={disableAll} required>
+            {renderOptionList(venues, 'venues', 'uuid')}
           </select>
         </label>
         <label className={'required'}>
           Organizer
-          <select ref={this.orgInput} defaultValue={event.org_id || ''} disabled={disableAll} required>
-            {renderOptionList(orgs, 'organizers')}
+          <select ref={this.orgInput} defaultValue={event.org_uuid || ''} disabled={disableAll} required>
+            {renderOptionList(orgs, 'organizers', 'uuid')}
           </select>
         </label>
         <label className={'required'}>
@@ -200,7 +193,7 @@ export default class EventRecord extends ListingRecordUniversal {
         </label>
         <label>
           Tags
-          {renderCheckboxList(tags, eventTags, 'id', disableAll)}
+          {renderCheckboxList(tags, eventTags, 'uuid', disableAll)}
         </label>
         <label>
           Email Address
