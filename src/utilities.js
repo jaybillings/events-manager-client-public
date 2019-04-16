@@ -21,7 +21,9 @@ const renderOptionList = function (schemaData, schema, keyType='id') {
   recordsToDisplay.forEach(record => {
     const optionValue = keyType === 'uuid' ? record.uuid : record.id;
     const optionKey = optionValue ? `${record.fromPending ? 'pending-' : ''}${optionValue}` : `default-${schemaSingular}`;
-    optionsList.push(<option key={optionKey} value={optionValue}>{record.name}</option>);
+    const optionLabel = record.fromPending ? `${record.name} [PENDING]` : record.name;
+
+    optionsList.push(<option key={optionKey} value={optionValue}>{optionLabel}</option>);
   });
 
   return optionsList;
@@ -104,8 +106,9 @@ const renderTableHeader = function (headerMap, sortState, clickHandler) {
  */
 const renderSchemaLink = function (listing, baseSchema) {
   const schemaPath = listing.fromPending ? `pending${baseSchema}` : baseSchema;
+  const linkText = listing.fromPending ? `${listing.name} [Pending]` : listing.name;
 
-  return <Link to={`/${schemaPath}/${listing.id}`}>{listing.name}</Link>;
+  return <Link to={`/${schemaPath}/${listing.id}`}>{linkText}</Link>;
 };
 
 /**
@@ -126,6 +129,13 @@ const uniqueListingsOnly = function (schemaMembers, pendingSchemaMembers) {
       uniqueSchema.push({...listing, fromPending: true});
       schemaUUIDs.push(listing.uuid);
     }
+  });
+
+  // Sort alphabetically by name
+  uniqueSchema.sort((a, b) => {
+    if (a.name < b.name) return -1;
+    if (a.name > b.name) return 1;
+    return 0;
   });
 
   return uniqueSchema;
@@ -189,6 +199,7 @@ const makeSingular = function (string) {
 const arrayUnique = function (arr) {
   return [...new Set(arr)];
 };
+
 
 /**
  * Displays a list of error messages in a user-friendly way.

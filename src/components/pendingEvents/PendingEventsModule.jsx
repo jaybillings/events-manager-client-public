@@ -57,6 +57,7 @@ export default class PendingEventsModule extends PendingListingsModule {
 
     for (let [service, dataFetcher] of services) {
       service
+        .on('created', () => dataFetcher())
         .on('updated', () => dataFetcher())
         .on('patched', () => dataFetcher())
         .on('removed', () => dataFetcher())
@@ -85,6 +86,7 @@ export default class PendingEventsModule extends PendingListingsModule {
         .removeAllListeners('created')
         .removeAllListeners('updated')
         .removeAllListeners('patched')
+        .removeAllListeners('removed')
         .removeAllListeners('status');
     });
   }
@@ -326,10 +328,12 @@ export default class PendingEventsModule extends PendingListingsModule {
           }
           </tbody>
         </table>
-        {publishButton}
-        <button type={'button'} className={'publish'} onClick={this.discardListings} disabled={selectedEvents.length === 0}>
-          Discard {selectedEvents.length || ''} {schemaLabel}
-        </button>
+        <div className={'publish-buttons'}>
+          {publishButton}
+          <button type={'button'} className={'publish'} onClick={this.discardListings} disabled={selectedEvents.length === 0}>
+            Discard {selectedEvents.length || ''} {schemaLabel}
+          </button>
+        </div>
       </div>
     ])
   }

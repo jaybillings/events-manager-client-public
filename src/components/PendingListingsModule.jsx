@@ -467,10 +467,12 @@ export default class PendingListingsModule extends Component {
           }
           </tbody>
         </table>
-        {publishButton}
-        <button type={'button'} className={'default'} onClick={this.discardListings} disabled={selectedListings.length === 0}>
-          Discard {selectedListings.length || ''} {schemaLabel}
-        </button>
+        <div className={'publish-buttons'}>
+          {publishButton}
+          <button type={'button'} className={'default'} onClick={this.discardListings} disabled={selectedListings.length === 0}>
+            Discard {selectedListings.length || ''} {schemaLabel}
+          </button>
+        </div>
       </div>
     ])
   }

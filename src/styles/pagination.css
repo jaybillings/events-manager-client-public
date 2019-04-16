@@ -28,12 +28,15 @@ ul.pagination {
 
 .pagination li[class='']:hover {
   color: var(--true-white);
-  border-color: var(--true-blue);
   background: var(--true-blue);
 }
 
 .pagination li[class='']:hover a {
   color: inherit;
+}
+
+.pagination li[class='']:active {
+  background: var(--dark-blue);
 }
 
 .pagination li:first-child {
@@ -66,7 +69,6 @@ ul.pagination {
 
 .pagination .active {
   background-color: var(--pagination-active-color);
-  border-color: var(--pagination-active-color);
 }
 
 .pagination .active a {

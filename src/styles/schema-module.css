@@ -43,6 +43,10 @@
   transform: translate(0, -50%);
 }
 
+.schema-module .publish-buttons {
+  float: right;
+}
+
 .schema-module[data-visibility='hidden'] > div {
   display: none;
 }

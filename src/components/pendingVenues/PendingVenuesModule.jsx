@@ -167,10 +167,12 @@ export default class PendingVenuesModule extends PendingListingsModule {
           }
           </tbody>
         </table>
-        {publishButton}
-        <button type={'button'} className={'default'} onClick={this.discardListings} disabled={selectedVenues.length === 0}>
-          Discard {selectedVenues.length || ''} {schemaLabel}
-        </button>
+        <div className={'publish-buttons'}>
+          {publishButton}
+          <button type={'button'} className={'default'} onClick={this.discardListings} disabled={selectedVenues.length === 0}>
+            Discard {selectedVenues.length || ''} {schemaLabel}
+          </button>
+        </div>
       </div>
     ])
   }
