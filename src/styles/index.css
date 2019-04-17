@@ -57,7 +57,7 @@ h1 {
 
 h2 {
   color: var(--medium-dark-gray);
-  font-size: 2.5rem;
+  font-size: 2.25rem;
   text-transform: uppercase;
   font-weight: 600;
 }
@@ -110,10 +110,6 @@ button[disabled]:hover {
   border-color: var(--light-gray);
   background: var(--light-gray);
   color: var(--medium-gray);
-}
-
-th:last-child, td:last-child {
-  padding-right: 15px;
 }
 
 .emphasize {

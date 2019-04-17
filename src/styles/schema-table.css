@@ -1,6 +1,11 @@
 .schema-table {
   width: 100%;
   margin-bottom: 3rem;
+  border-collapse: unset;
+}
+
+.schema-table th {
+  vertical-align: baseline;
 }
 
 .schema-table td {
@@ -11,8 +16,12 @@
   max-width: 20rem;
 }
 
-.schema-table td:first-child {
-  padding-left: 0; /* Overwrites skeleton.css */
+.schema-table td:first-child, .schema-table th:first-child {
+  padding-left: 1rem;
+}
+
+.schema-table td:last-child, .schema-table th:last-child {
+  padding-right: 1rem;
 }
 
 .schema-table button:first-of-type {
