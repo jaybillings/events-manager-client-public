@@ -48,6 +48,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
 
     for (let [service, dataFetcher] of services) {
       service
+        .on('created', () => dataFetcher())
         .on('updated', () => dataFetcher())
         .on('patched', () => dataFetcher())
         .on('removed', () => dataFetcher())
@@ -71,6 +72,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
 
     services.forEach(service => {
       service
+        .removeAllListeners('created')
         .removeAllListeners('updated')
         .removeAllListeners('patched')
         .removeAllListeners('removed')

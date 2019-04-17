@@ -114,7 +114,8 @@ export default class ListingRow extends Component {
   /**
    * Handles the delete button click by triggering a function to delete the listing.
    */
-  handleDeleteClick() {
+  handleDeleteClick(e) {
+    e.stopPropagation();
     this.props.deleteListing(this.props.listing.id);
   }
 
