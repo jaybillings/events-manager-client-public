@@ -9,6 +9,7 @@ import SelectionControl from "./common/SelectionControl";
 
 import '../styles/schema-module.css';
 import '../styles/schema-table.css';
+import Searchbar from "./common/Searchbar";
 
 /**
  * PendingListingsModule is a generic component that displays pending listings as a module within a layout.
@@ -448,6 +449,7 @@ export default class PendingListingsModule extends Component {
           numSelected={selectedListings.length} total={this.state.listingsTotal} schema={this.schema}
           selectPage={this.selectPageOfListings} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
         />
+        <Searchbar />
         <PaginationLayout
           key={`pending-${schema}-pagination`} schema={`pending-${schema}`}
           total={this.state.pendingListingsTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}

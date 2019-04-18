@@ -2,6 +2,7 @@
   display: grid;
   grid-template-columns: 1fr 2fr 1fr;
   grid-template-rows: auto;
+  width: 100%;
 }
 
 .pagination-container select {
