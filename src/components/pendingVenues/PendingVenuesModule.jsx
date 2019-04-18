@@ -123,7 +123,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
       ['name', 'Name'],
-      ['hood_id', 'Neighborhood'],
+      ['fk_hood', 'Neighborhood'],
       ['created_at', 'Imported On'],
       ['status_NOSORT', 'Status']
     ]);

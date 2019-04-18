@@ -278,8 +278,8 @@ export default class PendingEventsModule extends PendingListingsModule {
       ['name', 'Name'],
       ['start_date', 'Start Date'],
       ['end_date', 'End Date'],
-      ['venue_id', 'Venue'],
-      ['org_id', 'Organizer'],
+      ['fk_venue', 'Venue'],
+      ['fk_org', 'Organizer'],
       ['created_at', 'Imported On'],
       ['status_NOSORT', 'Status']
     ]);
