@@ -1,6 +1,9 @@
 import React, {Component} from 'react';
 import app from '../../services/socketio';
-import {displayErrorMessages, renderOptionList, uniqueListingsOnly} from "../../utilities";
+import {displayErrorMessages, uniqueListingsOnly} from "../../utilities";
+
+import ReplaceTermsForm from './ReplaceTermsForm';
+import TermReplacementsTable from "./TermReplacementsTable";
 
 export default class ReplaceTagsModule extends Component {
   constructor(props) {
@@ -9,7 +12,7 @@ export default class ReplaceTagsModule extends Component {
     this.defaultQuery = {$sort: {name: 1}, $limit: 1000};
 
     this.state = {
-      liveTags: [], uniqueTags: [], pendingTags: [], tagsLoaded: false, nameToReplace: '', uuidOfReplacement: ''
+      liveTags: [], uniqueTags: [], pendingTags: [], nameToReplace: '', uuidOfReplacement: ''
     };
 
     this.tagsService = app.service('tags');
@@ -27,8 +30,7 @@ export default class ReplaceTagsModule extends Component {
 
     this.createTagLookup = this.createTagLookup.bind(this);
     this.replaceAndDeleteTags = this.replaceAndDeleteTags.bind(this);
-    this.handleListSelect = this.handleListSelect.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
+    this.doTagReplacement = this.doTagReplacement.bind(this);
   }
 
   componentDidMount() {
@@ -145,20 +147,12 @@ export default class ReplaceTagsModule extends Component {
       });
   }
 
-  handleListSelect(e) {
-    if (!e.target.name) return;
-    this.setState({[e.target.name]: e.target.value.trim()});
-  }
-
-  handleSubmit(e) {
-    e.preventDefault();
-
-    const targetName = this.state.nameToReplace;
+  doTagReplacement(nameToReplace, uuidOfReplacement) {
     const replacement = this.state.uniqueTags.find(tag => {
-      return tag.uuid === this.state.uuidOfReplacement;
+      return tag.uuid === uuidOfReplacement;
     });
 
-    if (!targetName) {
+    if (!nameToReplace) {
       this.props.updateMessagePanel({status: 'error', details: 'Invalid tag picked to be replaced.'});
       return;
     }
@@ -169,7 +163,7 @@ export default class ReplaceTagsModule extends Component {
     }
 
     // This is intentionally case sensitive to enable replacing improperly cased tags.
-    if (targetName === replacement.name) {
+    if (nameToReplace === replacement.name) {
       this.props.updateMessagePanel({status: 'error', details: 'Cannot replace tag with same tag.'});
       return;
     }
@@ -193,12 +187,12 @@ export default class ReplaceTagsModule extends Component {
       })
       .then(() => {
         this.props.updateMessagePanel({status: 'info', details: 'Creating replacement lookup row in database'});
-        return this.createTagLookup(targetName, replacement);
+        return this.createTagLookup(nameToReplace, replacement);
       })
       .then(() => {
         this.props.updateMessagePanel({
           status: 'success',
-          details: `Replaced all tags named "${targetName}" with tag named "${replacement.name}"`
+          details: `Replaced all tags named "${nameToReplace}" with tag named "${replacement.name}"`
         });
         this.setState({nameToReplace: '', uuidOfReplacement: ''});
       })
@@ -215,28 +209,12 @@ export default class ReplaceTagsModule extends Component {
     /**
      * TODO: allow removing lookups from replacement table
      */
+
     return (
       <div className={'schema-module manage-tags'}>
-        <form id={'tag-replace-form'} className={'add-form'} onSubmit={this.handleSubmit}>
-          <h3>Replace Tags</h3>
-          <label>
-            <span>Replace all tags (pending and live) named this:</span>
-            <select name={'nameToReplace'} value={this.state.nameToReplace} onChange={this.handleListSelect}>
-              {renderOptionList(uniqueTags, 'tags', 'name')}
-            </select>
-          </label>
-          <label>
-            <span>With this tag listing:</span>
-            <select name={'uuidOfReplacement'} value={this.state.uuidOfReplacement} onChange={this.handleListSelect}>
-              {renderOptionList(liveTags, 'tags')}
-            </select>
-          </label>
-          <button type={'submit'} className={'emphasize'}>Replace and Delete Tag</button>
-        </form>
-        <div className={'module-side'}>
-          <h4>Current Replacements</h4>
-          <span className={'toggleShowHide'}>+</span>
-        </div>
+        <ReplaceTermsForm schema={'tags'} uniqueListings={uniqueTags} liveListings={liveTags}
+                          doReplacement={this.doTagReplacement} />
+        <TermReplacementsTable />
       </div>
     );
   }

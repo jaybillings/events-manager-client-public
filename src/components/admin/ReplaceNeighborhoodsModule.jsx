@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import app from '../../services/socketio';
-import {arrayUnique, displayErrorMessages, renderOptionList, uniqueListingsOnly} from "../../utilities";
+import {arrayUnique, displayErrorMessages, uniqueListingsOnly} from "../../utilities";
+import ReplaceTermsForm from "./ReplaceTermsForm";
+import TermReplacementsTable from "./TermReplacementsTable";
 
 export default class ReplaceNeighborhoodsModule extends Component {
   constructor(props) {
@@ -29,8 +31,7 @@ export default class ReplaceNeighborhoodsModule extends Component {
     this.createHoodLookup = this.createHoodLookup.bind(this);
     this.replaceAndDeleteLive = this.replaceAndDeleteLive.bind(this);
     this.replaceAndDeletePending = this.replaceAndDeletePending.bind(this);
-    this.handleListSelect = this.handleListSelect.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
+    this.doHoodReplacement = this.doHoodReplacement.bind(this);
   }
 
   componentDidMount() {
@@ -167,12 +168,9 @@ export default class ReplaceNeighborhoodsModule extends Component {
     this.setState({[e.target.name]: e.target.value.trim()});
   }
 
-  handleSubmit(e) {
-    e.preventDefault();
-
-    const targetName = this.state.nameToReplace;
+  doHoodReplacement(targetName, uuidOfReplacement) {
     const replacement = this.state.uniqueHoods.find(hood => {
-      return hood.uuid === this.state.uuidOfReplacement
+      return hood.uuid === uuidOfReplacement
     });
 
     if (!targetName) {
@@ -225,32 +223,16 @@ export default class ReplaceNeighborhoodsModule extends Component {
       });
   }
 
+
   render() {
     const uniqueHoods = this.state.uniqueHoods;
     const liveHoods = this.state.liveHoods;
 
     return (
       <div className={'schema-module manage-hoods'}>
-        <form id={'neighborhood-replace-form'} className={'add-form'} onSubmit={this.handleSubmit}>
-          <h3>Replace Neighborhoods</h3>
-          <label>
-            <span>Replace all neighborhoods (pending and live) named this:</span>
-            <select name={'nameToReplace'} value={this.state.nameToReplace} onChange={this.handleListSelect}>
-              {renderOptionList(uniqueHoods, 'neighborhoods', 'name')}
-            </select>
-          </label>
-          <label>
-            <span>With this neighborhood listing:</span>
-            <select name={'uuidOfReplacement'} value={this.state.uuidOfReplacement} onChange={this.handleListSelect}>
-              {renderOptionList(liveHoods, 'neighborhoods')}
-            </select>
-          </label>
-          <button type={'submit'} className={'emphasize'}>Replace and Delete Neighborhood</button>
-        </form>
-        <div className={'module-side'}>
-          <h4>Current Replacements</h4>
-          <span className={'toggleShowHide'}>+</span>
-        </div>
+        <ReplaceTermsForm schema={'neighborhoods'} uniqueListings={uniqueHoods} liveListings={liveHoods}
+                          doReplacement={this.doHoodReplacement} />
+        <TermReplacementsTable />
       </div>
     );
   }
