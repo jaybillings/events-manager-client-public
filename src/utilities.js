@@ -13,13 +13,13 @@ import {Link} from "react-router-dom";
  * @param {string} keyType
  * @returns {Array}
  */
-const renderOptionList = function (schemaData, schema, keyType='id') {
+const renderOptionList = function (schemaData, schema, keyType='uuid') {
   let optionsList = [];
   let schemaSingular = makeSingular(schema);
   let recordsToDisplay = [{uuid: '', id: '', name: `NO ${schemaSingular.toUpperCase()} SELECTED`}, ...schemaData];
 
   recordsToDisplay.forEach(record => {
-    const optionValue = keyType === 'uuid' ? record.uuid : record.id;
+    const optionValue = keyType === 'name' ? record.name : record.uuid;
     const optionKey = optionValue ? `${record.fromPending ? 'pending-' : ''}${optionValue}` : `default-${schemaSingular}`;
     const optionLabel = record.fromPending ? `${record.name} [PENDING]` : record.name;
 

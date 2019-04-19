@@ -40,7 +40,7 @@ export default class AdminToolsLayout extends Component {
                       dismissPanel={this.dismissMessagePanel} />
         <h2>Admin Tools</h2>
         <ManageUsersModule updateMessagePanel={this.updateMessagePanel} />
-        <ReplaceNeighborhoodsModule updateMessagePane={this.updateMessagePanel} />
+        <ReplaceNeighborhoodsModule updateMessagePanel={this.updateMessagePanel} />
         <ReplaceTagsModule updateMessagePanel={this.updateMessagePanel} />
         <div className={'schema-module'}>
           <h3>Import/Export</h3>
