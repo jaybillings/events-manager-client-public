@@ -7,6 +7,7 @@ import PaginationLayout from "../common/PaginationLayout";
 import PendingEventRow from "./PendingEventRow";
 import ShowHideToggle from "../common/ShowHideToggle";
 import SelectionControl from "../common/SelectionControl";
+import Searchbar from "../common/Searchbar";
 
 /**
  * PendingEventsModule is a component which displays pending events as a module within a layout.
@@ -57,6 +58,7 @@ export default class PendingEventsModule extends PendingListingsModule {
 
     for (let [service, dataFetcher] of services) {
       service
+        .on('created', () => dataFetcher())
         .on('updated', () => dataFetcher())
         .on('patched', () => dataFetcher())
         .on('removed', () => dataFetcher())
@@ -85,6 +87,7 @@ export default class PendingEventsModule extends PendingListingsModule {
         .removeAllListeners('created')
         .removeAllListeners('updated')
         .removeAllListeners('patched')
+        .removeAllListeners('removed')
         .removeAllListeners('status');
     });
   }
@@ -276,8 +279,8 @@ export default class PendingEventsModule extends PendingListingsModule {
       ['name', 'Name'],
       ['start_date', 'Start Date'],
       ['end_date', 'End Date'],
-      ['venue_id', 'Venue'],
-      ['org_id', 'Organizer'],
+      ['fk_venue', 'Venue'],
+      ['fk_org', 'Organizer'],
       ['created_at', 'Imported On'],
       ['status_NOSORT', 'Status']
     ]);
@@ -301,6 +304,7 @@ export default class PendingEventsModule extends PendingListingsModule {
           numSelected={selectedEvents.length} total={this.state.pendingListingsTotal} schema={this.schema}
           selectPage={this.selectPageOfListings} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
         />
+        <Searchbar />
         <PaginationLayout
           key={'pending-events-pagination'} schema={'pending-events'}
           total={this.state.pendingListingsTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
@@ -326,10 +330,12 @@ export default class PendingEventsModule extends PendingListingsModule {
           }
           </tbody>
         </table>
-        {publishButton}
-        <button type={'button'} onClick={this.discardListings} disabled={selectedEvents.length === 0}>
-          Discard {selectedEvents.length || ''} {schemaLabel}
-        </button>
+        <div className={'publish-buttons'}>
+          {publishButton}
+          <button type={'button'} className={'publish'} onClick={this.discardListings} disabled={selectedEvents.length === 0}>
+            Discard {selectedEvents.length || ''} {schemaLabel}
+          </button>
+        </div>
       </div>
     ])
   }

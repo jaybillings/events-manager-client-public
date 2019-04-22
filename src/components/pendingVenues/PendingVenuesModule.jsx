@@ -7,6 +7,7 @@ import PaginationLayout from "../common/PaginationLayout";
 import PendingVenueRow from "./PendingVenueRow";
 import ShowHideToggle from "../common/ShowHideToggle";
 import SelectionControl from "../common/SelectionControl";
+import Searchbar from "../common/Searchbar";
 
 /**
  * PendingVenuesModule is a component which displays pending venues as a module within a layout.
@@ -48,6 +49,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
 
     for (let [service, dataFetcher] of services) {
       service
+        .on('created', () => dataFetcher())
         .on('updated', () => dataFetcher())
         .on('patched', () => dataFetcher())
         .on('removed', () => dataFetcher())
@@ -71,6 +73,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
 
     services.forEach(service => {
       service
+        .removeAllListeners('created')
         .removeAllListeners('updated')
         .removeAllListeners('patched')
         .removeAllListeners('removed')
@@ -121,7 +124,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
       ['name', 'Name'],
-      ['hood_id', 'Neighborhood'],
+      ['fk_hood', 'Neighborhood'],
       ['created_at', 'Imported On'],
       ['status_NOSORT', 'Status']
     ]);
@@ -144,6 +147,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
           numSelected={selectedVenues.length} total={this.state.pendingListingsTotal} schema={this.schema}
           selectPage={this.selectPageOfListings} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
         />
+        <Searchbar />
         <PaginationLayout
           key={'pending-venues-pagination'} schema={'pending-venues'}
           total={pendingVenuesTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
@@ -167,10 +171,12 @@ export default class PendingVenuesModule extends PendingListingsModule {
           }
           </tbody>
         </table>
-        {publishButton}
-        <button type={'button'} onClick={this.discardListings} disabled={selectedVenues.length === 0}>
-          Discard {selectedVenues.length || ''} {schemaLabel}
-        </button>
+        <div className={'publish-buttons'}>
+          {publishButton}
+          <button type={'button'} className={'default'} onClick={this.discardListings} disabled={selectedVenues.length === 0}>
+            Discard {selectedVenues.length || ''} {schemaLabel}
+          </button>
+        </div>
       </div>
     ])
   }

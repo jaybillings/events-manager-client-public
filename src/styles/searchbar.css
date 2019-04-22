@@ -1,0 +1,7 @@
+.searchbar {
+  float: right;
+}
+
+.searchbar input + button {
+  margin-left: 1rem;
+}

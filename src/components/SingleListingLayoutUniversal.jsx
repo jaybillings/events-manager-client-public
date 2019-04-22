@@ -55,6 +55,23 @@ export default class SingleListingLayoutUniversal extends Component {
    */
   componentDidMount() {
     this.fetchAllData();
+
+    this.listingsService
+      .on('patched', result => {
+        if (parseInt(result.id, 10) !== parseInt(this.listingID, 10)) return;
+        this.updateMessagePanel({status: 'success', details: `Saved changes to "${result.name}".`});
+        this.fetchListing();
+      })
+      .on('updated', result => {
+        if (result.id !== this.listingID) return;
+        this.updateMessagePanel({status: 'success', details: `Saved changes to "${result.name}".`});
+      });
+  }
+
+  componentWillUnmount() {
+    this.listingsService
+      .removeAllListeners('patched')
+      .removeAllListeners('updated');
   }
 
   /**
@@ -69,18 +86,21 @@ export default class SingleListingLayoutUniversal extends Component {
    * Fetches data for the single listing.
    */
   fetchListing() {
-    app.service(this.schema).get(this.listingID).then(result => {
-      this.setState({listing: result, listingLoaded: true});
-    }, errors => {
-      this.setState({notFound: true});
-      displayErrorMessages('fetch', `${this.schema} #${this.listingID}`, errors, this.updateMessagePanel);
-    });
+    app.service(this.schema).get(this.listingID)
+      .then(result => {
+        this.setState({listing: result, listingLoaded: true});
+      })
+      .catch(errors => {
+        this.setState({notFound: true});
+        displayErrorMessages('fetch', `${this.schema} #${this.listingID}`, errors, this.updateMessagePanel);
+      });
   }
 
   /**
    * Determines whether the listing may duplicate an existing listing.
    * @async
-   * @returns {Promise}
+   *
+   * @returns {Promise<*>}
    */
   queryForExisting() {
     return this.listingsService.find({
@@ -98,23 +118,27 @@ export default class SingleListingLayoutUniversal extends Component {
    * @param {object} newData
    */
   updateListing(newData) {
-    app.service(this.schema).patch(this.listingID, newData).then(result => {
-      this.setState({listing: result, listingLoaded: true});
-      this.updateMessagePanel({status: 'success', details: `Saved changes to "${result.name}"`});
-    }, errors => {
-      displayErrorMessages('save changes to', this.state.listing.name || '', errors, this.updateMessagePanel);
-    });
+    app.service(this.schema).patch(this.listingID, newData)
+      .then(result => {
+        this.setState({listing: result, listingLoaded: true});
+        this.updateMessagePanel({status: 'success', details: `Saved changes to "${result.name}"`});
+      })
+      .catch(errors => {
+        displayErrorMessages('save changes to', this.state.listing.name || '', errors, this.updateMessagePanel);
+      });
   }
 
   /**
    * Removes the listing from the database by calling the service's REMOVE method.
    */
   deleteListing() {
-    app.service(this.schema).remove(this.listingID).then(() => {
-      this.setState({hasDeleted: true});
-    }, errors => {
-      displayErrorMessages('delete', this.state.listing.name || '', errors, this.updateMessagePanel);
-    });
+    app.service(this.schema).remove(this.listingID)
+      .then(() => {
+        this.setState({hasDeleted: true});
+      })
+      .catch(errors => {
+        displayErrorMessages('delete', this.state.listing.name || '', errors, this.updateMessagePanel);
+      });
   }
 
   /**

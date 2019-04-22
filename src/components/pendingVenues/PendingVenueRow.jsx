@@ -21,7 +21,9 @@ export default class PendingVenueRow extends PendingListingRow {
   constructor(props) {
     super(props);
 
-    this.hoodList = React.createRef();
+    Object.assign(this.state,{
+      listingName: this.props.listing.name, linkedHoodUUID: this.props.hood ? this.props.hood.uuid : null
+    });
   }
 
   /**
@@ -34,8 +36,8 @@ export default class PendingVenueRow extends PendingListingRow {
     e.stopPropagation();
 
     const newData = {
-      name: this.nameInput.current.value.trim(),
-      hood_uuid: this.hoodList.current.value
+      name: this.state.listingName,
+      hood_uuid: this.state.linkedHoodUUID
     };
 
     this.props.updateListing(this.props.listing, newData).then(() => {
@@ -53,11 +55,12 @@ export default class PendingVenueRow extends PendingListingRow {
    * @returns {*}
    */
   render() {
-    const pendingListing = this.props.listing;
-    const createdAt = Moment(pendingListing.created_at).calendar();
-    const selected = this.props.selected;
+    const listingID = this.props.listing.id;
+    const listingName = this.state.listingName;
+    const hoodUUID = this.state.linkedHoodUUID || '';
+    const createdAt = Moment(this.props.listing.created_at).calendar();
     const writeStatus = this.state.writeStatus;
-    const selectClass = selected ? ' is-selected' : '';
+    const selectClass = this.props.selected ? ' is-selected' : '';
     const hoods = this.props.hoods;
 
     if (this.state.editable) {
@@ -67,11 +70,11 @@ export default class PendingVenueRow extends PendingListingRow {
             <button type={'button'} className={'emphasize'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
-          <td><input type={'text'} ref={this.nameInput} defaultValue={pendingListing.name}
+          <td><input type={'text'} name={'listingName'} value={listingName} onChange={this.handleInputChange}
                      onClick={e => e.stopPropagation()} /></td>
           <td>
-            <select ref={this.hoodList} defaultValue={pendingListing.hood_uuid || ''} onClick={e => e.stopPropagation()}
-                    required>
+            <select required name={'linkedHoodUUID'} value={hoodUUID} onChange={this.handleInputChange}
+                    onClick={e => e.stopPropagation()}>
               {renderOptionList(hoods, 'neighborhoods', 'uuid')}
             </select>
           </td>
@@ -89,7 +92,7 @@ export default class PendingVenueRow extends PendingListingRow {
           <button type={'button'} className={'emphasize'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard</button>
         </td>
-        <td><Link to={`/pendingVenues/${pendingListing.id}`}>{pendingListing.name}</Link></td>
+        <td><Link to={`/pendingVenues/${listingID}`}>{listingName}</Link></td>
         <td>{hoodLink}</td>
         <td>{createdAt}</td>
         <td><StatusLabel writeStatus={writeStatus} schema={'venues'} /></td>

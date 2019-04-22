@@ -38,17 +38,6 @@ export default class EventAddForm extends ListingAddForm {
   }
 
   /**
-   * Handles the submit action by triggering the creation of a new pending listing.
-   *
-   * @param {Event} e
-   */
-  handleAddPendingClick(e) {
-    e.preventDefault();
-    const listingData = this.buildPendingListing();
-    this.props.createPendingListing(listingData);
-  }
-
-  /**
    * Compiles the data required for creating a new listing.
    * @override
    *
@@ -59,8 +48,8 @@ export default class EventAddForm extends ListingAddForm {
       name: this.nameInput.current.value,
       start_date: Moment(this.startInput.current.value).valueOf(),
       end_date: Moment(this.endInput.current.value).valueOf(),
-      venue_id: parseInt(this.venueList.current.value, 10) || this.props.venues[0].id,
-      org_id: parseInt(this.orgList.current.value, 10) || this.props.orgs[0].id,
+      venue_uuid: this.venueList.current.value || this.props.venues[0].uuid,
+      org_uuid: this.orgList.current.value|| this.props.orgs[0].uuid,
       description: this.descInput.current.value,
       flag_ongoing: this.ongoingInput.current.checked
     };
@@ -80,53 +69,6 @@ export default class EventAddForm extends ListingAddForm {
 
     checkedBoxes.forEach(chkbx => {
       tagsToSave.push(chkbx.value);
-    });
-
-    return {eventID: null, eventObj: eventObj, tagsToSave: tagsToSave};
-  }
-
-  /**
-   * Compiles the data required for building a new pending listing.
-   *
-   * @returns {{eventID: Number, eventObj: Object, tagsToSave: Array}}
-   */
-  buildPendingListing() {
-    const eventObj = {
-      name: this.nameInput.current.value,
-      start_date: Moment(this.startInput.current.value).valueOf(),
-      end_date: Moment(this.endInput.current.value).valueOf(),
-      description: this.descInput.current.value,
-      flag_ongoing: this.ongoingInput.current.checked
-    };
-
-    // Linked schema
-    const eventVenue = this.props.venues.find(venue => {
-      return venue.id === parseInt(this.venueList.current.value, 10)
-    });
-    const eventOrg = this.props.orgs.find(org => {
-      return org.id === parseInt(this.orgList.current.value, 10)
-    });
-    eventObj.venue_uuid = eventVenue.uuid || this.props.venues[0].uuid;
-    eventObj.org_uuid = eventOrg.uuid || this.props.orgs[0].uuid;
-
-    // Optional data
-    this.emailInput.current.value !== '' && (eventObj.email = this.emailInput.current.value);
-    this.urlInput.current.value !== '' && (eventObj.url = this.urlInput.current.value);
-    this.phoneInput.current.value !== '' && (eventObj.phone = this.phoneInput.current.value);
-    this.hoursInput.current.value !== '' && (eventObj.hours = this.hoursInput.current.value);
-    this.ticketUrlInput.current.value !== '' && (eventObj.ticket_url = this.ticketUrlInput.current.value);
-    this.ticketPhoneInput.current.value !== '' && (eventObj.ticket_phone = this.ticketPhoneInput.current.value);
-    this.ticketPricesInput.current.value !== '' && (eventObj.ticket_prices = this.ticketPricesInput.current.value);
-
-    // Tag Data
-    const checkedBoxes = document.querySelectorAll('.js-checkbox:checked');
-    let tagsToSave = [];
-
-    checkedBoxes.forEach(chkbx => {
-      const tagObj = this.props.tags.find(tag => {
-        return tag.id === parseInt(chkbx.value, 10);
-      });
-      tagsToSave.push(tagObj.uuid);
     });
 
     return {eventID: null, eventObj: eventObj, tagsToSave: tagsToSave};
@@ -185,13 +127,13 @@ export default class EventAddForm extends ListingAddForm {
         <label className={'required'}>
           Venue
           <select ref={this.venueList} defaultValue={defaultVenue}>
-            {renderOptionList(this.props.venues, 'venues')}
+            {renderOptionList(this.props.venues, 'venues', 'uuid')}
           </select>
         </label>
         <label className={'required'}>
           Organizers
           <select ref={this.orgList} defaultValue={defaultOrg}>
-            {renderOptionList(this.props.orgs, 'organizers')}
+            {renderOptionList(this.props.orgs, 'organizers', 'uuid')}
           </select>
         </label>
         <label className={'required'}>
@@ -200,7 +142,7 @@ export default class EventAddForm extends ListingAddForm {
         </label>
         <label>
           Tags
-          {renderCheckboxList(this.props.tags, [])}
+          {renderCheckboxList(this.props.tags, [], 'uuid')}
         </label>
         <label>
           Email Address
@@ -235,7 +177,7 @@ export default class EventAddForm extends ListingAddForm {
           Ongoing Event
         </label>
         <div>
-          <button type={'button'} onClick={this.clearForm}>Reset</button>
+          <button type={'button'} className={'default'} onClick={this.clearForm}>Reset</button>
           <button type={'submit'} className={'button-primary'}>{submitLabel}</button>
         </div>
       </form>

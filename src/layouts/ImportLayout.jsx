@@ -113,7 +113,7 @@ export default class ImportLayout extends Component {
    * large datasets.
    */
   publishListings() {
-    this.updateMessagePanel({status: 'notice', details: 'Publish started. This make take several minutes.'});
+    this.updateMessagePanel({status: 'info', details: 'Publish started. This make take several minutes.'});
 
     Promise
       .all([
@@ -134,7 +134,7 @@ export default class ImportLayout extends Component {
       })
       .then(() => {
         console.log('~ all done!');
-        this.updateMessagePanel({status: 'success', details: 'Publish complete.'});
+        this.updateMessagePanel({status: 'notice', details: 'Publish complete.'});
       })
       .catch(error => {
         console.log('~ very top level error', error);

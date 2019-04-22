@@ -79,7 +79,7 @@ export default class OrganizerAddForm extends ListingAddForm {
           <input type={'tel'} ref={this.phoneInput} />
         </label>
         <div>
-          <button type={'button'} onClick={this.clearForm}>Reset</button>
+          <button type={'button'} className={'default'} onClick={this.clearForm}>Reset</button>
           <button type={'submit'} className={'button-primary'}>{submitLabel}</button>
         </div>
       </form>

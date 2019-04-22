@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import app from '../../services/socketio';
-import {arrayUnique, displayErrorMessages, renderOptionList, uniqueListingsOnly} from "../../utilities";
+import {arrayUnique, displayErrorMessages, uniqueListingsOnly} from "../../utilities";
+import ReplaceTermsForm from "./ReplaceTermsForm";
+import TermReplacementsTable from "./TermReplacementsTable";
 
 export default class ReplaceNeighborhoodsModule extends Component {
   constructor(props) {
@@ -9,8 +11,7 @@ export default class ReplaceNeighborhoodsModule extends Component {
     this.defaultQuery = {$sort: {name: 1}, $limit: 1000};
 
     this.state = {
-      liveHoods: [], uniqueHoods: [], pendingHoods: [], hoodToReplace: {}, hoodReplacingWith: {},
-      hoodsLoaded: false,
+      liveHoods: [], pendingHoods: [], uniqueHoods: [], nameToReplace: '', uuidOfReplacement: ''
     };
 
     this.hoodsService = app.service('neighborhoods');
@@ -21,102 +22,144 @@ export default class ReplaceNeighborhoodsModule extends Component {
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.fetchHoods = this.fetchHoods.bind(this);
-    this.fetchLiveHoodsToReplace = this.fetchLiveHoodsToReplace.bind(this);
     this.fetchPendingHoods = this.fetchPendingHoods.bind(this);
+    this.fetchLiveAndUpdateUnique = this.fetchLiveAndUpdateUnique.bind(this);
+    this.fetchPendingAndUpdateUnique = this.fetchPendingAndUpdateUnique.bind(this);
+    this.fetchLiveHoodsToReplace = this.fetchLiveHoodsToReplace.bind(this);
     this.fetchPendingHoodsToReplace = this.fetchPendingHoodsToReplace.bind(this);
 
-    this.createNeighborhoodLookup = this.createNeighborhoodLookup.bind(this);
+    this.createHoodLookup = this.createHoodLookup.bind(this);
     this.replaceAndDeleteLive = this.replaceAndDeleteLive.bind(this);
     this.replaceAndDeletePending = this.replaceAndDeletePending.bind(this);
-    this.handleListSelect = this.handleListSelect.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
+    this.doHoodReplacement = this.doHoodReplacement.bind(this);
   }
 
   componentDidMount() {
     this.fetchAllData();
+
+    const services = new Map([
+      [this.hoodsService, this.fetchLiveAndUpdateUnique],
+      [this.pendingHoodsService, this.fetchPendingAndUpdateUnique]
+    ]);
+
+    for (let [service, dataFetcher] of services) {
+      service
+        .on('created', () => dataFetcher())
+        .on('updated', () => dataFetcher())
+        .on('patched', () => dataFetcher())
+        .on('removed', () => dataFetcher());
+    }
+  }
+
+  componentWillUnmount() {
+    const services = [
+      this.hoodsService,
+      this.pendingHoodsService
+    ];
+
+    services.forEach(service => {
+      service
+        .removeAllListeners('created')
+        .removeAllListeners('updated')
+        .removeAllListeners('patched')
+        .removeAllListeners('removed');
+    });
   }
 
   fetchAllData() {
-    Promise.all([
-      this.fetchHoods(),
-      this.fetchPendingHoods()
-    ]).then(() => {
-      const uniqueHoods = uniqueListingsOnly(this.state.liveHoods, this.state.pendingHoods);
-      this.setState({uniqueHoods: uniqueHoods, hoodsLoaded: true});
-    });
-  }
-
-  fetchHoods() {
-    return this.hoodsService.find({query: this.defaultQuery}).then(result => {
-      this.setState({liveHoods: result.data});
-    }, err => {
-      displayErrorMessages('fetch', 'neighborhoods', err, this.props.updateMessagePanel);
-      this.setState({hoodsLoaded: false});
-    });
-  }
-
-  fetchPendingHoods() {
-    return this.pendingHoodsService.find({query: this.defaultQuery}).then(result => {
-      this.setState({pendingHoods: result.data});
-    }, err => {
-      displayErrorMessages('fetch', 'pending neighborhoods', err, this.props.updateMessagePanel);
-      this.setState({pendingHoodsLoaded: false});
-    });
-  }
-
-  fetchLiveHoodsToReplace() {
-    return this.hoodsService.find({query: {name: this.state.hoodToReplace.name}}).catch(err => {
-      console.log("~~~ COE Logger ~~~ Could not fetch matching live hoods: " + JSON.stringify(err));
-    });
-  }
-
-  fetchPendingHoodsToReplace() {
-    return this.pendingHoodsService.find({query: {name: this.state.hoodToReplace.name}}).catch(err => {
-      console.log("~~~ COE Logger ~~~ Could not fetch matching pending hoods: ");
-      console.log(JSON.stringify(err));
-    });
-  }
-
-  createNeighborhoodLookup() {
-    return this.vsBdNeighborhoodLookup.create({
-      bd_region_name: this.state.hoodToReplace.name,
-      vs_hood_id: this.state.hoodReplacingWith.id
-    }).catch(err => {
-      console.log('~~~ COE Logger ~~~ error creating neighborhood lookup:');
-      console.log(JSON.stringify(err));
-    });
-  }
-
-  replaceAndDeleteLive(matchingHoods) {
-    const hoodIDs = matchingHoods.map(row => row.id);
-    const target = this.state.hoodToReplace;
-
-    // Relink venues to new hood
-    this.venuesService.patch(null, {hood_id: target.id}, {query: {hood_id: {$in: hoodIDs}}})
-      .then(() => {
-        // Remove original hood listings
-        this.hoodsService.remove(null, {query: {id: {$in: hoodIDs}}}).catch(err => {
-          this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+    Promise
+      .all([
+        this.fetchHoods(),
+        this.fetchPendingHoods()
+      ])
+      .then(([liveHoodResult, pendingHoodResult]) => {
+        const uniqueHoods = uniqueListingsOnly(liveHoodResult.data, pendingHoodResult.data);
+        this.setState({
+          liveHoods: liveHoodResult.data,
+          pendingHoods: pendingHoodResult.data,
+          uniqueHoods
         });
-      }, err => {
-        this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      })
+      .catch(err => {
+        displayErrorMessages('fetch', 'neighborhood data', err, this.props.updateMessagePanel);
       });
   }
 
-  replaceAndDeletePending(matchingLiveHoods, matchingPendingHoods) {
-    const target = this.state.hoodToReplace;
-    let hoodUUIDs = [...matchingLiveHoods.map(row => row.uuid), ...matchingPendingHoods.map(row => row.uuid)];
-    hoodUUIDs = arrayUnique(hoodUUIDs);
+  fetchHoods() {
+    return this.hoodsService.find({query: this.defaultQuery});
+  }
 
-    // Relink pending venues to new hood
-    this.pendingVenuesService.patch(null, {hood_uuid: target.uuid}, {query: {hood_uuid: {$in: hoodUUIDs}}})
+  fetchPendingHoods() {
+    return this.pendingHoodsService.find({query: this.defaultQuery});
+  }
+
+  fetchLiveHoodsToReplace() {
+    return this.hoodsService.find({query: {name: this.state.nameToReplace}});
+  }
+
+  fetchPendingHoodsToReplace() {
+    return this.pendingHoodsService.find({query: {name: this.state.nameToReplace}});
+  }
+
+  fetchLiveAndUpdateUnique() {
+    this.fetchHoods()
+      .then(result => {
+        const uniqueHoods = uniqueListingsOnly(result.data, this.state.pendingHoods);
+        this.setState({liveHoods: result.data, uniqueHoods});
+      })
+      .catch(err => {
+        displayErrorMessages('fetch', 'live hoods', err, this.props.updateMessagePanel);
+      });
+  }
+
+  fetchPendingAndUpdateUnique() {
+    this.fetchPendingTags()
+      .then(result => {
+        const uniqueHoods = uniqueListingsOnly(this.state.liveHoods, result.data);
+        this.setState({pendingHoods: result.data, uniqueHoods});
+      })
+      .catch(err => {
+        displayErrorMessages('fetch', 'pending hoods', err, this.props.updateMessagePanel);
+      });
+  }
+
+  createHoodLookup(targetName, replacement) {
+    return this.vsBdNeighborhoodLookup.create({
+      bd_region_name: targetName,
+      vs_hood_uuid: replacement.uuid,
+      vs_hood_id: replacement.id
+    });
+  }
+
+  replaceAndDeleteLive(lookupResult) {
+    if (!lookupResult.total) return Promise.resolve();
+
+    const replacementUUID = this.state.uuidOfReplacement;
+    const uuidsToReplace = lookupResult.data.map(row => row.uuid);
+
+    // Relink live venues to new live hood
+    return this.venuesService
+      .patch(null, {hood_uuid: replacementUUID}, {query: {hood_uuid: {$in: uuidsToReplace}}})
+      .then(() => {
+        // Remove original live hood listings
+        return this.hoodsService.remove(null, {query: {uuid: {$in: uuidsToReplace}}});
+      });
+  }
+
+  replaceAndDeletePending(liveLookupResult, pendingLookupResult) {
+    if (!liveLookupResult.total && !pendingLookupResult.total) return Promise.resolve();
+
+    const replacementUUID = this.state.uuidOfReplacement;
+    const liveUUIDs = liveLookupResult.total ? liveLookupResult.data.map(row => row.uuid) : [];
+    const pendingUUIDs = pendingLookupResult.total ? pendingLookupResult.data.map(row => row.uuid) : [];
+    const uuidsToReplace = arrayUnique([...liveUUIDs, ...pendingUUIDs]);
+
+    // Relink pending venues to new live hood
+    this.pendingVenuesService
+      .patch(null, {hood_uuid: replacementUUID}, {query: {hood_uuid: {$in: uuidsToReplace}}})
       .then(() => {
         // Remove original pending hood listings
-        this.pendingHoodsService.remove(null, {query: {uuid: {$in: hoodUUIDs}}}).catch(err => {
-          this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-        });
-      }, err => {
-        this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+        this.pendingHoodsService.remove(null, {query: {uuid: {$in: uuidsToReplace}}});
       });
   }
 
@@ -125,56 +168,71 @@ export default class ReplaceNeighborhoodsModule extends Component {
     this.setState({[e.target.name]: e.target.value.trim()});
   }
 
-  async handleSubmit(e) {
-    e.preventDefault();
-    const target = this.state.hoodToReplace;
-    const replacement = this.state.hoodReplacingWith;
+  doHoodReplacement(targetName, uuidOfReplacement) {
+    const replacement = this.state.uniqueHoods.find(hood => {
+      return hood.uuid === uuidOfReplacement
+    });
 
-    if (target.name.toLowerCase() === replacement.name.toLowerCase()) {
-      this.props.updateMessagePanel({status: 'info', details: 'Cannot replace hood with same hood.'});
+    if (!targetName) {
+      this.props.updateMessagePanel({status: 'error', details: 'Invalid neighborhood picked to be replaced.'});
       return;
     }
 
-    this.createNeighborhoodLookup()
-      .then(() => {
+    if (!replacement) {
+      this.props.updateMessagePanel({status: 'error', details: 'Invalid neighborhood picked as replacement'});
+      return;
+    }
+
+    // This is intentionally case sensitive to enable replacing improperly cased tags.
+    if (targetName === replacement.name) {
+      this.props.updateMessagePanel({status: 'error', details: 'Cannot replace neighborhood with same neighborhood.'});
+      return;
+    }
+
+    this.props.updateMessagePanel({status: 'info', details: 'Starting neighborhood replacement'});
+    this.props.updateMessagePanel({status: 'info', details: 'Looking for neighborhoods to replace.'});
+
+    Promise
+      .all([
+        this.fetchLiveHoodsToReplace(),
+        this.fetchPendingHoodsToReplace()
+      ])
+      .then(([liveLookupRes, pendingLookupRes]) => {
+        console.log('[DEBUG] live hoods', liveLookupRes);
+        console.log('[DEBUG] pending hoods', pendingLookupRes);
+        this.props.updateMessagePanel({status: 'info', details: 'Relinking venues and removing neighborhoods.'});
         return Promise.all([
-          this.replaceAndDeleteLive(),
-          this.replaceAndDeletePending()
-        ])
+          this.replaceAndDeleteLive(liveLookupRes),
+          this.replaceAndDeletePending(liveLookupRes, pendingLookupRes)
+        ]);
+      })
+      .then(() => {
+        this.props.updateMessagePanel({status: 'info', details: 'Creating replacement lookup row in database.'});
+        return this.createHoodLookup(targetName, replacement);
       })
       .then(() => {
         this.props.updateMessagePanel({
           status: 'success',
-          details: `Replaced all neighborhoods named "${target.name}" with neighborhood #${replacement.id} "${replacement.name}"`
+          details: `Replaced all neighborhoods named "${targetName}" with neighborhood named "${replacement.name}"`
         });
+        this.setState({nameToReplace: '', uuidOfReplacement: ''});
       })
       .catch(err => {
         this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err.message)});
+        console.log('[DEBUG]', err);
       });
   }
 
+
   render() {
-    const defaultHoodToReplace = this.state.uniqueHoods[0] ? this.state.uniqueHoods[0].id : '';
-    const defaultHoodReplacingWith = this.state.liveHoods[0] ? this.state.liveHoods[0].id : '';
+    const uniqueHoods = this.state.uniqueHoods;
+    const liveHoods = this.state.liveHoods;
 
     return (
       <div className={'schema-module manage-hoods'}>
-        <form id={'neighborhood-replace-form'} className={'add-form'} onSubmit={this.handleSubmit}>
-          <h3>Replace Neighborhoods</h3>
-          <label>
-            <span>Replace all neighborhoods (pending and live) named this:</span>
-            <select name={'hoodToReplace'} value={defaultHoodToReplace} onChange={this.handleListSelect}>
-              {renderOptionList(this.state.uniqueHoods, 'neighborhoods')}
-            </select>
-          </label>
-          <label>
-            <span>With this neighborhood listing:</span>
-            <select name={'hoodReplacingWith'} value={defaultHoodReplacingWith} onChange={this.handleListSelect}>
-              {renderOptionList(this.state.liveHoods, 'neighborhoods')}
-            </select>
-          </label>
-          <button type={'submit'} className={'emphasize'}>Replace and Delete Neighborhood</button>
-        </form>
+        <ReplaceTermsForm schema={'neighborhoods'} uniqueListings={uniqueHoods} liveListings={liveHoods}
+                          doReplacement={this.doHoodReplacement} />
+        <TermReplacementsTable />
       </div>
     );
   }

@@ -123,8 +123,8 @@ export default class EventRow extends ListingRow {
       return (
         <tr className={'schema-row'}>
           <td>
-            <button type={'submit'} onClick={this.handleSaveClick}>Save</button>
-            <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
+            <button type={'submit'} className={'emphasize more'} onClick={this.handleSaveClick}>Save</button>
+            <button type={'button'} className={'default'} onClick={this.cancelEdit}>Cancel</button>
           </td>
           <td><input type={'text'} name={'listingName'} value={name} onChange={this.handleInputChange} /></td>
           <td><input type={'date'} name={'eventStart'} value={startDateVal} onChange={this.handleInputChange} /></td>
@@ -157,7 +157,7 @@ export default class EventRow extends ListingRow {
     const orgLink = this.props.org
       ? <Link to={`/organizers/${this.props.org.id}`}>{this.props.org.name}</Link> : 'NO ORGANIZER';
     const deleteButton = this.user.is_admin ?
-      <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button> : '';
+      <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete</button> : '';
 
     return (
       <tr className={'schema-row'}>

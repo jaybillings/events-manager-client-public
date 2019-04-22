@@ -29,7 +29,8 @@ export default class ListingsLayout extends Component {
     this.schema = schema;
     this.defaultPageSize = 5;
     this.defaultTableSort = ['updated_at', -1];
-    this.defaultQuery = {$sort: {name: 1}, $select: ['name', 'uuid'], $limit: 1000};
+    this.defaultLimit = 3000;
+    this.defaultQuery = {$sort: {name: 1}, $select: ['name', 'uuid'], $limit: this.defaultLimit};
 
     this.state = {
       listings: [], listingsTotal: 0, listingsLoaded: false, newPendingListing: {},
@@ -332,9 +333,9 @@ export default class ListingsLayout extends Component {
         <Header />
         <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
         {pendingListingLink}
-        <h2>{filterType} {schema}</h2>
+        <h2>Browse {filterType} {schema}</h2>
         {this.renderTable()}
-        <h3>Add New {makeSingular(schema)}</h3>
+        <h2>Add New {makeSingular(schema)}</h2>
         {this.renderAddForm()}
       </div>
     );

@@ -55,9 +55,8 @@ export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
           Name
           <input type={'text'} ref={this.nameInput} defaultValue={hood.name} required maxLength={100} />
         </label>
-        <div className={'block-warning'}
-             title={'Caution: This neighborhood is pending. It must be pushed live before it is visible on the site.'}>
-          <button type={'button'} onClick={this.handleDeleteClick}>Discard Neighborhood</button>
+        <div>
+          <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Discard Neighborhood</button>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
         </div>
       </form>

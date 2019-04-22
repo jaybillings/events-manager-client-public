@@ -93,9 +93,9 @@ export default class ListingRecordUniversal extends Component {
     const updatedAt = Moment(listing.updated_at).calendar();
 
     const publishButton = schema.indexOf('pending') !== -1 || this.user.is_su
-      ? <button type={'button'} className={'button-primary'}>Save Changes</button> : '';
+      ? <button type={'submit'} className={'button-primary'}>Save Changes</button> : '';
     const deleteButton = schema.indexOf('pending') !== -1 || this.user.is_admin
-      ? <button type={'button'} onClick={this.handleDeleteClick}>Delete {makeSingular(schema)}</button> : '';
+      ? <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete {makeSingular(schema)}</button> : '';
     const disableAll = schema.indexOf('pending') !== -1 && !this.user.is_su;
 
     return (
@@ -118,8 +118,8 @@ export default class ListingRecordUniversal extends Component {
                  required />
         </label>
         <div>
-          {publishButton}
           {deleteButton}
+          {publishButton}
         </div>
       </form>
     );

@@ -90,12 +90,12 @@ export default class MyAccountPage extends Component {
             <label htmlFor={'newPass'}>New Password</label>
             <input type={'password'} id={'newPass'} name={'newPass'} onChange={this.handleInputChange} required />
           </div>
-          <button type={'button'} onClick={this.updatePassword}>Update</button>
+          <button type={'button'} className={'default'} onClick={this.updatePassword}>Update</button>
         </div>
         <div className={'panel danger'} title={'WARNING: ACCOUNT DELETION IS PERMANENT.'}>
           <h3>Delete Account</h3>
           <div className={'button-container'}>
-            <button type={'button'} className={'emphasis'}>Delete</button>
+            <button type={'button'} className={'warn more'}>Delete</button>
             <span>your account.</span>
           </div>
         </div>

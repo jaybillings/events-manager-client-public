@@ -6,16 +6,13 @@
   margin-bottom: 0;
 }
 
-.account-page button.emphasis {
-  font-size: 1.5rem;
-}
-
 .account-page .panel {
   position: relative;
   margin-top: 2.5rem;
   border: 2px solid var(--light-gray);
   padding: 2rem;
   border-radius: 4px;
+  background-color: var(--true-white);
 }
 
 .account-page .panel.danger {
@@ -25,19 +22,24 @@
 
 .account-page .panel h3 {
   position: absolute;
-  top: 0;
-  left: 0;
-  padding: .5rem;
-  transform: translate(10%, -50%);
-  background: var(--true-white);
-  font-size: .75em;
-  text-transform: uppercase;
+  width: max-content;
+  font-size: 0.75em;
+  background: linear-gradient(180deg, var(--pale-cream) 50%, var(--true-white) 50%);
+  margin: 0;
+  margin-left: -1rem;
+  padding: 0 1rem;
   font-weight: 600;
+  transform: translate(0, -200%);
+  text-transform: uppercase;
   letter-spacing: 1px;
 }
 
-.account-page .panel .input-container, .account-page .panel .button-container {
+.account-page .panel .input-container {
   margin-top: 1rem;
+}
+
+.account-page .panel .button-container {
+  margin-top: 0;
 }
 
 .account-page .danger button {

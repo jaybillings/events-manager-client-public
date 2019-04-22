@@ -84,8 +84,8 @@ export default class VenueRow extends ListingRow {
       return (
         <tr className={'schema-row'}>
           <td>
-            <button type={'button'} onClick={this.handleSaveClick}>Save</button>
-            <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
+            <button type={'button'} className={'emphasize more'} onClick={this.handleSaveClick}>Save</button>
+            <button type={'button'} className={'default'} onClick={this.cancelEdit}>Cancel</button>
           </td>
           <td><input type={'text'} name={'listingName'} value={name} onChange={this.handleInputChange} /></td>
           <td>
@@ -101,7 +101,7 @@ export default class VenueRow extends ListingRow {
     const hoodNameLink = this.props.hood
       ? <Link to={`/neighborhoods/${this.props.hood.id}`}>{this.props.hood.name}</Link> : 'NO NEIGHBORHOOD';
     const deleteButton = this.user.is_admin
-      ? <button type={'button'} className={'delete'} onClick={this.handleDeleteClick}>Delete</button> : '';
+      ? <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete</button> : '';
 
     return (
       <tr className={'schema-row'}>

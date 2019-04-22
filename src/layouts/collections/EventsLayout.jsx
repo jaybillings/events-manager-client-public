@@ -1,5 +1,5 @@
 import React from 'react';
-import {arrayUnique, buildSortQuery, renderTableHeader} from "../../utilities";
+import {arrayUnique, buildSortQuery, displayErrorMessages, renderTableHeader} from "../../utilities";
 import app from '../../services/socketio';
 
 import EventAddForm from '../../components/events/EventAddForm';
@@ -22,6 +22,8 @@ export default class EventsLayout extends ListingsLayout {
   constructor(props) {
     super(props, 'events');
 
+    this.defaultLimit = 3000;
+
     Object.assign(this.state, {
       venues: [], orgs: [], tags: [],
       venuesLoaded: false, orgsLoaded: false, tagsLoaded: false,
@@ -33,7 +35,6 @@ export default class EventsLayout extends ListingsLayout {
     this.orgsSerivce = app.service('organizers');
     this.tagsService = app.service('tags');
     this.eventsTagsLookupService = app.service('events-tags-lookup');
-    this.pendingEventsTagsLookupService = app.service('pending-events-tags-lookup');
     this.liveEventService = app.service('events-live');
     this.droppedEventService = app.service('events-dropped');
 
@@ -43,7 +44,6 @@ export default class EventsLayout extends ListingsLayout {
     this.fetchLiveListings = this.fetchLiveListings.bind(this);
 
     this.createTagAssociations = this.createTagAssociations.bind(this);
-    this.createPendingTagAssociations = this.createPendingTagAssociations.bind(this);
     this.removeTagAssociations = this.removeTagAssociations.bind(this);
     this.registerEventLive = this.registerEventLive.bind(this);
     this.registerEventDropped = this.registerEventDropped.bind(this);
@@ -58,63 +58,44 @@ export default class EventsLayout extends ListingsLayout {
   componentDidMount() {
     super.componentDidMount();
 
-    this.venuesService
-      .on('created', () => {
-        this.fetchVenues()
-      })
-      .on('patched', () => {
-        this.fetchVenues()
-      })
-      .on('removed', () => {
-        this.fetchVenues()
-      });
+    const services = new Map([
+      [this.orgsSerivce, this.fetchOrgs],
+      [this.venuesService, this.fetchVenues],
+      [this.tagsService, this.fetchTags]
+    ]);
 
-    this.orgsSerivce
-      .on('created', () => {
-        this.fetchOrgs()
-      })
-      .on('patched', () => {
-        this.fetchOrgs()
-      })
-      .on('removed', () => {
-        this.fetchOrgs()
-      });
-
-    this.tagsService
-      .on('created', () => {
-        this.fetchTags()
-      })
-      .on('patched', () => {
-        this.fetchTags()
-      })
-      .on('removed', () => {
-        this.fetchTags()
-      });
+    for (let [service, dataFetcher] of services) {
+      service
+        .on('created', () => dataFetcher())
+        .on('patched', () => dataFetcher())
+        .on('removed', () => dataFetcher())
+    }
 
     this.liveEventService
       .on('created', message => {
-        this.updateMessagePanel({status: 'info', details: `Event #${message.event_id} added to live list.`});
+        console.log('~ event added to live list', message);
+        this.updateMessagePanel({status: 'info', details: `Event added to live list.`});
         this.fetchLiveListings();
       })
-      .on('removed', message => {
-        this.updateMessagePanel({status: 'info', details: `Event #${message.event_id} removed from live list.`});
+      .on('removed', () => {
+        this.updateMessagePanel({status: 'info', details: `Event removed from live list.`});
         this.fetchLiveListings();
       });
 
     this.droppedEventService
-      .on('created', message => {
-        this.updateMessagePanel({status: 'info', details: `Event #${message.event_id} added to dropped list.`});
+      .on('created', () => {
+        this.updateMessagePanel({status: 'info', details: `Event added to dropped list.`});
       })
-      .on('removed', message => {
-        this.updateMessagePanel({status: 'info', details: `Event #${message.event_id} removed from dropped list.`});
+      .on('removed', () => {
+        this.updateMessagePanel({status: 'info', details: `Event removed from dropped list.`});
       });
 
     this.eventsTagsLookupService
-      .on('created', message => {
-        this.updateMessagePanel({status: 'info', details: `Saved tags associated with event #${message.event_id}`});
+      .on('created', () => {
+        this.updateMessagePanel({status: 'info', details: `Saved tags associated with event.`});
       })
-      .on('removed', message => {
-        this.updateMessagePanel({status: 'info', details: `Removed tags associated with event #${message.event_id}`});
+      .on('removed', () => {
+        this.updateMessagePanel({status: 'info', details: `Removed tags associated with event.`});
       });
   }
 
@@ -125,32 +106,30 @@ export default class EventsLayout extends ListingsLayout {
   componentWillUnmount() {
     super.componentWillUnmount();
 
-    this.venuesService
-      .removeAllListeners('created')
-      .removeAllListeners('patched')
-      .removeAllListeners('removed');
+    const services = [
+      this.orgsSerivce,
+      this.venuesService,
+      this.tagsService
+    ];
 
-    this.orgsSerivce
-      .removeAllListeners('created')
-      .removeAllListeners('patched')
-      .removeAllListeners('removed');
+    services.forEach(service => {
+      service
+        .removeAllListeners('created')
+        .removeAllListeners('patched')
+        .removeAllListeners('removed');
+    });
 
-    this.tagsService
-      .removeAllListeners('created')
-      .removeAllListeners('patched')
-      .removeAllListeners('removed');
+    const secondaryServices = [
+      this.liveEventService,
+      this.droppedEventService,
+      this.eventsTagsLookupService
+    ];
 
-    this.liveEventService
-      .removeAllListeners('created')
-      .removeAllListeners('removed');
-
-    this.droppedEventService
-      .removeAllListeners('created')
-      .removeAllListeners('removed');
-
-    this.eventsTagsLookupService
-      .removeAllListeners('created')
-      .removeAllListeners('removed');
+    secondaryServices.forEach(service => {
+      service
+        .removeAllListeners('created')
+        .removeAllListeners('removed');
+    });
   }
 
   /**
@@ -166,8 +145,8 @@ export default class EventsLayout extends ListingsLayout {
   }
 
   /**
-   * Fetches data for all published events. Handles table page size, page skipping, column sorting, and result set
-   * filtering.
+   * Fetches published events, based on table settings. Handles page size, page skipping, column sorting,
+   * and result set filtering.
    * @override
    */
   fetchListings() {
@@ -177,65 +156,74 @@ export default class EventsLayout extends ListingsLayout {
       $skip: this.state.pageSize * (this.state.currentPage - 1)
     };
 
-    const filterQuery = this.createFilterQuery();
-    Object.assign(query, filterQuery);
+    Object.assign(query, this.createFilterQuery());
 
-    this.listingsService.find({query: query}).then(message => {
-      this.setState({listings: message.data, listingsTotal: message.total, listingsLoaded: true});
-    }, err => {
-      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-      this.setState({listingsLoaded: false});
-    });
+    this.listingsService.find({query})
+      .then(result => {
+        this.setState({listings: result.data, listingsTotal: result.total, listingsLoaded: true});
+      })
+      .catch(err => {
+        displayErrorMessages('fetch', 'events', err, this.updateMessagePanel, 'reload');
+        this.setState({listingsLoaded: false});
+      });
   }
 
   /**
-   * Fetches data for all published venues.
+   * Fetches all published venues.
    */
   fetchVenues() {
-    this.venuesService.find({query: this.defaultQuery}).then(message => {
-      this.setState({venues: message.data, venuesLoaded: true});
-    }, err => {
-      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-      this.setState({venuesLoaded: false});
-    });
+    this.venuesService.find({query: this.defaultQuery})
+      .then(result => {
+        this.setState({venues: result.data, venuesLoaded: true});
+      })
+      .catch(err => {
+        displayErrorMessages('fetch', 'venues', err, this.updateMessagePanel, 'reload');
+        this.setState({venuesLoaded: false});
+      });
   }
 
   /**
    * Fetches data for all published organizers.
    */
   fetchOrgs() {
-    this.orgsSerivce.find({query: this.defaultQuery}).then(message => {
-      this.setState({orgs: message.data, orgsLoaded: true});
-    }, err => {
-      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-      this.setState({orgsLoaded: false});
-    });
+    this.orgsSerivce.find({query: this.defaultQuery})
+      .then(message => {
+        this.setState({orgs: message.data, orgsLoaded: true});
+      })
+      .catch(err => {
+        displayErrorMessages('fetch', 'organizers', err, this.updateMessagePanel, 'reload');
+        this.setState({orgsLoaded: false});
+      });
   }
 
   /**
    * Fetches data for all published tags.
    */
   fetchTags() {
-    this.tagsService.find({query: this.defaultQuery}).then(message => {
-      this.setState({tags: message.data, tagsLoaded: true});
-    }, err => {
-      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-      this.setState({tagsLoaded: false});
-    });
+    this.tagsService.find({query: this.defaultQuery})
+      .then(message => {
+        this.setState({tags: message.data, tagsLoaded: true});
+      })
+      .catch(err => {
+        displayErrorMessages('fetch', 'tags', err, this.updateMessagePanel, 'reload');
+        this.setState({tagsLoaded: false});
+      });
   }
 
   /**
    * Fetches a list of all live events.
    */
   fetchLiveListings() {
-    this.liveEventService.find({query: {$limit: 1000}}).then(result => {
-      const liveIDList = result.data.map(row => row.event_id) || [];
-      const uniqueIDs = arrayUnique(liveIDList);
-      this.setState({liveIDs: uniqueIDs, liveIDsLoaded: true}, () => this.fetchListings());
-    }, err => {
-      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-      this.setState({liveIDsLoaded: false});
-    });
+    this.liveEventService.find({query: {$limit: this.defaultLimit}})
+      .then(result => {
+        const liveIDList = result.data.map(row => row.event_id) || [];
+        const uniqueIDs = arrayUnique(liveIDList);
+        this.setState({liveIDs: uniqueIDs, liveIDsLoaded: true}, () => this.fetchListings());
+      })
+      .catch(err => {
+        this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+        this.setState({liveIDsLoaded: false});
+      });
   }
 
   /**
@@ -247,9 +235,9 @@ export default class EventsLayout extends ListingsLayout {
    * @returns {Promise}
    */
   createListing(eventData) {
-    return this.listingsService.create(eventData.eventObj).then(message => {
-      this.createTagAssociations(message.id, eventData.tagsToSave);
-      this.registerEventLive(message.id);
+    return this.listingsService.create(eventData.eventObj).then(result => {
+      this.createTagAssociations(result.uuid, eventData.tagsToSave);
+      this.registerEventLive(result.id);
     }, err => {
       this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
@@ -265,15 +253,14 @@ export default class EventsLayout extends ListingsLayout {
    * @returns {Promise}
    */
   updateListing(id, newData) {
-    return this.listingsService.patch(id, newData.newData).then(() => {
-      if (newData.doPublish) {
-        this.registerEventLive(id);
-      } else {
-        this.registerEventDropped(id);
-      }
-    }, err => {
-      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-    });
+    return this.listingsService.patch(id, newData.newData)
+      .then(() => {
+        if (newData.doPublish) return this.registerEventLive(id);
+        else return this.registerEventDropped(id);
+      })
+      .catch(err => {
+        this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      });
   }
 
   /**
@@ -284,12 +271,14 @@ export default class EventsLayout extends ListingsLayout {
    * @param {int} id
    */
   deleteListing(id) {
-    this.listingsService.remove(id).then(() => {
-      this.removeTagAssociations(id);
-      this.registerEventDropped(id);
-    }, err => {
-      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-    });
+    this.listingsService.remove(id)
+      .then(() => {
+        this.removeTagAssociations(id);
+        this.registerEventDropped(id);
+      })
+      .catch(err => {
+        this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      });
   }
 
   /**
@@ -299,85 +288,33 @@ export default class EventsLayout extends ListingsLayout {
    * @returns {Promise}
    */
   createPendingListing(eventData) {
-    return this.pendingEventService.create(eventData.eventObj).then(result => {
-      this.setState({newPendingListing: result});
-      this.updateMessagePanel({status: 'success', details: `Pending event "${result.name}" created.`});
-
-      if (eventData.tagsToSave) {
-        this.createPendingTagAssociations(result.id, eventData.tagsToSave);
-      } else {
-        this.copyTagAssociations(eventData.eventID, result.id);
-      }
-    }, errors => {
-      this.updateMessagePanel({status: 'error', details: JSON.stringify(errors)});
-    });
+    return this.pendingEventService.create(eventData.eventObj)
+      .then(result => {
+        this.setState({newPendingListing: result});
+        this.updateMessagePanel({status: 'success', details: `Pending event "${result.name}" created.`});
+        return result;
+      })
+      .catch(errors => {
+        this.updateMessagePanel({status: 'error', details: JSON.stringify(errors)});
+      });
   }
 
   /**
    * Creates associations between a given event and its tags.
    *
-   * @param {int} id
+   * @param {int} uuid
    * @param {Array} tagList - A list of tags IDs to associate.
    */
-  createTagAssociations(id, tagList) {
+  createTagAssociations(uuid, tagList) {
     let tagsToSave = [];
 
-    tagList.forEach(tagId => tagsToSave.push({event_id: id, tag_id: tagId}));
+    tagList.forEach(tagUUID => tagsToSave.push({event_uuid: uuid, tag_uuid: tagUUID}));
 
-    this.eventsTagsLookupService.create(tagsToSave).catch(err => {
-      const details = `Could not save tags associated with event #${id}.`
-        + `Please re-save listing on its individual page. Error is: ${JSON.stringify(err)}`;
-      this.updateMessagePanel({status: 'error', details: details});
-    });
-  }
-
-  /**
-   * Creates associations between a given pending event and its tags.
-   *
-   * @param {Number} id
-   * @param {Array} tagList - A list of tag UUIDs to associate.
-   */
-  createPendingTagAssociations(id, tagList) {
-    let tagsToSave = [];
-
-    tagList.forEach(tagUUID => {
-      tagsToSave.push({pending_event_id: id, tag_uuid: tagUUID})
-    });
-
-    this.pendingEventsTagsLookupService.create(tagsToSave).then(() => {
-      this.updateMessagePanel({status: 'info', details: 'Tags associated with pending event'});
-    }, err => {
-      const details = `Could not save tags associated with pending event #${id}.`
-        + `Please re-save listing on its individual page. Error is: ${JSON.stringify(err)}`;
-      this.updateMessagePanel({status: 'error', details: details});
-    });
-  }
-
-  /**
-   * Copies tag associations from the live event to the newly created pending event.
-   *
-   * @param {int} liveID
-   * @param {int} pendingID
-   */
-  copyTagAssociations(liveID, pendingID) {
-    // Find IDs of linked tags
-    this.eventsTagsLookupService.find({query: {event_id: liveID}})
-      .then(result => {
-        const tagIDs = result.data.map(row => row.tag_id);
-        // Fetch data for returned IDs, to get UUID
-        return this.tagsService.find({query: {id: {$in: tagIDs}}});
-      })
-      .then(result => {
-        const tagsToLink = [];
-        result.data.forEach(row => tagsToLink.push({pending_event_id: pendingID, tag_uuid: row.uuid}));
-        // Create pending links
-        return this.pendingEventsTagsLookupService.create(tagsToLink);
-      })
-      .then(() => {
-        this.updateMessagePanel({status: 'info', details: 'Live event tags linked to new pending event.'});
-      })
+    this.eventsTagsLookupService.create(tagsToSave)
       .catch(err => {
-        this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+        const details = `Could not save tags associated with event #${uuid}.`
+          + `Please re-save listing on its individual page. Error is: ${JSON.stringify(err)}`;
+        this.updateMessagePanel({status: 'error', details: details});
       });
   }
 
@@ -387,11 +324,12 @@ export default class EventsLayout extends ListingsLayout {
    * @param {int} id
    */
   removeTagAssociations(id) {
-    this.eventsTagsLookupService.remove(null, {query: {event_id: id}}).catch(err => {
-      const details = `Could remove tags associated with event #${id}.`
-        + `Please re-save listing on its individual page. Error is: ${JSON.stringify(err)}`;
-      this.updateMessagePanel({status: 'error', details: details});
-    });
+    this.eventsTagsLookupService.remove(null, {query: {event_id: id}})
+      .catch(err => {
+        const details = `Could remove tags associated with event #${id}.`
+          + `Please re-save listing on its individual page. Error is: ${JSON.stringify(err)}`;
+        this.updateMessagePanel({status: 'error', details: details});
+      });
   }
 
   /**
@@ -400,7 +338,6 @@ export default class EventsLayout extends ListingsLayout {
    * @param {int} id
    */
   registerEventLive(id) {
-    // noinspection JSCheckFunctionSignatures
     Promise.all([
       this.liveEventService.create({event_id: id}),
       this.droppedEventService.remove(null, {query: {event_id: id}})
@@ -418,7 +355,6 @@ export default class EventsLayout extends ListingsLayout {
    * @param {int} id
    */
   registerEventDropped(id) {
-    // noinspection JSCheckFunctionSignatures
     Promise.all([
       this.droppedEventService.create({event_id: id}),
       this.liveEventService.remove(null, {query: {event_id: id}})
@@ -472,9 +408,12 @@ export default class EventsLayout extends ListingsLayout {
    */
   renderTable() {
     if (!(this.state.listingsLoaded && this.state.venuesLoaded && this.state.orgsLoaded && this.state.liveIDsLoaded)) {
-      return <p>Data is loading... Please be patient...</p>;
+      return <p className={'load-message'}>Data is loading... Please be patient...</p>;
     } else if (this.state.listingsTotal === 0) {
-      return <p>No events to list.</p>;
+      return [
+        <Filters key={'events-filters'} updateFilters={this.updateFilters} />,
+        <p className={'load-message'}>No events to list.</p>
+      ];
     }
 
     const titleMap = new Map([
@@ -492,6 +431,7 @@ export default class EventsLayout extends ListingsLayout {
     const orgs = this.state.orgs;
     const liveIDs = this.state.liveIDs;
 
+
     return ([
       <Filters key={'events-filters'} updateFilters={this.updateFilters} />,
       <PaginationLayout
@@ -508,10 +448,10 @@ export default class EventsLayout extends ListingsLayout {
               key={event.uuid} schema={'events'} listing={event}
               venues={venues} orgs={orgs}
               venue={venues.find(v => {
-                return v.id === event.venue_id
+                return v.uuid === event.venue_uuid
               })}
               org={orgs.find(o => {
-                return o.id === event.org_id
+                return o.uuid === event.org_uuid
               })}
               updateListing={this.updateListing} deleteListing={this.deleteListing}
               createPendingListing={this.createPendingListing} listingIsLive={liveIDs.includes(event.id)}
