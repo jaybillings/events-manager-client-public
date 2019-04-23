@@ -33,8 +33,6 @@ export default class EventAddForm extends ListingAddForm {
     this.ongoingInput = React.createRef();
     this.venueList = React.createRef();
     this.orgList = React.createRef();
-
-    this.buildPendingListing = this.buildPendingListing.bind(this);
   }
 
   /**

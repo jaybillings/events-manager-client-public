@@ -408,11 +408,11 @@ export default class EventsLayout extends ListingsLayout {
    */
   renderTable() {
     if (!(this.state.listingsLoaded && this.state.venuesLoaded && this.state.orgsLoaded && this.state.liveIDsLoaded)) {
-      return <p className={'load-message'}>Data is loading... Please be patient...</p>;
+      return <p key={'events-message'} className={'load-message'}>Data is loading... Please be patient...</p>;
     } else if (this.state.listingsTotal === 0) {
       return [
         <Filters key={'events-filters'} updateFilters={this.updateFilters} />,
-        <p className={'load-message'}>No events to list.</p>
+        <p key={'events-message'} className={'load-message'}>No events to list.</p>
       ];
     }
 

@@ -96,11 +96,12 @@ export default class ImportLayout extends Component {
         });
       })
       .then(response => {
-        return response.json();
+        return response.json(); // Convert raw response body to JSON
       })
       .then(body => {
         if (body.code >= 400) {
           this.updateMessagePanel({status: 'error', details: body.message});
+          console.log('[DEBUG] error on import: ', body);
         }
       });
   }
