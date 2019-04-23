@@ -29,7 +29,7 @@ export default class ImportLayout extends Component {
     this.defaultSortOrder = ['created_at', -1];
     this.user = app.get('user');
 
-    this.state = {messages: [], messagePanelVisible: false, listenForChanges: true};
+    this.state = {messages: [], messagePanelVisible: false};
 
     this.fileInput = React.createRef();
     this.eventsModule = React.createRef();
@@ -53,12 +53,13 @@ export default class ImportLayout extends Component {
   componentDidMount() {
     this.importerService
       .on('created', () => {
-        console.debug('[DEBUG] [importer] IMPORT DONE (from listener)');
-        this.updateMessagePanel({status: 'success', details: 'Import complete'});
-        this.setState({listenForChanges: true});
+        // TODO: On created, start spinner?
+        // TODO: Unregister listeners and lazy pull data every second or so?
+        this.updateMessagePanel({status: 'info', details: 'Importer is running. This may take several minutes.'});
       })
       .on('status', message => {
-        this.updateMessagePanel(message);
+        // TODO: If success, import all data?
+        this.updateMessagePanel({status: message.status, details: message.details});
       });
   }
 
@@ -67,9 +68,7 @@ export default class ImportLayout extends Component {
    * @override
    */
   componentWillUnmount() {
-    this.importerService
-      .removeAllListeners('created')
-      .removeAllListeners('status');
+    this.importerService.removeAllListeners('status');
   }
 
   /**
@@ -81,13 +80,12 @@ export default class ImportLayout extends Component {
   importData(e) {
     e.preventDefault();
 
-    console.debug('[DEBUG] STOP listening for changes');
-    this.setState({listenForChanges: false});
-
     let importData = new FormData();
 
     importData.append('file', this.fileInput.current.files[0]);
     importData.append('filename', this.fileInput.current.files[0].name);
+
+    console.log(this.user);
 
     app.passport.getJWT()
       .then(token => {
@@ -103,7 +101,7 @@ export default class ImportLayout extends Component {
       .then(body => {
         if (body.code >= 400) {
           this.updateMessagePanel({status: 'error', details: body.message});
-          console.debug('[DEBUG] [importer] error on import (from importData): ', body);
+          console.log('[DEBUG] error on import: ', body);
         }
       });
   }
@@ -116,9 +114,6 @@ export default class ImportLayout extends Component {
    * large datasets.
    */
   publishListings() {
-    console.debug('[DEBUG] STOP listening for changes');
-    this.setState({listenForChanges: false});
-
     this.updateMessagePanel({status: 'info', details: 'Publish started. This make take several minutes.'});
 
     Promise
@@ -139,16 +134,12 @@ export default class ImportLayout extends Component {
         return this.eventsModule.current.publishListings();
       })
       .then(() => {
-        console.debug('~ all done!');
+        console.log('~ all done!');
         this.updateMessagePanel({status: 'notice', details: 'Publish complete.'});
       })
       .catch(error => {
-        console.debug('~ very top level error', error);
+        console.log('~ very top level error', error);
         this.updateMessagePanel({status: 'error', details: JSON.stringify(error)});
-      })
-      .finally(() => {
-        console.debug('[DEBUG] RESUME listening for changes');
-        this.setState({listenForChanges: true});
       });
   }
 
@@ -176,7 +167,6 @@ export default class ImportLayout extends Component {
   render() {
     const showMessagePanel = this.state.messagePanelVisible;
     const messages = this.state.messages;
-    const listenForChanges = this.state.listenForChanges;
     const publishButton = this.user.is_su ?
       <button type={'button'} className={'button-primary button-publish'} onClick={this.publishListings}>
         Publish All Pending Listings
@@ -191,23 +181,23 @@ export default class ImportLayout extends Component {
         <h2>Review Unpublished Data</h2>
         <PendingEventsModule
           ref={this.eventsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
-          listenForChanges={listenForChanges} updateMessagePanel={this.updateMessagePanel}
+          updateMessagePanel={this.updateMessagePanel}
         />
         <PendingVenuesModule
           ref={this.venuesModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
-          listenForChanges={listenForChanges} updateMessagePanel={this.updateMessagePanel}
+          updateMessagePanel={this.updateMessagePanel}
         />
         <PendingOrganizersModule
           ref={this.orgsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
-          listenForChanges={listenForChanges} updateMessagePanel={this.updateMessagePanel}
+          updateMessagePanel={this.updateMessagePanel}
         />
         <PendingNeighborhoodsModule
           ref={this.hoodsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
-          listenForChanges={listenForChanges} updateMessagePanel={this.updateMessagePanel}
+          updateMessagePanel={this.updateMessagePanel}
         />
         <PendingTagsModule
           ref={this.tagsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}
-          listenForChanges={listenForChanges} updateMessagePanel={this.updateMessagePanel}
+          updateMessagePanel={this.updateMessagePanel}
         />
         {publishButton}
       </div>

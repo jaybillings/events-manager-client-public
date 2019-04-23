@@ -49,10 +49,6 @@ export default class PendingEventsModule extends PendingListingsModule {
   componentDidMount() {
     super.componentDidMount();
 
-    if (!this.props.listenForChanges) return;
-
-    console.debug('[DEBUG] [events] DO listen for changes');
-
     const services = new Map([
       [this.orgsService, this.fetchOrgs],
       [this.pendingOrgsService, this.fetchPendingOrgs],
