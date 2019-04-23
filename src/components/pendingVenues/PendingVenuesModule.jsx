@@ -42,6 +42,10 @@ export default class PendingVenuesModule extends PendingListingsModule {
   componentDidMount() {
     super.componentDidMount();
 
+    if (!this.props.listenForChanges) return;
+
+    console.debug('[DEBUG] [venues] DO listen for changes');
+
     const services = new Map([
       [this.hoodsService, this.fetchHoods],
       [this.pendingHoodsService, this.fetchPendingHoods]

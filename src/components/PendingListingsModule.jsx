@@ -76,13 +76,21 @@ export default class PendingListingsModule extends Component {
   componentDidMount() {
     this.fetchAllData();
 
-    const schemaSingular = makeSingular(this.schema);
+    if (!this.props.listenForChanges) return;
 
-    // TODO: Get 'created' events without getting creation on import
-    // TODO: Get 'removed' event without getting removal on publish
+    console.debug(`[DEBUG] [${this.schema}-parent] DO listen for changes`);
+
+    const schemaSingular = makeSingular(this.schema);
 
     /** @var {Function} this.pendingListingsService.on */
     this.pendingListingsService
+      .on('created', message => {
+        this.props.updateMessagePanel({
+          status: 'success',
+          details: `Created pending ${schemaSingular} "${message.name}"`
+        });
+        this.fetchListings();
+      })
       .on('updated', message => {
         this.props.updateMessagePanel({
           status: 'success',
@@ -96,15 +104,6 @@ export default class PendingListingsModule extends Component {
           details: `Updated pending ${schemaSingular} "${message.name}"`
         });
         this.fetchListings();
-      })
-      .on('status', message => {
-        if (message.rawError) console.log(message.rawError);
-        let userMessage = message.details;
-        if (message.rawData) userMessage += ": " + message.rawData.dataPath + " " + message.rawData.message;
-        this.props.updateMessagePanel({status: message.status, details: userMessage});
-        if (message.status === 'success') {
-          this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchListings());
-        }
       });
   }
 
@@ -131,7 +130,6 @@ export default class PendingListingsModule extends Component {
       this.setState({selectedListings: prevState.selectedListings});
     }
   }
-
 
   /**
    * Fetches all data for the module.
@@ -309,7 +307,6 @@ export default class PendingListingsModule extends Component {
       .then(allResults => {
         this.props.updateMessagePanel({status: 'success', details: `Finished publishing ${this.schema}`});
         this.fetchAllData();
-        return allResults;
       })
       .catch(error => {
         console.log('~ error publishing caught at top level', error);
