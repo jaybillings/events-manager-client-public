@@ -35,14 +35,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
     this.fetchPendingHoods = this.fetchPendingHoods.bind(this);
   }
 
-  /**
-   * Runs once the component is mounted. Fetches all data and registers data service listeners.
-   * @override
-   */
-  componentDidMount() {
-    super.componentDidMount();
-
-    if (!this.props.listenForChanges) return;
+  listenForChanges() {
+    super.listenForChanges();
 
     const services = new Map([
       [this.hoodsService, this.fetchHoods],
@@ -58,12 +52,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
     }
   }
 
-  /**
-   * Runs before the component unmounts. Removes data service listeners.
-   * @override
-   */
-  componentWillUnmount() {
-    super.componentWillUnmount();
+  stopListening() {
+    super.stopListening();
 
     const services = [
       this.hoodsService,

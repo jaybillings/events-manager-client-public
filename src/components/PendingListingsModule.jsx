@@ -41,6 +41,9 @@ export default class PendingListingsModule extends Component {
     this.pendingListingsService = app.service(`pending-${this.schema}`);
     this.listingsService = app.service(this.schema);
 
+    this.listenForChanges = this.listenForChanges.bind(this);
+    this.stopListening = this.stopListening.bind(this);
+
     this.fetchAllData = this.fetchAllData.bind(this);
     this.fetchListings = this.fetchListings.bind(this);
     this.queryForExisting = this.queryForExisting.bind(this);
@@ -74,12 +77,31 @@ export default class PendingListingsModule extends Component {
    * @override
    */
   componentDidMount() {
+    this.listenForChanges();
+  }
+
+  /**
+   * Runs before component is unmounted. Unregisters data service listeners.
+   * @override
+   */
+  componentWillUnmount() {
+    this.stopListening();
+  }
+
+  /**
+   * Runs after the component is updated. Preserves selected listings.
+   * @param {Object} prevProps
+   * @param {Object} prevState
+   * @param {*} snapshot
+   */
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (this.state.selectedListings.count === 0 && prevState.selectedListings.count < 0) {
+      this.setState({selectedListings: prevState.selectedListings});
+    }
+  }
+
+  listenForChanges() {
     this.fetchAllData();
-
-    // TODO: Get 'created' events without getting creation on import
-    // TODO: Get 'removed' event without getting removal on publish
-
-    if (!this.props.listenForChanges) return;
 
     const schemaSingular = makeSingular(this.schema);
 
@@ -114,29 +136,13 @@ export default class PendingListingsModule extends Component {
       });
   }
 
-  /**
-   * Runs before component is unmounted. Unregisters data service listeners.
-   * @override
-   */
-  componentWillUnmount() {
+  stopListening() {
     /** @var {Function} this.pendingListingsService.removeAllListeners */
     this.pendingListingsService
       .removeAllListeners('created')
       .removeAllListeners('updated')
       .removeAllListeners('patched')
       .removeAllListeners('removed');
-  }
-
-  /**
-   * Runs after the component is updated. Preserves selected listings.
-   * @param {Object} prevProps
-   * @param {Object} prevState
-   * @param {*} snapshot
-   */
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    if (this.state.selectedListings.count === 0 && prevState.selectedListings.count < 0) {
-      this.setState({selectedListings: prevState.selectedListings});
-    }
   }
 
   /**

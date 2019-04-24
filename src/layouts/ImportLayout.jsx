@@ -29,7 +29,7 @@ export default class ImportLayout extends Component {
     this.defaultSortOrder = ['created_at', -1];
     this.user = app.get('user');
 
-    this.state = {messages: [], messagePanelVisible: false, listenForChanges: true};
+    this.state = {messages: [], messagePanelVisible: false};
 
     this.fileInput = React.createRef();
     this.eventsModule = React.createRef();
@@ -40,8 +40,12 @@ export default class ImportLayout extends Component {
 
     this.importerService = app.service('importer');
 
+    this.resumeModuleListening = this.resumeModuleListening.bind(this);
+    this.stopModuleListening = this.stopModuleListening.bind(this);
+
     this.importData = this.importData.bind(this);
     this.publishListings = this.publishListings.bind(this);
+
     this.updateMessagePanel = this.updateMessagePanel.bind(this);
     this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
   }
@@ -55,10 +59,10 @@ export default class ImportLayout extends Component {
       .on('status', message => {
         if (message.status === 'success') {
           this.updateMessagePanel({status: 'success', details: message.message});
-          this.setState({listenForChanges: true});
+          this.resumeModuleListening();
         } else if (message.status === 'fail') {
           this.updateMessagePanel({status: 'error', details: message.message});
-          this.setState({listenForChanges: true});
+          this.resumeModuleListening();
         } else if (message.status === 'error') {
           console.debug('[COE] Error occurred while importing');
           console.error(message.rawError || 'No raw error');
@@ -77,6 +81,24 @@ export default class ImportLayout extends Component {
     this.importerService.removeAllListeners('status');
   }
 
+  resumeModuleListening() {
+    console.debug('START module listening');
+    this.eventsModule.current.listenForChanges();
+    this.venuesModule.current.listenForChanges();
+    this.orgsModule.current.listenForChanges();
+    this.hoodsModule.current.listenForChanges();
+    this.tagsModule.current.listenForChanges();
+  }
+
+  stopModuleListening() {
+    console.debug('STOP module listening');
+    this.eventsModule.current.stopListening();
+    this.venuesModule.current.stopListening();
+    this.orgsModule.current.stopListening();
+    this.hoodsModule.current.stopListening();
+    this.tagsModule.current.stopListening();
+  }
+
   /**
    * Handles the importing of a single CSV file containing listings of a given schema. Parameters are
    * retrieved from from DOM.
@@ -91,10 +113,9 @@ export default class ImportLayout extends Component {
     importData.append('file', this.fileInput.current.files[0]);
     importData.append('filename', this.fileInput.current.files[0].name);
 
-    console.log(this.user);
-
     app.passport.getJWT()
       .then(token => {
+        this.stopModuleListening();
         return fetch(this.API_URI, {
           method: 'POST',
           body: importData,

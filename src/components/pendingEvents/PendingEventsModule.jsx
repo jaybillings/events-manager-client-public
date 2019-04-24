@@ -42,14 +42,8 @@ export default class PendingEventsModule extends PendingListingsModule {
     this.fetchPendingVenues = this.fetchPendingVenues.bind(this);
   }
 
-  /**
-   * Runs once the component is mounted. Fetches all data and registers data service listeners.
-   * @override
-   */
-  componentDidMount() {
-    super.componentDidMount();
-
-    if (!this.props.listenForChanges) return;
+  listenForChanges() {
+    super.listenForChanges();
 
     const services = new Map([
       [this.orgsService, this.fetchOrgs],
@@ -67,12 +61,8 @@ export default class PendingEventsModule extends PendingListingsModule {
     }
   }
 
-  /**
-   * Runs before the component unmounts. Removes data service listeners.
-   * @override
-   */
-  componentWillUnmount() {
-    super.componentWillUnmount();
+  stopListening() {
+    super.stopListening();
 
     const services = [
       this.orgsService,
@@ -265,14 +255,12 @@ export default class PendingEventsModule extends PendingListingsModule {
    * @returns {[*]}
    */
   renderTable() {
-    console.debug('state', this.state);
     if (!(this.state.listingsLoaded && this.state.venuesLoaded && this.state.pendingVenuesLoaded &&
       this.state.orgsLoaded && this.state.pendingOrgsLoaded)) {
       return <p>Data is loading... Please be patient...</p>;
     }
 
     if (this.state.pendingListingsTotal === 0) return <p>No pending events to list.</p>;
-    console.log('still loading event table');
 
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
