@@ -49,6 +49,8 @@ export default class PendingEventsModule extends PendingListingsModule {
   componentDidMount() {
     super.componentDidMount();
 
+    if (!this.props.listenForChanges) return;
+
     const services = new Map([
       [this.orgsService, this.fetchOrgs],
       [this.pendingOrgsService, this.fetchPendingOrgs],
@@ -61,10 +63,7 @@ export default class PendingEventsModule extends PendingListingsModule {
         .on('created', () => dataFetcher())
         .on('updated', () => dataFetcher())
         .on('patched', () => dataFetcher())
-        .on('removed', () => dataFetcher())
-        .on('status', message => {
-          if (message.status === 'success') dataFetcher();
-        });
+        .on('removed', () => dataFetcher());
     }
   }
 
@@ -87,8 +86,7 @@ export default class PendingEventsModule extends PendingListingsModule {
         .removeAllListeners('created')
         .removeAllListeners('updated')
         .removeAllListeners('patched')
-        .removeAllListeners('removed')
-        .removeAllListeners('status');
+        .removeAllListeners('removed');
     });
   }
 
@@ -267,12 +265,14 @@ export default class PendingEventsModule extends PendingListingsModule {
    * @returns {[*]}
    */
   renderTable() {
+    console.debug('state', this.state);
     if (!(this.state.listingsLoaded && this.state.venuesLoaded && this.state.pendingVenuesLoaded &&
       this.state.orgsLoaded && this.state.pendingOrgsLoaded)) {
       return <p>Data is loading... Please be patient...</p>;
     }
 
     if (this.state.pendingListingsTotal === 0) return <p>No pending events to list.</p>;
+    console.log('still loading event table');
 
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],

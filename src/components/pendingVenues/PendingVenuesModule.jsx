@@ -42,6 +42,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
   componentDidMount() {
     super.componentDidMount();
 
+    if (!this.props.listenForChanges) return;
+
     const services = new Map([
       [this.hoodsService, this.fetchHoods],
       [this.pendingHoodsService, this.fetchPendingHoods]
@@ -52,10 +54,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
         .on('created', () => dataFetcher())
         .on('updated', () => dataFetcher())
         .on('patched', () => dataFetcher())
-        .on('removed', () => dataFetcher())
-        .on('status', message => {
-          if (message.status === 'success') dataFetcher();
-        });
+        .on('removed', () => dataFetcher());
     }
   }
 
@@ -76,8 +75,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
         .removeAllListeners('created')
         .removeAllListeners('updated')
         .removeAllListeners('patched')
-        .removeAllListeners('removed')
-        .removeAllListeners('status');
+        .removeAllListeners('removed');
     });
   }
 

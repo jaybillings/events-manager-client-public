@@ -29,7 +29,7 @@ export default class ImportLayout extends Component {
     this.defaultSortOrder = ['created_at', -1];
     this.user = app.get('user');
 
-    this.state = {messages: [], messagePanelVisible: false};
+    this.state = {messages: [], messagePanelVisible: false, listenForChanges: true};
 
     this.fileInput = React.createRef();
     this.eventsModule = React.createRef();
@@ -52,14 +52,20 @@ export default class ImportLayout extends Component {
    */
   componentDidMount() {
     this.importerService
-      .on('created', () => {
-        // TODO: On created, start spinner?
-        // TODO: Unregister listeners and lazy pull data every second or so?
-        this.updateMessagePanel({status: 'info', details: 'Importer is running. This may take several minutes.'});
-      })
       .on('status', message => {
-        // TODO: If success, import all data?
-        this.updateMessagePanel({status: message.status, details: message.details});
+        if (message.status === 'success') {
+          this.updateMessagePanel({status: 'success', details: message.message});
+          this.setState({listenForChanges: true});
+        } else if (message.status === 'fail') {
+          this.updateMessagePanel({status: 'error', details: message.message});
+          this.setState({listenForChanges: true});
+        } else if (message.status === 'error') {
+          console.debug('[COE] Error occurred while importing');
+          console.error(message.rawError || 'No raw error');
+          this.updateMessagePanel({status: 'error', details: message.message});
+        } else if (message.status === 'status') {
+          this.updateMessagePanel({status: 'info', details: message.message})
+        }
       });
   }
 
@@ -99,9 +105,13 @@ export default class ImportLayout extends Component {
         return response.json(); // Convert raw response body to JSON
       })
       .then(body => {
+        console.debug('[COE] Import response body');
+        console.debug(body);
         if (body.code >= 400) {
           this.updateMessagePanel({status: 'error', details: body.message});
-          console.log('[DEBUG] error on import: ', body);
+          console.error(body.message);
+        } else {
+          this.updateMessagePanel({status: 'info', details: 'Importer is running. This may take several minutes.'});
         }
       });
   }

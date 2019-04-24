@@ -22,8 +22,8 @@ export default class PendingEventRow extends PendingListingRow {
 
     Object.assign(this.state, {
       listingName: this.props.listing.name, listingStart: this.props.listing.start_date,
-      listingEnd: this.props.listing.end_date, linkedVenueUUID: this.props.venue.uuid,
-      linkedOrgUUID: this.props.org.uuid
+      listingEnd: this.props.listing.end_date, linkedVenueUUID: this.props.venue ? this.props.venue.uuid : null,
+      linkedOrgUUID: this.props.org ? this.props.org.uuid : null
     });
   }
 
