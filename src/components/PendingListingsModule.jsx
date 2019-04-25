@@ -29,7 +29,7 @@ export default class PendingListingsModule extends Component {
 
     this.schema = schema;
     this.user = app.get('user');
-    this.defaultLimit = 1000;
+    this.publishPageSize = 25;
     this.maxLimit = 5000;
     this.defaultQuery = {$sort: {name: 1}, $limit: this.maxLimit, $select: ['id', 'uuid', 'name']};
 
@@ -59,7 +59,12 @@ export default class PendingListingsModule extends Component {
     this.replaceLiveListing = this.replaceLiveListing.bind(this);
 
     this.publishListings = this.publishListings.bind(this);
+    this.publishListingsRecursive = this.publishListingsRecursive.bind(this);
     this.discardListings = this.discardListings.bind(this);
+    this.publishPageOfListings = this.publishPageOfListings.bind(this);
+
+    this.handlePublishButtonClick = this.handlePublishButtonClick.bind(this);
+    this.handlePublishAllClick = this.handlePublishAllClick.bind(this);
 
     this.updateColSort = this.updateColSort.bind(this);
     this.updatePageSize = this.updatePageSize.bind(this);
@@ -70,7 +75,6 @@ export default class PendingListingsModule extends Component {
     this.selectPageOfListings = this.selectPageOfListings.bind(this);
     this.selectAllListings = this.selectAllListings.bind(this);
     this.selectNoListings = this.selectNoListings.bind(this);
-    this.handlePublishButtonClick = this.handlePublishButtonClick.bind(this);
 
     this.renderTable = this.renderTable.bind(this);
   }
@@ -300,7 +304,8 @@ export default class PendingListingsModule extends Component {
       });
   }
 
-  async publishListings() {
+
+  /*async publishListings() {
     this.props.updateMessagePanel({status: 'info', details: `Started publishing ${this.schema}. Please wait...`});
 
     const query = this.state.selectedListings.length === 0 ? {$limit: this.defaultLimit}
@@ -354,13 +359,94 @@ export default class PendingListingsModule extends Component {
         console.debug('Error caught at module top');
         displayErrorMessages('publish', `pending ${this.schema}`, error, this.props.updateMessagePanel);
       });
+  }*/
+
+
+  async publishListings(idsToPublish) {
+
+    this.props.updateMessagePanel({status: 'info', details: `Started publishing ${this.schema}. Please wait...`});
+
+    const liveIDs = await this.queryForLiveUUIDs();
+    const allResults = await this.publishListingsRecursive(idsToPublish, liveIDs);
+
+    /*while (this.state.selectedListings.length > 0) {
+      const result = await this.publishPageOfListings(liveIDs);
+      allResults.push(result);
+    }*/
+
+    this.props.updateMessagePanel({status: 'success', details: `Finished publishing ${this.schema}`});
+
+    return allResults;
   }
 
+  publishListingsRecursive(selectedIDs, liveIDs) {
+    console.debug('selectedids now', selectedIDs);
+    if (selectedIDs.length === 0) return;
+
+    return this.publishPageOfListings(selectedIDs, liveIDs).then(result => {
+      console.debug('Publish page of listings results', result);
+      if (!result[0]) return;
+
+      const idsToRemove = result.map(listing => {
+        return listing.id;
+      });
+      const newSelections = selectedIDs.filter(id => {
+        return !idsToRemove.includes(id);
+      });
+
+      console.debug('remaining selected listings', newSelections);
+
+      return this.publishListingsRecursive(newSelections, liveIDs);
+
+    })
+  }
+
+
+  async publishPageOfListings(selectedIDs, liveIDs) {
+    const query = {id: {$in: selectedIDs}, $limit: this.publishPageSize};
+
+    return this.pendingListingsService.find({query, paginate: false})
+      .then(result => {
+        return Promise.all(result.data.map(listing => {
+          if (!this.checkForLiveLinked(listing)) {
+            const msg = `Cannot publish "${listing.name}" (${listing.uuid}): missing required linked schema.`;
+            this.props.updateMessagePanel({status: 'error', details: msg});
+            return listing;
+          }
+
+          const liveMatch = liveIDs.data.find(row => {
+            return row.uuid === listing.uuid
+          });
+
+          if (liveMatch) {
+            return this.replaceLiveListing(listing, liveMatch)
+              .then(() => {
+                return this.removeListing(listing);
+              })
+              .finally(() => {
+                this.handleListingSelect(listing.id, false);
+              });
+          } else {
+            return this.createLiveListing(listing)
+              .then(() => {
+                return this.removeListing(listing);
+              })
+              .finally(() => {
+                this.handleListingSelect(listing.id, false);
+              });
+          }
+        }));
+      })
+      .catch(error => {
+        console.debug('Error caught at module top', error);
+        displayErrorMessages('publish', `pending ${this.schema}`, error, this.props.updateMessagePanel);
+      });
+  }
 
   /**
    * Publishes selected listings by creating or updating live listings of the same schema.
    */
-  /*publishListings() {
+  /*publishPageOfListings() {
     this.props.updateMessagePanel({status: 'info', details: `Started publishing ${this.schema}. Please wait...`});
 
     const query = this.state.selectedListings.length === 0 ? {$limit: this.defaultLimit}
@@ -424,6 +510,24 @@ export default class PendingListingsModule extends Component {
       });
   }
 
+  handlePublishButtonClick() {
+    this.stopListening();
+
+    const selectedListings = this.state.selectedListings;
+
+    this.publishListings(selectedListings).finally(() => {
+      this.startListening();
+    });
+  }
+
+  handlePublishAllClick() {
+    // Select all first
+    const allIDs = [...this.state.allIDs];
+
+    return this.publishListings(allIDs);
+  }
+
+
   /**
    * Updates the module's table column sort.
    *
@@ -480,14 +584,6 @@ export default class PendingListingsModule extends Component {
         this.setState({selectedListings: selections});
       }
     }
-  }
-
-  handlePublishButtonClick() {
-    this.stopListening();
-
-    this.publishListings().finally(() => {
-      this.startListening();
-    });
   }
 
   /**

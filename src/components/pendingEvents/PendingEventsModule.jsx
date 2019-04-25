@@ -170,8 +170,10 @@ export default class PendingEventsModule extends PendingListingsModule {
    */
   removeListing(listing) {
     return this.pendingListingsService.remove(listing.id)
-      .then(() => {
-        return this.removeTagAssociations(listing.uuid);
+      .then((result) => {
+        return this.removeTagAssociations(listing.uuid).then(() => {
+          return result;
+        });
       })
       .catch(err => {
         displayErrorMessages('remove', `pending event "${listing.name}"`, err, this.props.updateMessagePanel);

@@ -150,20 +150,20 @@ export default class ImportLayout extends Component {
 
     Promise
       .all([
-        this.hoodsModule.current.publishListings(),
-        this.tagsModule.current.publishListings()
+        this.hoodsModule.current.handlePublishAllClick(),
+        this.tagsModule.current.handlePublishAllClick()
       ])
       .then(() => {
         // On its own b/c of high I/O load
-        return this.orgsModule.current.publishListings();
+        return this.orgsModule.current.handlePublishAllClick();
       })
       .then(() => {
         // On its own b/c of high I/O load
-        return this.venuesModule.current.publishListings();
+        return this.venuesModule.current.handlePublishAllClick();
       })
       .then(() => {
         // On its own b/c of high I/O load
-        return this.eventsModule.current.publishListings();
+        return this.eventsModule.current.handlePublishAllClick();
       })
       .then(() => {
         console.log('~ all done!');
