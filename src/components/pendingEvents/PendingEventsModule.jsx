@@ -42,25 +42,6 @@ export default class PendingEventsModule extends PendingListingsModule {
     this.fetchPendingVenues = this.fetchPendingVenues.bind(this);
   }
 
-  listenForChanges() {
-    super.listenForChanges();
-
-    const services = new Map([
-      [this.orgsService, this.fetchOrgs],
-      [this.pendingOrgsService, this.fetchPendingOrgs],
-      [this.venuesService, this.fetchVenues],
-      [this.pendingVenuesService, this.fetchPendingVenues]
-    ]);
-
-    for (let [service, dataFetcher] of services) {
-      service
-        .on('created', () => dataFetcher())
-        .on('updated', () => dataFetcher())
-        .on('patched', () => dataFetcher())
-        .on('removed', () => dataFetcher());
-    }
-  }
-
   stopListening() {
     super.stopListening();
 
@@ -78,6 +59,25 @@ export default class PendingEventsModule extends PendingListingsModule {
         .removeAllListeners('patched')
         .removeAllListeners('removed');
     });
+  }
+
+  listenForChanges() {
+    super.listenForChanges();
+
+    const services = new Map([
+      [this.orgsService, this.fetchOrgs],
+      [this.pendingOrgsService, this.fetchPendingOrgs],
+      [this.venuesService, this.fetchVenues],
+      [this.pendingVenuesService, this.fetchPendingVenues]
+    ]);
+
+    for (let [service, dataFetcher] of services) {
+      service
+        .on('created', () => dataFetcher())
+        .on('updated', () => dataFetcher())
+        .on('patched', () => dataFetcher())
+        .on('removed', () => dataFetcher());
+    }
   }
 
   /**
@@ -152,6 +152,17 @@ export default class PendingEventsModule extends PendingListingsModule {
     });
   }
 
+  checkForLiveLinked(pendingListing) {
+    const linkedVenue = this.state.venues.find(venue => {
+      return venue.uuid === pendingListing.venue_uuid;
+    });
+    const linkedOrg = this.state.orgs.find(org => {
+      return org.uuid === pendingListing.org_uuid;
+    });
+
+    return linkedOrg && linkedVenue;
+  }
+
   /**
    * Removes a given pending listing from the database.
    * @override
@@ -163,7 +174,7 @@ export default class PendingEventsModule extends PendingListingsModule {
         return this.removeTagAssociations(listing.uuid);
       })
       .catch(err => {
-        displayErrorMessages('remove', `"${listing.name}"`, err, this.props.updateMessagePanel);
+        displayErrorMessages('remove', `pending event "${listing.name}"`, err, this.props.updateMessagePanel);
       });
   }
 
@@ -175,17 +186,18 @@ export default class PendingEventsModule extends PendingListingsModule {
    * @param {object} pendingListing
    */
   createLiveListing(pendingListing) {
+    if (!this.checkForLiveLinked(pendingListing)) {
+      return Promise.reject('Missing required linked schema.');
+    }
+
     let {id, ...eventData} = pendingListing;
 
     return this.listingsService.create(eventData)
       .then(result => {
-        return Promise.all([
-          this.registerLiveListing(result.id, result.name),
-          this.removeListing(pendingListing)
-        ]);
+        return this.registerLiveListing(result.id, result.name);
       })
       .catch(err => {
-        displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
+        displayErrorMessages('publish', `pending event "${pendingListing.name}"`, err, this.props.updateMessagePanel);
       });
   }
 
@@ -277,7 +289,7 @@ export default class PendingEventsModule extends PendingListingsModule {
     const selectedEvents = this.state.selectedListings;
     const schemaLabel = selectedEvents.length === 1 ? 'event' : 'events';
     const publishButton = this.user.is_su ?
-      <button type={'button'} className={'button-primary'} onClick={this.publishListings}
+      <button type={'button'} className={'button-primary'} onClick={this.handlePublishButtonClick}
               disabled={selectedEvents.length === 0}>
         Publish {selectedEvents.length || ''} {schemaLabel}
       </button> : '';

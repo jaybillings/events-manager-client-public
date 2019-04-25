@@ -41,8 +41,9 @@ export default class PendingListingsModule extends Component {
     this.pendingListingsService = app.service(`pending-${this.schema}`);
     this.listingsService = app.service(this.schema);
 
-    this.listenForChanges = this.listenForChanges.bind(this);
+    this.startListening = this.startListening.bind(this);
     this.stopListening = this.stopListening.bind(this);
+    this.listenForChanges = this.listenForChanges.bind(this);
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.fetchListings = this.fetchListings.bind(this);
@@ -50,6 +51,7 @@ export default class PendingListingsModule extends Component {
     this.queryForExact = this.queryForExact.bind(this);
     this.queryForIDs = this.queryForIDs.bind(this);
     this.queryForLiveUUIDs = this.queryForLiveUUIDs.bind(this);
+    this.checkForLiveLinked = this.checkForLiveLinked.bind(this);
 
     this.updateListing = this.updateListing.bind(this);
     this.removeListing = this.removeListing.bind(this);
@@ -68,6 +70,7 @@ export default class PendingListingsModule extends Component {
     this.selectPageOfListings = this.selectPageOfListings.bind(this);
     this.selectAllListings = this.selectAllListings.bind(this);
     this.selectNoListings = this.selectNoListings.bind(this);
+    this.handlePublishButtonClick = this.handlePublishButtonClick.bind(this);
 
     this.renderTable = this.renderTable.bind(this);
   }
@@ -77,7 +80,7 @@ export default class PendingListingsModule extends Component {
    * @override
    */
   componentDidMount() {
-    this.listenForChanges();
+    this.startListening();
   }
 
   /**
@@ -100,9 +103,23 @@ export default class PendingListingsModule extends Component {
     }
   }
 
-  listenForChanges() {
+  startListening() {
+    this.listenForChanges();
     this.fetchAllData();
+  }
 
+  stopListening() {
+    /** @var {Function} this.pendingListingsService.removeAllListeners */
+    console.debug('STOP self listening');
+    this.pendingListingsService
+      .removeAllListeners('created')
+      .removeAllListeners('updated')
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
+  }
+
+  listenForChanges() {
+    console.debug('START self listening');
     const schemaSingular = makeSingular(this.schema);
 
     /** @var {Function} this.pendingListingsService.on */
@@ -133,16 +150,8 @@ export default class PendingListingsModule extends Component {
           status: 'info',
           details: `Removed pending ${schemaSingular} "${message.name}"`
         });
+        this.fetchListings();
       });
-  }
-
-  stopListening() {
-    /** @var {Function} this.pendingListingsService.removeAllListeners */
-    this.pendingListingsService
-      .removeAllListeners('created')
-      .removeAllListeners('updated')
-      .removeAllListeners('patched')
-      .removeAllListeners('removed');
   }
 
   /**
@@ -225,6 +234,10 @@ export default class PendingListingsModule extends Component {
     return this.listingsService.find({query: {$select: ['uuid', 'name'], $limit: this.maxLimit}, paginate: false});
   }
 
+  checkForLiveLinked(pendingListing) {
+    return true;
+  }
+
   /**
    * Saves changes to main schema listing. Used in row quick-edits.
    * @async
@@ -247,9 +260,12 @@ export default class PendingListingsModule extends Component {
    * @param {Object} listing
    */
   removeListing(listing) {
+    // TODO: Update message panel with success
+    const schemaSingular = makeSingular(this.schema);
+
     return this.pendingListingsService.remove(listing.id)
       .catch(err => {
-        displayErrorMessages('remove', `"${listing.name}"`, err, this.props.updateMessagePanel);
+        displayErrorMessages('remove', `pending ${schemaSingular} "${listing.name}"`, err, this.props.updateMessagePanel);
       });
   }
 
@@ -263,11 +279,8 @@ export default class PendingListingsModule extends Component {
     let {id, ...listingData} = pendingListing;
 
     return this.listingsService.create(listingData)
-      .then(() => {
-        return this.removeListing(pendingListing);
-      })
       .catch(err => {
-        displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
+        displayErrorMessages('publish', `pending ${this.schema} "${pendingListing.name}"`, err, this.props.updateMessagePanel);
       });
   }
 
@@ -282,11 +295,64 @@ export default class PendingListingsModule extends Component {
     let {id, ...listingData} = pendingListing;
 
     return this.listingsService.update(target.id, listingData)
-      .then(() => {
-        return this.removeListing(pendingListing);
-      })
       .catch(err => {
-        displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
+        displayErrorMessages('publish', `pending ${this.schema} "${pendingListing.name}"`, err, this.props.updateMessagePanel);
+      });
+  }
+
+  async publishListings() {
+    this.props.updateMessagePanel({status: 'info', details: `Started publishing ${this.schema}. Please wait...`});
+
+    const query = this.state.selectedListings.length === 0 ? {$limit: this.defaultLimit}
+      : {id: {$in: this.state.selectedListings}, $limit: this.defaultLimit};
+    const liveIDs = await this.queryForLiveUUIDs();
+    const listingsToPublish = await this.pendingListingsService.find({query: query, paginate: false});
+    let listingsToCreate = [];
+    let listingsToUpdate = [];
+
+    for (let listing of listingsToPublish) {
+      if (!this.checkForLiveLinked((listing))) {
+        const msg = `Cannot publish "${listing.name}" (${listing.uuid}): missing required linked schema.`;
+        this.props.updateMessagePanel({status: 'error', details: msg});
+      }
+
+      const liveMatch = liveIDs.data.find(row => {
+        return row.uuid === listing.uuid
+      });
+
+      if (liveMatch) {
+        listingsToUpdate.push([liveMatch, listing]);
+      } else {
+        listingsToCreate.push(listing);
+      }
+    }
+
+    Promise
+      .all(listingsToCreate.map(listing => {
+        return this.createLiveListing(listing);
+      }))
+      .then(resultSet => {
+        return Promise.all(resultSet.map(listing => {
+          return this.removeListing(listing);
+        }));
+      })
+      .then(() => {
+        return Promise.all(listingsToUpdate.map(([liveListing, pendingListing]) => {
+          return this.updateListing(liveListing, pendingListing);
+        }));
+      })
+      .then(resultSet => {
+        return Promise.all(resultSet.map(listing => {
+          return this.removeListing(listing);
+        }));
+      })
+      .then(() => {
+        this.props.updateMessagePanel({status: 'success', details: `Finished publishing ${this.schema}`});
+        return true;
+      })
+      .catch(error => {
+        console.debug('Error caught at module top');
+        displayErrorMessages('publish', `pending ${this.schema}`, error, this.props.updateMessagePanel);
       });
   }
 
@@ -294,7 +360,7 @@ export default class PendingListingsModule extends Component {
   /**
    * Publishes selected listings by creating or updating live listings of the same schema.
    */
-  publishListings() {
+  /*publishListings() {
     this.props.updateMessagePanel({status: 'info', details: `Started publishing ${this.schema}. Please wait...`});
 
     const query = this.state.selectedListings.length === 0 ? {$limit: this.defaultLimit}
@@ -307,27 +373,40 @@ export default class PendingListingsModule extends Component {
       ])
       .then(([liveIDs, listingsToPublish]) => {
         return Promise.all(listingsToPublish.data.map(listing => {
+          if (!this.checkForLiveLinked(listing)) {
+            const msg = `Cannot publish "${listing.name}" (${listing.uuid}): missing required linked schema.`;
+            this.props.updateMessagePanel({status: 'error', details: msg});
+            return true;
+          }
+
           const liveMatch = liveIDs.data.find(row => {
             return row.uuid === listing.uuid
           });
+
           if (liveMatch) {
-            return this.replaceLiveListing(listing, liveMatch);
+            return this.replaceLiveListing(listing, liveMatch)
+              .then(() => {
+                this.handleListingSelect(listing.id, false);
+                return this.removeListing(listing);
+              });
           } else {
-            return this.createLiveListing(listing);
+            return this.createLiveListing(listing)
+              .then(() => {
+                this.handleListingSelect(listing.id, false);
+                return this.removeListing(listing);
+              });
           }
         }));
       })
-      .then(allResults => {
+      .then((result) => {
         this.props.updateMessagePanel({status: 'success', details: `Finished publishing ${this.schema}`});
-        this.fetchAllData();
-        return allResults;
+        return result;
       })
       .catch(error => {
-        console.log('~ error publishing caught at top level', error);
-        this.props.updateMessagePanel({status: 'error', details: JSON.stringify(error)});
-        this.fetchAllData();
+        console.debug('Error caught at module top');
+        displayErrorMessages('publish', `pending ${this.schema}`, error, this.props.updateMessagePanel);
       });
-  }
+  }*/
 
   /**
    * Removes selected main schema listings from the database. Used in row quick-edits.
@@ -403,6 +482,14 @@ export default class PendingListingsModule extends Component {
     }
   }
 
+  handlePublishButtonClick() {
+    this.stopListening();
+
+    this.publishListings().finally(() => {
+      this.startListening();
+    });
+  }
+
   /**
    * Registers the current page of listings as selected.
    */
@@ -445,7 +532,7 @@ export default class PendingListingsModule extends Component {
     const selectedListings = this.state.selectedListings;
     const schemaLabel = selectedListings.length === 1 ? schema.slice(0, -1) : schema;
     const publishButton = this.user.is_su ?
-      <button type={'button'} className={'button-primary'} onClick={this.publishListings}
+      <button type={'button'} className={'button-primary'} onClick={this.handlePublishButtonClick}
               disabled={selectedListings.length === 0}>
         Publish {selectedListings.length || ''} {schemaLabel}
       </button> : '';
@@ -482,7 +569,8 @@ export default class PendingListingsModule extends Component {
         </table>
         <div className={'publish-buttons'}>
           {publishButton}
-          <button type={'button'} className={'default'} onClick={this.discardListings} disabled={selectedListings.length === 0}>
+          <button type={'button'} className={'default'} onClick={this.discardListings}
+                  disabled={selectedListings.length === 0}>
             Discard {selectedListings.length || ''} {schemaLabel}
           </button>
         </div>

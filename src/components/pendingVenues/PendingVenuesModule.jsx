@@ -35,23 +35,6 @@ export default class PendingVenuesModule extends PendingListingsModule {
     this.fetchPendingHoods = this.fetchPendingHoods.bind(this);
   }
 
-  listenForChanges() {
-    super.listenForChanges();
-
-    const services = new Map([
-      [this.hoodsService, this.fetchHoods],
-      [this.pendingHoodsService, this.fetchPendingHoods]
-    ]);
-
-    for (let [service, dataFetcher] of services) {
-      service
-        .on('created', () => dataFetcher())
-        .on('updated', () => dataFetcher())
-        .on('patched', () => dataFetcher())
-        .on('removed', () => dataFetcher());
-    }
-  }
-
   stopListening() {
     super.stopListening();
 
@@ -67,6 +50,23 @@ export default class PendingVenuesModule extends PendingListingsModule {
         .removeAllListeners('patched')
         .removeAllListeners('removed');
     });
+  }
+
+  listenForChanges() {
+    super.listenForChanges();
+
+    const services = new Map([
+      [this.hoodsService, this.fetchHoods],
+      [this.pendingHoodsService, this.fetchPendingHoods]
+    ]);
+
+    for (let [service, dataFetcher] of services) {
+      service
+        .on('created', () => dataFetcher())
+        .on('updated', () => dataFetcher())
+        .on('patched', () => dataFetcher())
+        .on('removed', () => dataFetcher());
+    }
   }
 
   /**
@@ -97,6 +97,14 @@ export default class PendingVenuesModule extends PendingListingsModule {
     });
   }
 
+  checkForLiveLinked(pendingListing) {
+    const linkedHood = this.state.hoods.find(hood => {
+      return hood.uuid === pendingListing.hood_uuid;
+    });
+
+    return !!linkedHood;
+  }
+
   /**
    * Renders the table of listings.
    * @override
@@ -120,7 +128,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
     const selectedVenues = this.state.selectedListings;
     const schemaLabel = selectedVenues.length === 1 ? 'venue' : 'venues';
     const publishButton = this.user.is_su ?
-      <button type={'button'} className={'button-primary'} onClick={this.publishListings}
+      <button type={'button'} className={'button-primary'} onClick={this.handlePublishButtonClick}
               disabled={selectedVenues.length === 0}>
         Publish {selectedVenues.length || ''} {schemaLabel}
       </button> : '';

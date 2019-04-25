@@ -83,11 +83,11 @@ export default class ImportLayout extends Component {
 
   resumeModuleListening() {
     console.debug('START module listening');
-    this.eventsModule.current.listenForChanges();
-    this.venuesModule.current.listenForChanges();
-    this.orgsModule.current.listenForChanges();
-    this.hoodsModule.current.listenForChanges();
-    this.tagsModule.current.listenForChanges();
+    this.eventsModule.current.startListening();
+    this.venuesModule.current.startListening();
+    this.orgsModule.current.startListening();
+    this.hoodsModule.current.startListening();
+    this.tagsModule.current.startListening();
   }
 
   stopModuleListening() {
@@ -146,6 +146,7 @@ export default class ImportLayout extends Component {
    */
   publishListings() {
     this.updateMessagePanel({status: 'info', details: 'Publish started. This make take several minutes.'});
+    this.stopModuleListening();
 
     Promise
       .all([
@@ -171,6 +172,9 @@ export default class ImportLayout extends Component {
       .catch(error => {
         console.log('~ very top level error', error);
         this.updateMessagePanel({status: 'error', details: JSON.stringify(error)});
+      })
+      .finally(() => {
+        this.resumeModuleListening();
       });
   }
 
@@ -198,9 +202,10 @@ export default class ImportLayout extends Component {
   render() {
     const showMessagePanel = this.state.messagePanelVisible;
     const messages = this.state.messages;
+    // TODO: All/Selected depending on selections
     const publishButton = this.user.is_su ?
       <button type={'button'} className={'button-primary button-publish'} onClick={this.publishListings}>
-        Publish All Pending Listings
+        Publish Pending Listings
       </button> : '';
 
     return (
