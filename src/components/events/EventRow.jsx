@@ -24,8 +24,8 @@ export default class EventRow extends ListingRow {
     super(props);
 
     const event = this.props.listing;
-    const venueID = typeof this.props.venue === 'undefined' ? this.props.venues[0].id : this.props.venue.id;
-    const orgID = typeof this.props.org === 'undefined' ? this.props.orgs[0].id : this.props.org.id;
+    const venueID = this.props.venue ? this.props.venue.id : (this.props.venues[0] ? this.props.venues[0].id : null);
+    const orgID = this.props.org ? this.props.org.id : (this.props.orgs[0] ? this.props.orgs[0].id : null);
 
     Object.assign(this.state, {
       is_published: this.props.listingIsLive, eventStart: event.start_date, eventEnd: event.end_date,
