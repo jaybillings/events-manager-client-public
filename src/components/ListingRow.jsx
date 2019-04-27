@@ -116,7 +116,7 @@ export default class ListingRow extends Component {
    */
   handleDeleteClick(e) {
     e.stopPropagation();
-    this.props.deleteListing(this.props.listing.id);
+    this.props.deleteListing(this.props.listing);
   }
 
   /**

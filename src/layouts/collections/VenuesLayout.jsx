@@ -131,23 +131,25 @@ export default class VenuesLayout extends ListingsLayout {
         activePage={this.state.currentPage} updatePageSize={this.props.updatePageSize}
         updateCurrentPage={this.props.updateCurrentPage}
       />,
-      <table key={'venues-table'} className={'schema-table'}>
-        <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColumnSort)}</thead>
-        <tbody>
-        {
-          this.state.listings.map(venue =>
-            <VenueRow
-              key={venue.id} schema={'venues'} listing={venue} hoods={hoods}
-              hood={hoods.find(n => {
-                return n.uuid === venue.hood_uuid
-              })}
-              updateListing={this.updateListing} deleteListing={this.deleteListing}
-              createPendingListing={this.createPendingListing} checkForPending={this.checkForPending}
-            />
-          )
-        }
-        </tbody>
-      </table>
+      <div className={'wrapper'} key={'venues-table-wrapper'}>
+        <table key={'venues-table'} className={'schema-table'}>
+          <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColumnSort)}</thead>
+          <tbody>
+          {
+            this.state.listings.map(venue =>
+              <VenueRow
+                key={venue.id} schema={'venues'} listing={venue} hoods={hoods}
+                hood={hoods.find(n => {
+                  return n.uuid === venue.hood_uuid
+                })}
+                updateListing={this.updateListing} deleteListing={this.deleteListing}
+                createPendingListing={this.createPendingListing} checkForPending={this.checkForPending}
+              />
+            )
+          }
+          </tbody>
+        </table>
+      </div>
     ]);
   }
 

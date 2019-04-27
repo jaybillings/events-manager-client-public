@@ -135,10 +135,10 @@ export default class ListingsLayout extends Component {
         $limit: this.state.pageSize,
         $skip: this.state.pageSize * (this.state.currentPage - 1)
       }
-    }).then(message => {
-      this.setState({listings: message.data, listingsTotal: message.total, listingsLoaded: true});
+    }).then(result => {
+      this.setState({listings: result.data, listingsTotal: result.total, listingsLoaded: true});
     }, err => {
-      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      displayErrorMessages('fetch', this.schema, err, this.updateMessagePanel, 'reload');
       this.setState({listingsLoaded: false});
     });
   }
@@ -182,10 +182,10 @@ export default class ListingsLayout extends Component {
   /**
    * Deletes a given listing by calling the service's REMOVE method.
    *
-   * @param {int} id
+   * @param {object} listing
    */
-  deleteListing(id) {
-    this.listingsService.remove(id).catch(err => {
+  deleteListing(listing) {
+    this.listingsService.remove(listing.id).catch(err => {
       this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
     });
   }
@@ -278,20 +278,22 @@ export default class ListingsLayout extends Component {
         pageSize={this.state.pageSize} activePage={this.state.currentPage}
         updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
       />,
-      <table key={`${schema}-table`} className={'schema-table'}>
-        <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColumnSort)}</thead>
-        <tbody>
-        {
-          this.state.listings.map(listing =>
-            <ListingRow
-              key={listing.id} schema={schema} listing={listing}
-              updateListing={this.updateListing} deleteListing={this.deleteListing}
-              createPendingListing={this.createPendingListing} checkForPending={this.checkForPending}
-            />
-          )
-        }
-        </tbody>
-      </table>
+      <div className={'wrapper'} key={`${schema}-table-wrapper`}>
+        <table key={`${schema}-table`} className={'schema-table'}>
+          <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColumnSort)}</thead>
+          <tbody>
+          {
+            this.state.listings.map(listing =>
+              <ListingRow
+                key={listing.id} schema={schema} listing={listing}
+                updateListing={this.updateListing} deleteListing={this.deleteListing}
+                createPendingListing={this.createPendingListing} checkForPending={this.checkForPending}
+              />
+            )
+          }
+          </tbody>
+        </table>
+      </div>
     ]);
   }
 

@@ -20,10 +20,12 @@ export default class PendingEventRow extends PendingListingRow {
   constructor(props) {
     super(props);
 
+    const linkedVenueUUID = this.props.venue ? this.props.venue.uuid : null;
+    const linkedOrgUUID = this.props.org ? this.props.org.uuid : null;
+
     Object.assign(this.state, {
       listingName: this.props.listing.name, listingStart: this.props.listing.start_date,
-      listingEnd: this.props.listing.end_date, linkedVenueUUID: this.props.venue ? this.props.venue.uuid : null,
-      linkedOrgUUID: this.props.org ? this.props.org.uuid : null
+      listingEnd: this.props.listing.end_date, linkedVenueUUID, linkedOrgUUID
     });
   }
 
@@ -70,13 +72,10 @@ export default class PendingEventRow extends PendingListingRow {
     const createdAt = Moment(this.props.listing.created_at).calendar();
     const selectClass = this.props.selected ? ' is-selected' : '';
 
-
-    const startDate = Moment(this.state.listingStart).format('MM/DD/YYYY');
-    const startDateVal = Moment(this.state.listingStart).format('YYYY-MM-DD');
-    const endDate = Moment(this.state.listingEnd).format('MM/DD/YYYY');
-    const endDateVal = Moment(this.state.listingEnd).format('YYYY-MM-DD');
-
     if (this.state.editable) {
+      const startDateVal = Moment(this.state.listingStart).format('YYYY-MM-DD');
+      const endDateVal = Moment(this.state.listingEnd).format('YYYY-MM-DD');
+
       return (
         <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
           <td>
@@ -101,6 +100,8 @@ export default class PendingEventRow extends PendingListingRow {
       );
     }
 
+    const startDate = Moment(this.state.listingStart).format('MM/DD/YYYY');
+    const endDate = Moment(this.state.listingEnd).format('MM/DD/YYYY');
     const venueLink = this.props.venue ? renderSchemaLink(this.props.venue, 'venues') : 'NO VENUE';
     const orgLink = this.props.org ? renderSchemaLink(this.props.org, 'organizers') : 'NO ORGANIZER';
 

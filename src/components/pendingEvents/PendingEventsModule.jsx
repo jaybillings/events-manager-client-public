@@ -24,10 +24,11 @@ export default class PendingEventsModule extends PendingListingsModule {
   constructor(props) {
     super(props, 'events');
 
-    Object.assign(this.state, {
-      orgs: [], venues: [], pendingOrgs: [], pendingVenues: [],
-      orgsLoaded: false, venuesLoaded: false, pendingOrgsLoaded: false, pendingVenuesLoaded: false
-    });
+    this.state = {
+      ...this.state, orgs: [], venues: [], pendingOrgs: [], pendingVenues: [],
+      orgsLoaded: false, venuesLoaded: false, pendingOrgsLoaded: false,
+      pendingVenuesLoaded: false
+    };
 
     this.venuesService = app.service('venues');
     this.pendingVenuesService = app.service('pending-venues');
@@ -36,10 +37,10 @@ export default class PendingEventsModule extends PendingListingsModule {
     this.tagsLookupService = app.service('events-tags-lookup');
     this.liveEventsService = app.service('events-live');
 
-    this.fetchOrgs = this.fetchOrgs.bind(this);
-    this.fetchPendingOrgs = this.fetchPendingOrgs.bind(this);
     this.fetchVenues = this.fetchVenues.bind(this);
     this.fetchPendingVenues = this.fetchPendingVenues.bind(this);
+    this.fetchOrgs = this.fetchOrgs.bind(this);
+    this.fetchPendingOrgs = this.fetchPendingOrgs.bind(this);
   }
 
   stopListening() {
@@ -93,12 +94,45 @@ export default class PendingEventsModule extends PendingListingsModule {
   }
 
   /**
+   * Fetches published venues.
+   */
+  fetchVenues() {
+    this.venuesService.find({query: this.defaultQuery, paginate: false})
+      .then(result => {
+        this.setState({venues: result.data, venuesLoaded: true});
+      })
+      .catch(err => {
+        displayErrorMessages('fetch', 'venues', err, this.props.updateMessagePanel, 'reload');
+        this.setState({venuesLoaded: false});
+      });
+  }
+
+  /**
+   * Fetches pending venues.
+   */
+  fetchPendingVenues() {
+    this.pendingVenuesService.find({query: this.defaultQuery, paginate: false})
+      .then(result => {
+        this.setState({pendingVenues: result.data, pendingVenuesLoaded: true});
+      })
+      .catch(err => {
+        displayErrorMessages('fetch', 'pending venues', err, this.props.updateMessagePanel, 'reload');
+        this.setState({pendingVenuesLoaded: false});
+      });
+  }
+
+  /**
    * Fetches published organizers.
    */
   fetchOrgs() {
-    this.orgsService.find({query: this.defaultQuery, paginate: false}).then(result => {
-      this.setState({orgs: result.data, orgsLoaded: true});
-    });
+    this.orgsService.find({query: this.defaultQuery, paginate: false})
+      .then(result => {
+        this.setState({orgs: result.data, orgsLoaded: true});
+      })
+      .catch(err => {
+        displayErrorMessages('fetch', 'organizers', err, this.props.updateMessagePanel, 'reload');
+        this.setState({orgsLoaded: false});
+      });
   }
 
   /**
@@ -107,25 +141,11 @@ export default class PendingEventsModule extends PendingListingsModule {
   fetchPendingOrgs() {
     this.pendingOrgsService.find({query: this.defaultQuery, paginate: false}).then(message => {
       this.setState({pendingOrgs: message.data, pendingOrgsLoaded: true});
-    });
-  }
-
-  /**
-   * Fetches published venues.
-   */
-  fetchVenues() {
-    this.venuesService.find({query: this.defaultQuery, paginate: false}).then(message => {
-      this.setState({venues: message.data, venuesLoaded: true});
-    });
-  }
-
-  /**
-   * Fetches pending venues.
-   */
-  fetchPendingVenues() {
-    this.pendingVenuesService.find({query: this.defaultQuery, paginate: false}).then(message => {
-      this.setState({pendingVenues: message.data, pendingVenuesLoaded: true});
-    });
+    })
+      .catch(err => {
+        displayErrorMessages('fetch', 'pending organizers', err, this.props.updateMessagePanel, 'reload');
+        this.setState({pendingOrgs: false});
+      });
   }
 
   /**
@@ -334,7 +354,8 @@ export default class PendingEventsModule extends PendingListingsModule {
         </table>
         <div className={'publish-buttons'}>
           {publishButton}
-          <button type={'button'} className={'publish'} onClick={this.discardListings} disabled={selectedEvents.length === 0}>
+          <button type={'button'} className={'publish'} onClick={this.discardListings}
+                  disabled={selectedEvents.length === 0}>
             Discard {selectedEvents.length || ''} {schemaLabel}
           </button>
         </div>
