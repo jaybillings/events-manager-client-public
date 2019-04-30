@@ -1,6 +1,6 @@
 import React from "react";
 import app from "../../services/socketio";
-import {buildSortQuery, renderTableHeader} from "../../utilities";
+import {buildSortQuery, displayErrorMessages, renderTableHeader} from "../../utilities";
 
 import VenueRow from "../../components/venues/VenueRow";
 import VenueAddForm from "../../components/venues/VenueAddForm";
@@ -84,24 +84,28 @@ export default class VenuesLayout extends ListingsLayout {
       $skip: this.state.pageSize * (this.state.currentPage - 1)
     };
 
-    this.listingsService.find({query: query}).then(message => {
-      this.setState({listings: message.data, listingsTotal: message.total, listingsLoaded: true});
-    }, err => {
-      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-      this.setState({listingsLoaded: false});
-    });
+    this.listingsService.find({query: query})
+      .then(result => {
+        this.setState({listings: result.data, listingsTotal: result.total, listingsLoaded: true});
+      })
+      .catch(err => {
+        displayErrorMessages('fetch', 'venues', err, this.updateMessagePanel, 'reload');
+        this.setState({listingsLoaded: false});
+      });
   }
 
   /**
    * Fetches data for all published neighborhoods.
    */
   fetchHoods() {
-    this.hoodsService.find({query: this.defaultQuery}).then(message => {
-      this.setState({hoods: message.data, hoodsLoaded: true});
-    }, err => {
-      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-      this.setState({hoodsLoaded: false});
-    });
+    this.hoodsService.find({query: this.defaultQuery})
+      .then(message => {
+        this.setState({hoods: message.data, hoodsLoaded: true});
+      })
+      .catch(err => {
+        displayErrorMessages('fetch', 'neighborhoods', err, this.updateMessagePanel, 'reload');
+        this.setState({hoodsLoaded: false});
+      });
   }
 
   /**
@@ -111,9 +115,9 @@ export default class VenuesLayout extends ListingsLayout {
    */
   renderTable() {
     if (!(this.state.listingsLoaded && this.state.hoodsLoaded)) {
-      return <p>Data is loading... Please be patient...</p>;
+      return <p key={'venues-message'} className={'load-message'}>Data is loading... Please be patient...</p>;
     } else if (this.state.listingsTotal === 0) {
-      return <p>No venues to list.</p>
+      return <p key={'venues-message'} className={'load-message'}>No venues to list.</p>
     }
 
     const titleMap = new Map([
@@ -139,8 +143,8 @@ export default class VenuesLayout extends ListingsLayout {
             this.state.listings.map(venue =>
               <VenueRow
                 key={venue.id} schema={'venues'} listing={venue} hoods={hoods}
-                hood={hoods.find(n => {
-                  return n.uuid === venue.hood_uuid
+                hood={hoods.find(h => {
+                  return h.uuid === venue.hood_uuid
                 })}
                 updateListing={this.updateListing} deleteListing={this.deleteListing}
                 createPendingListing={this.createPendingListing} checkForPending={this.checkForPending}

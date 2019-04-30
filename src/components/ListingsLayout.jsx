@@ -27,6 +27,7 @@ export default class ListingsLayout extends Component {
     super(props);
 
     this.schema = schema;
+    this.singularSchema = makeSingular(schema);
     this.defaultPageSize = 5;
     this.defaultTableSort = ['updated_at', -1];
     this.defaultLimit = 3000;
@@ -118,34 +119,38 @@ export default class ListingsLayout extends Component {
 
   /**
    * Fetches all data required for the table.
-   * @note This function pattern exists to cut down on extraneous requests for components with linked schema.
+   * @note This function pattern exists to cut down on extraneous requests for
+   * components with linked schema.
    */
   fetchAllData() {
     this.fetchListings();
   }
 
   /**
-   * Fetches data for all the published listings for a given schema. Handles table page size, page skipping,
-   * and column sorting.
+   * Fetches data for all the published listings for a given schema. Handles
+   * table page size, page skipping, and column sorting.
    */
   fetchListings() {
-    this.listingsService.find({
-      query: {
-        $sort: buildSortQuery(this.state.sort),
-        $limit: this.state.pageSize,
-        $skip: this.state.pageSize * (this.state.currentPage - 1)
-      }
-    }).then(result => {
-      this.setState({listings: result.data, listingsTotal: result.total, listingsLoaded: true});
-    }, err => {
-      displayErrorMessages('fetch', this.schema, err, this.updateMessagePanel, 'reload');
-      this.setState({listingsLoaded: false});
-    });
+    this.listingsService
+      .find({
+        query: {
+          $sort: buildSortQuery(this.state.sort),
+          $limit: this.state.pageSize,
+          $skip: this.state.pageSize * (this.state.currentPage - 1)
+        }
+      })
+      .then(result => {
+        this.setState({listings: result.data, listingsTotal: result.total, listingsLoaded: true});
+      })
+      .catch(err => {
+        displayErrorMessages('fetch', this.schema, err, this.updateMessagePanel, 'reload');
+        this.setState({listingsLoaded: false});
+      });
   }
 
   /**
-   * Queries for pending schema listings that have a given UUID. Used to check for pending listings duplicating
-   * a live listing.
+   * Queries for pending schema listings that have a given UUID. Used to check
+   * for pending listings duplicating a live listing.
    *
    * @param {string} uuid
    * @returns {Promise}
@@ -155,15 +160,19 @@ export default class ListingsLayout extends Component {
   }
 
   /**
-   * Creates a new listing by generating a new UUID and calling the service's CREATE method with passed-in data.
+   * Creates a new listing by generating a new UUID and calling the service's
+   * CREATE method with passed-in data.
    *
    * @param {object} listingData - Data for the new listing.
    * @returns {Promise}
    */
   createListing(listingData) {
-    return this.listingsService.create(listingData).catch(err => {
-      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-    });
+    return this.listingsService
+      .create(listingData)
+      .catch(err => {
+        displayErrorMessages('create', `new ${this.singularSchema} "${listingData.name}"`,
+          err, this.updateMessagePanel, 'retry');
+      });
   }
 
   /**
@@ -174,9 +183,11 @@ export default class ListingsLayout extends Component {
    * @returns {Promise}
    */
   updateListing(id, newData) {
-    return this.listingsService.patch(id, newData).catch(err => {
-      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-    });
+    return this.listingsService
+      .patch(id, newData)
+      .catch(err => {
+        displayErrorMessages('update', `"${newData.name}"`, err, this.updateMessagePanel, 'retry');
+      });
   }
 
   /**
@@ -185,9 +196,11 @@ export default class ListingsLayout extends Component {
    * @param {object} listing
    */
   deleteListing(listing) {
-    this.listingsService.remove(listing.id).catch(err => {
-      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-    });
+    this.listingsService
+      .remove(listing.id)
+      .catch(err => {
+        displayErrorMessages('delete', `"${listing.name}"`, err, this.updateMessagePanel, 'retry');
+      });
   }
 
   /**
@@ -197,15 +210,23 @@ export default class ListingsLayout extends Component {
    * @returns {Promise}
    */
   createPendingListing(listingData) {
-    return app.service(`pending-${this.schema}`).create(listingData).then(message => {
-      this.setState({newPendingListing: message});
-      this.updateMessagePanel({
-        status: 'success',
-        details: `Pending ${makeSingular(this.schema)} "${message.name}" created.`
+    const singularSchema = this.singularSchema;
+    return this.pendingListingsService
+      .create(listingData)
+      .then(result => {
+        this.setState({newPendingListing: result});
+        this.updateMessagePanel({
+          status: 'success',
+          details: [
+            <span>`Pending ${singularSchema} "${result.name}" created.`</span>,
+            <Link to={`/pending${this.schema}/${result.id}`}>Click here to edit.</Link>
+          ]
+        });
+        return result;
+      })
+      .catch(errors => {
+        displayErrorMessages('copy', listingData.name || 'listing', errors, this.updateMessagePanel);
       });
-    }, errors => {
-      displayErrorMessages('copy', listingData.name || 'listing', errors, this.updateMessagePanel);
-    });
   }
 
   /**
@@ -214,6 +235,7 @@ export default class ListingsLayout extends Component {
    * @param {Event} e
    */
   updatePageSize(e) {
+    if (!e.target.value) return;
     this.setState({pageSize: parseInt(e.target.value, 10), currentPage: 1}, () => this.fetchListings());
   }
 
@@ -261,9 +283,9 @@ export default class ListingsLayout extends Component {
     const schema = this.schema;
 
     if (!this.state.listingsLoaded) {
-      return <p>Data is being loaded... Please be patient...</p>;
+      return <p key={`${schema}-message`} className={'load-message'}>Data is being loaded... Please be patient...</p>;
     } else if (this.state.listingsTotal === 0) {
-      return <p>No {schema} to list.</p>
+      return <p key={`${schema}-message`} className={'load-message'}>No {schema} to list.</p>
     }
 
     const titleMap = new Map([
@@ -337,7 +359,7 @@ export default class ListingsLayout extends Component {
         {pendingListingLink}
         <h2>Browse {filterType} {schema}</h2>
         {this.renderTable()}
-        <h2>Add New {makeSingular(schema)}</h2>
+        <h2>Add New {this.singularSchema}</h2>
         {this.renderAddForm()}
       </div>
     );

@@ -67,6 +67,7 @@ export default class EventsLayout extends ListingsLayout {
     for (let [service, dataFetcher] of services) {
       service
         .on('created', () => dataFetcher())
+        .on('updated', () => dataFetcher())
         .on('patched', () => dataFetcher())
         .on('removed', () => dataFetcher())
     }
@@ -115,6 +116,7 @@ export default class EventsLayout extends ListingsLayout {
     services.forEach(service => {
       service
         .removeAllListeners('created')
+        .removeAllListeners('updated')
         .removeAllListeners('patched')
         .removeAllListeners('removed');
     });
@@ -286,25 +288,6 @@ export default class EventsLayout extends ListingsLayout {
   }
 
   /**
-   * Creates a pending event that duplicates the data from the given live event.
-   *
-   * @param {{eventID: Number, eventObj: Object, tagsToSave: Array}} eventData
-   * @returns {Promise}
-   */
-  createPendingListing(eventData) {
-    return this.pendingEventService.create(eventData.eventObj)
-      .then(result => {
-        this.setState({newPendingListing: result});
-        this.updateMessagePanel({status: 'success', details: `Pending event "${result.name}" created.`});
-        return result;
-      })
-      .catch(errors => {
-        displayErrorMessages('create', `"${eventData.eventObj.name}" as pending event`,
-          errors, this.updateMessagePanel, 'retry');
-      });
-  }
-
-  /**
    * Creates associations between a given event and its tags.
    *
    * @param {int} uuid
@@ -412,7 +395,8 @@ export default class EventsLayout extends ListingsLayout {
    * @returns {*}
    */
   renderTable() {
-    if (!(this.state.listingsLoaded && this.state.venuesLoaded && this.state.orgsLoaded && this.state.liveIDsLoaded)) {
+    if (!(this.state.listingsLoaded && this.state.venuesLoaded &&
+      this.state.orgsLoaded && this.state.liveIDsLoaded)) {
       return <p key={'events-message'} className={'load-message'}>Data is loading... Please be patient...</p>;
     } else if (this.state.listingsTotal === 0) {
       return [
@@ -434,7 +418,6 @@ export default class EventsLayout extends ListingsLayout {
 
     const venues = this.state.venues;
     const orgs = this.state.orgs;
-    const liveIDs = this.state.liveIDs;
 
     return ([
       <Filters key={'events-filters'} updateFilters={this.updateFilters} />,
@@ -459,7 +442,7 @@ export default class EventsLayout extends ListingsLayout {
                   return o.uuid === event.org_uuid
                 })}
                 updateListing={this.updateListing} deleteListing={this.deleteListing}
-                createPendingListing={this.createPendingListing} listingIsLive={liveIDs.includes(event.id)}
+                createPendingListing={this.createPendingListing} listingIsLive={this.state.liveIDs.includes(event.id)}
                 checkForPending={this.checkForPending}
               />
             )
@@ -481,12 +464,8 @@ export default class EventsLayout extends ListingsLayout {
       return <p>Data is loading... Please be patient...</p>;
     }
 
-    const venues = this.state.venues;
-    const orgs = this.state.orgs;
-    const tags = this.state.tags;
-
     return <EventAddForm
-      schema={'events'} venues={venues} orgs={orgs} tags={tags}
+      schema={'events'} venues={ this.state.venues} orgs={this.state.orgs} tags={this.state.tags}
       createListing={this.createListing} createPendingListing={this.createPendingListing}
     />;
   }
