@@ -29,7 +29,7 @@ export default class PendingListingsModule extends Component {
 
     this.schema = schema;
     this.user = app.get('user');
-    this.defaultLimit = 1000;
+    this.publishPageSize = 25;
     this.maxLimit = 5000;
     this.defaultQuery = {$sort: {name: 1}, $limit: this.maxLimit, $select: ['id', 'uuid', 'name']};
 
@@ -41,12 +41,17 @@ export default class PendingListingsModule extends Component {
     this.pendingListingsService = app.service(`pending-${this.schema}`);
     this.listingsService = app.service(this.schema);
 
+    this.startListening = this.startListening.bind(this);
+    this.stopListening = this.stopListening.bind(this);
+    this.listenForChanges = this.listenForChanges.bind(this);
+
     this.fetchAllData = this.fetchAllData.bind(this);
     this.fetchListings = this.fetchListings.bind(this);
     this.queryForExisting = this.queryForExisting.bind(this);
     this.queryForExact = this.queryForExact.bind(this);
     this.queryForIDs = this.queryForIDs.bind(this);
     this.queryForLiveUUIDs = this.queryForLiveUUIDs.bind(this);
+    this.checkForLiveLinked = this.checkForLiveLinked.bind(this);
 
     this.updateListing = this.updateListing.bind(this);
     this.removeListing = this.removeListing.bind(this);
@@ -54,7 +59,12 @@ export default class PendingListingsModule extends Component {
     this.replaceLiveListing = this.replaceLiveListing.bind(this);
 
     this.publishListings = this.publishListings.bind(this);
+    this.publishListingsRecursive = this.publishListingsRecursive.bind(this);
     this.discardListings = this.discardListings.bind(this);
+    this.publishPageOfListings = this.publishPageOfListings.bind(this);
+
+    this.handlePublishButtonClick = this.handlePublishButtonClick.bind(this);
+    this.handlePublishAllClick = this.handlePublishAllClick.bind(this);
 
     this.updateColSort = this.updateColSort.bind(this);
     this.updatePageSize = this.updatePageSize.bind(this);
@@ -74,38 +84,7 @@ export default class PendingListingsModule extends Component {
    * @override
    */
   componentDidMount() {
-    this.fetchAllData();
-
-    const schemaSingular = makeSingular(this.schema);
-
-    // TODO: Get 'created' events without getting creation on import
-    // TODO: Get 'removed' event without getting removal on publish
-
-    /** @var {Function} this.pendingListingsService.on */
-    this.pendingListingsService
-      .on('updated', message => {
-        this.props.updateMessagePanel({
-          status: 'success',
-          details: `Updated pending ${schemaSingular} "${message.name}"`
-        });
-        this.fetchListings();
-      })
-      .on('patched', message => {
-        this.props.updateMessagePanel({
-          status: 'success',
-          details: `Updated pending ${schemaSingular} "${message.name}"`
-        });
-        this.fetchListings();
-      })
-      .on('status', message => {
-        if (message.rawError) console.log(message.rawError);
-        let userMessage = message.details;
-        if (message.rawData) userMessage += ": " + message.rawData.dataPath + " " + message.rawData.message;
-        this.props.updateMessagePanel({status: message.status, details: userMessage});
-        if (message.status === 'success') {
-          this.setState({currentPage: 1, pageSize: this.state.pageSize}, () => this.fetchListings());
-        }
-      });
+    this.startListening();
   }
 
   /**
@@ -113,11 +92,7 @@ export default class PendingListingsModule extends Component {
    * @override
    */
   componentWillUnmount() {
-    /** @var {Function} this.pendingListingsService.removeAllListeners */
-    this.pendingListingsService
-      .removeAllListeners('updated')
-      .removeAllListeners('patched')
-      .removeAllListeners('status');
+    this.stopListening();
   }
 
   /**
@@ -132,6 +107,56 @@ export default class PendingListingsModule extends Component {
     }
   }
 
+  startListening() {
+    this.listenForChanges();
+    this.fetchAllData();
+  }
+
+  stopListening() {
+    /** @var {Function} this.pendingListingsService.removeAllListeners */
+    console.debug('STOP self listening');
+    this.pendingListingsService
+      .removeAllListeners('created')
+      .removeAllListeners('updated')
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
+  }
+
+  listenForChanges() {
+    console.debug('START self listening');
+    const schemaSingular = makeSingular(this.schema);
+
+    /** @var {Function} this.pendingListingsService.on */
+    this.pendingListingsService
+      .on('created', message => {
+        this.props.updateMessagePanel({
+          status: 'success',
+          details: `Created new pending ${schemaSingular} "${message.name}"`
+        });
+        this.fetchListings();
+      })
+      .on('updated', message => {
+        this.props.updateMessagePanel({
+          status: 'success',
+          details: `Updated pending ${schemaSingular} "${message.name}"`
+        });
+        this.fetchListings();
+      })
+      .on('patched', message => {
+        this.props.updateMessagePanel({
+          status: 'success',
+          details: `Updated pending ${schemaSingular} "${message.name}"`
+        });
+        this.fetchListings();
+      })
+      .on('removed', message => {
+        this.props.updateMessagePanel({
+          status: 'info',
+          details: `Removed pending ${schemaSingular} "${message.name}"`
+        });
+        this.fetchListings();
+      });
+  }
 
   /**
    * Fetches all data for the module.
@@ -159,8 +184,7 @@ export default class PendingListingsModule extends Component {
       }
     }).then(message => {
       this.setState({
-        pendingListings: message.data, pendingListingsTotal: message.total,
-        listingsLoaded: true
+        pendingListings: message.data, pendingListingsTotal: message.total, listingsLoaded: true
       });
     });
   }
@@ -214,6 +238,10 @@ export default class PendingListingsModule extends Component {
     return this.listingsService.find({query: {$select: ['uuid', 'name'], $limit: this.maxLimit}, paginate: false});
   }
 
+  checkForLiveLinked(pendingListing) {
+    return true;
+  }
+
   /**
    * Saves changes to main schema listing. Used in row quick-edits.
    * @async
@@ -236,9 +264,12 @@ export default class PendingListingsModule extends Component {
    * @param {Object} listing
    */
   removeListing(listing) {
+    // TODO: Update message panel with success
+    const schemaSingular = makeSingular(this.schema);
+
     return this.pendingListingsService.remove(listing.id)
       .catch(err => {
-        displayErrorMessages('remove', `"${listing.name}"`, err, this.props.updateMessagePanel);
+        displayErrorMessages('remove', `pending ${schemaSingular} "${listing.name}"`, err, this.props.updateMessagePanel);
       });
   }
 
@@ -252,11 +283,8 @@ export default class PendingListingsModule extends Component {
     let {id, ...listingData} = pendingListing;
 
     return this.listingsService.create(listingData)
-      .then(() => {
-        return this.removeListing(pendingListing);
-      })
       .catch(err => {
-        displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
+        displayErrorMessages('publish', `pending ${this.schema} "${pendingListing.name}"`, err, this.props.updateMessagePanel);
       });
   }
 
@@ -271,19 +299,154 @@ export default class PendingListingsModule extends Component {
     let {id, ...listingData} = pendingListing;
 
     return this.listingsService.update(target.id, listingData)
-      .then(() => {
-        return this.removeListing(pendingListing);
-      })
       .catch(err => {
-        displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
+        displayErrorMessages('publish', `pending ${this.schema} "${pendingListing.name}"`, err, this.props.updateMessagePanel);
       });
   }
 
 
+  /*async publishListings() {
+    this.props.updateMessagePanel({status: 'info', details: `Started publishing ${this.schema}. Please wait...`});
+
+    const query = this.state.selectedListings.length === 0 ? {$limit: this.defaultLimit}
+      : {id: {$in: this.state.selectedListings}, $limit: this.defaultLimit};
+    const liveIDs = await this.queryForLiveUUIDs();
+    const listingsToPublish = await this.pendingListingsService.find({query: query, paginate: false});
+    let listingsToCreate = [];
+    let listingsToUpdate = [];
+
+    for (let listing of listingsToPublish) {
+      if (!this.checkForLiveLinked((listing))) {
+        const msg = `Cannot publish "${listing.name}" (${listing.uuid}): missing required linked schema.`;
+        this.props.updateMessagePanel({status: 'error', details: msg});
+      }
+
+      const liveMatch = liveIDs.data.find(row => {
+        return row.uuid === listing.uuid
+      });
+
+      if (liveMatch) {
+        listingsToUpdate.push([liveMatch, listing]);
+      } else {
+        listingsToCreate.push(listing);
+      }
+    }
+
+    Promise
+      .all(listingsToCreate.map(listing => {
+        return this.createLiveListing(listing);
+      }))
+      .then(resultSet => {
+        return Promise.all(resultSet.map(listing => {
+          return this.removeListing(listing);
+        }));
+      })
+      .then(() => {
+        return Promise.all(listingsToUpdate.map(([liveListing, pendingListing]) => {
+          return this.updateListing(liveListing, pendingListing);
+        }));
+      })
+      .then(resultSet => {
+        return Promise.all(resultSet.map(listing => {
+          return this.removeListing(listing);
+        }));
+      })
+      .then(() => {
+        this.props.updateMessagePanel({status: 'success', details: `Finished publishing ${this.schema}`});
+        return true;
+      })
+      .catch(error => {
+        console.debug('Error caught at module top');
+        displayErrorMessages('publish', `pending ${this.schema}`, error, this.props.updateMessagePanel);
+      });
+  }*/
+
+
+  async publishListings(idsToPublish) {
+
+    this.props.updateMessagePanel({status: 'info', details: `Started publishing ${this.schema}. Please wait...`});
+
+    const liveIDs = await this.queryForLiveUUIDs();
+    const allResults = await this.publishListingsRecursive(idsToPublish, liveIDs);
+
+    /*while (this.state.selectedListings.length > 0) {
+      const result = await this.publishPageOfListings(liveIDs);
+      allResults.push(result);
+    }*/
+
+    this.props.updateMessagePanel({status: 'success', details: `Finished publishing ${this.schema}`});
+
+    return allResults;
+  }
+
+  publishListingsRecursive(selectedIDs, liveIDs) {
+    console.debug('selectedids now', selectedIDs);
+    if (selectedIDs.length === 0) return;
+
+    return this.publishPageOfListings(selectedIDs, liveIDs).then(result => {
+      console.debug('Publish page of listings results', result);
+      if (!result[0]) return;
+
+      const idsToRemove = result.map(listing => {
+        return listing.id;
+      });
+      const newSelections = selectedIDs.filter(id => {
+        return !idsToRemove.includes(id);
+      });
+
+      console.debug('remaining selected listings', newSelections);
+
+      return this.publishListingsRecursive(newSelections, liveIDs);
+
+    })
+  }
+
+
+  async publishPageOfListings(selectedIDs, liveIDs) {
+    const query = {id: {$in: selectedIDs}, $limit: this.publishPageSize};
+
+    return this.pendingListingsService.find({query, paginate: false})
+      .then(result => {
+        return Promise.all(result.data.map(listing => {
+          if (!this.checkForLiveLinked(listing)) {
+            const msg = `Cannot publish "${listing.name}" (${listing.uuid}): missing required linked schema.`;
+            this.props.updateMessagePanel({status: 'error', details: msg});
+            return listing;
+          }
+
+          const liveMatch = liveIDs.data.find(row => {
+            return row.uuid === listing.uuid
+          });
+
+          if (liveMatch) {
+            return this.replaceLiveListing(listing, liveMatch)
+              .then(() => {
+                return this.removeListing(listing);
+              })
+              .finally(() => {
+                this.handleListingSelect(listing.id, false);
+              });
+          } else {
+            return this.createLiveListing(listing)
+              .then(() => {
+                return this.removeListing(listing);
+              })
+              .finally(() => {
+                this.handleListingSelect(listing.id, false);
+              });
+          }
+        }));
+      })
+      .catch(error => {
+        console.debug('Error caught at module top', error);
+        displayErrorMessages('publish', `pending ${this.schema}`, error, this.props.updateMessagePanel);
+      });
+  }
+
   /**
    * Publishes selected listings by creating or updating live listings of the same schema.
    */
-  publishListings() {
+  /*publishPageOfListings() {
     this.props.updateMessagePanel({status: 'info', details: `Started publishing ${this.schema}. Please wait...`});
 
     const query = this.state.selectedListings.length === 0 ? {$limit: this.defaultLimit}
@@ -296,27 +459,40 @@ export default class PendingListingsModule extends Component {
       ])
       .then(([liveIDs, listingsToPublish]) => {
         return Promise.all(listingsToPublish.data.map(listing => {
+          if (!this.checkForLiveLinked(listing)) {
+            const msg = `Cannot publish "${listing.name}" (${listing.uuid}): missing required linked schema.`;
+            this.props.updateMessagePanel({status: 'error', details: msg});
+            return true;
+          }
+
           const liveMatch = liveIDs.data.find(row => {
             return row.uuid === listing.uuid
           });
+
           if (liveMatch) {
-            return this.replaceLiveListing(listing, liveMatch);
+            return this.replaceLiveListing(listing, liveMatch)
+              .then(() => {
+                this.handleListingSelect(listing.id, false);
+                return this.removeListing(listing);
+              });
           } else {
-            return this.createLiveListing(listing);
+            return this.createLiveListing(listing)
+              .then(() => {
+                this.handleListingSelect(listing.id, false);
+                return this.removeListing(listing);
+              });
           }
         }));
       })
-      .then(allResults => {
+      .then((result) => {
         this.props.updateMessagePanel({status: 'success', details: `Finished publishing ${this.schema}`});
-        this.fetchAllData();
-        return allResults;
+        return result;
       })
       .catch(error => {
-        console.log('~ error publishing caught at top level', error);
-        this.props.updateMessagePanel({status: 'error', details: JSON.stringify(error)});
-        this.fetchAllData();
+        console.debug('Error caught at module top');
+        displayErrorMessages('publish', `pending ${this.schema}`, error, this.props.updateMessagePanel);
       });
-  }
+  }*/
 
   /**
    * Removes selected main schema listings from the database. Used in row quick-edits.
@@ -333,6 +509,24 @@ export default class PendingListingsModule extends Component {
         displayErrorMessages('delete', `pending ${this.schema}`, err, this.props.updateMessagePanel);
       });
   }
+
+  handlePublishButtonClick() {
+    this.stopListening();
+
+    const selectedListings = this.state.selectedListings;
+
+    this.publishListings(selectedListings).finally(() => {
+      this.startListening();
+    });
+  }
+
+  handlePublishAllClick() {
+    // Select all first
+    const allIDs = [...this.state.allIDs];
+
+    return this.publishListings(allIDs);
+  }
+
 
   /**
    * Updates the module's table column sort.
@@ -434,7 +628,7 @@ export default class PendingListingsModule extends Component {
     const selectedListings = this.state.selectedListings;
     const schemaLabel = selectedListings.length === 1 ? schema.slice(0, -1) : schema;
     const publishButton = this.user.is_su ?
-      <button type={'button'} className={'button-primary'} onClick={this.publishListings}
+      <button type={'button'} className={'button-primary'} onClick={this.handlePublishButtonClick}
               disabled={selectedListings.length === 0}>
         Publish {selectedListings.length || ''} {schemaLabel}
       </button> : '';
@@ -471,7 +665,8 @@ export default class PendingListingsModule extends Component {
         </table>
         <div className={'publish-buttons'}>
           {publishButton}
-          <button type={'button'} className={'default'} onClick={this.discardListings} disabled={selectedListings.length === 0}>
+          <button type={'button'} className={'default'} onClick={this.discardListings}
+                  disabled={selectedListings.length === 0}>
             Discard {selectedListings.length || ''} {schemaLabel}
           </button>
         </div>

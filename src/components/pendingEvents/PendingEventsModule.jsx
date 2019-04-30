@@ -24,10 +24,11 @@ export default class PendingEventsModule extends PendingListingsModule {
   constructor(props) {
     super(props, 'events');
 
-    Object.assign(this.state, {
-      orgs: [], venues: [], pendingOrgs: [], pendingVenues: [],
-      orgsLoaded: false, venuesLoaded: false, pendingOrgsLoaded: false, pendingVenuesLoaded: false
-    });
+    this.state = {
+      ...this.state, orgs: [], venues: [], pendingOrgs: [], pendingVenues: [],
+      orgsLoaded: false, venuesLoaded: false, pendingOrgsLoaded: false,
+      pendingVenuesLoaded: false
+    };
 
     this.venuesService = app.service('venues');
     this.pendingVenuesService = app.service('pending-venues');
@@ -36,44 +37,14 @@ export default class PendingEventsModule extends PendingListingsModule {
     this.tagsLookupService = app.service('events-tags-lookup');
     this.liveEventsService = app.service('events-live');
 
-    this.fetchOrgs = this.fetchOrgs.bind(this);
-    this.fetchPendingOrgs = this.fetchPendingOrgs.bind(this);
     this.fetchVenues = this.fetchVenues.bind(this);
     this.fetchPendingVenues = this.fetchPendingVenues.bind(this);
+    this.fetchOrgs = this.fetchOrgs.bind(this);
+    this.fetchPendingOrgs = this.fetchPendingOrgs.bind(this);
   }
 
-  /**
-   * Runs once the component is mounted. Fetches all data and registers data service listeners.
-   * @override
-   */
-  componentDidMount() {
-    super.componentDidMount();
-
-    const services = new Map([
-      [this.orgsService, this.fetchOrgs],
-      [this.pendingOrgsService, this.fetchPendingOrgs],
-      [this.venuesService, this.fetchVenues],
-      [this.pendingVenuesService, this.fetchPendingVenues]
-    ]);
-
-    for (let [service, dataFetcher] of services) {
-      service
-        .on('created', () => dataFetcher())
-        .on('updated', () => dataFetcher())
-        .on('patched', () => dataFetcher())
-        .on('removed', () => dataFetcher())
-        .on('status', message => {
-          if (message.status === 'success') dataFetcher();
-        });
-    }
-  }
-
-  /**
-   * Runs before the component unmounts. Removes data service listeners.
-   * @override
-   */
-  componentWillUnmount() {
-    super.componentWillUnmount();
+  stopListening() {
+    super.stopListening();
 
     const services = [
       this.orgsService,
@@ -87,9 +58,27 @@ export default class PendingEventsModule extends PendingListingsModule {
         .removeAllListeners('created')
         .removeAllListeners('updated')
         .removeAllListeners('patched')
-        .removeAllListeners('removed')
-        .removeAllListeners('status');
+        .removeAllListeners('removed');
     });
+  }
+
+  listenForChanges() {
+    super.listenForChanges();
+
+    const services = new Map([
+      [this.orgsService, this.fetchOrgs],
+      [this.pendingOrgsService, this.fetchPendingOrgs],
+      [this.venuesService, this.fetchVenues],
+      [this.pendingVenuesService, this.fetchPendingVenues]
+    ]);
+
+    for (let [service, dataFetcher] of services) {
+      service
+        .on('created', () => dataFetcher())
+        .on('updated', () => dataFetcher())
+        .on('patched', () => dataFetcher())
+        .on('removed', () => dataFetcher());
+    }
   }
 
   /**
@@ -105,12 +94,45 @@ export default class PendingEventsModule extends PendingListingsModule {
   }
 
   /**
+   * Fetches published venues.
+   */
+  fetchVenues() {
+    this.venuesService.find({query: this.defaultQuery, paginate: false})
+      .then(result => {
+        this.setState({venues: result.data, venuesLoaded: true});
+      })
+      .catch(err => {
+        displayErrorMessages('fetch', 'venues', err, this.props.updateMessagePanel, 'reload');
+        this.setState({venuesLoaded: false});
+      });
+  }
+
+  /**
+   * Fetches pending venues.
+   */
+  fetchPendingVenues() {
+    this.pendingVenuesService.find({query: this.defaultQuery, paginate: false})
+      .then(result => {
+        this.setState({pendingVenues: result.data, pendingVenuesLoaded: true});
+      })
+      .catch(err => {
+        displayErrorMessages('fetch', 'pending venues', err, this.props.updateMessagePanel, 'reload');
+        this.setState({pendingVenuesLoaded: false});
+      });
+  }
+
+  /**
    * Fetches published organizers.
    */
   fetchOrgs() {
-    this.orgsService.find({query: this.defaultQuery, paginate: false}).then(result => {
-      this.setState({orgs: result.data, orgsLoaded: true});
-    });
+    this.orgsService.find({query: this.defaultQuery, paginate: false})
+      .then(result => {
+        this.setState({orgs: result.data, orgsLoaded: true});
+      })
+      .catch(err => {
+        displayErrorMessages('fetch', 'organizers', err, this.props.updateMessagePanel, 'reload');
+        this.setState({orgsLoaded: false});
+      });
   }
 
   /**
@@ -119,25 +141,11 @@ export default class PendingEventsModule extends PendingListingsModule {
   fetchPendingOrgs() {
     this.pendingOrgsService.find({query: this.defaultQuery, paginate: false}).then(message => {
       this.setState({pendingOrgs: message.data, pendingOrgsLoaded: true});
-    });
-  }
-
-  /**
-   * Fetches published venues.
-   */
-  fetchVenues() {
-    this.venuesService.find({query: this.defaultQuery, paginate: false}).then(message => {
-      this.setState({venues: message.data, venuesLoaded: true});
-    });
-  }
-
-  /**
-   * Fetches pending venues.
-   */
-  fetchPendingVenues() {
-    this.pendingVenuesService.find({query: this.defaultQuery, paginate: false}).then(message => {
-      this.setState({pendingVenues: message.data, pendingVenuesLoaded: true});
-    });
+    })
+      .catch(err => {
+        displayErrorMessages('fetch', 'pending organizers', err, this.props.updateMessagePanel, 'reload');
+        this.setState({pendingOrgs: false});
+      });
   }
 
   /**
@@ -164,6 +172,17 @@ export default class PendingEventsModule extends PendingListingsModule {
     });
   }
 
+  checkForLiveLinked(pendingListing) {
+    const linkedVenue = this.state.venues.find(venue => {
+      return venue.uuid === pendingListing.venue_uuid;
+    });
+    const linkedOrg = this.state.orgs.find(org => {
+      return org.uuid === pendingListing.org_uuid;
+    });
+
+    return linkedOrg && linkedVenue;
+  }
+
   /**
    * Removes a given pending listing from the database.
    * @override
@@ -171,11 +190,13 @@ export default class PendingEventsModule extends PendingListingsModule {
    */
   removeListing(listing) {
     return this.pendingListingsService.remove(listing.id)
-      .then(() => {
-        return this.removeTagAssociations(listing.uuid);
+      .then((result) => {
+        return this.removeTagAssociations(listing.uuid).then(() => {
+          return result;
+        });
       })
       .catch(err => {
-        displayErrorMessages('remove', `"${listing.name}"`, err, this.props.updateMessagePanel);
+        displayErrorMessages('remove', `pending event "${listing.name}"`, err, this.props.updateMessagePanel);
       });
   }
 
@@ -187,17 +208,18 @@ export default class PendingEventsModule extends PendingListingsModule {
    * @param {object} pendingListing
    */
   createLiveListing(pendingListing) {
+    if (!this.checkForLiveLinked(pendingListing)) {
+      return Promise.reject('Missing required linked schema.');
+    }
+
     let {id, ...eventData} = pendingListing;
 
     return this.listingsService.create(eventData)
       .then(result => {
-        return Promise.all([
-          this.registerLiveListing(result.id, result.name),
-          this.removeListing(pendingListing)
-        ]);
+        return this.registerLiveListing(result.id, result.name);
       })
       .catch(err => {
-        displayErrorMessages('publish', `"${pendingListing.name}"`, err, this.props.updateMessagePanel);
+        displayErrorMessages('publish', `pending event "${pendingListing.name}"`, err, this.props.updateMessagePanel);
       });
   }
 
@@ -289,7 +311,7 @@ export default class PendingEventsModule extends PendingListingsModule {
     const selectedEvents = this.state.selectedListings;
     const schemaLabel = selectedEvents.length === 1 ? 'event' : 'events';
     const publishButton = this.user.is_su ?
-      <button type={'button'} className={'button-primary'} onClick={this.publishListings}
+      <button type={'button'} className={'button-primary'} onClick={this.handlePublishButtonClick}
               disabled={selectedEvents.length === 0}>
         Publish {selectedEvents.length || ''} {schemaLabel}
       </button> : '';
@@ -332,7 +354,8 @@ export default class PendingEventsModule extends PendingListingsModule {
         </table>
         <div className={'publish-buttons'}>
           {publishButton}
-          <button type={'button'} className={'publish'} onClick={this.discardListings} disabled={selectedEvents.length === 0}>
+          <button type={'button'} className={'publish'} onClick={this.discardListings}
+                  disabled={selectedEvents.length === 0}>
             Discard {selectedEvents.length || ''} {schemaLabel}
           </button>
         </div>

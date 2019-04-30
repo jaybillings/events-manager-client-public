@@ -24,11 +24,11 @@ export default class EventsLayout extends ListingsLayout {
 
     this.defaultLimit = 3000;
 
-    Object.assign(this.state, {
-      venues: [], orgs: [], tags: [],
+    this.state = {
+      ...this.state, venues: [], orgs: [], tags: [],
       venuesLoaded: false, orgsLoaded: false, tagsLoaded: false,
       filterLabel: 'none', liveIDs: [], liveIDsLoaded: false
-    });
+    };
 
     this.pendingEventService = app.service('pending-events');
     this.venuesService = app.service('venues');
@@ -67,6 +67,7 @@ export default class EventsLayout extends ListingsLayout {
     for (let [service, dataFetcher] of services) {
       service
         .on('created', () => dataFetcher())
+        .on('updated', () => dataFetcher())
         .on('patched', () => dataFetcher())
         .on('removed', () => dataFetcher())
     }
@@ -115,6 +116,7 @@ export default class EventsLayout extends ListingsLayout {
     services.forEach(service => {
       service
         .removeAllListeners('created')
+        .removeAllListeners('updated')
         .removeAllListeners('patched')
         .removeAllListeners('removed');
     });
@@ -150,13 +152,13 @@ export default class EventsLayout extends ListingsLayout {
    * @override
    */
   fetchListings() {
-    let query = {
+    const filterQuery = this.createFilterQuery();
+    const query = {
+      ...filterQuery,
       $sort: buildSortQuery(this.state.sort),
       $limit: this.state.pageSize,
       $skip: this.state.pageSize * (this.state.currentPage - 1)
     };
-
-    Object.assign(query, this.createFilterQuery());
 
     this.listingsService.find({query})
       .then(result => {
@@ -221,7 +223,7 @@ export default class EventsLayout extends ListingsLayout {
         this.setState({liveIDs: uniqueIDs, liveIDsLoaded: true}, () => this.fetchListings());
       })
       .catch(err => {
-        this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+        displayErrorMessages('fetch', 'live events', err, this.updateMessagePanel, 'reload');
         this.setState({liveIDsLoaded: false});
       });
   }
@@ -235,12 +237,15 @@ export default class EventsLayout extends ListingsLayout {
    * @returns {Promise}
    */
   createListing(eventData) {
-    return this.listingsService.create(eventData.eventObj).then(result => {
-      this.createTagAssociations(result.uuid, eventData.tagsToSave);
-      this.registerEventLive(result.id);
-    }, err => {
-      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-    });
+    return this.listingsService.create(eventData.eventObj)
+      .then(result => {
+        this.createTagAssociations(result.uuid, eventData.tagsToSave);
+        this.registerEventLive(result.id);
+      })
+      .catch(err => {
+        displayErrorMessages('create', `"${eventData.eventObj.name}"`,
+          err, this.updateMessagePanel, 'retry');
+      });
   }
 
   /**
@@ -259,7 +264,7 @@ export default class EventsLayout extends ListingsLayout {
         else return this.registerEventDropped(id);
       })
       .catch(err => {
-        this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+        displayErrorMessages('update', `"${newData.newData.name}"`, err, this.updateMessagePanel, 'retry');
       });
   }
 
@@ -268,34 +273,17 @@ export default class EventsLayout extends ListingsLayout {
    * as dropped.
    * @override
    *
-   * @param {int} id
+   * @param {object} listing
    */
-  deleteListing(id) {
-    this.listingsService.remove(id)
+  deleteListing(listing) {
+    this.listingsService.remove(listing.id)
       .then(() => {
-        this.removeTagAssociations(id);
-        this.registerEventDropped(id);
+        this.removeTagAssociations(listing.uuid);
+        this.registerEventDropped(listing.id);
       })
       .catch(err => {
-        this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-      });
-  }
-
-  /**
-   * Creates a pending event that duplicates the data from the given live event.
-   *
-   * @param {{eventID: Number, eventObj: Object, tagsToSave: Array}} eventData
-   * @returns {Promise}
-   */
-  createPendingListing(eventData) {
-    return this.pendingEventService.create(eventData.eventObj)
-      .then(result => {
-        this.setState({newPendingListing: result});
-        this.updateMessagePanel({status: 'success', details: `Pending event "${result.name}" created.`});
-        return result;
-      })
-      .catch(errors => {
-        this.updateMessagePanel({status: 'error', details: JSON.stringify(errors)});
+        displayErrorMessages('delete', `"${listing.name}"`, err,
+          this.updateMessagePanel, 'retry');
       });
   }
 
@@ -321,12 +309,12 @@ export default class EventsLayout extends ListingsLayout {
   /**
    * Deletes associations between a given event and its tags.
    *
-   * @param {int} id
+   * @param {int} uuid
    */
-  removeTagAssociations(id) {
-    this.eventsTagsLookupService.remove(null, {query: {event_id: id}})
+  removeTagAssociations(uuid) {
+    this.eventsTagsLookupService.remove(null, {query: {event_uuid: uuid}})
       .catch(err => {
-        const details = `Could remove tags associated with event #${id}.`
+        const details = `Could remove tags associated with event #${uuid}.`
           + `Please re-save listing on its individual page. Error is: ${JSON.stringify(err)}`;
         this.updateMessagePanel({status: 'error', details: details});
       });
@@ -392,9 +380,9 @@ export default class EventsLayout extends ListingsLayout {
 
     if (acceptedFilters.includes(filterType)) {
       const liveIDs = this.state.liveIDs;
-      if (filterType === 'dropped') return {id: {$nin: liveIDs}};
-      if (filterType === 'stale') return {id: {$in: liveIDs}, end_date: {$lt: new Date().valueOf()}};
-      if (filterType === 'live') return {id: {$in: liveIDs}, end_date: {$gte: new Date().valueOf()}};
+      if (filterType === 'dropped') return {'events.id': {$nin: liveIDs}};
+      if (filterType === 'stale') return {'events.id': {$in: liveIDs}, end_date: {$lt: new Date().valueOf()}};
+      if (filterType === 'live') return {'events.id': {$in: liveIDs}, end_date: {$gte: new Date().valueOf()}};
     }
 
     return {};
@@ -407,12 +395,13 @@ export default class EventsLayout extends ListingsLayout {
    * @returns {*}
    */
   renderTable() {
-    if (!(this.state.listingsLoaded && this.state.venuesLoaded && this.state.orgsLoaded && this.state.liveIDsLoaded)) {
-      return <p className={'load-message'}>Data is loading... Please be patient...</p>;
+    if (!(this.state.listingsLoaded && this.state.venuesLoaded &&
+      this.state.orgsLoaded && this.state.liveIDsLoaded)) {
+      return <p key={'events-message'} className={'load-message'}>Data is loading... Please be patient...</p>;
     } else if (this.state.listingsTotal === 0) {
       return [
         <Filters key={'events-filters'} updateFilters={this.updateFilters} />,
-        <p className={'load-message'}>No events to list.</p>
+        <p key={'events-message'} className={'load-message'}>No events to list.</p>
       ];
     }
 
@@ -429,38 +418,38 @@ export default class EventsLayout extends ListingsLayout {
 
     const venues = this.state.venues;
     const orgs = this.state.orgs;
-    const liveIDs = this.state.liveIDs;
-
 
     return ([
       <Filters key={'events-filters'} updateFilters={this.updateFilters} />,
       <PaginationLayout
-        key={'events-pagination'} schema={'events'} total={this.state.listingsTotal} pageSize={this.state.pageSize}
-        activePage={this.state.currentPage}
+        key={'events-pagination'} schema={'events'} total={this.state.listingsTotal}
+        pageSize={this.state.pageSize} activePage={this.state.currentPage}
         updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
       />,
-      <table key={'events-table'} className={'schema-table'}>
-        <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColumnSort)}</thead>
-        <tbody>
-        {
-          this.state.listings.map(event =>
-            <EventRow
-              key={event.uuid} schema={'events'} listing={event}
-              venues={venues} orgs={orgs}
-              venue={venues.find(v => {
-                return v.uuid === event.venue_uuid
-              })}
-              org={orgs.find(o => {
-                return o.uuid === event.org_uuid
-              })}
-              updateListing={this.updateListing} deleteListing={this.deleteListing}
-              createPendingListing={this.createPendingListing} listingIsLive={liveIDs.includes(event.id)}
-              checkForPending={this.checkForPending}
-            />
-          )
-        }
-        </tbody>
-      </table>
+      <div className={'wrapper'} key={'events-table-wrapper'}>
+        <table key={'events-table'} className={'schema-table'}>
+          <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColumnSort)}</thead>
+          <tbody>
+          {
+            this.state.listings.map(event =>
+              <EventRow
+                key={event.uuid} schema={'events'} listing={event}
+                venues={venues} orgs={orgs}
+                venue={venues.find(v => {
+                  return v.uuid === event.venue_uuid
+                })}
+                org={orgs.find(o => {
+                  return o.uuid === event.org_uuid
+                })}
+                updateListing={this.updateListing} deleteListing={this.deleteListing}
+                createPendingListing={this.createPendingListing} listingIsLive={this.state.liveIDs.includes(event.id)}
+                checkForPending={this.checkForPending}
+              />
+            )
+          }
+          </tbody>
+        </table>
+      </div>
     ]);
   }
 
@@ -475,12 +464,8 @@ export default class EventsLayout extends ListingsLayout {
       return <p>Data is loading... Please be patient...</p>;
     }
 
-    const venues = this.state.venues;
-    const orgs = this.state.orgs;
-    const tags = this.state.tags;
-
     return <EventAddForm
-      schema={'events'} venues={venues} orgs={orgs} tags={tags}
+      schema={'events'} venues={ this.state.venues} orgs={this.state.orgs} tags={this.state.tags}
       createListing={this.createListing} createPendingListing={this.createPendingListing}
     />;
   }

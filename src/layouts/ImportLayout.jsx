@@ -40,8 +40,12 @@ export default class ImportLayout extends Component {
 
     this.importerService = app.service('importer');
 
+    this.resumeModuleListening = this.resumeModuleListening.bind(this);
+    this.stopModuleListening = this.stopModuleListening.bind(this);
+
     this.importData = this.importData.bind(this);
     this.publishListings = this.publishListings.bind(this);
+
     this.updateMessagePanel = this.updateMessagePanel.bind(this);
     this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
   }
@@ -52,14 +56,20 @@ export default class ImportLayout extends Component {
    */
   componentDidMount() {
     this.importerService
-      .on('created', () => {
-        // TODO: On created, start spinner?
-        // TODO: Unregister listeners and lazy pull data every second or so?
-        this.updateMessagePanel({status: 'info', details: 'Importer is running. This may take several minutes.'});
-      })
       .on('status', message => {
-        // TODO: If success, import all data?
-        this.updateMessagePanel({status: message.status, details: message.details});
+        if (message.status === 'success') {
+          this.updateMessagePanel({status: 'success', details: message.message});
+          this.resumeModuleListening();
+        } else if (message.status === 'fail') {
+          this.updateMessagePanel({status: 'error', details: message.message});
+          this.resumeModuleListening();
+        } else if (message.status === 'error') {
+          console.debug('[COE] Error occurred while importing');
+          console.error(message.rawError || 'No raw error');
+          this.updateMessagePanel({status: 'error', details: message.message});
+        } else if (message.status === 'status') {
+          this.updateMessagePanel({status: 'info', details: message.message})
+        }
       });
   }
 
@@ -69,6 +79,24 @@ export default class ImportLayout extends Component {
    */
   componentWillUnmount() {
     this.importerService.removeAllListeners('status');
+  }
+
+  resumeModuleListening() {
+    console.debug('START module listening');
+    this.eventsModule.current.startListening();
+    this.venuesModule.current.startListening();
+    this.orgsModule.current.startListening();
+    this.hoodsModule.current.startListening();
+    this.tagsModule.current.startListening();
+  }
+
+  stopModuleListening() {
+    console.debug('STOP module listening');
+    this.eventsModule.current.stopListening();
+    this.venuesModule.current.stopListening();
+    this.orgsModule.current.stopListening();
+    this.hoodsModule.current.stopListening();
+    this.tagsModule.current.stopListening();
   }
 
   /**
@@ -85,10 +113,9 @@ export default class ImportLayout extends Component {
     importData.append('file', this.fileInput.current.files[0]);
     importData.append('filename', this.fileInput.current.files[0].name);
 
-    console.log(this.user);
-
     app.passport.getJWT()
       .then(token => {
+        this.stopModuleListening();
         return fetch(this.API_URI, {
           method: 'POST',
           body: importData,
@@ -96,11 +123,16 @@ export default class ImportLayout extends Component {
         });
       })
       .then(response => {
-        return response.json();
+        return response.json(); // Convert raw response body to JSON
       })
       .then(body => {
+        console.debug('[COE] Import response body');
+        console.debug(body);
         if (body.code >= 400) {
           this.updateMessagePanel({status: 'error', details: body.message});
+          console.error(body.message);
+        } else {
+          this.updateMessagePanel({status: 'info', details: 'Importer is running. This may take several minutes.'});
         }
       });
   }
@@ -114,23 +146,24 @@ export default class ImportLayout extends Component {
    */
   publishListings() {
     this.updateMessagePanel({status: 'info', details: 'Publish started. This make take several minutes.'});
+    this.stopModuleListening();
 
     Promise
       .all([
-        this.hoodsModule.current.publishListings(),
-        this.tagsModule.current.publishListings()
+        this.hoodsModule.current.handlePublishAllClick(),
+        this.tagsModule.current.handlePublishAllClick()
       ])
       .then(() => {
         // On its own b/c of high I/O load
-        return this.orgsModule.current.publishListings();
+        return this.orgsModule.current.handlePublishAllClick();
       })
       .then(() => {
         // On its own b/c of high I/O load
-        return this.venuesModule.current.publishListings();
+        return this.venuesModule.current.handlePublishAllClick();
       })
       .then(() => {
         // On its own b/c of high I/O load
-        return this.eventsModule.current.publishListings();
+        return this.eventsModule.current.handlePublishAllClick();
       })
       .then(() => {
         console.log('~ all done!');
@@ -139,6 +172,9 @@ export default class ImportLayout extends Component {
       .catch(error => {
         console.log('~ very top level error', error);
         this.updateMessagePanel({status: 'error', details: JSON.stringify(error)});
+      })
+      .finally(() => {
+        this.resumeModuleListening();
       });
   }
 
@@ -166,9 +202,10 @@ export default class ImportLayout extends Component {
   render() {
     const showMessagePanel = this.state.messagePanelVisible;
     const messages = this.state.messages;
+    // TODO: All/Selected depending on selections
     const publishButton = this.user.is_su ?
       <button type={'button'} className={'button-primary button-publish'} onClick={this.publishListings}>
-        Publish All Pending Listings
+        Publish Pending Listings
       </button> : '';
 
     return (

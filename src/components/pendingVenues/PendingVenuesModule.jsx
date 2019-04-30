@@ -35,36 +35,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
     this.fetchPendingHoods = this.fetchPendingHoods.bind(this);
   }
 
-  /**
-   * Runs once the component is mounted. Fetches all data and registers data service listeners.
-   * @override
-   */
-  componentDidMount() {
-    super.componentDidMount();
-
-    const services = new Map([
-      [this.hoodsService, this.fetchHoods],
-      [this.pendingHoodsService, this.fetchPendingHoods]
-    ]);
-
-    for (let [service, dataFetcher] of services) {
-      service
-        .on('created', () => dataFetcher())
-        .on('updated', () => dataFetcher())
-        .on('patched', () => dataFetcher())
-        .on('removed', () => dataFetcher())
-        .on('status', message => {
-          if (message.status === 'success') dataFetcher();
-        });
-    }
-  }
-
-  /**
-   * Runs before the component unmounts. Removes data service listeners.
-   * @override
-   */
-  componentWillUnmount() {
-    super.componentWillUnmount();
+  stopListening() {
+    super.stopListening();
 
     const services = [
       this.hoodsService,
@@ -76,9 +48,25 @@ export default class PendingVenuesModule extends PendingListingsModule {
         .removeAllListeners('created')
         .removeAllListeners('updated')
         .removeAllListeners('patched')
-        .removeAllListeners('removed')
-        .removeAllListeners('status');
+        .removeAllListeners('removed');
     });
+  }
+
+  listenForChanges() {
+    super.listenForChanges();
+
+    const services = new Map([
+      [this.hoodsService, this.fetchHoods],
+      [this.pendingHoodsService, this.fetchPendingHoods]
+    ]);
+
+    for (let [service, dataFetcher] of services) {
+      service
+        .on('created', () => dataFetcher())
+        .on('updated', () => dataFetcher())
+        .on('patched', () => dataFetcher())
+        .on('removed', () => dataFetcher());
+    }
   }
 
   /**
@@ -109,6 +97,14 @@ export default class PendingVenuesModule extends PendingListingsModule {
     });
   }
 
+  checkForLiveLinked(pendingListing) {
+    const linkedHood = this.state.hoods.find(hood => {
+      return hood.uuid === pendingListing.hood_uuid;
+    });
+
+    return !!linkedHood;
+  }
+
   /**
    * Renders the table of listings.
    * @override
@@ -132,7 +128,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
     const selectedVenues = this.state.selectedListings;
     const schemaLabel = selectedVenues.length === 1 ? 'venue' : 'venues';
     const publishButton = this.user.is_su ?
-      <button type={'button'} className={'button-primary'} onClick={this.publishListings}
+      <button type={'button'} className={'button-primary'} onClick={this.handlePublishButtonClick}
               disabled={selectedVenues.length === 0}>
         Publish {selectedVenues.length || ''} {schemaLabel}
       </button> : '';

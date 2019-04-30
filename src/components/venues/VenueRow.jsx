@@ -20,7 +20,7 @@ export default class VenueRow extends ListingRow {
   constructor(props) {
     super(props);
 
-    const hoodID = typeof this.props.hood === 'undefined' ? this.props.hoods[0].id : this.props.hood.id;
+    const hoodID = this.props.hood ? this.props.hood.id : (this.props.hoods[0] ? this.props.hoods[0].id : null);
 
     Object.assign(this.state, {venueHood: hoodID});
   }

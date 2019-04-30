@@ -201,6 +201,11 @@ button[disabled]:hover {
   grid-template-columns: repeat(3, max-content);
 }
 
+.wrapper {
+  overflow: auto;
+  margin-bottom: 3rem;
+}
+
 /* The following are container-specific styles that weren't worth putting in their own file */
 
 .block-warning {

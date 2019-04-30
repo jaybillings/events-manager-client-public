@@ -41,7 +41,8 @@ export default class LoginPage extends Component {
       })
       .catch(err => {
         if (err.code === 401) return;
-        this.updateMessagePanel({status: 'error', details: err});
+        console.error(err);
+        this.updateMessagePanel({status: 'error', details: 'Error fetching JWT: ' + err.message});
       });
   }
 
@@ -92,7 +93,8 @@ export default class LoginPage extends Component {
         this.setState({redirectCount: 0});
       })
       .catch(err => {
-        this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+        this.updateMessagePanel({status: 'error', details: 'Authentication error: ' + err.message});
+        console.error(err);
       });
   }
 
@@ -118,7 +120,8 @@ export default class LoginPage extends Component {
         details: 'Account created. You can now login using the same credentials.'
       });
     }, err => {
-      this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      this.updateMessagePanel({status: 'error', details: 'Error during user creation: ' + err.message});
+      console.error(err);
     });
   }
 

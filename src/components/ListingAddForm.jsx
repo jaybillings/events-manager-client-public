@@ -36,7 +36,9 @@ export default class ListingAddForm extends Component {
   handleAddClick(e) {
     e.preventDefault();
     const listingData = this.buildNewListing();
-    this.props.createListing(listingData);
+    this.props.createListing(listingData).then(() => {
+      this.clearForm();
+    });
   }
 
   /**

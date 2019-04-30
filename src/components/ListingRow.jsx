@@ -46,7 +46,7 @@ export default class ListingRow extends Component {
    */
   listingHasPending() {
     this.props.checkForPending(this.props.listing.uuid).then(message => {
-      this.setState({pendingID: message.data[0].id});
+      if (message.total) this.setState({pendingID: message.data[0].id});
     }, err => {
       console.log("Error fetching pending listings: ", JSON.stringify(err));
     });
@@ -116,7 +116,7 @@ export default class ListingRow extends Component {
    */
   handleDeleteClick(e) {
     e.stopPropagation();
-    this.props.deleteListing(this.props.listing.id);
+    this.props.deleteListing(this.props.listing);
   }
 
   /**
