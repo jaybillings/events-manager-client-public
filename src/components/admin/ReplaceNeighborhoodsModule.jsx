@@ -11,7 +11,7 @@ export default class ReplaceNeighborhoodsModule extends Component {
     this.defaultQuery = {$sort: {name: 1}, $limit: 1000};
 
     this.state = {
-      liveHoods: [], pendingHoods: [], uniqueHoods: [], nameToReplace: '', uuidOfReplacement: ''
+      liveHoods: [], pendingHoods: [], uniqueHoods: []
     };
 
     this.hoodsService = app.service('neighborhoods');
@@ -25,12 +25,8 @@ export default class ReplaceNeighborhoodsModule extends Component {
     this.fetchPendingHoods = this.fetchPendingHoods.bind(this);
     this.fetchLiveAndUpdateUnique = this.fetchLiveAndUpdateUnique.bind(this);
     this.fetchPendingAndUpdateUnique = this.fetchPendingAndUpdateUnique.bind(this);
-    this.fetchLiveHoodsToReplace = this.fetchLiveHoodsToReplace.bind(this);
-    this.fetchPendingHoodsToReplace = this.fetchPendingHoodsToReplace.bind(this);
 
-    this.createHoodLookup = this.createHoodLookup.bind(this);
-    this.replaceAndDeleteLive = this.replaceAndDeleteLive.bind(this);
-    this.replaceAndDeletePending = this.replaceAndDeletePending.bind(this);
+    this.createHoodReplacementLookup = this.createHoodReplacementLookup.bind(this);
     this.doHoodReplacement = this.doHoodReplacement.bind(this);
   }
 
@@ -93,14 +89,6 @@ export default class ReplaceNeighborhoodsModule extends Component {
     return this.pendingHoodsService.find({query: this.defaultQuery});
   }
 
-  fetchLiveHoodsToReplace() {
-    return this.hoodsService.find({query: {name: this.state.nameToReplace}});
-  }
-
-  fetchPendingHoodsToReplace() {
-    return this.pendingHoodsService.find({query: {name: this.state.nameToReplace}});
-  }
-
   fetchLiveAndUpdateUnique() {
     this.fetchHoods()
       .then(result => {
@@ -123,7 +111,19 @@ export default class ReplaceNeighborhoodsModule extends Component {
       });
   }
 
-  createHoodLookup(targetName, replacement) {
+  static fetchHoodsToReplace(nameToReplace, service) {
+    return service.find({query: {name: nameToReplace}});
+  }
+
+  static deleteOldHoods(uuidsToRemove, service) {
+    return service.remove(null, {query: {uuid: {$in: uuidsToRemove}}});
+  }
+
+  static replaceHoodLinks(uuidOfReplacement, uuidsToReplace, linkedService) {
+    return linkedService.patch({hood_uuid: uuidOfReplacement}, {query: {hood_uuid: {$in: uuidsToReplace}}});
+  }
+
+  createHoodReplacementLookup(targetName, replacement) {
     return this.vsBdNeighborhoodLookup.create({
       bd_region_name: targetName,
       vs_hood_uuid: replacement.uuid,
@@ -131,49 +131,12 @@ export default class ReplaceNeighborhoodsModule extends Component {
     });
   }
 
-  replaceAndDeleteLive(lookupResult) {
-    if (!lookupResult.total) return Promise.resolve();
-
-    const replacementUUID = this.state.uuidOfReplacement;
-    const uuidsToReplace = lookupResult.data.map(row => row.uuid);
-
-    // Relink live venues to new live hood
-    return this.venuesService
-      .patch(null, {hood_uuid: replacementUUID}, {query: {hood_uuid: {$in: uuidsToReplace}}})
-      .then(() => {
-        // Remove original live hood listings
-        return this.hoodsService.remove(null, {query: {uuid: {$in: uuidsToReplace}}});
-      });
-  }
-
-  replaceAndDeletePending(liveLookupResult, pendingLookupResult) {
-    if (!liveLookupResult.total && !pendingLookupResult.total) return Promise.resolve();
-
-    const replacementUUID = this.state.uuidOfReplacement;
-    const liveUUIDs = liveLookupResult.total ? liveLookupResult.data.map(row => row.uuid) : [];
-    const pendingUUIDs = pendingLookupResult.total ? pendingLookupResult.data.map(row => row.uuid) : [];
-    const uuidsToReplace = arrayUnique([...liveUUIDs, ...pendingUUIDs]);
-
-    // Relink pending venues to new live hood
-    this.pendingVenuesService
-      .patch(null, {hood_uuid: replacementUUID}, {query: {hood_uuid: {$in: uuidsToReplace}}})
-      .then(() => {
-        // Remove original pending hood listings
-        this.pendingHoodsService.remove(null, {query: {uuid: {$in: uuidsToReplace}}});
-      });
-  }
-
-  handleListSelect(e) {
-    if (!e.target.name) return;
-    this.setState({[e.target.name]: e.target.value.trim()});
-  }
-
-  doHoodReplacement(targetName, uuidOfReplacement) {
+  async doHoodReplacement(nameToReplace, uuidOfReplacement) {
     const replacement = this.state.uniqueHoods.find(hood => {
       return hood.uuid === uuidOfReplacement
     });
 
-    if (!targetName) {
+    if (!nameToReplace) {
       this.props.updateMessagePanel({status: 'error', details: 'Invalid neighborhood picked to be replaced.'});
       return;
     }
@@ -184,7 +147,7 @@ export default class ReplaceNeighborhoodsModule extends Component {
     }
 
     // This is intentionally case sensitive to enable replacing improperly cased tags.
-    if (targetName === replacement.name) {
+    if (nameToReplace === replacement.name) {
       this.props.updateMessagePanel({status: 'error', details: 'Cannot replace neighborhood with same neighborhood.'});
       return;
     }
@@ -192,37 +155,41 @@ export default class ReplaceNeighborhoodsModule extends Component {
     this.props.updateMessagePanel({status: 'info', details: 'Starting neighborhood replacement'});
     this.props.updateMessagePanel({status: 'info', details: 'Looking for neighborhoods to replace.'});
 
+    const liveLookupRes = await ReplaceNeighborhoodsModule.fetchHoodsToReplace(nameToReplace, this.hoodsService);
+    const pendingLookupRes = await ReplaceNeighborhoodsModule.fetchHoodsToReplace(nameToReplace, this.pendingHoodsService);
+
+    const liveUUIDsToReplace = liveLookupRes.data.map(row => row.uuid);
+    const pendingUUIDsToReplace = pendingLookupRes.data.map(row => row.uuid);
+
+    this.props.updateMessagePanel({status: 'info', details: 'Linking venues to replacement neighborhood.'});
+
     Promise
       .all([
-        this.fetchLiveHoodsToReplace(),
-        this.fetchPendingHoodsToReplace()
+        ReplaceNeighborhoodsModule.replaceHoodLinks(liveUUIDsToReplace, this.venuesService),
+        ReplaceNeighborhoodsModule.replaceHoodLinks(pendingUUIDsToReplace, this.pendingVenuesService)
       ])
-      .then(([liveLookupRes, pendingLookupRes]) => {
-        console.log('[DEBUG] live hoods', liveLookupRes);
-        console.log('[DEBUG] pending hoods', pendingLookupRes);
-        this.props.updateMessagePanel({status: 'info', details: 'Relinking venues and removing neighborhoods.'});
+      .then(() => {
+        this.props.updateMessagePanel({status: 'info', details: 'Deleting old neighborhoods.'});
         return Promise.all([
-          this.replaceAndDeleteLive(liveLookupRes),
-          this.replaceAndDeletePending(liveLookupRes, pendingLookupRes)
+          ReplaceNeighborhoodsModule.deleteOldHoods(liveUUIDsToReplace, this.venuesService),
+          ReplaceNeighborhoodsModule.deleteOldHoods(pendingUUIDsToReplace, this.pendingVenuesService)
         ]);
       })
       .then(() => {
         this.props.updateMessagePanel({status: 'info', details: 'Creating replacement lookup row in database.'});
-        return this.createHoodLookup(targetName, replacement);
+        return this.createHoodReplacementLookup(nameToReplace, replacement);
       })
       .then(() => {
         this.props.updateMessagePanel({
           status: 'success',
-          details: `Replaced all neighborhoods named "${targetName}" with neighborhood named "${replacement.name}"`
+          details: `Replaced all neighborhoods named "${nameToReplace}" with neighborhood named "${replacement.name}"`
         });
-        this.setState({nameToReplace: '', uuidOfReplacement: ''});
       })
       .catch(err => {
         this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err.message)});
-        console.log('[DEBUG]', err);
+        console.error(err);
       });
   }
-
 
   render() {
     const uniqueHoods = this.state.uniqueHoods;
@@ -230,8 +197,10 @@ export default class ReplaceNeighborhoodsModule extends Component {
 
     return (
       <div className={'schema-module manage-hoods'}>
-        <ReplaceTermsForm schema={'neighborhoods'} uniqueListings={uniqueHoods} liveListings={liveHoods}
-                          doReplacement={this.doHoodReplacement} />
+        <ReplaceTermsForm
+          schema={'neighborhoods'} uniqueListings={uniqueHoods} liveListings={liveHoods}
+          doReplacement={this.doHoodReplacement}
+        />
         <TermReplacementsTable />
       </div>
     );

@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import app from '../../services/socketio';
-import {displayErrorMessages, uniqueListingsOnly} from "../../utilities";
+import {arrayUnique, displayErrorMessages, uniqueListingsOnly} from "../../utilities";
 
 import ReplaceTermsForm from './ReplaceTermsForm';
 import TermReplacementsTable from "./TermReplacementsTable";
@@ -12,7 +12,7 @@ export default class ReplaceTagsModule extends Component {
     this.defaultQuery = {$sort: {name: 1}, $limit: 1000};
 
     this.state = {
-      liveTags: [], uniqueTags: [], pendingTags: [], nameToReplace: '', uuidOfReplacement: ''
+      liveTags: [], uniqueTags: [], pendingTags: []
     };
 
     this.tagsService = app.service('tags');
@@ -25,11 +25,9 @@ export default class ReplaceTagsModule extends Component {
     this.fetchPendingTags = this.fetchPendingTags.bind(this);
     this.fetchLiveAndUpdateUnique = this.fetchLiveAndUpdateUnique.bind(this);
     this.fetchPendingAndUpdateUnique = this.fetchPendingAndUpdateUnique.bind(this);
-    this.fetchLiveTagsToReplace = this.fetchLiveTagsToReplace.bind(this);
-    this.fetchPendingTagsToReplace = this.fetchPendingTagsToReplace.bind(this);
 
-    this.createTagLookup = this.createTagLookup.bind(this);
-    this.replaceAndDeleteTags = this.replaceAndDeleteTags.bind(this);
+    this.createTagReplacementLookup = this.createTagReplacementLookup.bind(this);
+    this.replaceTagLookups = this.replaceTagLookups.bind(this);
     this.doTagReplacement = this.doTagReplacement.bind(this);
   }
 
@@ -76,7 +74,7 @@ export default class ReplaceTagsModule extends Component {
         this.setState({liveTags: liveTagResult.data, pendingTags: pendingTagResult.data, uniqueTags});
       })
       .catch(err => {
-        displayErrorMessages('fetch', 'tag data', err, this.props.updateMessagePanel);
+        displayErrorMessages('fetch', 'tag data', err, this.props.updateMessagePanel, 'reload');
       });
   }
 
@@ -86,14 +84,6 @@ export default class ReplaceTagsModule extends Component {
 
   fetchPendingTags() {
     return this.pendingTagsService.find({query: this.defaultQuery});
-  }
-
-  fetchLiveTagsToReplace() {
-    return this.tagsService.find({query: {name: this.state.nameToReplace}});
-  }
-
-  fetchPendingTagsToReplace() {
-    return this.pendingTagsService.find({query: {name: this.state.nameToReplace}});
   }
 
   fetchLiveAndUpdateUnique() {
@@ -118,7 +108,15 @@ export default class ReplaceTagsModule extends Component {
       });
   }
 
-  createTagLookup(targetName, replacement) {
+  static fetchTagsToReplace(nameToReplace, service) {
+    return service.find({query: {name: nameToReplace}});
+  }
+
+  static deleteOldTags(uuidsToRemove, service) {
+    return service.remove(null, {query: {uuid: {$in: uuidsToRemove}}});
+  }
+
+  createTagReplacementLookup(targetName, replacement) {
     return this.vsBdTagLookupService.create({
       bd_keyword_name: targetName,
       vs_tag_uuid: replacement.uuid,
@@ -126,28 +124,22 @@ export default class ReplaceTagsModule extends Component {
     });
   }
 
-  replaceAndDeleteTags(lookupResult, tagsService) {
-    if (!lookupResult.total) return Promise.resolve();
-
-    const targetUUID = this.state.uuidOfReplacement;
-    const uuidsToReplace = lookupResult.data.map(row => row.uuid);
-
-    // TODO: Try to patch lookup row, if fail b/c unique constraint, remove
-    console.log('[DEBUG] altering lookups');
+  replaceTagLookups(uuidsToReplace, uuidOfReplacement) {
     return this.eventsTagsLookupService
-      .patch(null, {tag_uuid: targetUUID}, {query: {tag_uuid: {$in: uuidsToReplace}}})
-      .finally(() => {
-        console.log('[DEBUG] Deleting any remaining lookups');
-        return this.eventsTagsLookupService
-          .remove(null, {query: {tag_uuid: {$in: uuidsToReplace}}})
-          .then(() => {
-            console.log('[DEBUG] Deleting old tag(s)');
-            return tagsService.remove(null, {query: {uuid: {$in: uuidsToReplace}}});
-          });
+      .remove(null, {query: {tag_uuid: {$in: uuidsToReplace}}})
+      .then(result => {
+        return Promise.all(result.map(lookupRow => {
+          return this.eventsTagsLookupService.create({event_uuid: lookupRow.event_uuid, tag_uuid: uuidOfReplacement})
+        }))
       });
   }
 
-  doTagReplacement(nameToReplace, uuidOfReplacement) {
+  /**
+   *
+   * @param {String} nameToReplace
+   * @param {String} uuidOfReplacement
+   */
+  async doTagReplacement(nameToReplace, uuidOfReplacement) {
     const replacement = this.state.uniqueTags.find(tag => {
       return tag.uuid === uuidOfReplacement;
     });
@@ -171,34 +163,36 @@ export default class ReplaceTagsModule extends Component {
     this.props.updateMessagePanel({status: 'info', details: 'Starting tag replacement'});
     this.props.updateMessagePanel({status: 'info', details: 'Looking for tags to replace.'});
 
-    Promise
-      .all([
-        this.fetchLiveTagsToReplace(),
-        this.fetchPendingTagsToReplace()
-      ])
-      .then(([liveLookupRes, pendingLookupRes]) => {
-        console.log('[DEBUG] live tags', liveLookupRes);
-        console.log('[DEBUG] pending tags', pendingLookupRes);
-        this.props.updateMessagePanel({status: 'info', details: 'Relinking events and removing tags.'});
+    const liveLookupRes = await ReplaceTagsModule.fetchTagsToReplace(nameToReplace, this.tagsService);
+    const pendingLookupRes = await ReplaceTagsModule.fetchTagsToReplace(nameToReplace, this.pendingTagsService);
+
+    const liveUUIDsToReplace = liveLookupRes.data.map(row => row.uuid);
+    const pendingUUIDsToReplace = pendingLookupRes.data.map(row => row.uuid);
+    const uuidsToReplace = arrayUnique([...liveUUIDsToReplace, ...pendingUUIDsToReplace]);
+
+    this.props.updateMessagePanel({status: 'info', details: 'Relinking events.'});
+
+    this.replaceTagLookups(uuidsToReplace, uuidOfReplacement)
+      .then(() => {
+        this.props.updateMessagePanel({status: 'info', details: 'Deleting old tags.'});
         return Promise.all([
-          this.replaceAndDeleteTags(liveLookupRes, this.tagsService),
-          this.replaceAndDeleteTags(pendingLookupRes, this.pendingTagsService)
+          ReplaceTagsModule.deleteOldTags(liveUUIDsToReplace, this.tagsService),
+          ReplaceTagsModule.deleteOldTags(pendingUUIDsToReplace, this.pendingTagsService)
         ]);
       })
       .then(() => {
         this.props.updateMessagePanel({status: 'info', details: 'Creating replacement lookup row in database'});
-        return this.createTagLookup(nameToReplace, replacement);
+        return this.createTagReplacementLookup(nameToReplace, replacement);
       })
       .then(() => {
         this.props.updateMessagePanel({
           status: 'success',
           details: `Replaced all tags named "${nameToReplace}" with tag named "${replacement.name}"`
         });
-        this.setState({nameToReplace: '', uuidOfReplacement: ''});
       })
       .catch(err => {
         this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err.message)});
-        console.log('[DEBUG]', err);
+        console.error(err);
       });
   }
 
@@ -206,14 +200,12 @@ export default class ReplaceTagsModule extends Component {
     const uniqueTags = this.state.uniqueTags;
     const liveTags = this.state.liveTags;
 
-    /**
-     * TODO: allow removing lookups from replacement table
-     */
-
     return (
       <div className={'schema-module manage-tags'}>
-        <ReplaceTermsForm schema={'tags'} uniqueListings={uniqueTags} liveListings={liveTags}
-                          doReplacement={this.doTagReplacement} />
+        <ReplaceTermsForm
+          schema={'tags'} uniqueListings={uniqueTags} liveListings={liveTags}
+          doTagReplacement={this.doTagReplacement}
+        />
         <TermReplacementsTable />
       </div>
     );
