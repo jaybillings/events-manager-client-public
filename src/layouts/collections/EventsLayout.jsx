@@ -30,7 +30,6 @@ export default class EventsLayout extends ListingsLayout {
       filterLabel: 'none', liveIDs: [], liveIDsLoaded: false
     };
 
-    this.pendingEventService = app.service('pending-events');
     this.venuesService = app.service('venues');
     this.orgsSerivce = app.service('organizers');
     this.tagsService = app.service('tags');

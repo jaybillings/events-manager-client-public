@@ -131,9 +131,9 @@ export default class VenuesLayout extends ListingsLayout {
 
     return ([
       <PaginationLayout
-        key={'venues-pagination'} schema={'venues'} total={this.state.listingsTotal} pageSize={this.state.pageSize}
-        activePage={this.state.currentPage} updatePageSize={this.props.updatePageSize}
-        updateCurrentPage={this.props.updateCurrentPage}
+        key={'venues-pagination'} schema={'venues'} total={this.state.listingsTotal}
+        pageSize={this.state.pageSize} activePage={this.state.currentPage}
+        updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
       />,
       <div className={'wrapper'} key={'venues-table-wrapper'}>
         <table key={'venues-table'} className={'schema-table'}>
