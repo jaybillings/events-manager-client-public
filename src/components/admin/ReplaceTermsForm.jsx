@@ -14,11 +14,7 @@ export default class ReplaceTermsForm extends Component {
   handleSubmit(e) {
     e.preventDefault();
 
-    this.props.doTagReplacement(this.toReplaceRef.current.value, this.replaceWithRef.current.value)
-      .then(() => {
-        this.toReplaceRef.current.value = '';
-        this.replaceWithRef.current.value = '';
-      });
+    this.props.runTagReplacement(this.toReplaceRef.current.value, this.replaceWithRef.current.value);
   }
 
   render() {
@@ -29,7 +25,6 @@ export default class ReplaceTermsForm extends Component {
 
     return (
       <form id={`${schema}-replace-form`} className={'add-form'} onSubmit={this.handleSubmit}>
-        <h3>Replace {schema}</h3>
         <label>
           <span>Replace all {schema} (pending and live) named this:</span>
           <select ref={this.toReplaceRef} name={'nameToReplace'} defaultValue={''}>
