@@ -47,19 +47,19 @@ export default class ManageUsersModule extends Component {
 
     this.usersService
       .on('created', message => {
-        this.props.updateMessagePanel({status: 'success', details: `Added user with email address ${message.email}`});
+        this.props.updateMessagePanel({status: 'success', details: `Added user with email address "${message.email}"`});
         this.fetchAllData();
       })
       .on('updated', message => {
-        this.props.updateMessagePanel({status: 'success', details: `Saved changes to ${message.email}`});
+        this.props.updateMessagePanel({status: 'success', details: `Saved changes to "${message.email}"`});
         this.fetchAllData();
       })
       .on('patched', message => {
-        this.props.updateMessagePanel({status: 'success', details: `Saved changes to ${message.email}`});
+        this.props.updateMessagePanel({status: 'success', details: `Saved changes to "${message.email}"`});
         this.fetchAllData();
       })
       .on('removed', message => {
-        this.props.updateMessagePanel({status: 'success', details: `${message.email} has been permanently removed.`});
+        this.props.updateMessagePanel({status: 'info', details: `"${message.email}" has been permanently removed.`});
         this.fetchAllData();
       })
   }
@@ -76,20 +76,21 @@ export default class ManageUsersModule extends Component {
    * Fetches all data required for the module.
    */
   fetchAllData() {
+    const query = {
+      $sort: buildSortQuery(this.state.sort, false),
+      $limit: this.state.pageSize,
+      $skip: this.state.pageSize * (this.state.currentPage - 1)
+    };
+
     this.usersService
-      .find({
-        query: {
-          $sort: buildSortQuery(this.state.sort, false),
-          $limit: this.state.pageSize,
-          $skip: this.state.pageSize * (this.state.currentPage - 1)
-        }
-      })
+      .find({query})
       .then(message => {
         this.setState({users: message.data, usersTotal: message.total, usersLoaded: true});
       })
       .catch(err => {
         this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
         this.setState({usersLoaded: false});
+        console.error(err);
       });
   }
 

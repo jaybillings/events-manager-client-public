@@ -14,6 +14,7 @@ export default class ReplaceTermsForm extends Component {
   handleSubmit(e) {
     e.preventDefault();
 
+    //TODO: DO everything except making the new lookup row?
     this.props.runTagReplacement(this.toReplaceRef.current.value, this.replaceWithRef.current.value);
   }
 
