@@ -29,7 +29,8 @@ export default class TermReplacementRow extends Component {
     return (
       <tr className={'schema-row'}>
         <td>
-          <button type={'button'} onClick={this.handleRunClick}>Run Replacement</button>
+        {/* TODO: Create proper method
+        <button type={'button'} onClick={this.handleRunClick}>Run Replacement</button>*/}
           <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete</button>
         </td>
         <td>{termToReplace}</td>

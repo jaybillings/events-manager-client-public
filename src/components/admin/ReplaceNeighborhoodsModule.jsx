@@ -163,7 +163,7 @@ export default class ReplaceNeighborhoodsModule extends Component {
   }
 
   fetchPendingAndUpdateUnique() {
-    this.fetchPendingTags()
+    this.fetchPendingHoods()
       .then(result => {
         const uniqueHoods = uniqueListingsOnly(this.state.liveHoods, result.data);
         this.setState({pendingHoods: result.data, uniqueHoods});
