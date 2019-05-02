@@ -191,6 +191,7 @@ export default class PendingEventsModule extends PendingListingsModule {
   removeListing(listing) {
     return this.pendingListingsService.remove(listing.id)
       .then((result) => {
+        this.handleListingSelect(result.id, false);
         return this.removeTagAssociations(listing.uuid).then(() => {
           return result;
         });
@@ -234,15 +235,28 @@ export default class PendingEventsModule extends PendingListingsModule {
 
     const searchOptions = {paginate: false, query: {id: {$in: this.state.selectedListings}, $limit: selectedCount}};
 
+    this.stopListening();
+
     return this.pendingListingsService.remove(null, searchOptions)
       .then(resultSet => {
-        return Promise.all(resultSet.data.map(listing => {
-          return this.removeTagAssociations(listing.uuid);
-        }));
+        this.props.updateMessagePanel({status: 'success', details: `Deleted ${resultSet.length} events.`});
+        this.fetchListings();
+        return Promise
+          .all(resultSet.map(listing => {
+            return this.removeTagAssociations(listing.uuid);
+          }))
+          .then(results => {
+            this.props.updateMessagePanel({status: 'info', details: 'Unlinked tags from deleted events.'});
+            return results;
+          });
       })
       .catch(err => {
         displayErrorMessages('delete', `pending ${this.schema}`, err, this.props.updateMessagePanel);
-        console.log(`~ error in discardListings`, err);
+        console.error(err);
+      })
+      .finally(() => {
+        this.setState({selectedListings: []});
+        this.startListening();
       });
   }
 

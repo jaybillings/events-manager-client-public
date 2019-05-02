@@ -267,7 +267,11 @@ export default class PendingListingsModule extends Component {
     // TODO: Update message panel with success
     const schemaSingular = makeSingular(this.schema);
 
-    return this.pendingListingsService.remove(listing.id)
+    return this.pendingListingsService
+      .remove(listing.id)
+      .then(results => {
+        this.handleListingSelect(results.id, false);
+      })
       .catch(err => {
         displayErrorMessages('remove', `pending ${schemaSingular} "${listing.name}"`, err, this.props.updateMessagePanel);
       });
@@ -311,12 +315,8 @@ export default class PendingListingsModule extends Component {
     const liveIDs = await this.queryForLiveUUIDs();
     const allResults = await this.publishListingsRecursive(idsToPublish, liveIDs);
 
-    /*while (this.state.selectedListings.length > 0) {
-      const result = await this.publishPageOfListings(liveIDs);
-      allResults.push(result);
-    }*/
-
     this.props.updateMessagePanel({status: 'success', details: `Finished publishing ${this.schema}`});
+    this.setState({selectedListings: []});
 
     return allResults;
   }
@@ -363,17 +363,11 @@ export default class PendingListingsModule extends Component {
             return this.replaceLiveListing(listing, liveMatch)
               .then(() => {
                 return this.removeListing(listing);
-              })
-              .finally(() => {
-                this.handleListingSelect(listing.id, false);
               });
           } else {
             return this.createLiveListing(listing)
               .then(() => {
                 return this.removeListing(listing);
-              })
-              .finally(() => {
-                this.handleListingSelect(listing.id, false);
               });
           }
         }));
@@ -394,9 +388,21 @@ export default class PendingListingsModule extends Component {
 
     const searchOptions = {paginate: false, query: {id: {$in: this.state.selectedListings}, $limit: selectedCount}};
 
-    return this.pendingListingsService.remove(null, searchOptions)
+    this.stopListening();
+
+    return this.pendingListingsService
+      .remove(null, searchOptions)
+      .then(resultSet => {
+        console.debug(resultSet);
+        this.props.updateMessagePanel({status: 'success', details: `Deleted ${resultSet.length} ${this.schema}.`});
+      })
       .catch(err => {
         displayErrorMessages('delete', `pending ${this.schema}`, err, this.props.updateMessagePanel);
+        console.error(err);
+      })
+      .finally(() => {
+        this.setState({selectedListings: []});
+        this.startListening();
       });
   }
 
