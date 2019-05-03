@@ -163,6 +163,7 @@ export default class ManageUsersModule extends Component {
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
       ['email', 'Email Address'],
+      ['api_key_NOSORT', 'API Key'],
       ['permissions', 'Permissions']
     ]);
 
@@ -177,7 +178,9 @@ export default class ManageUsersModule extends Component {
         <tbody>
         {
           this.state.users.map(user => {
-            return <UserRow key={user.id} user={user} saveUser={this.saveUser} deleteUser={this.deleteUser} />;
+            return <UserRow
+              key={user.id} user={user} saveUser={this.saveUser} deleteUser={this.deleteUser}
+            />;
           })
         }
         </tbody>

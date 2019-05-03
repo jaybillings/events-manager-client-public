@@ -15,3 +15,7 @@
 .admin-module .schema-table {
   margin-bottom: 2.5rem;
 }
+
+.admin-module .schema-row td:first-child {
+  width: min-content;
+}
