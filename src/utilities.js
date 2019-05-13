@@ -224,7 +224,7 @@ const displayErrorMessages = function (action, target, errors, displayFunc, user
     const subject = errors[i].dataPath ? errors[i].dataPath.substring(1) : '';
     displayFunc({
       status: 'error',
-      details: `Could not ${action} ${target} -- ${subject} ${errors[i].message} ${subscript}`
+      details: `Could not ${action} ${target} -- ${subject} ${errors[i].message}. ${subscript}`
     });
   }
 };

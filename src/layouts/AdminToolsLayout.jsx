@@ -6,9 +6,15 @@ import ManageUsersModule from "../components/admin/ManageUsersModule";
 import ReplaceNeighborhoodsModule from "../components/admin/ReplaceNeighborhoodsModule";
 import ReplaceTagsModule from "../components/admin/ReplaceTagsModule";
 
+import '../styles/admin-tools.css';
+import '../styles/schema-module.css';
+import '../styles/schema-table.css';
+
 export default class AdminToolsLayout extends Component {
   constructor(props) {
     super(props);
+
+    this.defaultPageSize = 5;
 
     this.state = {messages: [], messagePanelVisible: false};
 
@@ -40,8 +46,8 @@ export default class AdminToolsLayout extends Component {
                       dismissPanel={this.dismissMessagePanel} />
         <h2>Admin Tools</h2>
         <ManageUsersModule updateMessagePanel={this.updateMessagePanel} />
-        <ReplaceNeighborhoodsModule updateMessagePanel={this.updateMessagePanel} />
-        <ReplaceTagsModule updateMessagePanel={this.updateMessagePanel} />
+        <ReplaceNeighborhoodsModule updateMessagePanel={this.updateMessagePanel} defaultPageSize={this.defaultPageSize} />
+        <ReplaceTagsModule updateMessagePanel={this.updateMessagePanel} defaultPageSize={this.defaultPageSize} />
         <div className={'schema-module'}>
           <h3>Import/Export</h3>
           <a className={'button emphasize'} href={'http://localhost:3030/exporter/json'} target={'_blank'}>Export All Data</a>

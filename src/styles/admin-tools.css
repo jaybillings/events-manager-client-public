@@ -1,0 +1,21 @@
+.admin-module {
+  margin: 3rem 0 5rem;
+}
+
+.admin-module h3 {
+  width: fit-content;
+}
+
+.admin-module h4 {
+  font-weight: 900;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--light-gray);
+}
+
+.admin-module .schema-table {
+  margin-bottom: 2.5rem;
+}
+
+.admin-module .schema-row td:first-child {
+  width: min-content;
+}

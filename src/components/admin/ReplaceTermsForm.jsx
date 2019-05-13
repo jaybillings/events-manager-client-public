@@ -5,20 +5,17 @@ export default class ReplaceTermsForm extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {nameToReplace: '', uuidOfReplacement: ''};
+    this.toReplaceRef = React.createRef();
+    this.replaceWithRef = React.createRef();
 
-    this.handleListSelect = this.handleListSelect.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-  }
-
-  handleListSelect(e) {
-    if (!e.target.name) return;
-    this.setState({[e.target.name]: e.target.value.trim()});
   }
 
   handleSubmit(e) {
     e.preventDefault();
-    this.props.doReplacement(this.state.nameToReplace, this.state.uuidOfReplacement);
+
+    //TODO: DO everything except making the new lookup row?
+    this.props.runTagReplacement(this.toReplaceRef.current.value, this.replaceWithRef.current.value);
   }
 
   render() {
@@ -26,21 +23,18 @@ export default class ReplaceTermsForm extends Component {
     const schemaSingular = makeSingular(schema);
     const uniqueListings = this.props.uniqueListings;
     const liveListings = this.props.liveListings;
-    const nameToReplace = this.state.nameToReplace;
-    const uuidOfReplacement = this.state.uuidOfReplacement;
 
     return (
       <form id={`${schema}-replace-form`} className={'add-form'} onSubmit={this.handleSubmit}>
-        <h3>Replace {schema}</h3>
         <label>
           <span>Replace all {schema} (pending and live) named this:</span>
-          <select name={'nameToReplace'} value={nameToReplace} onChange={this.handleListSelect}>
+          <select ref={this.toReplaceRef} name={'nameToReplace'} defaultValue={''}>
             {renderOptionList(uniqueListings, schema, 'name')}
           </select>
         </label>
         <label>
           <span>With this {schemaSingular} listing:</span>
-          <select name={'uuidOfReplacement'} value={uuidOfReplacement} onChange={this.handleListSelect}>
+          <select ref={this.replaceWithRef} name={'uuidOfReplacement'} defaultValue={''}>
             {renderOptionList(liveListings, schema)}
           </select>
         </label>

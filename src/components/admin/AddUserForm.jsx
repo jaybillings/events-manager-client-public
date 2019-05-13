@@ -33,7 +33,11 @@ export default class AddUserForm extends Component {
     if (!e.target.name) return;
     this.setState({[e.target.name]: e.target.value.trim()}, () => {
       // API Only users don't have passwords so they can't log in
-      if (this.state.permissions.indexOf('api') !== -1) this.setState({password: '', showPWField: false});
+      if (this.state.permissions.indexOf('api') !== -1) {
+        this.setState({password: '', showPWField: false});
+      } else {
+        this.setState({showPWField: true});
+      }
     });
   }
 
@@ -50,7 +54,7 @@ export default class AddUserForm extends Component {
   }
 
   clearForm() {
-    this.setState({email: '', permissions: 'user:*', password: ''});
+    this.setState({email: '', permissions: 'user:*', password: '', showPWField: true});
   }
 
   render() {
@@ -74,7 +78,7 @@ export default class AddUserForm extends Component {
         </label>
         <label className={`pwInput${pwHiddenClass}`}>
           <span>Password</span>
-          <input type={'text'} name={'password'} value={this.state.password} required
+          <input type={'password'} name={'password'} value={this.state.password} required={this.state.showPWField}
                  onChange={this.handleInputChange} />
           <button type={'button'} onClick={this.generatePassword}>Generate Password</button>
         </label>

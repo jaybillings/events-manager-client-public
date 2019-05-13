@@ -6,10 +6,6 @@ import PaginationLayout from "../common/PaginationLayout";
 import UserRow from "./UserRow";
 import AddUserForm from "./AddUserForm";
 
-import '../../styles/schema-module.css';
-import '../../styles/schema-table.css';
-import '../../styles/manage-users-module.css';
-
 /**
  * ManageUsersModule is a component that displays and allows the admin to manage the console's users.
  * @class
@@ -48,33 +44,62 @@ export default class ManageUsersModule extends Component {
    */
   componentDidMount() {
     this.fetchAllData();
+
+    this.usersService
+      .on('created', message => {
+        this.props.updateMessagePanel({status: 'success', details: `Added user with email address "${message.email}"`});
+        this.fetchAllData();
+      })
+      .on('updated', message => {
+        this.props.updateMessagePanel({status: 'success', details: `Saved changes to "${message.email}"`});
+        this.fetchAllData();
+      })
+      .on('patched', message => {
+        this.props.updateMessagePanel({status: 'success', details: `Saved changes to "${message.email}"`});
+        this.fetchAllData();
+      })
+      .on('removed', message => {
+        this.props.updateMessagePanel({status: 'info', details: `"${message.email}" has been permanently removed.`});
+        this.fetchAllData();
+      })
+  }
+
+  componentWillUnmount() {
+    this.usersService
+      .removeAllListeners('created')
+      .removeAllListeners('updated')
+      .removeAllListeners('patched')
+      .removeAllListeners('removed');
   }
 
   /**
    * Fetches all data required for the module.
    */
   fetchAllData() {
-    this.usersService.find({
-      query: {
-        $sort: buildSortQuery(this.state.sort, false),
-        $limit: this.state.pageSize,
-        $skip: this.state.pageSize * (this.state.currentPage - 1)
-      }
-    }).then(message => {
-      this.setState({users: message.data, usersTotal: message.total, usersLoaded: true});
-    }, err => {
-      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-      this.setState({usersLoaded: false});
-    });
+    const query = {
+      $sort: buildSortQuery(this.state.sort, false),
+      $limit: this.state.pageSize,
+      $skip: this.state.pageSize * (this.state.currentPage - 1)
+    };
+
+    this.usersService
+      .find({query})
+      .then(message => {
+        this.setState({users: message.data, usersTotal: message.total, usersLoaded: true});
+      })
+      .catch(err => {
+        this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+        this.setState({usersLoaded: false});
+        console.error(err);
+      });
   }
 
   createUser(userData) {
-    return this.usersService.create(userData).then(message => {
-      this.props.updateMessagePanel({status: 'success', details: `Added user with email address ${message.email}`});
-      this.fetchAllData();
-    }, err => {
-      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-    });
+    return this.usersService
+      .create(userData)
+      .catch(err => {
+        this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      });
   }
 
   /**
@@ -83,13 +108,11 @@ export default class ManageUsersModule extends Component {
    * @param {object} newData
    */
   saveUser(id, newData) {
-    this.usersService.patch(id, newData).then(message => {
-      console.log('saveUser', message);
-      this.props.updateMessagePanel({status: 'success', details: `Saved changes to ${message.email}`});
-      this.fetchAllData();
-    }, err => {
-      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-    });
+    this.usersService
+      .patch(id, newData)
+      .catch(err => {
+        this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      });
   }
 
   /**
@@ -97,12 +120,11 @@ export default class ManageUsersModule extends Component {
    * @param {int} userId
    */
   deleteUser(userId) {
-    this.usersService.remove(userId.id).then(() => {
-      this.props.updateMessagePanel({status: 'success', details: `${userId.email} has been permanently removed.`});
-      this.fetchAllData();
-    }, err => {
-      this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-    });
+    this.usersService
+      .remove(userId)
+      .catch(err => {
+        this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+      });
   }
 
   /**
@@ -110,6 +132,7 @@ export default class ManageUsersModule extends Component {
    * @param {Event} e
    */
   updatePageSize(e) {
+    if (!e.target.value) return;
     this.setState({pageSize: parseInt(e.target.value, 10), currentPage: 1}, () => this.fetchAllData());
   }
 
@@ -140,6 +163,7 @@ export default class ManageUsersModule extends Component {
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
       ['email', 'Email Address'],
+      ['api_key_NOSORT', 'API Key'],
       ['permissions', 'Permissions']
     ]);
 
@@ -154,9 +178,9 @@ export default class ManageUsersModule extends Component {
         <tbody>
         {
           this.state.users.map(user => {
-            return (
-              <UserRow key={user.id} user={user} saveUser={this.saveUser} deleteUser={this.deleteUser} />
-            );
+            return <UserRow
+              key={user.id} user={user} saveUser={this.saveUser} deleteUser={this.deleteUser}
+            />;
           })
         }
         </tbody>
@@ -179,7 +203,7 @@ export default class ManageUsersModule extends Component {
    */
   render() {
     return (
-      <div className={'schema-module manage-users'}>
+      <div className={'schema-module admin-module'}>
         <h3>Manage Users</h3>
         {this.renderTable()}
         {this.renderAddForm()}

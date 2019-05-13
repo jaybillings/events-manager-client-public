@@ -64,6 +64,7 @@ export default class UserRow extends Component {
           <button type={'button'} className={'emphasize'} onClick={this.handleSaveClick}>Save Changes</button>
         </td>
         <td>{this.props.user.email}</td>
+        <td>{this.props.user.api_key}</td>
         <td>
           <select name={'permissions'} value={this.state.permissions || "user"} onChange={this.handleInputChange}>
             <option value={"user:*"}>User</option>
