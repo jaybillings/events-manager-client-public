@@ -34,8 +34,8 @@ export default class EventsLayout extends ListingsLayout {
     this.orgsSerivce = app.service('organizers');
     this.tagsService = app.service('tags');
     this.eventsTagsLookupService = app.service('events-tags-lookup');
-    this.liveEventService = app.service('events-live');
-    this.droppedEventService = app.service('events-dropped');
+    this.liveEventsService = app.service('events-live');
+    this.deletedEventsService = app.service('events-deleted');
 
     this.fetchVenues = this.fetchVenues.bind(this);
     this.fetchOrgs = this.fetchOrgs.bind(this);
@@ -45,7 +45,7 @@ export default class EventsLayout extends ListingsLayout {
     this.createTagAssociations = this.createTagAssociations.bind(this);
     this.removeTagAssociations = this.removeTagAssociations.bind(this);
     this.registerEventLive = this.registerEventLive.bind(this);
-    this.registerEventDropped = this.registerEventDropped.bind(this);
+    this.registerEventDeleted = this.registerEventDeleted.bind(this);
 
     this.updateFilters = this.updateFilters.bind(this);
   }
@@ -71,7 +71,7 @@ export default class EventsLayout extends ListingsLayout {
         .on('removed', () => dataFetcher())
     }
 
-    this.liveEventService
+    this.liveEventsService
       .on('created', message => {
         console.log('~ event added to live list', message);
         this.updateMessagePanel({status: 'info', details: `Event added to live list.`});
@@ -82,7 +82,7 @@ export default class EventsLayout extends ListingsLayout {
         this.fetchLiveListings();
       });
 
-    this.droppedEventService
+    this.deletedEventsService
       .on('created', () => {
         this.updateMessagePanel({status: 'info', details: `Event added to dropped list.`});
       })
@@ -121,8 +121,8 @@ export default class EventsLayout extends ListingsLayout {
     });
 
     const secondaryServices = [
-      this.liveEventService,
-      this.droppedEventService,
+      this.liveEventsService,
+      this.deletedEventsService,
       this.eventsTagsLookupService
     ];
 
@@ -215,7 +215,7 @@ export default class EventsLayout extends ListingsLayout {
    * Fetches a list of all live events.
    */
   fetchLiveListings() {
-    this.liveEventService.find({query: {$limit: this.defaultLimit}})
+    this.liveEventsService.find({query: {$limit: this.defaultLimit}})
       .then(result => {
         const liveIDList = result.data.map(row => row.event_id) || [];
         const uniqueIDs = arrayUnique(liveIDList);
@@ -260,7 +260,7 @@ export default class EventsLayout extends ListingsLayout {
     return this.listingsService.patch(id, newData.newData)
       .then(() => {
         if (newData.doPublish) return this.registerEventLive(id);
-        else return this.registerEventDropped(id);
+        else return this.registerEventDeleted(id);
       })
       .catch(err => {
         displayErrorMessages('update', `"${newData.newData.name}"`, err, this.updateMessagePanel, 'retry');
@@ -278,7 +278,7 @@ export default class EventsLayout extends ListingsLayout {
     this.listingsService.remove(listing.id)
       .then(() => {
         this.removeTagAssociations(listing.uuid);
-        this.registerEventDropped(listing.id);
+        this.registerEventDeleted(listing.id);
       })
       .catch(err => {
         displayErrorMessages('delete', `"${listing.name}"`, err,
@@ -326,8 +326,8 @@ export default class EventsLayout extends ListingsLayout {
    */
   registerEventLive(id) {
     Promise.all([
-      this.liveEventService.create({event_id: id}),
-      this.droppedEventService.remove(null, {query: {event_id: id}})
+      this.liveEventsService.create({event_id: id}),
+      this.deletedEventsService.remove(null, {query: {event_id: id}})
     ]).catch(err => {
       this.updateMessagePanel({
         status: 'error',
@@ -341,14 +341,14 @@ export default class EventsLayout extends ListingsLayout {
    *
    * @param {int} id
    */
-  registerEventDropped(id) {
+  registerEventDeleted(id) {
     Promise.all([
-      this.droppedEventService.create({event_id: id}),
-      this.liveEventService.remove(null, {query: {event_id: id}})
+      this.deletedEventsService.create({event_id: id}),
+      this.liveEventsService.remove(null, {query: {event_id: id}})
     ]).catch(err => {
       this.updateMessagePanel({
         status: 'error',
-        details: `Failed to register event #${id} as dropped. ${JSON.stringify(err)}`
+        details: `Failed to register event #${id} as deleted. ${JSON.stringify(err)}`
       });
     });
   }
