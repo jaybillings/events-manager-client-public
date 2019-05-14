@@ -235,6 +235,8 @@ const diffListings = function(listingA, listingB, parameters) {
   const defaultClassName = ' highlight-diff';
   const classNameMap = {};
 
+  if (!listingA || !listingB) return {};
+
   for (let param of parameters) {
     const valueA = listingA[param];
     const valueB = listingB[param];
@@ -242,7 +244,7 @@ const diffListings = function(listingA, listingB, parameters) {
     if (!valueA && !valueB) classNameMap[param] = '';
     else if (!valueA || !valueB) classNameMap[param] = defaultClassName;
     else {
-      const diff = jsdiff.diffWordsWithSpace(valueA, valueB);
+      const diff = jsdiff.diffWordsWithSpace(valueA.toString(), valueB.toString());
       classNameMap[param] = diff.length > 1 ? ' highlight-diff' : '';
     }
   }

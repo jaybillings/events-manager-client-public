@@ -12,7 +12,7 @@ export default class SinglePendingListingLayout extends SingleListingLayout {
   constructor(props, schema) {
     super(props, schema);
 
-    this.state = {...this.state, matchingLiveListing: {}};
+    this.state = {...this.state, matchingLiveListing: null};
 
     this.fetchMatchingLiveListing = this.fetchMatchingLiveListing.bind(this);
   }
