@@ -61,6 +61,8 @@ export default class SinglePendingListingLayout extends SingleListingLayout {
   }
 
   render() {
+    if (this.state.notFound) return <Redirect to={'/404'} />;
+
     const returnTarget = 'import';
     const headerTitle = 'Caution: This event is pending. It must be pushed live before it is visible on the site.';
 
