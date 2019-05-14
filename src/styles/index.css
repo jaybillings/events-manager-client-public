@@ -6,9 +6,9 @@
   --medium-dark-gray: #555;
   --medium-gray: #777;
   --light-gray: #bbb;
-  --warm-gray: #E1E1E1;
+  --warm-gray: #e1e1e1;
   --white: #efefef;
-  --true-white: #fff;
+  --true-white: #ffffff;
   --pale-cream: #fefefd;
 
   --dark-blue: #2c83ab;
@@ -21,21 +21,21 @@
   --bright-yellow: #ffc22e;
   --true-green: #00cf46;
 
-  --disabled-color: var(--medium-gray);
-  --notice-color: var(--true-blue);
-  --success-color: var(--true-blue);
-  --warning-color: var(--bright-yellow);
-  --alert-color: var(--dull-orange);
-  --error-color: var(--bright-pink);
+  --background-color: var(--background-color);
 
   --text-color: var(--black);
-  --dark-bg-text-color: var(--true-white);
-  --light-bg-text-color: var(--dark-gray);
-  --muted-bg-color: var(--medium-gray);
-  --bolded-bg-color: var(--true-blue);
-  --border-color: var(--dark-gray);
+  --disabled-text-color: var(--medium-gray);
 
+  --link-color: var(--true-blue);
   --current-link-color: var(--dull-orange);
+
+  --neutral-accent-color: var(--light-gray);
+  --strong-emphasis-color: var(--true-green);
+  --emphasis-color: var(--true-blue);
+  --alert-color: var(--bright-yellow);
+  --warning-color: var(--dull-orange);
+  --error-color: var(--bright-pink);
+
   --pagination-default-color: var(--light-gray);
   --pagination-disabled-color: var(--white);
   --pagination-active-color: var(--true-blue);
@@ -45,8 +45,9 @@
 /* Theme customization styles */
 
 body {
-  background: var(--pale-cream);
+  background: var(--background-color);
 }
+
 h1 {
   margin: 2rem 0 1rem;
   color: var(--dark-gray);
@@ -88,7 +89,7 @@ a.current {
 }
 
 [disabled], [readonly] {
-  color: var(--disabled-color);
+  color: var(--disabled-text-color);
 }
 
 button {
@@ -97,67 +98,67 @@ button {
 }
 
 button.default:hover {
-  background: linear-gradient(170deg, rgba(0,0,0,0), rgba(0,0,0,.05));
+  background: linear-gradient(170deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, .05));
 }
 
 button[disabled] {
-  background: var(--light-gray);
-  border-color: var(--light-gray);
-  color: var(--medium-gray);
+  background: var(--neutral-accent-color);
+  border-color: var(--neutral-accent-color);
+  color: var(--disabled-text-color);
   cursor: not-allowed;
 }
 
 button[disabled]:hover {
-  border-color: var(--light-gray);
-  background: var(--light-gray);
-  color: var(--medium-gray);
+  border-color: var(--neutral-accent-color);
+  background: var(--neutral-accent-color);
+  color: var(--disabled-text-color);
 }
 
 .emphasize {
   padding: 0 2rem;
-  color: var(--true-blue);
-  border-color: var(--true-blue);
+  color: var(--emphasis-color);
   background: var(--true-white);
+  border-color: var(--emphasis-color);
 }
 
 .emphasize:hover, .emphasize:focus, .emphasize:active {
-  background: var(--true-blue);
   color: var(--true-white);
-  border-color: var(--true-blue);
+  background: var(--emphasis-color);
+  border-color: var(--emphasis-color);
 }
 
 .emphasize.more {
   color: var(--true-white);
-  background: var(--true-blue);
+  background: var(--emphasis-color);
 }
 
 .emphasize.more:hover, button.button-primary:not([disabled]):hover {
-  background: var(--true-blue);
-  box-shadow: 0 0 5px 0 var(--true-blue);
+  background: var(--emphasis-color);
+  box-shadow: 0 0 5px 0 var(--emphasis-color);
   border: 1px solid var(--true-white);
 }
 
 .warn {
   padding: 0 2rem;
-  color: var(--bright-pink);
-  border-color: var(--bright-pink);
+  color: var(--error-color);
   background: var(--true-white);
+  border-color: var(--error-color);
 }
 
 .warn:hover, .warn:active, .warn:focus {
-  background: var(--bright-pink);
   color: var(--true-white);
-  border-color: var(--bright-pink);
+  background: var(--error-color);
+  border-color: var(--error-color);
 }
 
 .warn.more {
   color: var(--true-white);
-  background: var(--bright-pink);
+  background: var(--error-color);
 }
 
 .warn.more:hover {
-  background: var(--bright-pink);
-  box-shadow: 0 0 5px 0 var(--bright-pink);
+  background: var(--error-color);
+  box-shadow: 0 0 5px 0 var(--error-color);
   border: 1px solid var(--true-white);
 }
 
@@ -214,7 +215,7 @@ button[disabled]:hover {
 /* The following are container-specific styles that weren't worth putting in their own file */
 
 .block-warning {
-  color: white;
+  color: var(--true-white);
   width: fit-content;
   padding: 1em;
   margin-bottom: 2em;

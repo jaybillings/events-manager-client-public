@@ -2,7 +2,12 @@
   position: relative;
   margin: 2.5rem 0;
   padding: 1rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--dark-gray);
+}
+
+.messageContainer > div {
+  max-height: 500px;
+  overflow: auto;
 }
 
 .messageContainer header {
@@ -18,19 +23,6 @@
   line-height: normal;
   letter-spacing: normal;
   text-transform: uppercase;
-}
-
-.messageContainer button.dismiss {
-  position: absolute;
-  top: 0;
-  right: 0;
-  height: 2em;
-  margin: 0;
-  padding: 0 1rem;
-  font-size: 1em;
-  line-height: 1rem;
-  border: none;
-  cursor: pointer;
 }
 
 .messageContainer span {
@@ -53,49 +45,57 @@
 }
 
 .messageContainer li.success {
-  border: 3px solid var(--true-blue);
+  border: 3px solid var(--emphasis-color);
+}
+
+.messageContainer li.success strong {
+  color: var(--emphasis-color);
 }
 
 .messageContainer li.error {
   border: 3px solid var(--error-color);
 }
 
-.messageContainer li.warning {
-  border: 2px solid var(--warning-color);
-}
-
-.messageContainer li.notice {
-  border: 2px solid var(--true-green);
-}
-
-.messageContainer li.info {
-  border: 2px solid var(--light-gray);
-  color: var(--medium-gray);
-}
-
-.messageContainer li.success strong {
-  color: var(--true-blue);
-}
-
 .messageContainer li.error strong {
   color: var(--error-color);
+}
+
+.messageContainer li.warning {
+  border: 2px solid var(--warning-color);
 }
 
 .messageContainer li.warning strong {
   color: var(--warning-color);
 }
 
+.messageContainer li.notice {
+  border: 2px solid var(--strong-emphasis-color);
+}
+
 .messageContainer li.notice strong {
-  color: var(--true-green);
+  color: var(--strong-emphasis-color);
+}
+
+.messageContainer li.info {
+  border: 2px solid var(--neutral-accent-color);
+  color: var(--medium-gray);
 }
 
 .messageContainer li.info span {
-  color: var(--light-gray);
+  color: var(--neutral-accent-color);
 }
 
-.messageContainer > div {
-  max-height: 500px;
-  overflow: auto;
+.messageContainer button.dismiss {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 2em;
+  margin: 0;
+  padding: 0 1rem;
+  font-size: 1em;
+  line-height: 1rem;
+  border: none;
+  cursor: pointer;
 }
 
 .messageContainer .timestamp {

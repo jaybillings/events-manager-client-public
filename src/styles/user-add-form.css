@@ -32,11 +32,11 @@
 }
 
 .user-add-form .pwInput button {
-  color: var(--true-green);
-  border-color: var(--true-green);
+  color: var(--strong-emphasis-color);
+  border-color: var(--strong-emphasis-color);
 }
 
 .user-add-form .pwInput button:hover, .user-add-form .pwInput button:focus, .user-add-form .pwInput button:active {
   color: var(--true-white);
-  background: var(--true-green);
+  background: var(--strong-emphasis-color);
 }

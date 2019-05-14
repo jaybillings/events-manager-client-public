@@ -11,11 +11,11 @@
 }
 
 .login-page .success-message {
-  color: var(--true-blue);
-  border: 2px solid var(--true-blue);
+  color: var(--emphasis-color);
+  border: 2px solid var(--emphasis-color);
 }
 
 .login-page .warning-message {
-  color: var(--dull-orange);
-  border: 1px solid var(--dull-orange);
+  color: var(--warning-color);
+  border: 1px solid var(--warning-color);
 }

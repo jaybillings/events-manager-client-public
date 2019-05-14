@@ -2,21 +2,21 @@
   padding: 1rem 1.5rem;
   border-radius: 20px;
   display: inline-block;
-  color: var(--dark-bg-text-color);
+  color: var(--true-white);
   cursor: help;
 }
 
-.status-label.warning {
-  color: var(--light-bg-text-color);
-  background-color: var(--bright-yellow);
+.status-label.alert {
+  color: var(--dark-gray);
+  background-color: var(--alert-color);
 }
 
-.status-label.alert {
-  background-color: var(--dull-orange);
+.status-label.warning {
+  background-color: var(--warning-color);
 }
 
 .status-label.bolded {
-  background-color: var(--bolded-bg-color);
+  background-color: var(--emphasis-color);
 }
 
 .status-label.muted {

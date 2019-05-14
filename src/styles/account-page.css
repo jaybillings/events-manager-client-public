@@ -9,14 +9,14 @@
 .account-page .panel {
   position: relative;
   margin-top: 2.5rem;
-  border: 2px solid var(--light-gray);
+  border: 2px solid var(--neutral-accent-color);
   padding: 2rem;
   border-radius: 4px;
   background-color: var(--true-white);
 }
 
 .account-page .panel.danger {
-  border: 2px solid var(--bright-pink);
+  border: 2px solid var(--error-color);
   cursor: help;
 }
 
@@ -24,7 +24,7 @@
   position: absolute;
   width: max-content;
   font-size: 0.75em;
-  background: linear-gradient(180deg, var(--pale-cream) 50%, var(--true-white) 50%);
+  background: linear-gradient(180deg, var(--background-color) 50%, var(--true-white) 50%);
   margin: 0;
   margin-left: -1rem;
   padding: 0 1rem;
@@ -43,8 +43,8 @@
 }
 
 .account-page .danger button {
-  background: var(--bright-pink);
-  border-color: var(--bright-pink);
+  background: var(--error-color);
+  border-color: var(--error-color);
   color: var(--true-white);
 }
 
