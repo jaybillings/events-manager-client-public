@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import {MdClose} from "react-icons/md";
 
 import "../../styles/message-panel.css";
 
@@ -51,7 +52,7 @@ export default class MessagePanel extends Component {
       <div className={`messageContainer ${visibleClass}`}>
         <header>
           <h3>Messages</h3>
-          <button className={'dismiss'} onClick={this.props.dismissPanel}>X</button>
+          <button className={'dismiss'} onClick={this.props.dismissPanel}><MdClose /></button>
         </header>
         <div><ul>{this.renderMessages()}</ul></div>
       </div>

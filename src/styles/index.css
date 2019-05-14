@@ -1,13 +1,15 @@
 /* Declare CSS variables */
 
 :root {
+  --border-radius: 4px;
+
   --black: #222;
   --dark-gray: #3e3e3e;
   --medium-dark-gray: #555;
   --medium-gray: #777;
   --light-gray: #bbb;
   --warm-gray: #e1e1e1;
-  --white: #efefef;
+  --dull-white: #efefef;
   --true-white: #ffffff;
   --pale-cream: #fefefd;
 
@@ -21,7 +23,7 @@
   --bright-yellow: #ffc22e;
   --true-green: #00cf46;
 
-  --background-color: var(--background-color);
+  --background-color: var(--pale-cream);
 
   --text-color: var(--black);
   --disabled-text-color: var(--medium-gray);
@@ -37,7 +39,7 @@
   --error-color: var(--bright-pink);
 
   --pagination-default-color: var(--light-gray);
-  --pagination-disabled-color: var(--white);
+  --pagination-disabled-color: var(--dull-white);
   --pagination-active-color: var(--true-blue);
   --pagination-active-link-color: var(--true-white);
 }

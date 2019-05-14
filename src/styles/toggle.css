@@ -20,7 +20,7 @@ input[type=checkbox].toggle {
   width: 7rem;
   height: 3.5rem;
   position: relative;
-  background: var(--white); /* Used to be #f0f0f0 */
+  background: var(--dull-white); /* Used to be #f0f0f0 */
   border-radius: 2rem;
   padding: 2px;
   cursor: pointer;
