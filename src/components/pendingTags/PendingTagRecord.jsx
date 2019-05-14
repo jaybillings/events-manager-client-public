@@ -3,6 +3,7 @@ import Moment from 'moment';
 
 import ListingRecordUniversal from "../ListingRecordUniversal";
 import StatusLabel from "../common/StatusLabel";
+import {diffListings} from "../../utilities";
 
 /**
  * PendingTagRecord is a component which displays a single pending tag's record.
@@ -27,9 +28,13 @@ export default class PendingTagRecord extends ListingRecordUniversal {
    */
   render() {
     const tag = this.props.listing;
+    const liveTag = this.props.matchingLiveListing;
     const writeStatus = this.state.writeStatus;
     const createdAt = Moment(tag.created_at).calendar();
     const updatedAt = Moment(tag.updated_at).calendar();
+
+    const tagParams = ['name'];
+    const classNameMap = diffListings(liveTag, tag, tagParams);
 
     return (
       <form id={'pending-tag-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
@@ -51,7 +56,7 @@ export default class PendingTagRecord extends ListingRecordUniversal {
           Last Updated
           <input type={'text'} value={updatedAt} disabled />
         </label>
-        <label className={'required'}>
+        <label className={'required' + classNameMap['name']}>
           Name
           <input type={'text'} ref={this.nameInput} defaultValue={tag.name} required maxLength={100} />
         </label>

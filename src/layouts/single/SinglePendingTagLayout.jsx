@@ -1,12 +1,12 @@
 import React from 'react';
 
-import SingleListingLayoutUniversal from "../../components/SingleListingLayoutUniversal";
 import PendingTagRecord from "../../components/pendingTags/PendingTagRecord";
+import SinglePendingListingLayout from "../../components/SinglePendingListingLayout";
 
 /**
  * SinglePendingTagLayout is a component which lays out a single pending tag page.
  */
-export default class SinglePendingTagLayout extends SingleListingLayoutUniversal {
+export default class SinglePendingTagLayout extends SinglePendingListingLayout {
   /**
    * The component's constructor.
    * @constructor
@@ -27,8 +27,8 @@ export default class SinglePendingTagLayout extends SingleListingLayoutUniversal
     if (!this.state.listingLoaded) return <p>Data is loading... Please be patient...</p>;
 
     return <PendingTagRecord
-      listing={this.state.listing} schema={this.schema} updateListing={this.updateListing}
-      deleteListing={this.deleteListing} queryForExisting={this.queryForExisting}
+      schema={this.schema} listing={this.state.listing} matchingLiveListing={this.state.matchingLiveListing}
+      updateListing={this.updateListing} deleteListing={this.deleteListing} queryForExisting={this.queryForExisting}
     />
   }
 }

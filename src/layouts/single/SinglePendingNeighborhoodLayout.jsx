@@ -1,14 +1,14 @@
 import React from 'react';
 
-import SingleListingLayoutUniversal from "../../components/SingleListingLayoutUniversal";
 import PendingNeighborhoodRecord from "../../components/pendingNeighborhoods/PendingNeighborhoodRecord";
+import SinglePendingListingLayout from "../../components/SinglePendingListingLayout";
 
 /**
  * SinglePendingNeighborhoodLayout is a component which lays out a single pending neighborhood page.
  * @class
  * @child
  */
-export default class SinglePendingNeighborhoodLayout extends SingleListingLayoutUniversal {
+export default class SinglePendingNeighborhoodLayout extends SinglePendingListingLayout {
   /**
    * The class's constructor.
    * @constructor
@@ -29,8 +29,8 @@ export default class SinglePendingNeighborhoodLayout extends SingleListingLayout
     if (!this.state.listingLoaded) return <p>Data is loading... Please be patient...</p>;
 
     return <PendingNeighborhoodRecord
-      listing={this.state.listing} schema={this.schema} updateListing={this.updateListing}
-      deleteListing={this.deleteListing} queryForExisting={this.queryForExisting}
+      schema={this.schema} listing={this.state.listing} matchingLiveListing={this.state.matchingLiveListing}
+      updateListing={this.updateListing} deleteListing={this.deleteListing} queryForExisting={this.queryForExisting}
     />
   }
 }

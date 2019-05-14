@@ -13,6 +13,7 @@
 
   --dark-blue: #2c83ab;
   --true-blue: #33c3f0;
+  --true-blue-transparent: rgba(51, 195, 240, 0.5);
   --pale-blue: #c2edfa;
   --dull-orange: #dd6e42;
   --bright-pink: #fc2e53;
@@ -173,6 +174,10 @@ button[disabled]:hover {
 
 .visible {
   display: block;
+}
+
+.highlight-diff :first-child {
+  box-shadow: 0 0 4px 4px var(--true-blue-transparent);
 }
 
 .container {

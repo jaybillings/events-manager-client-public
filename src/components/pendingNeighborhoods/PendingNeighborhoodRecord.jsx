@@ -3,6 +3,7 @@ import Moment from 'moment';
 
 import ListingRecordUniversal from "../ListingRecordUniversal";
 import StatusLabel from "../common/StatusLabel";
+import {diffListings} from "../../utilities";
 
 /**
  * PendingNeighborhoodRecord is a component which displays a single pending neighborhood's record.
@@ -27,9 +28,13 @@ export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
    */
   render() {
     const hood = this.props.listing;
+    const liveHood = this.props.matchingLiveListing;
     const writeStatus = this.state.writeStatus;
     const createdAt = Moment(hood.created_at).calendar();
     const updatedAt = Moment(hood.updated_at).calendar();
+
+    const hoodParams = ['name'];
+    const classNameMap = diffListings(liveHood, hood, hoodParams);
 
     return (
       <form id={'pending-hood-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
@@ -51,7 +56,7 @@ export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
           Last Updated
           <input type={'text'} value={updatedAt} disabled />
         </label>
-        <label className={'required'}>
+        <label className={'required' + classNameMap['name']}>
           Name
           <input type={'text'} ref={this.nameInput} defaultValue={hood.name} required maxLength={100} />
         </label>

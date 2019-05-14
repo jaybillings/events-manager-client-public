@@ -3,14 +3,14 @@ import app from "../../services/socketio";
 import {displayErrorMessages, uniqueListingsOnly} from "../../utilities";
 
 import PendingEventRecord from "../../components/pendingEvents/PendingEventRecord";
-import SingleListingLayoutUniversal from "../../components/SingleListingLayoutUniversal";
+import SinglePendingListingLayout from "../../components/SinglePendingListingLayout";
 
 /**
  * SinglePendingEventLayout is a component which lays out a single pending event page.
  * @class
  * @child
  */
-export default class SinglePendingEventLayout extends SingleListingLayoutUniversal {
+export default class SinglePendingEventLayout extends SinglePendingListingLayout {
   /**
    * The component's constructor.
    * @constructor
@@ -115,11 +115,7 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
    * @override
    */
   fetchAllData() {
-    this.fetchListing().then(result => {
-      this.setState({listing: result, listingLoaded: true});
-      this.fetchTagAssociations(result.uuid);
-    });
-
+    this.fetchListing();
     this.fetchVenues();
     this.fetchPendingVenues();
     this.fetchOrgs();
@@ -133,11 +129,16 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
    * @note Unlike default, this returns a promise.
    * @async
    * @override
-   *
-   * @returns {Promise<*>}
    */
   fetchListing() {
-    return app.service(this.schema).get(this.listingID).catch(errors => {
+    this.pendingListingsService
+      .get(this.listingID)
+      .then(result => {
+        this.setState({listing: result, listingLoaded: true});
+        this.fetchTagAssociations(result.uuid);
+        this.fetchMatchingLiveListing(result.uuid);
+      })
+      .catch(errors => {
       this.setState({notFound: true});
       displayErrorMessages('fetch', `${this.schema} #${this.listingID}`, errors, this.updateMessagePanel);
     });
@@ -327,8 +328,9 @@ export default class SinglePendingEventLayout extends SingleListingLayoutUnivers
     const uniqueTags = uniqueListingsOnly(this.state.tags, this.state.pendingTags);
 
     return <PendingEventRecord
-      listing={this.state.listing} schema={this.schema} venues={uniqueVenues} orgs={uniqueOrgs}
-      tags={uniqueTags} tagsForListing={this.state.tagsForListing.map(row => row.tag_uuid)}
+      schema={this.schema} listing={this.state.listing} matchingLiveListing={this.state.matchingLiveListing}
+      venues={uniqueVenues} orgs={uniqueOrgs} tags={uniqueTags}
+      tagsForListing={this.state.tagsForListing.map(row => row.tag_uuid)}
       updateListing={this.updateListing} deleteListing={this.deleteListing} queryForExisting={this.queryForExisting}
     />;
   }

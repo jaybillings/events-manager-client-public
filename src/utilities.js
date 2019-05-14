@@ -229,6 +229,27 @@ const displayErrorMessages = function (action, target, errors, displayFunc, user
   }
 };
 
+const diffListings = function(listingA, listingB, parameters) {
+  // noinspection JSUnresolvedFunction
+  const jsdiff = require('diff');
+  const defaultClassName = ' highlight-diff';
+  const classNameMap = {};
+
+  for (let param of parameters) {
+    const valueA = listingA[param];
+    const valueB = listingB[param];
+
+    if (!valueA && !valueB) classNameMap[param] = '';
+    else if (!valueA || !valueB) classNameMap[param] = defaultClassName;
+    else {
+      const diff = jsdiff.diffWordsWithSpace(valueA, valueB);
+      classNameMap[param] = diff.length > 1 ? ' highlight-diff' : '';
+    }
+  }
+
+  return classNameMap;
+};
+
 export {
   renderOptionList,
   renderCheckboxList,
@@ -239,5 +260,6 @@ export {
   buildColumnSort,
   makeSingular,
   arrayUnique,
-  displayErrorMessages
+  displayErrorMessages,
+  diffListings
 };

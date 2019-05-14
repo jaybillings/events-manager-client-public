@@ -3,14 +3,14 @@ import app from "../../services/socketio";
 import {displayErrorMessages, uniqueListingsOnly} from "../../utilities";
 
 import PendingVenueRecord from "../../components/pendingVenues/PendingVenueRecord";
-import SingleListingLayoutUniversal from "../../components/SingleListingLayoutUniversal";
+import SinglePendingListingLayout from "../../components/SinglePendingListingLayout";
 
 /**
  * SinglePendingVenueLayout is a component which lays out a single pending venue page.
  * @class
  * @child
  */
-export default class SinglePendingVenueLayout extends SingleListingLayoutUniversal {
+export default class SinglePendingVenueLayout extends SinglePendingListingLayout {
   /**
    * The class's constructor.
    * @constructor
@@ -114,8 +114,9 @@ export default class SinglePendingVenueLayout extends SingleListingLayoutUnivers
     const uniqueHoods = uniqueListingsOnly(this.state.hoods, this.state.pendingHoods);
 
     return <PendingVenueRecord
-      listing={this.state.listing} schema={this.schema} hoods={uniqueHoods}
-      updateListing={this.updateListing} deleteListing={this.deleteListing} queryForExisting={this.queryForExisting}
+      schema={this.schema} listing={this.state.listing} matchingLiveListing={this.state.matchingLiveListing}
+      hoods={uniqueHoods} updateListing={this.updateListing} deleteListing={this.deleteListing}
+      queryForExisting={this.queryForExisting}
     />;
   }
 }
