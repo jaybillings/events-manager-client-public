@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import {Redirect} from "react-router";
 import {Link} from "react-router-dom";
 import app from "../services/socketio";
+import {MdChevronLeft} from "react-icons/md";
 import {displayErrorMessages} from "../utilities";
 
 import ListingRecordUniversal from "./ListingRecordUniversal";
@@ -179,7 +180,7 @@ export default class SingleListingLayout extends Component {
     return (
       <div className={'container'}>
         <Header />
-        <p><Link to={`/${returnTarget}`}>&lt; Return to {returnTarget}</Link></p>
+        <p className={'message-atom'}><Link to={`/${returnTarget}`}><MdChevronLeft/>Return to {returnTarget}</Link></p>
         <MessagePanel ref={this.messagePanel} />
         <div><h2>{this.state.listing.name}</h2></div>
         {this.renderRecord()}

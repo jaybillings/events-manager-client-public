@@ -224,7 +224,8 @@ export default class ListingsLayout extends Component {
         return result;
       })
       .catch(errors => {
-        displayErrorMessages('copy', listingData.name || 'listing', errors, this.updateMessagePanel);
+        displayErrorMessages('create', `pending ${this.schema} from ${this.schema}`, errors,
+          this.updateMessagePanel, 'retry');
       });
   }
 

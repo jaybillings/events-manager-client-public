@@ -214,6 +214,11 @@ button[disabled]:hover {
   margin-bottom: 3rem;
 }
 
+.message-atom a > svg {
+  font-size: 2rem;
+  vertical-align: text-bottom;
+}
+
 /* The following are container-specific styles that weren't worth putting in their own file */
 
 .block-warning {
