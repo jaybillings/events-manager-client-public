@@ -72,10 +72,7 @@ export default class SinglePendingListingLayout extends SingleListingLayout {
       <div className={'container'}>
         <Header />
         <p><Link to={`/${returnTarget}`}>&lt; Return to {returnTarget}</Link></p>
-        <MessagePanel
-          messages={this.state.messages} isVisible={this.state.messagePanelVisible}
-          dismissPanel={this.dismissMessagePanel}
-        />
+        <MessagePanel ref={this.messagePanel} />
         <div className={'block-warning'}><h2 title={headerTitle}>{this.state.listing.name}</h2></div>
         {this.renderRecord()}
       </div>

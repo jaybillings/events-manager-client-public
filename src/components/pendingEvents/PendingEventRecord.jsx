@@ -118,8 +118,6 @@ export default class PendingEventRecord extends ListingRecordUniversal {
     'ticket_url', 'ticket_phone', 'ticket_prices', 'flag_ongoing'];
     const classNameMap = diffListings(liveEvent, event, eventParams);
 
-    console.debug(classNameMap);
-
     return (
       <form id={'pending-event-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
         <div>

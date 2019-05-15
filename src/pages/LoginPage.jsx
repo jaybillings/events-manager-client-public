@@ -14,7 +14,9 @@ export default class LoginPage extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {email: '', password: '', redirectCount: -1, messages: [], messagePanelVisible: false};
+    this.messagePanel = React.createRef();
+
+    this.state = {email: '', password: '', redirectCount: -1};
 
     this.usersService = app.service('users');
 
@@ -23,7 +25,6 @@ export default class LoginPage extends Component {
     this.handleUserCreate = this.handleUserCreate.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
     this.updateMessagePanel = this.updateMessagePanel.bind(this);
-    this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
   }
 
   /**
@@ -131,14 +132,7 @@ export default class LoginPage extends Component {
    * @param {object} newMsg
    */
   updateMessagePanel(newMsg) {
-    this.setState(prevState => ({messages: [newMsg, ...prevState.messages], messagePanelVisible: true}));
-  }
-
-  /**
-   * Prepares the message panel for dismissal by removing all messages and setting its visible state to false.
-   */
-  dismissMessagePanel() {
-    this.setState({messages: [], messagePanelVisible: false});
+    this.messagePanel.current.addMessage(newMsg);
   }
 
   /**
@@ -161,8 +155,7 @@ export default class LoginPage extends Component {
       <div className={'container login-page'}>
         <Header />
         <h2>Log In To Your Account</h2>
-        <MessagePanel messages={this.state.messages} isVisible={this.state.messagePanelVisible}
-                      dismissPanel={this.dismissMessagePanel} />
+        <MessagePanel ref={this.messagePanel} />
         <p className={'message success-message' + successMsgClass}>Logged in. Redirecting in {this.state.redirectCount}
           {redirectCount === 1 ? ' second' : ' seconds'}. </p>
         <p className={'message warning-message' + warningMsgClass}>You must log in to continue.</p>

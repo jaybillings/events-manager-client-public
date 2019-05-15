@@ -85,8 +85,6 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
       'address_city', 'address_state', 'address_zip', 'email', 'url', 'phone'];
     const classNameMap = diffListings(liveVenue, venue, venueParams);
 
-    console.debug(classNameMap);
-
     return (
       <form id={'pending-venue-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
         <label>

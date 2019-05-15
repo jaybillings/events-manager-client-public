@@ -15,11 +15,9 @@ export default class AdminToolsLayout extends Component {
     super(props);
 
     this.defaultPageSize = 5;
-
-    this.state = {messages: [], messagePanelVisible: false};
+    this.messagePanel = React.createRef();
 
     this.updateMessagePanel = this.updateMessagePanel.bind(this);
-    this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
   }
 
   /**
@@ -28,22 +26,14 @@ export default class AdminToolsLayout extends Component {
    * @param {object} newMsg
    */
   updateMessagePanel(newMsg) {
-    this.setState(prevState => ({messages: [newMsg, ...prevState.messages], messagePanelVisible: true}));
-  }
-
-  /**
-   * Prepares the message panel for dismissal by removing all messages and setting its visible state to false.
-   */
-  dismissMessagePanel() {
-    this.setState({messages: [], messagePanelVisible: false});
+    this.messagePanel.current.addMessage(newMsg);
   }
 
   render() {
     return (
       <div className="container">
         <Header />
-        <MessagePanel messages={this.state.messages} isVisible={this.state.messagePanelVisible}
-                      dismissPanel={this.dismissMessagePanel} />
+        <MessagePanel ref={this.messagePanel} />
         <h2>Admin Tools</h2>
         <ManageUsersModule updateMessagePanel={this.updateMessagePanel} />
         <ReplaceNeighborhoodsModule updateMessagePanel={this.updateMessagePanel} defaultPageSize={this.defaultPageSize} />

@@ -26,11 +26,9 @@ export default class SingleListingLayout extends Component {
     this.schema = schema;
     this.listingID = this.props.match.params.id;
     this.defaultQuery = {$sort: {name: 1}, $select: ['name', 'uuid'], $limit: 1000};
+    this.messagePanel = React.createRef();
 
-    this.state = {
-      listing: {}, listingLoaded: false, hasDeleted: false, notFound: false,
-      messagePanelVisible: false, messages: []
-    };
+    this.state = {listing: {}, listingLoaded: false, hasDeleted: false, notFound: false};
 
     const schemaArr = schema.split("-");
     this.listingsService = schemaArr[1] ? app.service(schemaArr[1]) : app.service(schema);
@@ -44,8 +42,6 @@ export default class SingleListingLayout extends Component {
     this.deleteListing = this.deleteListing.bind(this);
 
     this.updateMessagePanel = this.updateMessagePanel.bind(this);
-    this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
-
     this.renderRecord = this.renderRecord.bind(this);
   }
 
@@ -148,14 +144,7 @@ export default class SingleListingLayout extends Component {
    * @param {object} newMsg
    */
   updateMessagePanel(newMsg) {
-    this.setState(prevState => ({messages: [newMsg, ...prevState.messages], messagePanelVisible: true}));
-  }
-
-  /**
-   * Prepares the message panel for dismissal by removing all messages and setting its visible state to false.
-   */
-  dismissMessagePanel() {
-    this.setState({messages: [], messagePanelVisible: false});
+    this.messagePanel.current.addMessage(newMsg);
   }
 
   /**
@@ -190,10 +179,7 @@ export default class SingleListingLayout extends Component {
       <div className={'container'}>
         <Header />
         <p><Link to={`/${returnTarget}`}>&lt; Return to {returnTarget}</Link></p>
-        <MessagePanel
-          messages={this.state.messages} isVisible={this.state.messagePanelVisible}
-          dismissPanel={this.dismissMessagePanel}
-        />
+        <MessagePanel ref={this.messagePanel} />
         <div><h2>{this.state.listing.name}</h2></div>
         {this.renderRecord()}
       </div>
