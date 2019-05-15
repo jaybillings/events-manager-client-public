@@ -32,7 +32,7 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
     this.pendingOrgsService = app.service('pending-organizers');
     this.tagsService = app.service('tags');
     this.pendingTagsService = app.service('pending-tags');
-    this.eventsTagsLookupService = app.service('events-tags-lookup');
+    this.pendingEventsTagsLookupService = app.service('pending-events-tags-lookup');
 
     this.fetchVenues = this.fetchVenues.bind(this);
     this.fetchPendingVenues = this.fetchPendingVenues.bind(this);
@@ -40,10 +40,10 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
     this.fetchPendingOrgs = this.fetchPendingOrgs.bind(this);
     this.fetchTags = this.fetchTags.bind(this);
     this.fetchPendingTags = this.fetchPendingTags.bind(this);
-    this.fetchTagAssociations = this.fetchTagAssociations.bind(this);
+    this.fetchPendingTagAssociations = this.fetchPendingTagAssociations.bind(this);
 
-    this.createTagAssociations = this.createTagAssociations.bind(this);
-    this.removeTagAssociations = this.removeTagAssociations.bind(this);
+    this.createPendingTagAssociations = this.createPendingTagAssociations.bind(this);
+    this.removePendingTagAssociations = this.removePendingTagAssociations.bind(this);
   }
 
   /**
@@ -70,7 +70,7 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
         .on('removed', () => dataFetcher);
     }
 
-    this.eventsTagsLookupService
+    this.pendingEventsTagsLookupService
       .on('created', message => {
         if (message.event_uuid === this.state.listing.uuid) {
           this.updateMessagePanel({status: 'info', details: 'Linked tag with pending event.'});
@@ -105,7 +105,7 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
         .removeAllListeners('removed');
     });
 
-    this.eventsTagsLookupService
+    this.pendingEventsTagsLookupService
       .removeAllListeners('created')
       .removeAllListeners('removed');
   }
@@ -135,13 +135,14 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
       .get(this.listingID)
       .then(result => {
         this.setState({listing: result, listingLoaded: true});
-        this.fetchTagAssociations(result.uuid);
+        this.fetchPendingTagAssociations(result.uuid);
         this.fetchMatchingLiveListing(result.uuid);
       })
       .catch(errors => {
-      this.setState({notFound: true});
-      displayErrorMessages('fetch', `${this.schema} #${this.listingID}`, errors, this.updateMessagePanel);
-    });
+        console.error(errors);
+        this.setState({notFound: true});
+        displayErrorMessages('fetch', `${this.schema} #${this.listingID}`, errors, this.updateMessagePanel);
+      });
   }
 
   /**
@@ -219,13 +220,16 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
   /**
    * Fetches associations between all tags (published or pending) and the pending event.
    */
-  fetchTagAssociations(eventUUID) {
-    this.eventsTagsLookupService.find({query: {event_uuid: eventUUID}}).then(message => {
-      this.setState({tagsForListing: message.data, tagAssociationsLoaded: true});
-    }, err => {
-      this.setState({tagAssociationsLoaded: false});
-      displayErrorMessages('fetch', 'associations between tags and pending events', err, this.updateMessagePanel, 'reload');
-    });
+  fetchPendingTagAssociations(eventUUID) {
+    this.pendingEventsTagsLookupService.find({query: {event_uuid: eventUUID}})
+      .then(message => {
+        this.setState({tagsForListing: message.data, tagAssociationsLoaded: true});
+      })
+      .catch(err => {
+        console.error(err);
+        this.setState({tagAssociationsLoaded: false});
+        displayErrorMessages('fetch', 'associations between tags and pending events', err, this.updateMessagePanel, 'reload');
+      });
   }
 
   /**
@@ -259,8 +263,8 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
    */
   updateListing(listingData) {
     this.pendingListingsService.patch(this.listingID, listingData.eventData).then(result => {
-      if (listingData.tagsToSave) this.createTagAssociations(listingData.tagsToSave);
-      if (listingData.tagsToRemove) this.removeTagAssociations(listingData.tagsToRemove);
+      if (listingData.tagsToSave) this.createPendingTagAssociations(listingData.tagsToSave);
+      if (listingData.tagsToRemove) this.removePendingTagAssociations(listingData.tagsToRemove);
 
       this.setState({listing: result, listingLoaded: true});
       this.updateMessagePanel({status: 'success', details: `Saved changes to "${result.name}"`});
@@ -274,12 +278,15 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
    * @override
    */
   deleteListing() {
-    this.pendingListingsService.remove(this.listingID).then(() => {
-      this.removeTagAssociations([]);
-      this.setState({hasDeleted: true});
-    }, err => {
-      displayErrorMessages('delete', this.state.listing.name, err, this.updateMessagePanel, 'retry');
-    });
+    this.pendingListingsService
+      .remove(this.listingID)
+      .then(() => {
+        this.removePendingTagAssociations([]);
+        this.setState({hasDeleted: true});
+      })
+      .catch(err => {
+        displayErrorMessages('delete', this.state.listing.name, err, this.updateMessagePanel, 'retry');
+      });
   }
 
   /**
@@ -287,12 +294,15 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
    *
    * @param {object[]} tagsToSave
    */
-  createTagAssociations(tagsToSave) {
-    this.eventsTagsLookupService.create(tagsToSave).then(() => {
-      this.fetchTagAssociations();
-    }, err => {
-      displayErrorMessages('associate', 'tags with pending event', err, this.updateMessagePanel, 'retry');
-    });
+  createPendingTagAssociations(tagsToSave) {
+    this.pendingEventsTagsLookupService
+      .create(tagsToSave)
+      .then(() => {
+        this.fetchPendingTagAssociations();
+      })
+      .catch(err => {
+        displayErrorMessages('associate', 'tags with pending event', err, this.updateMessagePanel, 'retry');
+      });
   }
 
   /**
@@ -300,14 +310,17 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
    *
    * @param {object[]} tagsToRemove
    */
-  removeTagAssociations(tagsToRemove) {
+  removePendingTagAssociations(tagsToRemove) {
     const query = {event_uuid: this.state.listing.uuid, tag_uuid: {$in: tagsToRemove}};
 
-    this.eventsTagsLookupService.remove(null, {query: query}).then(() => {
-      this.fetchTagAssociations();
-    }, err => {
-      displayErrorMessages('de-associate', 'tags from pending event', err, this.updateMessagePanel, 'retry');
-    });
+    this.pendingEventsTagsLookupService
+      .remove(null, {query: query})
+      .then(() => {
+        this.fetchPendingTagAssociations();
+      })
+      .catch(err => {
+        displayErrorMessages('de-associate', 'tags from pending event', err, this.updateMessagePanel, 'retry');
+      });
   }
 
   /**

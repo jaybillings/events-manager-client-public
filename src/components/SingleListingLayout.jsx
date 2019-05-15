@@ -89,6 +89,7 @@ export default class SingleListingLayout extends Component {
         this.setState({listing: result, listingLoaded: true});
       })
       .catch(errors => {
+        console.error(errors);
         this.setState({notFound: true});
         displayErrorMessages('fetch', `${this.schema} #${this.listingID}`, errors, this.updateMessagePanel);
       });

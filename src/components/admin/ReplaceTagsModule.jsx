@@ -29,6 +29,7 @@ export default class ReplaceTagsModule extends Component {
     this.tagsService = app.service('tags');
     this.pendingTagsService = app.service('pending-tags');
     this.eventsTagsLookupService = app.service('events-tags-lookup');
+    this.pendingEventsTagsLookupService = app.service('pending-events-tags-lookup');
     this.vsBdTagLookupService = app.service('vs-bd-tag-lookup');
 
     this.fetchAllData = this.fetchAllData.bind(this);
@@ -208,12 +209,12 @@ export default class ReplaceTagsModule extends Component {
     });
   }
 
-  replaceEventTagMappings(uuidsToReplace, uuidOfReplacement) {
-    return this.eventsTagsLookupService
+  replaceEventTagMappings(uuidsToReplace, uuidOfReplacement, service) {
+    return this.service
       .remove(null, {query: {tag_uuid: {$in: uuidsToReplace}}})
       .then(result => {
         return Promise.all(result.map(lookupRow => {
-          return this.eventsTagsLookupService.create({event_uuid: lookupRow.event_uuid, tag_uuid: uuidOfReplacement})
+          return this.service.create({event_uuid: lookupRow.event_uuid, tag_uuid: uuidOfReplacement})
         }))
       });
   }
@@ -252,7 +253,7 @@ export default class ReplaceTagsModule extends Component {
       return;
     }
 
-    // This is intentionally case sensitive to enable replacing improperly cased tags.
+    // This is intentionally case sensitive to avoid unintended side-effects
     if (nameToReplace === replacement.name) {
       this.props.updateMessagePanel({status: 'error', details: 'Cannot replace tag with same tag.'});
       return;
@@ -270,7 +271,11 @@ export default class ReplaceTagsModule extends Component {
 
     this.props.updateMessagePanel({status: 'info', details: 'Relinking events.'});
 
-    this.replaceEventTagMappings(uuidsToReplace, uuidOfReplacement)
+    Promise
+      .all([
+        this.replaceEventTagMappings(uuidsToReplace, uuidOfReplacement, this.eventsTagsLookupService),
+        this.replaceEventTagMappings(uuidsToReplace, uuidOfReplacement, this.pendingEventsTagsLookupService)
+      ])
       .then(() => {
         this.props.updateMessagePanel({status: 'info', details: 'Deleting old tags.'});
         return Promise.all([

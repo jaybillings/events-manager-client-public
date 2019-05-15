@@ -29,6 +29,7 @@ export default class SinglePendingListingLayout extends SingleListingLayout {
         this.fetchMatchingLiveListing(result.uuid);
       })
       .catch(errors => {
+        console.error(errors);
         this.setState({notFound: true});
         displayErrorMessages('fetch', `${this.schema} #${this.listingID}`, errors, this.updateMessagePanel);
       });
