@@ -24,9 +24,9 @@ export default class StatusLabel extends Component {
       case 'new':
         return <span className={'status-label muted'} key={statusKey} title={'This is a new listing.'}>New</span>;
       case 'update':
-        return <span className={'status-label alert'} key={statusKey} title={'This is an update to a preexisting listing.'}>Update</span>;
+        return <span className={'status-label warning'} key={statusKey} title={'This is an update to a preexisting listing.'}>Update</span>;
       case 'duplicate':
-        return <span className={'status-label warning'} key={statusKey} title={'This is a new listing, but may duplicate a preexisting listing.'}>Duplicate</span>;
+        return <span className={'status-label alert'} key={statusKey} title={'This is a new listing, but may duplicate a preexisting listing.'}>Duplicate</span>;
       case 'live':
         return <span className={'status-label bolded'} key={statusKey} title={'This listing is live and available for API ingestion.'}>Live</span>;
       case 'dropped':

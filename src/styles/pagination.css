@@ -29,7 +29,7 @@ ul.pagination {
 
 .pagination li[class='']:hover {
   color: var(--true-white);
-  background: var(--true-blue);
+  background: var(--pagination-active-color);
 }
 
 .pagination li[class='']:hover a {

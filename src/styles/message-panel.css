@@ -1,36 +1,38 @@
+/* Box shadow styles taken from [Semantic UI](https://semantic-ui.com/collections/message.html) */
+
 .messageContainer {
-  position: relative;
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.95);
   margin: 2.5rem 0;
   padding: 1rem;
-  border: 1px solid var(--border-color);
+  z-index: 10;
+  box-shadow: 0 0 0 1px rgba(34,36,38,.22) inset,0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.15);
+  border-radius: var(--border-radius);
+}
+
+.messageContainer > div {
+  max-height: 300px;
+  overflow: auto;
 }
 
 .messageContainer header {
+  background: var(--pale-blue);
+  border: none;
+  border-radius: var(--border-radius);
   margin-bottom: 1.5rem;
-  border-width: 1px;
+  padding: 0.5rem 1rem;
+  color: var(--medium-dark-gray);
 }
 
 .messageContainer h3 {
   margin: 0;
-  padding: 0 0 1rem;
-  font-size: 0.75em;
-  font-weight: 300;
+  padding: 0;
+  font-size: 1em;
+  font-weight: 900;
   line-height: normal;
   letter-spacing: normal;
   text-transform: uppercase;
-}
-
-.messageContainer button.dismiss {
-  position: absolute;
-  top: 0;
-  right: 0;
-  height: 2em;
-  margin: 0;
-  padding: 0 1rem;
-  font-size: 1em;
-  line-height: 1rem;
-  border: none;
-  cursor: pointer;
 }
 
 .messageContainer span {
@@ -50,52 +52,61 @@
   list-style-type: none;
   border: none;
   padding: 1rem;
+  border-radius: var(--border-radius);
 }
 
 .messageContainer li.success {
-  border: 3px solid var(--true-blue);
+  border: 3px solid var(--emphasis-color);
+}
+
+.messageContainer li.success strong {
+  color: var(--emphasis-color);
 }
 
 .messageContainer li.error {
   border: 3px solid var(--error-color);
 }
 
-.messageContainer li.warning {
-  border: 2px solid var(--warning-color);
-}
-
-.messageContainer li.notice {
-  border: 2px solid var(--true-green);
-}
-
-.messageContainer li.info {
-  border: 2px solid var(--light-gray);
-  color: var(--medium-gray);
-}
-
-.messageContainer li.success strong {
-  color: var(--true-blue);
-}
-
 .messageContainer li.error strong {
   color: var(--error-color);
+}
+
+.messageContainer li.warning {
+  border: 2px solid var(--warning-color);
 }
 
 .messageContainer li.warning strong {
   color: var(--warning-color);
 }
 
+.messageContainer li.notice {
+  border: 2px solid var(--strong-emphasis-color);
+}
+
 .messageContainer li.notice strong {
-  color: var(--true-green);
+  color: var(--strong-emphasis-color);
+}
+
+.messageContainer li.info {
+  border: 2px solid var(--neutral-accent-color);
+  color: var(--medium-gray);
 }
 
 .messageContainer li.info span {
-  color: var(--light-gray);
+  color: var(--neutral-accent-color);
 }
 
-.messageContainer > div {
-  max-height: 500px;
-  overflow: auto;
+.messageContainer .dismiss {
+  position: absolute;
+  top: 0.75rem;
+  right: 1.25rem;
+  color: var(--medium-dark-gray);
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  font-size: 2em;
+  border: none;
+  cursor: pointer;
 }
 
 .messageContainer .timestamp {

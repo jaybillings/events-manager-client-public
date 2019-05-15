@@ -29,9 +29,8 @@ export default class ImportLayout extends Component {
     this.defaultSortOrder = ['created_at', -1];
     this.user = app.get('user');
 
-    this.state = {messages: [], messagePanelVisible: false};
-
     this.fileInput = React.createRef();
+    this.messagePanel = React.createRef();
     this.eventsModule = React.createRef();
     this.venuesModule = React.createRef();
     this.orgsModule = React.createRef();
@@ -47,7 +46,6 @@ export default class ImportLayout extends Component {
     this.publishListings = this.publishListings.bind(this);
 
     this.updateMessagePanel = this.updateMessagePanel.bind(this);
-    this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
   }
 
   /**
@@ -82,7 +80,7 @@ export default class ImportLayout extends Component {
   }
 
   resumeModuleListening() {
-    console.debug('START module listening');
+    console.info('START module listening');
     this.eventsModule.current.startListening();
     this.venuesModule.current.startListening();
     this.orgsModule.current.startListening();
@@ -126,8 +124,6 @@ export default class ImportLayout extends Component {
         return response.json(); // Convert raw response body to JSON
       })
       .then(body => {
-        console.debug('[COE] Import response body');
-        console.debug(body);
         if (body.code >= 400) {
           this.updateMessagePanel({status: 'error', details: body.message});
           console.error(body.message);
@@ -179,19 +175,12 @@ export default class ImportLayout extends Component {
   }
 
   /**
-   * Updates the message list with a new message and displays the module.
+   * Adds a message to the message panel.
    *
    * @param {object} newMsg
    */
   updateMessagePanel(newMsg) {
-    this.setState(prevState => ({messages: [newMsg, ...prevState.messages], messagePanelVisible: true}));
-  }
-
-  /**
-   * Clears and hides the message panel.
-   */
-  dismissMessagePanel() {
-    this.setState({messages: [], messagePanelVisible: false});
+    this.messagePanel.current.addMessage(newMsg);
   }
 
   /**
@@ -200,8 +189,6 @@ export default class ImportLayout extends Component {
    * @returns {*}
    */
   render() {
-    const showMessagePanel = this.state.messagePanelVisible;
-    const messages = this.state.messages;
     // TODO: All/Selected depending on selections
     const publishButton = this.user.is_su ?
       <button type={'button'} className={'button-primary button-publish'} onClick={this.publishListings}>
@@ -211,7 +198,7 @@ export default class ImportLayout extends Component {
     return (
       <div className="container">
         <Header />
-        <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
+        <MessagePanel ref={this.messagePanel} />
         <h2>Import Data From BeDynamic</h2>
         <ImportXMLForm fileInputRef={this.fileInput} handleImportClick={this.importData} />
         <h2>Review Unpublished Data</h2>

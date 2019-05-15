@@ -322,7 +322,6 @@ export default class PendingListingsModule extends Component {
   }
 
   publishListingsRecursive(selectedIDs, liveIDs) {
-    console.debug('selectedids now', selectedIDs);
     if (selectedIDs.length === 0) return;
 
     return this.publishPageOfListings(selectedIDs, liveIDs).then(result => {
@@ -335,8 +334,6 @@ export default class PendingListingsModule extends Component {
       const newSelections = selectedIDs.filter(id => {
         return !idsToRemove.includes(id);
       });
-
-      console.debug('remaining selected listings', newSelections);
 
       return this.publishListingsRecursive(newSelections, liveIDs);
 
@@ -393,7 +390,6 @@ export default class PendingListingsModule extends Component {
     return this.pendingListingsService
       .remove(null, searchOptions)
       .then(resultSet => {
-        console.debug(resultSet);
         this.props.updateMessagePanel({status: 'success', details: `Deleted ${resultSet.length} ${this.schema}.`});
       })
       .catch(err => {

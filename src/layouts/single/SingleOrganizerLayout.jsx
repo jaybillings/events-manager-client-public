@@ -1,6 +1,6 @@
 import React from "react";
 
-import SingleListingLayoutUniversal from "../../components/SingleListingLayoutUniversal";
+import SingleListingLayout from "../../components/SingleListingLayout";
 import OrganizerRecord from "../../components/organizers/OrganizerRecord";
 
 /**
@@ -8,7 +8,7 @@ import OrganizerRecord from "../../components/organizers/OrganizerRecord";
  * @class
  * @child
  */
-export default class SingleOrganizerLayout extends SingleListingLayoutUniversal {
+export default class SingleOrganizerLayout extends SingleListingLayout {
   /**
    * The class's constructor.
    *

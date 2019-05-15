@@ -1,6 +1,6 @@
 import React from 'react';
 import Moment from 'moment';
-import {renderCheckboxList, renderOptionList} from "../../utilities";
+import {diffListings, renderCheckboxList, renderOptionList} from "../../utilities";
 
 import ListingRecordUniversal from "../ListingRecordUniversal";
 import StatusLabel from "../common/StatusLabel";
@@ -14,8 +14,6 @@ export default class PendingEventRecord extends ListingRecordUniversal {
   /**
    * The class's constructor.
    * @constructor
-   *
-   * @param {{listing: Object, schema: String, venues: Array, orgs: Array, tags: Array, tagsForListing: Array, updateListing: Function, deleteListing: Function, queryForExisting: Function}} props
    */
   constructor(props) {
     super(props);
@@ -103,6 +101,7 @@ export default class PendingEventRecord extends ListingRecordUniversal {
    */
   render() {
     const event = this.props.listing;
+    const liveEvent = this.props.matchingLiveListing;
     const writeStatus = this.state.writeStatus;
     const venues = this.props.venues;
     const orgs = this.props.orgs;
@@ -113,6 +112,11 @@ export default class PendingEventRecord extends ListingRecordUniversal {
     const endDate = Moment(event.end_date).format('YYYY-MM-DD');
     const createdAt = Moment(event.created_at).calendar();
     const updatedAt = Moment(event.updated_at).calendar();
+
+    const eventParams = ['name', 'start_date', 'end_date', 'venue_uuid',
+      'org_uuid', 'description', 'email', 'url', 'phone', 'hours',
+    'ticket_url', 'ticket_phone', 'ticket_prices', 'flag_ongoing'];
+    const classNameMap = diffListings(liveEvent, event, eventParams);
 
     return (
       <form id={'pending-event-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
@@ -138,31 +142,31 @@ export default class PendingEventRecord extends ListingRecordUniversal {
           Last Updated
           <input type="text" value={updatedAt} disabled />
         </label>
-        <label className={'required'}>
+        <label className={'required' + classNameMap['name']}>
           Name
           <input type="text" ref={this.nameInput} defaultValue={event.name} required maxLength={100} />
         </label>
-        <label className={'required-ish'}>
+        <label className={'required-ish' + classNameMap['start_date']}>
           Start Date
           <input type="date" ref={this.startInput} defaultValue={startDate} />
         </label>
-        <label className={'required-ish'}>
+        <label className={'required-ish' + classNameMap['end_date']}>
           End Date
           <input type="date" ref={this.endInput} defaultValue={endDate} />
         </label>
-        <label className={'required-ish'}>
+        <label className={'required-ish' + classNameMap['venue_uuid']}>
           Venue
           <select ref={this.venueInput} defaultValue={event.venue_uuid || ''}>
             {renderOptionList(venues, 'venues', 'uuid')}
           </select>
         </label>
-        <label className={'required-ish'}>
+        <label className={'required-ish' + classNameMap['org_uuid']}>
           Organizer
           <select ref={this.orgInput} defaultValue={event.org_uuid || ''}>
             {renderOptionList(orgs, 'organizers', 'uuid')}
           </select>
         </label>
-        <label className={'required-ish'}>
+        <label className={'required-ish' + classNameMap['description']}>
           Description
           <textarea ref={this.descInput} defaultValue={event.description} maxLength={500} />
         </label>
@@ -170,35 +174,35 @@ export default class PendingEventRecord extends ListingRecordUniversal {
           Tags
           {renderCheckboxList(tags, tagsForListing, 'uuid')}
         </label>
-        <label>
+        <label className={classNameMap['email']}>
           Email Address
           <input type={"email"} ref={this.emailInput} defaultValue={event.email} />
         </label>
-        <label>
+        <label className={classNameMap['url']}>
           URL
           <input type={"url"} ref={this.urlInput} defaultValue={event.url} />
         </label>
-        <label>
+        <label className={classNameMap['phone']}>
           Phone Number
           <input type={"tel"} ref={this.phoneInput} defaultValue={event.phone} />
         </label>
-        <label>
+        <label className={classNameMap['hours']}>
           Event Hours
           <input type={"text"} ref={this.hoursInput} defaultValue={event.hours} />
         </label>
-        <label>
+        <label className={classNameMap['ticket_url']}>
           Ticketing URL
           <input type={"url"} ref={this.ticketUrlInput} defaultValue={event.ticket_url} />
         </label>
-        <label>
+        <label className={classNameMap['ticket_phone']}>
           Ticketing Phone Number
           <input type={"tel"} ref={this.ticketPhoneInput} defaultValue={event.ticket_phone} />
         </label>
-        <label>
+        <label className={classNameMap['ticket_prices']}>
           Ticket Prices
           <input type={"text"} ref={this.ticketPricesInput} defaultValue={event.ticket_prices} />
         </label>
-        <label>
+        <label className={classNameMap['flag_ongoing']}>
           <input type={"checkbox"} ref={this.ongoingInput} defaultChecked={event.flag_ongoing} />
           Ongoing Event
         </label>

@@ -1,12 +1,12 @@
 import React from 'react';
 
 import PendingOrganizerRecord from "../../components/pendingOrganizers/PendingOrganizerRecord";
-import SingleListingLayoutUniversal from "../../components/SingleListingLayoutUniversal";
+import SinglePendingListingLayout from "../../components/SinglePendingListingLayout";
 
 /**
  * SinglePendingOrganizerLayout is a component which lays out a single pending organizer page.
  */
-export default class SinglePendingOrganizerLayout extends SingleListingLayoutUniversal {
+export default class SinglePendingOrganizerLayout extends SinglePendingListingLayout {
   /**
    * The component's constructor.
    * @constructor
@@ -27,8 +27,8 @@ export default class SinglePendingOrganizerLayout extends SingleListingLayoutUni
     if (!this.state.listingLoaded) return <p>Data is loading... Please be patient...</p>;
 
     return <PendingOrganizerRecord
-      listing={this.state.listing} schema={this.schema} updateListing={this.updateListing}
-      deleteListing={this.deleteListing} queryForExisting={this.queryForExisting}
+      schema={this.schema} listing={this.state.listing} matchingLiveListing={this.state.matchingLiveListing}
+      updateListing={this.updateListing} deleteListing={this.deleteListing} queryForExisting={this.queryForExisting}
     />;
   }
 }

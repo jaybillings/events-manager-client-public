@@ -9,11 +9,11 @@ import Header from "./common/Header";
 import MessagePanel from "./common/MessagePanel";
 
 /**
- * SingleListingLayoutUniversal is a generic component which lays out a single listing page.
+ * SingleListingLayout is a generic component which lays out a single listing page.
  * @class
  * @parent
  */
-export default class SingleListingLayoutUniversal extends Component {
+export default class SingleListingLayout extends Component {
   /**
    * The component's constructor.
    *
@@ -26,11 +26,9 @@ export default class SingleListingLayoutUniversal extends Component {
     this.schema = schema;
     this.listingID = this.props.match.params.id;
     this.defaultQuery = {$sort: {name: 1}, $select: ['name', 'uuid'], $limit: 1000};
+    this.messagePanel = React.createRef();
 
-    this.state = {
-      listing: {}, listingLoaded: false, hasDeleted: false, notFound: false,
-      messagePanelVisible: false, messages: []
-    };
+    this.state = {listing: {}, listingLoaded: false, hasDeleted: false, notFound: false};
 
     const schemaArr = schema.split("-");
     this.listingsService = schemaArr[1] ? app.service(schemaArr[1]) : app.service(schema);
@@ -44,8 +42,6 @@ export default class SingleListingLayoutUniversal extends Component {
     this.deleteListing = this.deleteListing.bind(this);
 
     this.updateMessagePanel = this.updateMessagePanel.bind(this);
-    this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
-
     this.renderRecord = this.renderRecord.bind(this);
   }
 
@@ -65,6 +61,7 @@ export default class SingleListingLayoutUniversal extends Component {
       .on('updated', result => {
         if (result.id !== this.listingID) return;
         this.updateMessagePanel({status: 'success', details: `Saved changes to "${result.name}".`});
+        this.fetchListing();
       });
   }
 
@@ -86,7 +83,8 @@ export default class SingleListingLayoutUniversal extends Component {
    * Fetches data for the single listing.
    */
   fetchListing() {
-    app.service(this.schema).get(this.listingID)
+    this.listingsService
+      .get(this.listingID)
       .then(result => {
         this.setState({listing: result, listingLoaded: true});
       })
@@ -146,14 +144,7 @@ export default class SingleListingLayoutUniversal extends Component {
    * @param {object} newMsg
    */
   updateMessagePanel(newMsg) {
-    this.setState(prevState => ({messages: [newMsg, ...prevState.messages], messagePanelVisible: true}));
-  }
-
-  /**
-   * Prepares the message panel for dismissal by removing all messages and setting its visible state to false.
-   */
-  dismissMessagePanel() {
-    this.setState({messages: [], messagePanelVisible: false});
+    this.messagePanel.current.addMessage(newMsg);
   }
 
   /**
@@ -180,17 +171,7 @@ export default class SingleListingLayoutUniversal extends Component {
   render() {
     if (this.state.notFound) return <Redirect to={'/404'} />;
 
-    let returnTarget, headerClass, headerTitle;
-
-    if (this.schema.indexOf('pending') !== -1) {
-      returnTarget = 'import';
-      headerClass = 'block-warning';
-      headerTitle = 'Caution: This event is pending. It must be pushed live before it is visible on the site.';
-    } else {
-      returnTarget = this.schema;
-      headerClass = '';
-      headerTitle = '';
-    }
+    const returnTarget = this.schema;
 
     if (this.state.hasDeleted) return <Redirect to={`/${returnTarget}`} />;
 
@@ -198,9 +179,8 @@ export default class SingleListingLayoutUniversal extends Component {
       <div className={'container'}>
         <Header />
         <p><Link to={`/${returnTarget}`}>&lt; Return to {returnTarget}</Link></p>
-        <MessagePanel messages={this.state.messages} isVisible={this.state.messagePanelVisible}
-                      dismissPanel={this.dismissMessagePanel} />
-        <div className={headerClass}><h2 title={headerTitle}>{this.state.listing.name}</h2></div>
+        <MessagePanel ref={this.messagePanel} />
+        <div><h2>{this.state.listing.name}</h2></div>
         {this.renderRecord()}
       </div>
     );

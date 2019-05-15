@@ -10,7 +10,8 @@
   margin: 2em 0;
 }
 
-.schema-record input:not([type='checkbox']), .schema-record textarea, .schema-record select {
+.schema-record input:not([type='checkbox']),
+.schema-record textarea, .schema-record select {
   display: block;
   width: 80%;
   max-width: 750px;
@@ -46,7 +47,7 @@
 
 .schema-record label.required-ish:before {
   content: '*';
-  color: var(--dull-orange);
+  color: var(--warning-color);
   margin-right: .5rem;
 }
 

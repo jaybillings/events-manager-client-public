@@ -4,6 +4,7 @@ import Header from "../components/common/Header";
 
 export default class NotFound extends Component {
   render() {
+    /** TODO: Make sure this doesn't redirect too many times */
     return (
       <div className={'container'}>
         <Header/>

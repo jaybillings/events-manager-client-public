@@ -1,5 +1,5 @@
 header {
-  border-bottom: 2px solid var(--border-color);
+  border-bottom: 2px solid var(--dark-gray);
   margin-bottom: 3rem;
 }
 
@@ -27,7 +27,7 @@ header nav li:last-of-type {
 header nav a {
   display: inline-block;
   padding: 1rem 0;
-  color: var(--true-blue);
+  color: var(--link-color);
   font-weight: 600;
   text-decoration: none;
 }

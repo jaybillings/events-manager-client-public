@@ -1,6 +1,6 @@
 import React from "react";
 import Moment from "moment";
-import {renderOptionList} from "../../utilities";
+import {diffListings, renderOptionList} from "../../utilities";
 
 import ListingRecordUniversal from "../ListingRecordUniversal";
 import StatusLabel from "../common/StatusLabel";
@@ -74,11 +74,16 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
    * @returns {*}
    */
   render() {
+    const liveVenue = this.props.matchingLiveListing;
     const venue = this.props.listing;
     const hoods = this.props.hoods;
     const writeStatus = this.state.writeStatus;
     const createdAt = Moment(venue.created_at).calendar();
     const updatedAt = Moment(venue.updated_at).calendar();
+
+    const venueParams = ['name', 'hood_uuid', 'description', 'address_street',
+      'address_city', 'address_state', 'address_zip', 'email', 'url', 'phone'];
+    const classNameMap = diffListings(liveVenue, venue, venueParams);
 
     return (
       <form id={'pending-venue-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
@@ -100,45 +105,45 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
           Last Updated
           <input type={'text'} value={updatedAt} disabled />
         </label>
-        <label className={'required'}>
+        <label className={'required' + classNameMap['name']}>
           Name
           <input type={'text'} ref={this.nameInput} defaultValue={venue.name} required maxLength={100} />
         </label>
-        <label className={'required-ish'}>
+        <label className={'required-ish' + classNameMap['hood_uuid']}>
           Neighborhood
           <select ref={this.hoodInput} defaultValue={venue.hood_uuid || ''} required>
             {renderOptionList(hoods, 'neighborhoods', 'uuid')}
           </select>
         </label>
-        <label className={'required-ish'}>
+        <label className={'required-ish' + classNameMap['description']}>
           Description
           <textarea ref={this.descInput} defaultValue={venue.description} required maxLength={500} />
         </label>
-        <label>
+        <label className={classNameMap['email']}>
           Email
           <input type={'email'} ref={this.emailInput} defaultValue={venue.email} />
         </label>
-        <label>
+        <label className={classNameMap['url']}>
           Url
           <input type={'url'} ref={this.urlInput} defaultValue={venue.url} />
         </label>
-        <label>
+        <label className={classNameMap['phone']}>
           Phone #
           <input type={'tel'} ref={this.phoneInput} defaultValue={venue.phone} />
         </label>
-        <label>
+        <label className={classNameMap['address_street']}>
           Street Address
           <input type={'text'} ref={this.streetInput} defaultValue={venue.address_street} />
         </label>
-        <label>
+        <label className={classNameMap['address_city']}>
           City
           <input type={'text'} ref={this.cityInput} defaultValue={venue.address_city} />
         </label>
-        <label>
+        <label className={classNameMap['address_state']}>
           State
           <input type={'text'} ref={this.stateInput} defaultValue={venue.address_state} />
         </label>
-        <label>
+        <label className={classNameMap['address_zip']}>
           Zip Code
           <input type={'text'} ref={this.zipInput} defaultValue={venue.address_zip} />
         </label>

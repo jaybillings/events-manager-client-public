@@ -2,14 +2,14 @@ import React from "react";
 import app from "../../services/socketio";
 
 import VenueRecord from "../../components/venues/VenueRecord";
-import SingleListingLayoutUniversal from "../../components/SingleListingLayoutUniversal";
+import SingleListingLayout from "../../components/SingleListingLayout";
 
 /**
  * SingleVenueLayout is a component which lays out a single venue page.
  * @class
  * @child
  */
-export default class SingleVenueLayout extends SingleListingLayoutUniversal {
+export default class SingleVenueLayout extends SingleListingLayout {
   /**
    * The class's constructor.
    * @constructor

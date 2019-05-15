@@ -9,7 +9,7 @@
 .admin-module h4 {
   font-weight: 900;
   padding: 1rem 0;
-  border-bottom: 1px solid var(--light-gray);
+  border-bottom: 1px solid var(--neutral-accent-color);
 }
 
 .admin-module .schema-table {

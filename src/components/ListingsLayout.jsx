@@ -32,11 +32,11 @@ export default class ListingsLayout extends Component {
     this.defaultTableSort = ['updated_at', -1];
     this.defaultLimit = 3000;
     this.defaultQuery = {$sort: {name: 1}, $select: ['name', 'uuid'], $limit: this.defaultLimit};
+    this.messagePanel = React.createRef();
 
     this.state = {
       listings: [], listingsTotal: 0, listingsLoaded: false, newPendingListing: {},
-      pageSize: this.defaultPageSize, currentPage: 1, sort: this.defaultTableSort,
-      messagePanelVisible: false, messages: []
+      pageSize: this.defaultPageSize, currentPage: 1, sort: this.defaultTableSort
     };
 
     this.listingsService = app.service(this.schema);
@@ -55,7 +55,6 @@ export default class ListingsLayout extends Component {
     this.updateCurrentPage = this.updateCurrentPage.bind(this);
     this.updateColumnSort = this.updateColumnSort.bind(this);
     this.updateMessagePanel = this.updateMessagePanel.bind(this);
-    this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
 
     this.renderTable = this.renderTable.bind(this);
     this.renderAddForm = this.renderAddForm.bind(this);
@@ -265,14 +264,7 @@ export default class ListingsLayout extends Component {
    * @param {object} newMsg
    */
   updateMessagePanel(newMsg) {
-    this.setState(prevState => ({messages: [newMsg, ...prevState.messages], messagePanelVisible: true}));
-  }
-
-  /**
-   * Prepares the message panel for dismissal by removing all messages and setting its visible state to false.
-   */
-  dismissMessagePanel() {
-    this.setState({messages: [], messagePanelVisible: false});
+    this.messagePanel.current.addMessage(newMsg);
   }
 
   /**
@@ -343,8 +335,6 @@ export default class ListingsLayout extends Component {
    * @returns {*}
    */
   render() {
-    const showMessagePanel = this.state.messagePanelVisible;
-    const messages = this.state.messages;
     const schema = this.schema;
     const pendingListing = this.state.newPendingListing;
     const filterType = (!this.state.filterLabel || this.state.filterLabel === 'none') ? 'All' : this.state.filterLabel;
@@ -356,7 +346,7 @@ export default class ListingsLayout extends Component {
     return (
       <div className={'container'}>
         <Header />
-        <MessagePanel messages={messages} isVisible={showMessagePanel} dismissPanel={this.dismissMessagePanel} />
+        <MessagePanel ref={this.messagePanel} />
         {pendingListingLink}
         <h2>Browse {filterType} {schema}</h2>
         {this.renderTable()}

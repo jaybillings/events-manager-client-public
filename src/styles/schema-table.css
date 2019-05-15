@@ -27,3 +27,9 @@
 .schema-table button:first-of-type {
   margin-right: 1rem;
 }
+
+.schema-table .sort-label svg {
+  height: 2rem;
+  width: 2rem;
+  vertical-align: text-bottom;
+}

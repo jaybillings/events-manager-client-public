@@ -1,9 +1,9 @@
-import SingleListingLayoutUniversal from "../../components/SingleListingLayoutUniversal";
+import SingleListingLayout from "../../components/SingleListingLayout";
 
 /**
  * SingleNeighborhoodLayout is a component which lays a single neighborhood listing page.
  */
-export default class SingleNeighborhoodLayout extends SingleListingLayoutUniversal {
+export default class SingleNeighborhoodLayout extends SingleListingLayout {
   /**
    * The class's constructor.
    * @constructor

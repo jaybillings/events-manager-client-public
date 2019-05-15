@@ -3,6 +3,7 @@ import Moment from 'moment';
 
 import ListingRecordUniversal from "../ListingRecordUniversal";
 import StatusLabel from "../common/StatusLabel";
+import {diffListings} from "../../utilities";
 
 /**
  * PendingOrganizerRecord is a component which displays a single pending organizer's record.
@@ -62,9 +63,13 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
    */
   render() {
     const org = this.props.listing;
+    const liveOrg = this.props.matchingLiveListing;
     const writeStatus = this.state.writeStatus;
     const createdAt = Moment(org.created_at).calendar();
     const updatedAt = Moment(org.updated_at).calendar();
+
+    const orgParams = ['name', 'description', 'url', 'phone'];
+    const classNameMap = diffListings(liveOrg, org, orgParams);
 
     return (
       <form id={'pending-org-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
@@ -86,19 +91,19 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
           Last Updated
           <input type={'text'} value={updatedAt} disabled />
         </label>
-        <label className={'required'}>
+        <label className={'required' + classNameMap['name']}>
           Name
           <input type={'text'} ref={this.nameInput} defaultValue={org.name} required maxLength={100} />
         </label>
-        <label className={'required-ish'}>
+        <label className={'required-ish' + classNameMap['description']}>
           Description
           <textarea ref={this.descInput} defaultValue={org.description} required maxLength={500} />
         </label>
-        <label>
+        <label className={classNameMap['url']}>
           Url
           <input type={'url'} ref={this.urlInput} defaultValue={org.url} maxLength={100} />
         </label>
-        <label>
+        <label className={classNameMap['phone']}>
           Phone #
           <input type={'tel'} ref={this.phoneInput} defaultValue={org.phone} maxLength={20} />
         </label>

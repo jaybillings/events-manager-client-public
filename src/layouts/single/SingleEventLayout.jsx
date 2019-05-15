@@ -2,7 +2,7 @@ import React from "react";
 import app from "../../services/socketio";
 
 import EventRecord from "../../components/events/EventRecord";
-import SingleListingLayoutUniversal from "../../components/SingleListingLayoutUniversal";
+import SingleListingLayout from "../../components/SingleListingLayout";
 import {displayErrorMessages} from "../../utilities";
 
 /**
@@ -10,7 +10,7 @@ import {displayErrorMessages} from "../../utilities";
  * @class
  * @child
  */
-export default class SingleEventLayout extends SingleListingLayoutUniversal {
+export default class SingleEventLayout extends SingleListingLayout {
   /**
    * The class's constructor.
    * @constructor

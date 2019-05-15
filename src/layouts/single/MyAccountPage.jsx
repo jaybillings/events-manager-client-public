@@ -10,7 +10,9 @@ export default class MyAccountPage extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {oldPass: '', newPass: '', messages: [], messagePanelVisible: false};
+    this.messagePanel = React.createRef();
+
+    this.state = {oldPass: '', newPass: ''};
 
     this.user = app.get('user');
     this.userService = app.service('users');
@@ -19,7 +21,6 @@ export default class MyAccountPage extends Component {
     this.logout = this.logout.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
     this.updateMessagePanel = this.updateMessagePanel.bind(this);
-    this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
   }
 
   /**
@@ -54,14 +55,7 @@ export default class MyAccountPage extends Component {
    * @param {object} newMsg
    */
   updateMessagePanel(newMsg) {
-    this.setState(prevState => ({messages: [newMsg, ...prevState.messages], messagePanelVisible: true}));
-  }
-
-  /**
-   * Prepares the message panel for dismissal by removing all messages and setting its visible state to false.
-   */
-  dismissMessagePanel() {
-    this.setState({messages: [], messagePanelVisible: false});
+    this.messagePanel.current.addMessage(newMsg);
   }
 
   /**
@@ -77,7 +71,7 @@ export default class MyAccountPage extends Component {
       <div className="container account-page">
         <Header />
         <h2>{this.user.email}'s Account</h2>
-        <MessagePanel messages={this.state.messages} isVisible={this.state.messagePanelVisible} dismissPabel={this.dismissMessagePanel}/>
+        <MessagePanel ref={this.messagePanel} />
         <div className={'button-container'}>
           <button type={'button'} className={'button-primary emphasis'} onClick={this.logout}>Log Out</button>
           <span>of your account.</span>

@@ -20,7 +20,7 @@ input[type=checkbox].toggle {
   width: 7rem;
   height: 3.5rem;
   position: relative;
-  background: #f0f0f0;
+  background: var(--dull-white); /* Used to be #f0f0f0 */
   border-radius: 2rem;
   padding: 2px;
   cursor: pointer;
@@ -48,7 +48,7 @@ input[type=checkbox].toggle {
 }
 
 .toggle:checked + .toggle-switch {
-  background: var(--success-color);
+  background: var(--emphasis-color);
 }
 
 .toggle:checked + .toggle-switch:after {
