@@ -46,7 +46,6 @@ export default class ImportLayout extends Component {
     this.publishListings = this.publishListings.bind(this);
 
     this.updateMessagePanel = this.updateMessagePanel.bind(this);
-    this.dismissMessagePanel = this.dismissMessagePanel.bind(this);
   }
 
   /**
