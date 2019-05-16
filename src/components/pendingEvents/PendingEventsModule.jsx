@@ -34,32 +34,17 @@ export default class PendingEventsModule extends PendingListingsModule {
     this.pendingVenuesService = app.service('pending-venues');
     this.orgsService = app.service('organizers');
     this.pendingOrgsService = app.service('pending-organizers');
-    this.tagsLookupService = app.service('events-tags-lookup');
+    this.eventsTagsLookupService = app.service('events-tags-lookup');
+    this.pendingEventsTagsLookupService = app.service('pending-events-tags-lookup');
     this.liveEventsService = app.service('events-live');
 
     this.fetchVenues = this.fetchVenues.bind(this);
     this.fetchPendingVenues = this.fetchPendingVenues.bind(this);
     this.fetchOrgs = this.fetchOrgs.bind(this);
     this.fetchPendingOrgs = this.fetchPendingOrgs.bind(this);
-  }
 
-  stopListening() {
-    super.stopListening();
-
-    const services = [
-      this.orgsService,
-      this.pendingOrgsService,
-      this.venuesService,
-      this.pendingVenuesService
-    ];
-
-    services.forEach(service => {
-      service
-        .removeAllListeners('created')
-        .removeAllListeners('updated')
-        .removeAllListeners('patched')
-        .removeAllListeners('removed');
-    });
+    this.copyPendingTagAssociations = this.copyPendingTagAssociations.bind(this);
+    this.removePendingTagAssociations = this.removePendingTagAssociations.bind(this);
   }
 
   listenForChanges() {
@@ -79,6 +64,37 @@ export default class PendingEventsModule extends PendingListingsModule {
         .on('patched', () => dataFetcher())
         .on('removed', () => dataFetcher());
     }
+
+    this.pendingEventsTagsLookupService
+      .on('created', message => {
+        this.props.updateMessagePanel({status: 'info', details: `Linked tag ${message.tag_uuid} with event #${message.event_uuid}.`});
+      })
+      .on('removed', message => {
+        this.props.updateMessagePanel({status: 'info', details: `Unlinked tag ${message.tag_uuid} from event #${message.event_uuid}`});
+      });
+  }
+
+  stopListening() {
+    super.stopListening();
+
+    const services = [
+      this.orgsService,
+      this.pendingOrgsService,
+      this.venuesService,
+      this.pendingVenuesService
+    ];
+
+    services.forEach(service => {
+      service
+        .removeAllListeners('created')
+        .removeAllListeners('updated')
+        .removeAllListeners('patched')
+        .removeAllListeners('removed');
+    });
+
+    this.pendingEventsTagsLookupService
+      .removeAllListeners('created')
+      .removeAllListeners('removed');
   }
 
   /**
@@ -192,7 +208,7 @@ export default class PendingEventsModule extends PendingListingsModule {
     return this.pendingListingsService.remove(listing.id)
       .then((result) => {
         this.handleListingSelect(result.id, false);
-        return this.removeTagAssociations(listing.uuid).then(() => {
+        return this.removePendingTagAssociations(listing.uuid).then(() => {
           return result;
         });
       })
@@ -217,10 +233,32 @@ export default class PendingEventsModule extends PendingListingsModule {
 
     return this.listingsService.create(eventData)
       .then(result => {
-        return this.registerLiveListing(result.id, result.name);
+        return Promise.all([
+          this.registerLiveListing(result.id, result.name),
+          this.copyPendingTagAssociations(result.uuid)
+        ]);
       })
       .catch(err => {
         displayErrorMessages('publish', `pending event "${pendingListing.name}"`, err, this.props.updateMessagePanel);
+      });
+  }
+
+  /**
+   * @override
+   * 
+   * @param pendingListing
+   * @param target
+   * @returns {Promise<T | never>}
+   */
+  updateLiveListing(pendingListing, target) {
+    let {id, ...listingData} = pendingListing;
+
+    return this.listingsService.update(target.id, listingData)
+      .then(result => {
+        return this.copyPendingTagAssociations(result.uuid);
+      })
+      .catch(err => {
+        displayErrorMessages('publish', `pending ${this.schema} "${pendingListing.name}"`, err, this.props.updateMessagePanel);
       });
   }
 
@@ -243,7 +281,7 @@ export default class PendingEventsModule extends PendingListingsModule {
         this.fetchListings();
         return Promise
           .all(resultSet.map(listing => {
-            return this.removeTagAssociations(listing.uuid);
+            return this.removePendingTagAssociations(listing.uuid);
           }))
           .then(results => {
             this.props.updateMessagePanel({status: 'info', details: 'Unlinked tags from deleted events.'});
@@ -274,25 +312,34 @@ export default class PendingEventsModule extends PendingListingsModule {
       });
   }
 
+  copyPendingTagAssociations(eventUUID) {
+    return this.pendingEventsTagsLookupService.find({query: {event_uuid: eventUUID}})
+      .then(results => {
+        if (results.total) {
+          const newData = results.data.map(row => {
+            return {event_uuid: row.event_uuid, tag_uuid: row.tag_uuid};
+          });
+          return this.eventsTagsLookupService.create(newData);
+        }
+        return {}
+      })
+      .catch(err => {
+        console.debug(err);
+        displayErrorMessages('copy', 'event-tag links', err, this.props.updateMessagePanel);
+      });
+  }
+
   /**
-   * Removes the tag associations of a given pending listing, if no matching live listing is present.
+   * Removes the tag associations of a given pending listing.
    *
    * @param {string} eventUUID
    */
-  removeTagAssociations(eventUUID) {
-    // Check for matching live event
-    return this.listingsService.find({query: {uuid: eventUUID}})
-      .then(results => {
-        if (!results.total) {
-          // Safe to delete tag associations
-          return this.tagsLookupService.remove(null, {query: {event_uuid: eventUUID}});
-        } else {
-          // Not used, but might be useful in future
-          return {matchingEventCount: results.total};
-        }
-      })
+  removePendingTagAssociations(eventUUID) {
+    return this.pendingEventsTagsLookupService
+      .remove(null, {query: {event_uuid: eventUUID}})
       .catch(err => {
-        console.log(`~ error in removeTagAssociations`, err);
+        displayErrorMessages('remove', 'event-tag connections', err, this.props.updateMessagePanel, 'retry');
+        console.error(err);
       });
   }
 
@@ -342,7 +389,7 @@ export default class PendingEventsModule extends PendingListingsModule {
         />
         <Searchbar />
         <PaginationLayout
-          key={'pending-events-pagination'} schema={'pending-events'}
+          key={'pending-events-pagination'} schema={'pending-events'} includeAll={false}
           total={this.state.pendingListingsTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
           updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
         />

@@ -56,7 +56,7 @@ export default class PendingListingsModule extends Component {
     this.updateListing = this.updateListing.bind(this);
     this.removeListing = this.removeListing.bind(this);
     this.createLiveListing = this.createLiveListing.bind(this);
-    this.replaceLiveListing = this.replaceLiveListing.bind(this);
+    this.updateLiveListing = this.updateLiveListing.bind(this);
 
     this.publishListings = this.publishListings.bind(this);
     this.publishListingsRecursive = this.publishListingsRecursive.bind(this);
@@ -299,7 +299,7 @@ export default class PendingListingsModule extends Component {
    * @param {object} pendingListing
    * @param {object} target - The listing to update.
    */
-  replaceLiveListing(pendingListing, target) {
+  updateLiveListing(pendingListing, target) {
     let {id, ...listingData} = pendingListing;
 
     return this.listingsService.update(target.id, listingData)
@@ -355,7 +355,7 @@ export default class PendingListingsModule extends Component {
           });
 
           if (liveMatch) {
-            return this.replaceLiveListing(listing, liveMatch)
+            return this.updateLiveListing(listing, liveMatch)
               .then(() => {
                 return this.removeListing(listing);
               });

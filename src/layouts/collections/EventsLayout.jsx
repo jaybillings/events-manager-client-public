@@ -7,6 +7,7 @@ import EventRow from "../../components/events/EventRow";
 import ListingsLayout from "../../components/ListingsLayout";
 import PaginationLayout from "../../components/common/PaginationLayout";
 import Filters from "../../components/common/Filters";
+import {Link} from "react-router-dom";
 
 /**
  * EventsLayout is a generic component that lays out an event collection page.
@@ -34,6 +35,7 @@ export default class EventsLayout extends ListingsLayout {
     this.orgsSerivce = app.service('organizers');
     this.tagsService = app.service('tags');
     this.eventsTagsLookupService = app.service('events-tags-lookup');
+    this.pendingEventsTagsLookupService = app.service('pending-events-tags-lookup');
     this.liveEventsService = app.service('events-live');
     this.deletedEventsService = app.service('events-deleted');
 
@@ -42,6 +44,7 @@ export default class EventsLayout extends ListingsLayout {
     this.fetchTags = this.fetchTags.bind(this);
     this.fetchLiveListings = this.fetchLiveListings.bind(this);
 
+    this.createPendingListing = this.createPendingListing.bind(this);
     this.createTagAssociations = this.createTagAssociations.bind(this);
     this.removeTagAssociations = this.removeTagAssociations.bind(this);
     this.registerEventLive = this.registerEventLive.bind(this);
@@ -91,11 +94,11 @@ export default class EventsLayout extends ListingsLayout {
       });
 
     this.eventsTagsLookupService
-      .on('created', () => {
-        this.updateMessagePanel({status: 'info', details: `Saved tags associated with event.`});
+      .on('created', message => {
+        this.updateMessagePanel({status: 'info', details: `Linked tag #${message.tag_uuid} with event.`});
       })
-      .on('removed', () => {
-        this.updateMessagePanel({status: 'info', details: `Removed tags associated with event.`});
+      .on('removed', message => {
+        this.updateMessagePanel({status: 'info', details: `Removed link between tag #${message.tag_uuid} and event.`});
       });
   }
 
@@ -286,6 +289,35 @@ export default class EventsLayout extends ListingsLayout {
       });
   }
 
+  createPendingListing(listingData) {
+    // TODO: Override parent method. Copy live lookups to pending lookup table.
+    return this.pendingListingsService
+      .create(listingData)
+      .then(result => {
+        this.setState({newPendingListing: result});
+        this.updateMessagePanel({
+          status: 'success', details: [
+            <span>`Pending event "${result.name}" created.`</span>,
+            <Link to={`/pendingevent/${result.id}`}>Click here to edit.</Link>
+          ]
+        });
+      })
+      .then(() => {
+        console.debug('looking for live event tags to copy');
+        return this.eventsTagsLookupService.find({query: {event_uuid: this.state.listing.uuid}})
+      })
+      .then(result => {
+        console.debug('copying links to pending lookup table');
+        if (result.total) this.pendingEventsTagsLookupService.create(result.data);
+      })
+      .catch(err => {
+        console.error(err);
+        displayErrorMessages('create', 'pending event from event',
+          err, this.updateMessagePanel, 'retry');
+      });
+
+  }
+
   /**
    * Creates associations between a given event and its tags.
    *
@@ -328,12 +360,13 @@ export default class EventsLayout extends ListingsLayout {
     Promise.all([
       this.liveEventsService.create({event_id: id}),
       this.deletedEventsService.remove(null, {query: {event_id: id}})
-    ]).catch(err => {
-      this.updateMessagePanel({
-        status: 'error',
-        details: `Failed to register event #${id} as live. ${JSON.stringify(err)}`
+    ])
+      .catch(err => {
+        this.updateMessagePanel({
+          status: 'error',
+          details: `Failed to register event #${id} as live. ${JSON.stringify(err)}`
+        });
       });
-    });
   }
 
   /**
@@ -345,12 +378,13 @@ export default class EventsLayout extends ListingsLayout {
     Promise.all([
       this.deletedEventsService.create({event_id: id}),
       this.liveEventsService.remove(null, {query: {event_id: id}})
-    ]).catch(err => {
-      this.updateMessagePanel({
-        status: 'error',
-        details: `Failed to register event #${id} as deleted. ${JSON.stringify(err)}`
+    ])
+      .catch(err => {
+        this.updateMessagePanel({
+          status: 'error',
+          details: `Failed to register event #${id} as deleted. ${JSON.stringify(err)}`
+        });
       });
-    });
   }
 
   /**
@@ -422,7 +456,7 @@ export default class EventsLayout extends ListingsLayout {
       <Filters key={'events-filters'} updateFilters={this.updateFilters} />,
       <PaginationLayout
         key={'events-pagination'} schema={'events'} total={this.state.listingsTotal}
-        pageSize={this.state.pageSize} activePage={this.state.currentPage}
+        pageSize={this.state.pageSize} activePage={this.state.currentPage} includeAll={true}
         updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
       />,
       <div className={'wrapper'} key={'events-table-wrapper'}>
@@ -464,7 +498,7 @@ export default class EventsLayout extends ListingsLayout {
     }
 
     return <EventAddForm
-      schema={'events'} venues={ this.state.venues} orgs={this.state.orgs} tags={this.state.tags}
+      schema={'events'} venues={this.state.venues} orgs={this.state.orgs} tags={this.state.tags}
       createListing={this.createListing} createPendingListing={this.createPendingListing}
     />;
   }
