@@ -28,7 +28,8 @@ export default class PaginationLayout extends Component {
    */
   renderPageOptions() {
     const schema = this.props.schema;
-    const pageSizes = [5, 25, 50, 100];
+    const includeAll = this.props.includeAll;
+    const pageSizes = includeAll ? [5, 25, 50, 100] : [5, 10]; // TODO: Fix this hack. Include 'sizes' prop.
     let pageOptions = [];
 
     pageSizes.forEach(size => {
@@ -36,7 +37,8 @@ export default class PaginationLayout extends Component {
         pageOptions.push(<option key={`${schema}-paging-${size}`} value={size}>{size}</option>);
       }
     });
-    pageOptions.push(<option key={`option-${this.props.total}`} value={this.props.total}>All</option>);
+
+    if (this.props.includeAll) pageOptions.push(<option key={`option-${this.props.total}`} value={this.props.total}>All</option>);
 
     return pageOptions;
   }

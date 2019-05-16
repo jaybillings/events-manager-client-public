@@ -309,7 +309,7 @@ export default class ReplaceNeighborhoodsModule extends Component {
     return ([
       <PaginationLayout
         key={'hood-replacement-pagination'} schema={'hood-lookups'} total={this.state.lookupsTotal}
-        pageSize={this.state.pageSize} activePage={this.state.currentPage}
+        pageSize={this.state.pageSize} activePage={this.state.currentPage} includeAll={false}
         updateCurrentPage={this.updateCurrentPage} updatePageSize={this.updatePageSize}
       />,
       <table key={'hood-replacement-table'} className={'schema-table'}>

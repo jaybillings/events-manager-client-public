@@ -318,7 +318,7 @@ export default class ReplaceTagsModule extends Component {
     return ([
       <PaginationLayout
         key={'tag-replacement-pagination'} schema={'tag-lookups'} total={this.state.lookupsTotal}
-        pageSize={this.state.pageSize} activePage={this.state.currentPage}
+        pageSize={this.state.pageSize} activePage={this.state.currentPage} includeAll={true}
         updateCurrentPage={this.updateCurrentPage} updatePageSize={this.updatePageSize}
       />,
       <table key={'tag-replacement-table'} className={'schema-table'}>
