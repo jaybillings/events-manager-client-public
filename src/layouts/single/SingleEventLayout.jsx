@@ -76,12 +76,12 @@ export default class SingleEventLayout extends SingleListingLayout {
 
     this.eventsTagsLookupService
       .on('created', message => {
-        if (message.event_id === this.listingID) {
+        if (this.state.listing && (message.event_uuid === this.state.listing.uuid)) {
           this.updateMessagePanel({status: 'info', details: 'Saved tags associated with event.'})
         }
       })
       .on('removed', message => {
-        if (message.event_id === this.listingID) {
+        if (this.state.listing && (message.event_uuid === this.state.listing.uuid)) {
           this.updateMessagePanel({status: 'info', details: 'Removed tags from event.'})
         }
       });

@@ -280,12 +280,12 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
   deleteListing() {
     this.pendingListingsService
       .remove(this.listingID)
-      .then(() => {
-        this.removePendingTagAssociations([]);
+      .then((result) => {
+        this.pendingEventsTagsLookupService.remove(null, {query: {event_uuid: result.uuid}});
         this.setState({hasDeleted: true});
       })
       .catch(err => {
-        displayErrorMessages('delete', this.state.listing.name, err, this.updateMessagePanel, 'retry');
+        displayErrorMessages('delete', `"${this.state.listing.name}"`, err, this.updateMessagePanel, 'retry');
       });
   }
 
@@ -297,11 +297,9 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
   createPendingTagAssociations(tagsToSave) {
     this.pendingEventsTagsLookupService
       .create(tagsToSave)
-      .then(() => {
-        this.fetchPendingTagAssociations();
-      })
+      .then(() => {this.fetchPendingTagAssociations();})
       .catch(err => {
-        displayErrorMessages('associate', 'tags with pending event', err, this.updateMessagePanel, 'retry');
+        displayErrorMessages('create', 'event-tag link', err, this.updateMessagePanel, 'retry');
       });
   }
 
@@ -310,16 +308,15 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
    *
    * @param {object[]} tagsToRemove
    */
-  removePendingTagAssociations(tagsToRemove) {
-    const query = {event_uuid: this.state.listing.uuid, tag_uuid: {$in: tagsToRemove}};
+  removePendingTagAssociations(tagsToRemove=null) {
+    const query = {event_uuid: this.state.listing.uuid};
+    if (tagsToRemove) query.tag_uuid = {$in: tagsToRemove};
 
     this.pendingEventsTagsLookupService
       .remove(null, {query: query})
-      .then(() => {
-        this.fetchPendingTagAssociations();
-      })
+      .then(() => {this.fetchPendingTagAssociations();})
       .catch(err => {
-        displayErrorMessages('de-associate', 'tags from pending event', err, this.updateMessagePanel, 'retry');
+        displayErrorMessages('remove', 'event-tag link', err, this.updateMessagePanel, 'retry');
       });
   }
 
