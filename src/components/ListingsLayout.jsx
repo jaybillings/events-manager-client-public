@@ -224,7 +224,8 @@ export default class ListingsLayout extends Component {
         return result;
       })
       .catch(errors => {
-        displayErrorMessages('copy', listingData.name || 'listing', errors, this.updateMessagePanel);
+        displayErrorMessages('create', `pending ${this.schema} from ${this.schema}`, errors,
+          this.updateMessagePanel, 'retry');
       });
   }
 
@@ -290,7 +291,7 @@ export default class ListingsLayout extends Component {
     return ([
       <PaginationLayout
         key={`${schema}-pagination`} schema={schema} total={this.state.listingsTotal}
-        pageSize={this.state.pageSize} activePage={this.state.currentPage}
+        pageSize={this.state.pageSize} activePage={this.state.currentPage} includeAll={true}
         updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
       />,
       <div className={'wrapper'} key={`${schema}-table-wrapper`}>

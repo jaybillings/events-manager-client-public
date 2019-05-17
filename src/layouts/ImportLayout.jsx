@@ -56,7 +56,7 @@ export default class ImportLayout extends Component {
     this.importerService
       .on('status', message => {
         if (message.status === 'success') {
-          this.updateMessagePanel({status: 'success', details: message.message});
+          this.updateMessagePanel({status: 'notice', details: message.message});
           this.resumeModuleListening();
         } else if (message.status === 'fail') {
           this.updateMessagePanel({status: 'error', details: message.message});
@@ -66,7 +66,7 @@ export default class ImportLayout extends Component {
           console.error(message.rawError || 'No raw error');
           this.updateMessagePanel({status: 'error', details: message.message});
         } else if (message.status === 'status') {
-          this.updateMessagePanel({status: 'info', details: message.message})
+          this.updateMessagePanel({status: 'success', details: message.message})
         }
       });
   }
@@ -128,7 +128,7 @@ export default class ImportLayout extends Component {
           this.updateMessagePanel({status: 'error', details: body.message});
           console.error(body.message);
         } else {
-          this.updateMessagePanel({status: 'info', details: 'Importer is running. This may take several minutes.'});
+          this.updateMessagePanel({status: 'notice', details: 'Importer is running. This may take several minutes.'});
         }
       });
   }

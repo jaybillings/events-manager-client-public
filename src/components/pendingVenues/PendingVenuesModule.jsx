@@ -145,7 +145,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
         />
         <Searchbar />
         <PaginationLayout
-          key={'pending-venues-pagination'} schema={'pending-venues'}
+          key={'pending-venues-pagination'} schema={'pending-venues'} includeAll={false}
           total={pendingVenuesTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
           updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
         />

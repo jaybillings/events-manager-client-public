@@ -16,7 +16,7 @@ export default class MessagePanel extends Component {
   constructor(props) {
     super(props);
 
-    this.maxVisibleSeconds = 1000 * 10;
+    this.maxVisibleSeconds = 1000 * 45;
 
     this.state = {isVisible: false, messages: [], timeoutID: null};
 

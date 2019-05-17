@@ -29,7 +29,7 @@ export default class PendingListingsModule extends Component {
 
     this.schema = schema;
     this.user = app.get('user');
-    this.publishPageSize = 25;
+    this.publishPageSize = 5;
     this.maxLimit = 5000;
     this.defaultQuery = {$sort: {name: 1}, $limit: this.maxLimit, $select: ['id', 'uuid', 'name']};
 
@@ -50,13 +50,13 @@ export default class PendingListingsModule extends Component {
     this.queryForExisting = this.queryForExisting.bind(this);
     this.queryForExact = this.queryForExact.bind(this);
     this.queryForIDs = this.queryForIDs.bind(this);
-    this.queryForLiveUUIDs = this.queryForLiveUUIDs.bind(this);
+    this.queryForPublishedUUIDs = this.queryForPublishedUUIDs.bind(this);
     this.checkForLiveLinked = this.checkForLiveLinked.bind(this);
 
     this.updateListing = this.updateListing.bind(this);
     this.removeListing = this.removeListing.bind(this);
     this.createLiveListing = this.createLiveListing.bind(this);
-    this.replaceLiveListing = this.replaceLiveListing.bind(this);
+    this.updateLiveListing = this.updateLiveListing.bind(this);
 
     this.publishListings = this.publishListings.bind(this);
     this.publishListingsRecursive = this.publishListingsRecursive.bind(this);
@@ -234,7 +234,7 @@ export default class PendingListingsModule extends Component {
    *
    * @returns {Promise<*>}
    */
-  queryForLiveUUIDs() {
+  queryForPublishedUUIDs() {
     return this.listingsService.find({query: {$select: ['uuid', 'name'], $limit: this.maxLimit}, paginate: false});
   }
 
@@ -299,7 +299,7 @@ export default class PendingListingsModule extends Component {
    * @param {object} pendingListing
    * @param {object} target - The listing to update.
    */
-  replaceLiveListing(pendingListing, target) {
+  updateLiveListing(pendingListing, target) {
     let {id, ...listingData} = pendingListing;
 
     return this.listingsService.update(target.id, listingData)
@@ -309,10 +309,9 @@ export default class PendingListingsModule extends Component {
   }
 
   async publishListings(idsToPublish) {
+    this.props.updateMessagePanel({status: 'success', details: `Started publishing ${this.schema}. Please wait...`});
 
-    this.props.updateMessagePanel({status: 'info', details: `Started publishing ${this.schema}. Please wait...`});
-
-    const liveIDs = await this.queryForLiveUUIDs();
+    const liveIDs = await this.queryForPublishedUUIDs();
     const allResults = await this.publishListingsRecursive(idsToPublish, liveIDs);
 
     this.props.updateMessagePanel({status: 'success', details: `Finished publishing ${this.schema}`});
@@ -325,10 +324,10 @@ export default class PendingListingsModule extends Component {
     if (selectedIDs.length === 0) return;
 
     return this.publishPageOfListings(selectedIDs, liveIDs).then(result => {
-      console.debug('Publish page of listings results', result);
       if (!result[0]) return;
 
       const idsToRemove = result.map(listing => {
+        console.debug('listing', listing);
         return listing.id;
       });
       const newSelections = selectedIDs.filter(id => {
@@ -336,7 +335,6 @@ export default class PendingListingsModule extends Component {
       });
 
       return this.publishListingsRecursive(newSelections, liveIDs);
-
     })
   }
 
@@ -347,7 +345,7 @@ export default class PendingListingsModule extends Component {
       .then(result => {
         return Promise.all(result.data.map(listing => {
           if (!this.checkForLiveLinked(listing)) {
-            const msg = `Cannot publish "${listing.name}" (${listing.uuid}): missing required linked schema.`;
+            const msg = `Cannot publish "${listing.name}" (${listing.uuid}): missing required linked schema. (Have all linked listings been published?)`;
             this.props.updateMessagePanel({status: 'error', details: msg});
             return listing;
           }
@@ -357,7 +355,7 @@ export default class PendingListingsModule extends Component {
           });
 
           if (liveMatch) {
-            return this.replaceLiveListing(listing, liveMatch)
+            return this.updateLiveListing(listing, liveMatch)
               .then(() => {
                 return this.removeListing(listing);
               });
@@ -536,7 +534,7 @@ export default class PendingListingsModule extends Component {
         />
         <Searchbar />
         <PaginationLayout
-          key={`pending-${schema}-pagination`} schema={`pending-${schema}`}
+          key={`pending-${schema}-pagination`} schema={`pending-${schema}`} includeAll={false}
           total={this.state.pendingListingsTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
           updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
         />

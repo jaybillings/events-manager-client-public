@@ -2,6 +2,7 @@ import React from 'react';
 import {Redirect} from "react-router";
 import {Link} from "react-router-dom";
 import {displayErrorMessages} from "../utilities";
+import {MdChevronLeft} from "react-icons/md";
 
 import SingleListingLayout from "./SingleListingLayout";
 import ListingRecordUniversal from "./ListingRecordUniversal";
@@ -29,6 +30,7 @@ export default class SinglePendingListingLayout extends SingleListingLayout {
         this.fetchMatchingLiveListing(result.uuid);
       })
       .catch(errors => {
+        console.error(errors);
         this.setState({notFound: true});
         displayErrorMessages('fetch', `${this.schema} #${this.listingID}`, errors, this.updateMessagePanel);
       });
@@ -71,7 +73,7 @@ export default class SinglePendingListingLayout extends SingleListingLayout {
     return (
       <div className={'container'}>
         <Header />
-        <p><Link to={`/${returnTarget}`}>&lt; Return to {returnTarget}</Link></p>
+        <p className={'message-atom'}><Link to={`/${returnTarget}`}><MdChevronLeft/>Return to {returnTarget}</Link></p>
         <MessagePanel ref={this.messagePanel} />
         <div className={'block-warning'}><h2 title={headerTitle}>{this.state.listing.name}</h2></div>
         {this.renderRecord()}

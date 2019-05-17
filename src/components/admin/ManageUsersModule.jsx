@@ -170,7 +170,7 @@ export default class ManageUsersModule extends Component {
     return ([
       <PaginationLayout
         key={'users-pagination'} schema={'users'} total={this.state.usersTotal}
-        pageSize={this.state.pageSize} activePage={this.state.currentPage}
+        pageSize={this.state.pageSize} activePage={this.state.currentPage} includeAll={true}
         updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
       />,
       <table key={'users-table'} className={'schema-table'}>
