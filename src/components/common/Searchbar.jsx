@@ -11,7 +11,7 @@ export default class Searchbar extends Component {
    * The class's constructor.
    * @constructor
    *
-   * @param {{updateFilters: Function}} props
+   * @param {{updateFilter: Function}} props
    */
   constructor(props) {
     super(props);
@@ -23,7 +23,7 @@ export default class Searchbar extends Component {
 
   handleSearch(e) {
     // TODO: Delay slightly before generating search
-    
+
     console.log('in handleseearch');
 
     if (this.state.searching) return;

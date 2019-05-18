@@ -1,5 +1,6 @@
 import React, {Component} from "react";
 import {Link} from "react-router-dom";
+import LocalStorage from "localstorage";
 import {buildColumnSort, buildSortQuery, displayErrorMessages, makeSingular, renderTableHeader} from "../utilities";
 import app from "../services/socketio";
 
@@ -32,15 +33,19 @@ export default class ListingsLayout extends Component {
     this.defaultTableSort = ['updated_at', -1];
     this.defaultLimit = 3000;
     this.defaultQuery = {$sort: {name: 1}, $select: ['name', 'uuid'], $limit: this.defaultLimit};
+    this.localStorageObj = new LocalStorage(`vs-coe-${schema}:`);
     this.messagePanel = React.createRef();
 
     this.state = {
       listings: [], listingsTotal: 0, listingsLoaded: false, newPendingListing: {},
-      pageSize: this.defaultPageSize, currentPage: 1, sort: this.defaultTableSort
+      pageSize: this.defaultPageSize, currentPage: 1, sort: this.defaultTableSort, filterType: 'none'
     };
 
     this.listingsService = app.service(this.schema);
     this.pendingListingsService = app.service(`pending-${this.schema}`);
+
+    this.saveQueryState = this.saveQueryState.bind(this);
+    this.loadQueryState = this.loadQueryState.bind(this);
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.fetchListings = this.fetchListings.bind(this);
@@ -70,7 +75,10 @@ export default class ListingsLayout extends Component {
       this.setState({currentPage: 1}, () => this.fetchListings())
     };
 
-    this.fetchAllData();
+    const queryState = this.loadQueryState();
+    this.setState(queryState, () => {
+      this.fetchAllData();
+    });
 
     // Register listeners
     this.listingsService
@@ -105,15 +113,34 @@ export default class ListingsLayout extends Component {
   }
 
   /**
-   * Runs before the component unmounts. Unregisters data service listeners.
+   * Runs before the component unmounts. Unregisters data service listeners and saves the table's state.
    * @override
    */
   componentWillUnmount() {
+    this.saveQueryState();
+
     this.listingsService
       .removeAllListeners('created')
       .removeAllListeners('updated')
       .removeAllListeners('patched')
       .removeAllListeners('removed');
+  }
+
+  saveQueryState() {
+    this.localStorageObj.put('queryState', {
+      pageSize: this.state.pageSize,
+      currentPage: this.state.currentPage,
+      sort: this.state.sort
+    });
+  }
+
+  loadQueryState() {
+    const [err, queryState] = this.localStorageObj.get('queryState');
+    if (err) {
+      console.error(err);
+      return {};
+    }
+    else return queryState;
   }
 
   /**
@@ -338,7 +365,7 @@ export default class ListingsLayout extends Component {
   render() {
     const schema = this.schema;
     const pendingListing = this.state.newPendingListing;
-    const filterType = (!this.state.filterLabel || this.state.filterLabel === 'none') ? 'All' : this.state.filterLabel;
+    const filterType = this.state.filterType === 'none' ? 'All' : this.state.filterType;
 
     let pendingListingLink = pendingListing.id ? <div className={'pending-link'}>
       <Link to={`/pending${this.schema}/${pendingListing.id}`}>Click here to edit {pendingListing.name}</Link>

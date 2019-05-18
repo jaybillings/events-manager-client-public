@@ -28,7 +28,7 @@ export default class EventsLayout extends ListingsLayout {
     this.state = {
       ...this.state, venues: [], orgs: [], tags: [],
       venuesLoaded: false, orgsLoaded: false, tagsLoaded: false,
-      filterLabel: 'none', liveIDs: [], liveIDsLoaded: false
+      filterType: 'none', liveIDs: [], liveIDsLoaded: false
     };
 
     this.venuesService = app.service('venues');
@@ -50,7 +50,7 @@ export default class EventsLayout extends ListingsLayout {
     this.registerEventLive = this.registerEventLive.bind(this);
     this.registerEventDeleted = this.registerEventDeleted.bind(this);
 
-    this.updateFilters = this.updateFilters.bind(this);
+    this.updateFilter = this.updateFilter.bind(this);
   }
 
   /**
@@ -133,6 +133,15 @@ export default class EventsLayout extends ListingsLayout {
       service
         .removeAllListeners('created')
         .removeAllListeners('removed');
+    });
+  }
+
+  saveQueryState() {
+    this.localStorageObj.put('queryState', {
+      pageSize: this.state.pageSize,
+      currentPage: this.state.currentPage,
+      sort: this.state.sort,
+      filterType: this.state.filterType
     });
   }
 
@@ -392,8 +401,9 @@ export default class EventsLayout extends ListingsLayout {
    *
    * @param {String} filterType
    */
-  updateFilters(filterType) {
-    this.setState({filterLabel: filterType, currentPage: 1}, () => {
+  updateFilter(filterType) {
+    console.debug('filterType', filterType);
+    this.setState({filterType, currentPage: 1}, () => {
       this.fetchListings();
     });
   }
@@ -408,7 +418,7 @@ export default class EventsLayout extends ListingsLayout {
    *   * default - all events
    */
   createFilterQuery() {
-    const filterType = this.state.filterLabel;
+    const filterType = this.state.filterType;
     const acceptedFilters = ['dropped', 'stale', 'live'];
 
     if (acceptedFilters.includes(filterType)) {
@@ -433,7 +443,7 @@ export default class EventsLayout extends ListingsLayout {
       return <p key={'events-message'} className={'load-message'}>Data is loading... Please be patient...</p>;
     } else if (this.state.listingsTotal === 0) {
       return [
-        <Filters key={'events-filters'} updateFilters={this.updateFilters} />,
+        <Filters key={'events-filters'} filterType={this.state.filterType} updateFilter={this.updateFilter} />,
         <p key={'events-message'} className={'load-message'}>No events to list.</p>
       ];
     }
@@ -453,7 +463,7 @@ export default class EventsLayout extends ListingsLayout {
     const orgs = this.state.orgs;
 
     return ([
-      <Filters key={'events-filters'} updateFilters={this.updateFilters} />,
+      <Filters key={'events-filters'} filterType={this.state.filterType} updateFilter={this.updateFilter} />,
       <PaginationLayout
         key={'events-pagination'} schema={'events'} total={this.state.listingsTotal}
         pageSize={this.state.pageSize} activePage={this.state.currentPage} includeAll={true}

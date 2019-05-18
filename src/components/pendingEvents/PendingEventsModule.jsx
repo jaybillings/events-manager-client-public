@@ -245,7 +245,7 @@ export default class PendingEventsModule extends PendingListingsModule {
 
   /**
    * @override
-   * 
+   *
    * @param pendingListing
    * @param target
    * @returns {Promise<T | never>}

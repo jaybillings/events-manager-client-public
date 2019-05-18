@@ -12,27 +12,22 @@ export default class Filters extends Component {
    * The class's constructor.
    * @constructor
    *
-   * @param {{updateFilters: Function}} props
+   * @param {{updateFilter: Function}} props
    */
   constructor(props) {
+    // TODO: Get initial state from props
     super(props);
 
-    this.state = {currentFilter: 'none'};
-
-    this.handleSelection = this.handleSelection.bind(this);
+    this.handleButtonClick = this.handleButtonClick.bind(this);
   }
 
-  /**
-   * Handles filter selection by setting the current filter type.
-   *
-   * @param {Event} e
-   */
-  handleSelection(e) {
-    const tmpFilter = e.target.dataset.filterType;
-    const filter = (this.state.currentFilter === tmpFilter) ? 'none' : tmpFilter;
+  handleButtonClick(e) {
+    console.debug(e);
 
-    this.setState({'currentFilter': filter});
-    this.props.updateFilters(filter);
+    const filterLabel = e.target.dataset.filterType || null;
+    if (!filterLabel) return;
+
+    this.props.updateFilter((filterLabel === this.props.filterType) ? 'none' : filterLabel);
   }
 
   /**
@@ -45,7 +40,9 @@ export default class Filters extends Component {
    */
   renderButton(type, text, isActive) {
     const activeClass = isActive ? 'button-primary' : 'default';
-    return <button key={`${type}-${isActive}`} type={'button'} data-filter-type={type} className={activeClass} onClick={this.handleSelection}>{text}</button>
+    return <button
+      key={`${type}-${isActive}`} type={'button'} data-filter-type={type} className={activeClass}
+      onClick={this.handleButtonClick}>{text}</button>
   }
 
   /**
@@ -56,7 +53,7 @@ export default class Filters extends Component {
    * @returns {*}
    */
   render() {
-    const currentFilter = this.state.currentFilter;
+    const currentFilter = this.props.filterType;
     let buttons = [];
 
 
