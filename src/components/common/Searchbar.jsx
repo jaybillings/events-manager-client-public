@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import {MdCancel} from "react-icons/md";
 
 import '../../styles/searchbar.css';
 
@@ -16,25 +17,27 @@ export default class Searchbar extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {searchTerm: '', searching: false};
+    this.state = {searchTerm: ''};
 
-    this.handleSearch = this.handleSearch.bind(this);
+    this.handleTermChange = this.handleTermChange.bind(this);
+    this.handleTermClear = this.handleTermClear.bind(this);
+    this.renderClearButton = this.renderClearButton.bind(this);
   }
 
-  handleSearch(e) {
-    // TODO: Delay slightly before generating search
-
-    console.log('in handleseearch');
-
-    if (this.state.searching) return;
-
+  handleTermChange(e) {
+    // TODO: Delay slightly before generating search (?)
     const searchTerm = e.target ? e.target.value : this.state.searchTerm;
 
-    this.setState({searchTerm, searching: true}, () => {
-      console.log('[DEBUG]', this.state);
-      // TODO: Do the actual search here
-      this.setState({searching: false});
-    });
+    this.setState({showCancel: !searchTerm});
+    this.props.updateSearchQuery(searchTerm);
+  }
+
+  handleTermClear() {
+    this.props.updateSearchQuery('');
+  }
+
+  renderClearButton() {
+    if (this.props.searchTerm !== '') return <span onClick={this.handleTermClear}><MdCancel /></span>;
   }
 
   /**
@@ -47,7 +50,10 @@ export default class Searchbar extends Component {
   render() {
     return (
       <div className={'searchbar'}>
-        <input type={'text'} placeholder={'Type here to search'} onChange={this.handleSearch} />
+        <input
+          type={'text'} placeholder={'Type here to search'} onChange={this.handleTermChange}
+          value={this.props.searchTerm} />
+        {this.renderClearButton()}
       </div>
     );
   }

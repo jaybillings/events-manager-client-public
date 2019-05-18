@@ -1,5 +1,6 @@
 import React from 'react';
 import {arrayUnique, buildSortQuery, displayErrorMessages, renderTableHeader} from "../../utilities";
+import {Link} from "react-router-dom";
 import app from '../../services/socketio';
 
 import EventAddForm from '../../components/events/EventAddForm';
@@ -7,7 +8,6 @@ import EventRow from "../../components/events/EventRow";
 import ListingsLayout from "../../components/ListingsLayout";
 import PaginationLayout from "../../components/common/PaginationLayout";
 import Filters from "../../components/common/Filters";
-import {Link} from "react-router-dom";
 
 /**
  * EventsLayout is a generic component that lays out an event collection page.
@@ -141,6 +141,7 @@ export default class EventsLayout extends ListingsLayout {
       pageSize: this.state.pageSize,
       currentPage: this.state.currentPage,
       sort: this.state.sort,
+      searchTerm: this.state.searchTerm,
       filterType: this.state.filterType
     });
   }
@@ -164,8 +165,10 @@ export default class EventsLayout extends ListingsLayout {
    */
   fetchListings() {
     const filterQuery = this.createFilterQuery();
+    const searchFilter = this.createSearchQuery();
     const query = {
       ...filterQuery,
+      ...searchFilter,
       $sort: buildSortQuery(this.state.sort),
       $limit: this.state.pageSize,
       $skip: this.state.pageSize * (this.state.currentPage - 1)

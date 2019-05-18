@@ -248,7 +248,7 @@ export default class PendingEventsModule extends PendingListingsModule {
    *
    * @param pendingListing
    * @param target
-   * @returns {Promise<T | never>}
+   * @returns {Promise<*>}
    */
   updateLiveListing(pendingListing, target) {
     let {id, ...listingData} = pendingListing;
@@ -387,7 +387,7 @@ export default class PendingEventsModule extends PendingListingsModule {
           numSelected={selectedEvents.length} total={this.state.pendingListingsTotal} schema={this.schema}
           selectPage={this.selectPageOfListings} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
         />
-        <Searchbar />
+        <Searchbar key={'pending-events-search'} updateSearchQuery={this.updateSearchQuery} />
         <PaginationLayout
           key={'pending-events-pagination'} schema={'pending-events'} includeAll={false}
           total={this.state.pendingListingsTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}

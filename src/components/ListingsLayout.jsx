@@ -11,6 +11,7 @@ import ListingRow from "./ListingRow";
 import PaginationLayout from "./common/PaginationLayout";
 
 import '../styles/schema-table.css';
+import Searchbar from "./common/Searchbar";
 
 /**
  * ListingsLayout is a generic component that lays out a listing collection page.
@@ -38,7 +39,8 @@ export default class ListingsLayout extends Component {
 
     this.state = {
       listings: [], listingsTotal: 0, listingsLoaded: false, newPendingListing: {},
-      pageSize: this.defaultPageSize, currentPage: 1, sort: this.defaultTableSort, filterType: 'none'
+      pageSize: this.defaultPageSize, currentPage: 1, sort: this.defaultTableSort,
+      filterType: 'none', searchTerm: ''
     };
 
     this.listingsService = app.service(this.schema);
@@ -59,7 +61,9 @@ export default class ListingsLayout extends Component {
     this.updatePageSize = this.updatePageSize.bind(this);
     this.updateCurrentPage = this.updateCurrentPage.bind(this);
     this.updateColumnSort = this.updateColumnSort.bind(this);
+    this.updateSearchQuery = this.updateSearchQuery.bind(this);
     this.updateMessagePanel = this.updateMessagePanel.bind(this);
+    this.createSearchQuery = this.createSearchQuery.bind(this);
 
     this.renderTable = this.renderTable.bind(this);
     this.renderAddForm = this.renderAddForm.bind(this);
@@ -130,7 +134,8 @@ export default class ListingsLayout extends Component {
     this.localStorageObj.put('queryState', {
       pageSize: this.state.pageSize,
       currentPage: this.state.currentPage,
-      sort: this.state.sort
+      sort: this.state.sort,
+      searchTerm: this.state.searchTerm
     });
   }
 
@@ -139,8 +144,7 @@ export default class ListingsLayout extends Component {
     if (err) {
       console.error(err);
       return {};
-    }
-    else return queryState;
+    } else return queryState;
   }
 
   /**
@@ -157,14 +161,18 @@ export default class ListingsLayout extends Component {
    * table page size, page skipping, and column sorting.
    */
   fetchListings() {
+    const searchFilter = this.createSearchQuery();
+    const query = {
+      ...searchFilter,
+      $sort: buildSortQuery(this.state.sort),
+      $limit: this.state.pageSize,
+      $skip: this.state.pageSize * (this.state.currentPage - 1)
+    };
+
+    console.debug(`${this.schema} query`, query);
+
     this.listingsService
-      .find({
-        query: {
-          $sort: buildSortQuery(this.state.sort),
-          $limit: this.state.pageSize,
-          $skip: this.state.pageSize * (this.state.currentPage - 1)
-        }
-      })
+      .find({query})
       .then(result => {
         this.setState({listings: result.data, listingsTotal: result.total, listingsLoaded: true});
       })
@@ -285,6 +293,13 @@ export default class ListingsLayout extends Component {
     this.setState({sort: colSortState}, () => this.fetchListings());
   }
 
+  updateSearchQuery(searchTerm) {
+    console.debug('searchTerm', searchTerm);
+    this.setState({searchTerm}, () => {
+      this.fetchListings();
+    });
+  }
+
   /**
    * Adds a message to the message panel.
    *
@@ -292,6 +307,12 @@ export default class ListingsLayout extends Component {
    */
   updateMessagePanel(newMsg) {
     this.messagePanel.current.addMessage(newMsg);
+  }
+
+  createSearchQuery() {
+    /** @note This syntax is specific to KNEX and may need to be changed if the adapter chanegs. **/
+    if (!this.state.searchTerm) return {};
+    return {$or: [{'name': {$like: `%${this.state.searchTerm}%`}}]};
   }
 
   /**
@@ -329,7 +350,8 @@ export default class ListingsLayout extends Component {
               <ListingRow
                 key={listing.id} schema={schema} listing={listing}
                 updateListing={this.updateListing} deleteListing={this.deleteListing}
-                createPendingListing={this.createPendingListing} checkForPending={this.checkForPending}
+                createPendingListing={this.createPendingListing}
+                checkForPending={this.checkForPending}
               />
             )
           }
@@ -345,12 +367,11 @@ export default class ListingsLayout extends Component {
    * @returns {*}
    */
   renderAddForm() {
-    if (!this.state.listingsLoaded) {
-      return <p>Data is loading... Please be patient...</p>;
-    }
+    if (!this.state.listingsLoaded) return <p>Data is loading... Please be patient...</p>;
 
     return <ListingAddForm
-      schema={this.schema} createListing={this.createListing} createPendingListing={this.createPendingListing}
+      schema={this.schema} createListing={this.createListing}
+      createPendingListing={this.createPendingListing}
     />;
   }
 
@@ -365,6 +386,7 @@ export default class ListingsLayout extends Component {
     const schema = this.schema;
     const pendingListing = this.state.newPendingListing;
     const filterType = this.state.filterType === 'none' ? 'All' : this.state.filterType;
+    const searchTerm = this.state.searchTerm;
 
     let pendingListingLink = pendingListing.id ? <div className={'pending-link'}>
       <Link to={`/pending${this.schema}/${pendingListing.id}`}>Click here to edit {pendingListing.name}</Link>
@@ -376,6 +398,7 @@ export default class ListingsLayout extends Component {
         <MessagePanel ref={this.messagePanel} />
         {pendingListingLink}
         <h2>Browse {filterType} {schema}</h2>
+        <Searchbar key={`${schema}-search`} searchTerm={searchTerm} updateSearchQuery={this.updateSearchQuery} />
         {this.renderTable()}
         <h2>Add New {this.singularSchema}</h2>
         {this.renderAddForm()}

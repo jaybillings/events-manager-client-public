@@ -143,7 +143,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
           numSelected={selectedVenues.length} total={this.state.pendingListingsTotal} schema={this.schema}
           selectPage={this.selectPageOfListings} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
         />
-        <Searchbar />
+        <Searchbar key={'pending-venues-search'} updateSearchQuery={this.updateSearchQuery} />
         <PaginationLayout
           key={'pending-venues-pagination'} schema={'pending-venues'} includeAll={false}
           total={pendingVenuesTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}

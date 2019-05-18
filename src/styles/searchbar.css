@@ -1,7 +1,16 @@
 .searchbar {
+  position: relative;
   float: right;
 }
 
 .searchbar input + button {
   margin-left: 1rem;
+}
+
+.searchbar svg:not(:root) {
+  position: absolute;
+  font-size: 1.75rem;
+  right: 0.5rem;
+  top: 20%;
+  color: var(--neutral-accent-color);
 }

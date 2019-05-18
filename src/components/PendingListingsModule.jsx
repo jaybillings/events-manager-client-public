@@ -38,7 +38,7 @@ export default class PendingListingsModule extends Component {
     this.state = {
       moduleVisible: true, pendingListings: [], pendingListingsTotal: 0,
       listingsLoaded: false, selectedListings: [], pageSize: this.props.defaultPageSize,
-      currentPage: 1, sort: this.props.defaultSortOrder, allIDs: []
+      currentPage: 1, sort: this.props.defaultSortOrder, allIDs: [], searchTerm: ''
     };
 
     this.pendingListingsService = app.service(`pending-${this.schema}`);
@@ -78,6 +78,9 @@ export default class PendingListingsModule extends Component {
     this.updateColSort = this.updateColSort.bind(this);
     this.updatePageSize = this.updatePageSize.bind(this);
     this.updateCurrentPage = this.updateCurrentPage.bind(this);
+
+    this.updateSearchQuery = this.updateSearchQuery.bind(this);
+    this.createSearchQuery = this.createSearchQuery.bind(this);
 
     this.handleListingSelect = this.handleListingSelect.bind(this);
     this.toggleModuleVisibility = this.toggleModuleVisibility.bind(this);
@@ -180,8 +183,7 @@ export default class PendingListingsModule extends Component {
     if (err) {
       console.error(err);
       return {};
-    }
-    else return moduleState;
+    } else return moduleState;
   }
 
   saveQueryState() {
@@ -189,7 +191,8 @@ export default class PendingListingsModule extends Component {
       selectedListings: this.state.selectedListings,
       pageSize: this.state.pageSize,
       currentPage: this.state.currentPage,
-      sort: this.state.sort
+      sort: this.state.sort,
+      searchTerm: this.state.searchTerm
     });
   }
 
@@ -198,8 +201,7 @@ export default class PendingListingsModule extends Component {
     if (err) {
       console.error(err);
       return {};
-    }
-    else return queryState;
+    } else return queryState;
   }
 
   /**
@@ -220,13 +222,17 @@ export default class PendingListingsModule extends Component {
       this.setState({allIDs: result.data.map(row => row.id)});
     });
 
+    const searchFilter = this.createSearchQuery();
+
     const query = {
+      ...searchFilter,
       $sort: buildSortQuery(this.state.sort),
-        $limit: this.state.pageSize,
-        $skip: this.state.pageSize * (this.state.currentPage - 1)
+      $limit: this.state.pageSize,
+      $skip: this.state.pageSize * (this.state.currentPage - 1)
     };
 
     this.pendingListingsService.find({query}).then(message => {
+      console.debug('message', message);
       this.setState({
         pendingListings: message.data, pendingListingsTotal: message.total, listingsLoaded: true
       });
@@ -541,6 +547,15 @@ export default class PendingListingsModule extends Component {
     this.setState({selectedListings: []});
   }
 
+  updateSearchQuery(searchTerm) {
+    this.setState({searchTerm});
+  }
+
+  createSearchQuery() {
+    if (!this.state.searchTerm) return;
+    return {$or: [{'name': {$like: `%${this.state.searchTerm}%`}}]};
+  }
+
   /**
    * Renders the module's table.
    *
@@ -575,7 +590,7 @@ export default class PendingListingsModule extends Component {
           numSelected={selectedListings.length} total={this.state.listingsTotal} schema={this.schema}
           selectPage={this.selectPageOfListings} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
         />
-        <Searchbar />
+        <Searchbar key={`pending-${this.schema}-search`} updateSearchQuery={this.updateSearchQuery} />
         <PaginationLayout
           key={`pending-${schema}-pagination`} schema={`pending-${schema}`} includeAll={false}
           total={this.state.pendingListingsTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
