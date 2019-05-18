@@ -18,7 +18,15 @@ export default class PaginationLayout extends Component {
   constructor(props) {
     super(props);
 
+    this.handlePageChange = this.handlePageChange.bind(this);
     this.renderPageOptions = this.renderPageOptions.bind(this);
+  }
+
+  handlePageChange(e) {
+    console.debug(e);
+    const newPageSize = e.target.value;
+    if (typeof newPageSize === 'undefined' || newPageSize === this.props.pageSize) return;
+    this.props.updatePageSize(newPageSize);
   }
 
   /**
@@ -58,10 +66,10 @@ export default class PaginationLayout extends Component {
     return (
       <div className={'pagination-container'}>
         <select defaultValue={this.props.pageSize}
-                onChange={this.props.updatePageSize}>{this.renderPageOptions()}</select>
+                onChange={this.handlePageChange}>{this.renderPageOptions()}</select>
         <Pagination
-          activePage={this.props.activePage} itemsCountPerPage={this.props.pageSize} totalItemsCount={this.props.total}
-          onChange={this.props.updateCurrentPage}
+          activePage={this.props.activePage} itemsCountPerPage={this.props.pageSize}
+          totalItemsCount={this.props.total} onChange={this.props.updateCurrentPage}
         />
         <span>{pageInfo}</span>
       </div>

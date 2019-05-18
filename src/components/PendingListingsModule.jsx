@@ -476,8 +476,7 @@ export default class PendingListingsModule extends Component {
    *
    * @param {Event} e
    */
-  updatePageSize(e) {
-    const pageSize = e.target.value;
+  updatePageSize(pageSize) {
     this.setState({pageSize: parseInt(pageSize, 10), currentPage: 1}, () => this.fetchAllData());
   }
 

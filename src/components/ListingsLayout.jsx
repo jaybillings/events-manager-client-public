@@ -259,11 +259,10 @@ export default class ListingsLayout extends Component {
   /**
    * Updates the component's page size, then fetches new listings.
    *
-   * @param {Event} e
+   * @param pageSize
    */
-  updatePageSize(e) {
-    if (!e.target.value) return;
-    this.setState({pageSize: parseInt(e.target.value, 10), currentPage: 1},
+  updatePageSize(pageSize) {
+    this.setState({pageSize: parseInt(pageSize, 10), currentPage: 1},
       () => this.fetchListings());
   }
 
