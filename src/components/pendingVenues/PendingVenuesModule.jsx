@@ -68,6 +68,20 @@ export default class PendingVenuesModule extends PendingListingsModule {
     }
   }
 
+  createSearchQuery() {
+    if (!this.state.searchTerm) return null;
+
+    const likeClause = {$like: `%${this.state.searchTerm}%`};
+
+    return {
+      '$or': [
+        {'fk_hoods.name': likeClause},
+        {'pending-venues.name': likeClause},
+        {'pending-venues.uuid': likeClause}
+      ]
+    };
+  }
+
   /**
    * Fetches all data for the page.
    * @override
@@ -119,7 +133,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
       ['name', 'Name'],
-      ['fk_hood', 'Neighborhood'],
+      ['fk_hoods.name', 'Neighborhood'],
       ['created_at', 'Imported On'],
       ['status_NOSORT', 'Status']
     ]);

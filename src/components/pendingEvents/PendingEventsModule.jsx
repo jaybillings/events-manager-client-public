@@ -66,10 +66,16 @@ export default class PendingEventsModule extends PendingListingsModule {
 
     this.pendingEventsTagsLookupService
       .on('created', message => {
-        this.props.updateMessagePanel({status: 'info', details: `Linked tag ${message.tag_uuid} with event #${message.event_uuid}.`});
+        this.props.updateMessagePanel({
+          status: 'info',
+          details: `Linked tag ${message.tag_uuid} with event #${message.event_uuid}.`
+        });
       })
       .on('removed', message => {
-        this.props.updateMessagePanel({status: 'info', details: `Unlinked tag ${message.tag_uuid} from event #${message.event_uuid}`});
+        this.props.updateMessagePanel({
+          status: 'info',
+          details: `Unlinked tag ${message.tag_uuid} from event #${message.event_uuid}`
+        });
       });
   }
 
@@ -94,6 +100,21 @@ export default class PendingEventsModule extends PendingListingsModule {
     this.pendingEventsTagsLookupService
       .removeAllListeners('created')
       .removeAllListeners('removed');
+  }
+
+  createSearchQuery() {
+    if (!this.state.searchTerm) return null;
+
+    const likeClause = {$like: `%${this.state.searchTerm}%`};
+
+    return {
+      '$or': [
+        {'fk_venues.name': likeClause},
+        {'fk_orgs.name':likeClause},
+        {'pending-events.name': likeClause},
+        {'pending-events.uuid': likeClause}
+      ]
+    };
   }
 
   /**
@@ -361,8 +382,8 @@ export default class PendingEventsModule extends PendingListingsModule {
       ['name', 'Name'],
       ['start_date', 'Start Date'],
       ['end_date', 'End Date'],
-      ['fk_venue', 'Venue'],
-      ['fk_org', 'Organizer'],
+      ['fk_venues.name', 'Venue'],
+      ['fk_orgs.name', 'Organizer'],
       ['created_at', 'Imported On'],
       ['status_NOSORT', 'Status']
     ]);

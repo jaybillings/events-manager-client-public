@@ -456,8 +456,8 @@ export default class EventsLayout extends ListingsLayout {
       ['name', 'Name'],
       ['start_date', 'Start Date'],
       ['end_date', 'End Date'],
-      ['fk_venue', 'Venue'],
-      ['fk_org', 'Organizer'],
+      ['fk_venues.name', 'Venue'],
+      ['fk_orgs.name', 'Organizer'],
       ['updated_at', 'Last Modified'],
       ['is_published_NOSORT', 'Status']
     ]);

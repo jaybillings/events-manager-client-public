@@ -59,6 +59,9 @@ export default class PendingListingsModule extends Component {
     this.queryForPublishedUUIDs = this.queryForPublishedUUIDs.bind(this);
     this.checkForLiveLinked = this.checkForLiveLinked.bind(this);
 
+    this.createSearchQuery = this.createSearchQuery.bind(this);
+    this.updateSearchQuery = this.updateSearchQuery.bind(this);
+
     this.fetchAllData = this.fetchAllData.bind(this);
     this.fetchListings = this.fetchListings.bind(this);
 
@@ -78,9 +81,6 @@ export default class PendingListingsModule extends Component {
     this.updateColSort = this.updateColSort.bind(this);
     this.updatePageSize = this.updatePageSize.bind(this);
     this.updateCurrentPage = this.updateCurrentPage.bind(this);
-
-    this.updateSearchQuery = this.updateSearchQuery.bind(this);
-    this.createSearchQuery = this.createSearchQuery.bind(this);
 
     this.handleListingSelect = this.handleListingSelect.bind(this);
     this.toggleModuleVisibility = this.toggleModuleVisibility.bind(this);
@@ -223,7 +223,6 @@ export default class PendingListingsModule extends Component {
     });
 
     const searchFilter = this.createSearchQuery();
-
     const query = {
       ...searchFilter,
       $sort: buildSortQuery(this.state.sort),
@@ -231,12 +230,20 @@ export default class PendingListingsModule extends Component {
       $skip: this.state.pageSize * (this.state.currentPage - 1)
     };
 
-    this.pendingListingsService.find({query}).then(message => {
-      console.debug('message', message);
-      this.setState({
-        pendingListings: message.data, pendingListingsTotal: message.total, listingsLoaded: true
+    console.debug(`${this.schema} query`, query);
+
+    this.pendingListingsService
+      .find({query})
+      .then(message => {
+        console.debug('message', message);
+        this.setState({
+          pendingListings: message.data, pendingListingsTotal: message.total, listingsLoaded: true
+        });
+      })
+      .catch(err => {
+        displayErrorMessages('fetch', this.schema, err, this.props.updateMessagePanel, 'reload');
+        this.setState({listingsLoaded: false});
       });
-    });
   }
 
   /**
@@ -480,7 +487,7 @@ export default class PendingListingsModule extends Component {
   /**
    * Updates the modules's table page size.
    *
-   * @param {Event} e
+   * @param pageSize
    */
   updatePageSize(pageSize) {
     this.setState({pageSize: parseInt(pageSize, 10), currentPage: 1}, () => this.fetchAllData());
@@ -547,13 +554,24 @@ export default class PendingListingsModule extends Component {
     this.setState({selectedListings: []});
   }
 
-  updateSearchQuery(searchTerm) {
-    this.setState({searchTerm});
+  createSearchQuery() {
+    /** @note This syntax is specific to KNEX and may need to be changed if the adapter chanegs. **/
+    if (!this.state.searchTerm) return null;
+
+    const likeClause = {$like: `%${this.state.searchTerm}%`};
+
+    return {
+      '$or': [
+        {[`pending-${this.schema}.name`]: likeClause},
+        {[`pending-${this.schema}.uuid`]: likeClause}
+    ]};
   }
 
-  createSearchQuery() {
-    if (!this.state.searchTerm) return;
-    return {$or: [{'name': {$like: `%${this.state.searchTerm}%`}}]};
+  updateSearchQuery(searchTerm) {
+    console.debug('searchTerm', searchTerm);
+    this.setState({searchTerm}, () => {
+      this.fetchListings();
+    });
   }
 
   /**

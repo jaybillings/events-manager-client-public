@@ -102,7 +102,7 @@ export default class VenuesLayout extends ListingsLayout {
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
       ['name', 'Name'],
-      ['fk_hood', 'Neighborhood'],
+      ['fk_hoods.name', 'Neighborhood'],
       ['updated_at', 'Last Modified']
     ]);
 
