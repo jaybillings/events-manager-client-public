@@ -177,11 +177,10 @@ export default class ReplaceTagsModule extends Component {
 
   /**
    * Updates the component's page size and respective data.
-   * @param {Event} e
+   * @param pageSize
    */
-  updatePageSize(e) {
-    if (!e.target.value) return;
-    this.setState({pageSize: parseInt(e.target.value, 10), currentPage: 1}, () => this.fetchAllData());
+  updatePageSize(pageSize) {
+    this.setState({pageSize: parseInt(pageSize, 10), currentPage: 1}, () => this.fetchAllData());
   }
 
   /**

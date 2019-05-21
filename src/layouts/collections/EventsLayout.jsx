@@ -1,5 +1,6 @@
 import React from 'react';
 import {arrayUnique, buildSortQuery, displayErrorMessages, renderTableHeader} from "../../utilities";
+import {Link} from "react-router-dom";
 import app from '../../services/socketio';
 
 import EventAddForm from '../../components/events/EventAddForm';
@@ -7,7 +8,6 @@ import EventRow from "../../components/events/EventRow";
 import ListingsLayout from "../../components/ListingsLayout";
 import PaginationLayout from "../../components/common/PaginationLayout";
 import Filters from "../../components/common/Filters";
-import {Link} from "react-router-dom";
 
 /**
  * EventsLayout is a generic component that lays out an event collection page.
@@ -28,7 +28,7 @@ export default class EventsLayout extends ListingsLayout {
     this.state = {
       ...this.state, venues: [], orgs: [], tags: [],
       venuesLoaded: false, orgsLoaded: false, tagsLoaded: false,
-      filterLabel: 'none', liveIDs: [], liveIDsLoaded: false
+      filterType: 'none', liveIDs: [], liveIDsLoaded: false
     };
 
     this.venuesService = app.service('venues');
@@ -50,7 +50,7 @@ export default class EventsLayout extends ListingsLayout {
     this.registerEventLive = this.registerEventLive.bind(this);
     this.registerEventDeleted = this.registerEventDeleted.bind(this);
 
-    this.updateFilters = this.updateFilters.bind(this);
+    this.updateFilter = this.updateFilter.bind(this);
   }
 
   /**
@@ -136,6 +136,16 @@ export default class EventsLayout extends ListingsLayout {
     });
   }
 
+  saveQueryState() {
+    this.localStorageObj.put('queryState', {
+      pageSize: this.state.pageSize,
+      currentPage: this.state.currentPage,
+      sort: this.state.sort,
+      searchTerm: this.state.searchTerm,
+      filterType: this.state.filterType
+    });
+  }
+
   /**
    * Fetches all data required for the page.
    * @override
@@ -155,8 +165,10 @@ export default class EventsLayout extends ListingsLayout {
    */
   fetchListings() {
     const filterQuery = this.createFilterQuery();
+    const searchFilter = this.createSearchQuery();
     const query = {
       ...filterQuery,
+      ...searchFilter,
       $sort: buildSortQuery(this.state.sort),
       $limit: this.state.pageSize,
       $skip: this.state.pageSize * (this.state.currentPage - 1)
@@ -392,8 +404,9 @@ export default class EventsLayout extends ListingsLayout {
    *
    * @param {String} filterType
    */
-  updateFilters(filterType) {
-    this.setState({filterLabel: filterType, currentPage: 1}, () => {
+  updateFilter(filterType) {
+    console.debug('filterType', filterType);
+    this.setState({filterType, currentPage: 1}, () => {
       this.fetchListings();
     });
   }
@@ -408,7 +421,7 @@ export default class EventsLayout extends ListingsLayout {
    *   * default - all events
    */
   createFilterQuery() {
-    const filterType = this.state.filterLabel;
+    const filterType = this.state.filterType;
     const acceptedFilters = ['dropped', 'stale', 'live'];
 
     if (acceptedFilters.includes(filterType)) {
@@ -433,7 +446,7 @@ export default class EventsLayout extends ListingsLayout {
       return <p key={'events-message'} className={'load-message'}>Data is loading... Please be patient...</p>;
     } else if (this.state.listingsTotal === 0) {
       return [
-        <Filters key={'events-filters'} updateFilters={this.updateFilters} />,
+        <Filters key={'events-filters'} filterType={this.state.filterType} updateFilter={this.updateFilter} />,
         <p key={'events-message'} className={'load-message'}>No events to list.</p>
       ];
     }
@@ -443,8 +456,8 @@ export default class EventsLayout extends ListingsLayout {
       ['name', 'Name'],
       ['start_date', 'Start Date'],
       ['end_date', 'End Date'],
-      ['fk_venue', 'Venue'],
-      ['fk_org', 'Organizer'],
+      ['fk_venues.name', 'Venue'],
+      ['fk_orgs.name', 'Organizer'],
       ['updated_at', 'Last Modified'],
       ['is_published_NOSORT', 'Status']
     ]);
@@ -453,7 +466,7 @@ export default class EventsLayout extends ListingsLayout {
     const orgs = this.state.orgs;
 
     return ([
-      <Filters key={'events-filters'} updateFilters={this.updateFilters} />,
+      <Filters key={'events-filters'} filterType={this.state.filterType} updateFilter={this.updateFilter} />,
       <PaginationLayout
         key={'events-pagination'} schema={'events'} total={this.state.listingsTotal}
         pageSize={this.state.pageSize} activePage={this.state.currentPage} includeAll={true}

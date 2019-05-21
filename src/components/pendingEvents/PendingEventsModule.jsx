@@ -7,7 +7,6 @@ import PaginationLayout from "../common/PaginationLayout";
 import PendingEventRow from "./PendingEventRow";
 import ShowHideToggle from "../common/ShowHideToggle";
 import SelectionControl from "../common/SelectionControl";
-import Searchbar from "../common/Searchbar";
 
 /**
  * PendingEventsModule is a component which displays pending events as a module within a layout.
@@ -67,10 +66,16 @@ export default class PendingEventsModule extends PendingListingsModule {
 
     this.pendingEventsTagsLookupService
       .on('created', message => {
-        this.props.updateMessagePanel({status: 'info', details: `Linked tag ${message.tag_uuid} with event #${message.event_uuid}.`});
+        this.props.updateMessagePanel({
+          status: 'info',
+          details: `Linked tag ${message.tag_uuid} with event #${message.event_uuid}.`
+        });
       })
       .on('removed', message => {
-        this.props.updateMessagePanel({status: 'info', details: `Unlinked tag ${message.tag_uuid} from event #${message.event_uuid}`});
+        this.props.updateMessagePanel({
+          status: 'info',
+          details: `Unlinked tag ${message.tag_uuid} from event #${message.event_uuid}`
+        });
       });
   }
 
@@ -95,6 +100,21 @@ export default class PendingEventsModule extends PendingListingsModule {
     this.pendingEventsTagsLookupService
       .removeAllListeners('created')
       .removeAllListeners('removed');
+  }
+
+  createSearchQuery() {
+    if (!this.state.searchTerm) return null;
+
+    const likeClause = {$like: `%${this.state.searchTerm}%`};
+
+    return {
+      '$or': [
+        {'fk_venues.name': likeClause},
+        {'fk_orgs.name':likeClause},
+        {'pending-events.name': likeClause},
+        {'pending-events.uuid': likeClause}
+      ]
+    };
   }
 
   /**
@@ -245,10 +265,10 @@ export default class PendingEventsModule extends PendingListingsModule {
 
   /**
    * @override
-   * 
+   *
    * @param pendingListing
    * @param target
-   * @returns {Promise<T | never>}
+   * @returns {Promise<*>}
    */
   updateLiveListing(pendingListing, target) {
     let {id, ...listingData} = pendingListing;
@@ -362,8 +382,8 @@ export default class PendingEventsModule extends PendingListingsModule {
       ['name', 'Name'],
       ['start_date', 'Start Date'],
       ['end_date', 'End Date'],
-      ['fk_venue', 'Venue'],
-      ['fk_org', 'Organizer'],
+      ['fk_venues.name', 'Venue'],
+      ['fk_orgs.name', 'Organizer'],
       ['created_at', 'Imported On'],
       ['status_NOSORT', 'Status']
     ]);
@@ -387,7 +407,6 @@ export default class PendingEventsModule extends PendingListingsModule {
           numSelected={selectedEvents.length} total={this.state.pendingListingsTotal} schema={this.schema}
           selectPage={this.selectPageOfListings} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
         />
-        <Searchbar />
         <PaginationLayout
           key={'pending-events-pagination'} schema={'pending-events'} includeAll={false}
           total={this.state.pendingListingsTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}

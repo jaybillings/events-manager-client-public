@@ -1,6 +1,6 @@
 import React from "react";
 import app from "../../services/socketio";
-import {buildSortQuery, displayErrorMessages, renderTableHeader} from "../../utilities";
+import {displayErrorMessages, renderTableHeader} from "../../utilities";
 
 import VenueRow from "../../components/venues/VenueRow";
 import VenueAddForm from "../../components/venues/VenueAddForm";
@@ -69,29 +69,8 @@ export default class VenuesLayout extends ListingsLayout {
    * Fetches all data required for the table.
    */
   fetchAllData() {
-    this.fetchListings();
+    super.fetchAllData();
     this.fetchHoods();
-  }
-
-  /**
-   * Fetches data for all published venues. Handles table page size, page skipping, and column sorting.
-   * @override
-   */
-  fetchListings() {
-    const query = {
-      $sort: buildSortQuery(this.state.sort),
-      $limit: this.state.pageSize,
-      $skip: this.state.pageSize * (this.state.currentPage - 1)
-    };
-
-    this.listingsService.find({query: query})
-      .then(result => {
-        this.setState({listings: result.data, listingsTotal: result.total, listingsLoaded: true});
-      })
-      .catch(err => {
-        displayErrorMessages('fetch', 'venues', err, this.updateMessagePanel, 'reload');
-        this.setState({listingsLoaded: false});
-      });
   }
 
   /**
@@ -123,7 +102,7 @@ export default class VenuesLayout extends ListingsLayout {
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
       ['name', 'Name'],
-      ['fk_hood', 'Neighborhood'],
+      ['fk_hoods.name', 'Neighborhood'],
       ['updated_at', 'Last Modified']
     ]);
 
