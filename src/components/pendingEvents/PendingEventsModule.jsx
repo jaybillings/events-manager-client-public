@@ -7,7 +7,6 @@ import PaginationLayout from "../common/PaginationLayout";
 import PendingEventRow from "./PendingEventRow";
 import ShowHideToggle from "../common/ShowHideToggle";
 import SelectionControl from "../common/SelectionControl";
-import Searchbar from "../common/Searchbar";
 
 /**
  * PendingEventsModule is a component which displays pending events as a module within a layout.
@@ -387,7 +386,6 @@ export default class PendingEventsModule extends PendingListingsModule {
           numSelected={selectedEvents.length} total={this.state.pendingListingsTotal} schema={this.schema}
           selectPage={this.selectPageOfListings} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
         />
-        <Searchbar key={'pending-events-search'} updateSearchQuery={this.updateSearchQuery} />
         <PaginationLayout
           key={'pending-events-pagination'} schema={'pending-events'} includeAll={false}
           total={this.state.pendingListingsTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}

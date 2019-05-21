@@ -61,9 +61,11 @@ export default class ListingsLayout extends Component {
     this.updatePageSize = this.updatePageSize.bind(this);
     this.updateCurrentPage = this.updateCurrentPage.bind(this);
     this.updateColumnSort = this.updateColumnSort.bind(this);
-    this.updateSearchQuery = this.updateSearchQuery.bind(this);
-    this.updateMessagePanel = this.updateMessagePanel.bind(this);
+
     this.createSearchQuery = this.createSearchQuery.bind(this);
+    this.updateSearchQuery = this.updateSearchQuery.bind(this);
+
+    this.updateMessagePanel = this.updateMessagePanel.bind(this);
 
     this.renderTable = this.renderTable.bind(this);
     this.renderAddForm = this.renderAddForm.bind(this);

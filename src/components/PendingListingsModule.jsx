@@ -590,7 +590,6 @@ export default class PendingListingsModule extends Component {
           numSelected={selectedListings.length} total={this.state.listingsTotal} schema={this.schema}
           selectPage={this.selectPageOfListings} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
         />
-        <Searchbar key={`pending-${this.schema}-search`} updateSearchQuery={this.updateSearchQuery} />
         <PaginationLayout
           key={`pending-${schema}-pagination`} schema={`pending-${schema}`} includeAll={false}
           total={this.state.pendingListingsTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
@@ -634,6 +633,8 @@ export default class PendingListingsModule extends Component {
     return (
       <div className={'schema-module'} data-visibility={visibility}>
         <h3>{this.schema}</h3>
+        <Searchbar key={`pending-${this.schema}-search`} searchTerm={this.state.searchTerm}
+                   updateSearchQuery={this.updateSearchQuery} />
         {this.renderTable()}
       </div>
     )

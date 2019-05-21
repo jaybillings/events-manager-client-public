@@ -7,7 +7,6 @@ import PaginationLayout from "../common/PaginationLayout";
 import PendingVenueRow from "./PendingVenueRow";
 import ShowHideToggle from "../common/ShowHideToggle";
 import SelectionControl from "../common/SelectionControl";
-import Searchbar from "../common/Searchbar";
 
 /**
  * PendingVenuesModule is a component which displays pending venues as a module within a layout.
@@ -143,7 +142,6 @@ export default class PendingVenuesModule extends PendingListingsModule {
           numSelected={selectedVenues.length} total={this.state.pendingListingsTotal} schema={this.schema}
           selectPage={this.selectPageOfListings} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
         />
-        <Searchbar key={'pending-venues-search'} updateSearchQuery={this.updateSearchQuery} />
         <PaginationLayout
           key={'pending-venues-pagination'} schema={'pending-venues'} includeAll={false}
           total={pendingVenuesTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
