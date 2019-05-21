@@ -3,6 +3,22 @@
   margin-top: 2.5rem;
 }
 
+.login-page button[type=button] {
+  background: transparent;
+  border: 0;
+}
+
+.login-page button span {
+  border-bottom: 1px solid var(--light-gray);
+  padding-bottom: 0.5rem;
+  color: var(--medium-gray);
+}
+
+.login-page button:hover span {
+  color: var(--dark-gray);
+  border-color: var(--medium-gray);
+}
+
 .login-page .message {
   display: inline-block;
   font-weight: 700;

@@ -26,7 +26,7 @@ import SinglePendingNeighborhoodLayout from './layouts/single/SinglePendingNeigh
 import SinglePendingTagLayout from './layouts/single/SinglePendingTagLayout';
 
 import NotFound from './pages/NotFound';
-import LoginPage from './pages/LoginPage';
+import LoginLayout from './layouts/LoginLayout';
 
 class App extends Component {
   render() {
@@ -59,7 +59,7 @@ class App extends Component {
           <PrivateRoute exact path={'/account'} component={MyAccountPage} />
           <PrivateRoute exact path={'/admin'} component={AdminToolsLayout} />
 
-          <Route path={'/login/:redirectUrl*'} component={LoginPage} />
+          <Route path={'/login/:redirectUrl*'} component={LoginLayout} />
           <PrivateRoute component={NotFound} />
         </Switch>
       </BrowserRouter>
