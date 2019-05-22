@@ -172,6 +172,7 @@ export default class LoginLayout extends Component {
   }
 
   render() {
+    // TODO: Fill in missing password functionality
     const redirectCount = this.state.redirectCount;
     const successMsgClass = redirectCount > 0 ? '' : ' hidden';
     const warningMsgClass = redirectCount === -1 ? '' : ' hidden';
@@ -187,7 +188,7 @@ export default class LoginLayout extends Component {
         <MessagePanel ref={this.messagePanel} />
         <p className={'message success-message' + successMsgClass}>Logged in. Redirecting in {this.state.redirectCount}
           {redirectCount === 1 ? ' second' : ' seconds'}. </p>
-        <p className={'message warning-message' + warningMsgClass}>You must log in to continue.</p>
+        <p className={'message warning-message' + warningMsgClass}>You must log in to continue. Click here to recover a lost password.</p>
         {this.renderForm()}
       </div>
     );

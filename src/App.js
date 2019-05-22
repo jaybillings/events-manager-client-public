@@ -27,6 +27,7 @@ import SinglePendingTagLayout from './layouts/single/SinglePendingTagLayout';
 
 import NotFound from './pages/NotFound';
 import LoginLayout from './layouts/LoginLayout';
+import EmailVerification from './pages/EmailVerification';
 
 class App extends Component {
   render() {
@@ -60,6 +61,7 @@ class App extends Component {
           <PrivateRoute exact path={'/admin'} component={AdminToolsLayout} />
 
           <Route path={'/login/:redirectUrl*'} component={LoginLayout} />
+          <Route path={'/verify/:token*'} component={EmailVerification} />
           <PrivateRoute component={NotFound} />
         </Switch>
       </BrowserRouter>

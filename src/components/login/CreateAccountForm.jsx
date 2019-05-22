@@ -8,6 +8,7 @@ export default class CreateAccountForm extends Component {
   }
 
   handleSubmit(e) {
+    // TODO: Add message informing user of email verification
     e.preventDefault();
     this.props.createUser();
   }
