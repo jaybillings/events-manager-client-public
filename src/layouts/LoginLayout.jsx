@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import app from "../services/socketio";
-import {Redirect} from "react-router";
+import {Redirect} from "react-router-dom";
 
 import Header from "../components/common/Header";
 import MessagePanel from "../components/common/MessagePanel";
@@ -120,19 +120,10 @@ export default class LoginLayout extends Component {
       return;
     }
 
-    // TODO: Email/SMS verification
-    this.usersService.create({
+    return this.usersService.create({
       email: this.state.email,
       password: this.state.password,
       permissions: 'user:*'
-    }).then(() => {
-      this.updateMessagePanel({
-        status: 'info',
-        details: 'Account created. You can now login using the same credentials.'
-      });
-    }, err => {
-      this.updateMessagePanel({status: 'error', details: 'Error during user creation: ' + err.message});
-      console.error(err);
     });
   }
 
@@ -145,7 +136,9 @@ export default class LoginLayout extends Component {
   }
 
   toggleLoginState() {
-    this.setState((prevState) => {return {shouldCreateUser: !prevState.shouldCreateUser}});
+    this.setState((prevState) => {
+      return {shouldCreateUser: !prevState.shouldCreateUser}
+    });
   }
 
   /**
@@ -162,6 +155,7 @@ export default class LoginLayout extends Component {
       return <CreateAccountForm
         email={this.state.email} password={this.state.password}
         createUser={this.createUser} handleInputChange={this.handleInputChange} toggleLoginState={this.toggleLoginState}
+        updateMessagePanel={this.updateMessagePanel}
       />;
     }
 
@@ -188,7 +182,8 @@ export default class LoginLayout extends Component {
         <MessagePanel ref={this.messagePanel} />
         <p className={'message success-message' + successMsgClass}>Logged in. Redirecting in {this.state.redirectCount}
           {redirectCount === 1 ? ' second' : ' seconds'}. </p>
-        <p className={'message warning-message' + warningMsgClass}>You must log in to continue. Click here to recover a lost password.</p>
+        <p className={'message warning-message' + warningMsgClass}>You must log in to continue. Click here to recover a
+          lost password.</p>
         {this.renderForm()}
       </div>
     );

@@ -34,7 +34,7 @@ export default class EmailVerification extends Component {
       headers: {'Content-Type': 'application/json'}
     })
       .then(response => {
-        return response.json(); // convert raw resposne body to JSON
+        return response.json(); // convert raw response body to JSON
       })
       .then(body => {
         if (body.code >= 400) {
@@ -50,7 +50,7 @@ export default class EmailVerification extends Component {
   renderVerificationMessage() {
     // TODO: Add redirection to login page if successfully verified.
     if (this.state.verifySuccess === null) return <p>Verifying your token...</p>;
-    else if (this.state.verifySuccess) return <p>Congratulations! You have been verified!</p>;
+    else if (this.state.verifySuccess) return <p>Congratulations! You have been verified! Click the login button above to log in to your account.</p>;
     else return <p>Error: Verification failed. Please contact the HelpDesk for support.</p>
   }
 

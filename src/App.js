@@ -60,8 +60,9 @@ class App extends Component {
           <PrivateRoute exact path={'/account'} component={MyAccountPage} />
           <PrivateRoute exact path={'/admin'} component={AdminToolsLayout} />
 
-          <Route path={'/login/:redirectUrl*'} component={LoginLayout} />
           <Route path={'/verify/:token*'} component={EmailVerification} />
+          <Route path={'/login/:redirectUrl*'} component={LoginLayout} />
+
           <PrivateRoute component={NotFound} />
         </Switch>
       </BrowserRouter>

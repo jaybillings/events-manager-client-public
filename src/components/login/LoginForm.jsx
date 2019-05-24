@@ -24,7 +24,7 @@ export default class LoginForm extends Component {
                  onChange={this.props.handleInputChange} required />
         </div>
         <div className={'button-container'}>
-          <button type={'button'} onClick={this.props.toggleLoginState}><span>create new account</span></button>
+          <button type={'button'} className={'fakeLink'} onClick={this.props.toggleLoginState}><span>create new account</span></button>
           <button type={'submit'} className={'button-primary'}>log in</button>
         </div>
       </form>
