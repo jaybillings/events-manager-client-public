@@ -16,16 +16,18 @@ export default class LoginLayout extends Component {
   constructor(props) {
     super(props);
 
-    this.messagePanel = React.createRef();
+    this.messagePanelRef = React.createRef();
 
     this.state = {email: '', password: '', redirectCount: -1, shouldCreateUser: false};
 
     this.usersService = app.service('users');
+    this.authManagementService = app.service('authManagement');
 
     this.redirectCountdown = this.redirectCountdown.bind(this);
 
     this.logInUser = this.logInUser.bind(this);
     this.createUser = this.createUser.bind(this);
+    this.resendVerifyEmail = this.resendVerifyEmail.bind(this);
 
     this.toggleLoginState = this.toggleLoginState.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
@@ -127,11 +129,28 @@ export default class LoginLayout extends Component {
     });
   }
 
+  resendVerifyEmail() {
+    this.authManagementService.create({
+      action: 'resendVerifySignup',
+      value: {email: this.state.newUser.email}
+    })
+      .then(() => {
+        this.updateMessagePanel({
+          status: 'success',
+          details: `Email has been re-sent. If you still don't see it, make sure ${this.sendAddress} is in your spam whitelist.`
+        });
+      })
+      .create(err => {
+        this.props.updateMessagePanel({status: 'error', details: err.message});
+      });
+  }
+
   /**
    * Runs when an input is changed. Saves the value to the component's state.
    * @param {Event} e
    */
   handleInputChange(e) {
+    if (!e.target.name || !e.target.value) return;
     this.setState({[e.target.name]: e.target.value.trim()});
   }
 
@@ -147,21 +166,23 @@ export default class LoginLayout extends Component {
    * @param {object} newMsg
    */
   updateMessagePanel(newMsg) {
-    this.messagePanel.current.addMessage(newMsg);
+    this.messagePanelRef.current.addMessage(newMsg);
   }
 
   renderForm() {
     if (this.state.shouldCreateUser) {
       return <CreateAccountForm
         email={this.state.email} password={this.state.password}
-        createUser={this.createUser} handleInputChange={this.handleInputChange} toggleLoginState={this.toggleLoginState}
+        createUser={this.createUser} resendVerifyEmail={this.resendVerifyEmail}
+        handleInputChange={this.handleInputChange} toggleLoginState={this.toggleLoginState}
         updateMessagePanel={this.updateMessagePanel}
       />;
     }
 
     return <LoginForm
       email={this.state.email} password={this.state.password}
-      logInUser={this.logInUser} handleInputChange={this.handleInputChange} toggleLoginState={this.toggleLoginState}
+      logInUser={this.logInUser} handleInputChange={this.handleInputChange}
+      toggleLoginState={this.toggleLoginState}
     />;
   }
 
@@ -179,11 +200,10 @@ export default class LoginLayout extends Component {
       <div className={'container login-page'}>
         <Header />
         <h2>{title}</h2>
-        <MessagePanel ref={this.messagePanel} />
+        <MessagePanel ref={this.messagePanelRef} />
         <p className={'message success-message' + successMsgClass}>Logged in. Redirecting in {this.state.redirectCount}
           {redirectCount === 1 ? ' second' : ' seconds'}. </p>
-        <p className={'message warning-message' + warningMsgClass}>You must log in to continue. Click here to recover a
-          lost password.</p>
+        <p className={'message warning-message' + warningMsgClass}>You must log in to continue.</p>
         {this.renderForm()}
       </div>
     );

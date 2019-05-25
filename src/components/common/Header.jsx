@@ -10,6 +10,24 @@ import "../../styles/header.css";
  * @class
  */
 export default class Header extends Component {
+  constructor(props) {
+    super(props);
+
+    this.user = app.get('user');
+
+    this.renderAccountLinks = this.renderAccountLinks.bind(this);
+  }
+
+  renderAccountLinks() {
+    const accountLinks = this.user ? [<NavLink to={`/account`} activeClassName={'current'}>{this.user.email}'s Account</NavLink>]
+      : [<NavLink to={'/recoverPassword'} activeClassName={'current'}>Recover Lost Password</NavLink>,
+        <NavLink to={'/login'} activeClassName={'current'}>Log In/Create Account</NavLink>];
+
+    return accountLinks.map((link, index) => {
+      return <li key={`account-link-${index}`} className={'smaller'}>{link}</li>
+    });
+  }
+
   /**
    * Renders the component.
    * @render
@@ -18,11 +36,8 @@ export default class Header extends Component {
    * @returns {*}
    */
   render() {
-    const user = app.get('user');
-    const adminNav = user && user.permissions.indexOf('admin') !== -1
+    const adminNav =this.user && this.user.permissions.indexOf('admin') !== -1
       ? <li><NavLink to={`/admin/`} activeClassName={'current'}>Admin Tools</NavLink></li> : '';
-    const accountLink = user ? <NavLink to={`/account`} activeClassName={'current'}>{user.email}'s Account</NavLink>
-      : <NavLink to={'/login'} activeClassName={'current'}>Log In/Create Account</NavLink>;
 
     return (
       <header>
@@ -38,7 +53,7 @@ export default class Header extends Component {
             <li><NavLink to={`/neighborhoods/`} activeClassName={'current'}>Neighborhoods</NavLink></li>
             <li><NavLink to={`/tags/`} activeClassName={'current'}>Tags</NavLink></li>
             {adminNav}
-            <li className={'smaller'}>{accountLink}</li>
+            {this.renderAccountLinks()}
           </ul>
         </nav>
       </header>

@@ -4,7 +4,7 @@ export default class CreateAccountForm extends Component {
   constructor(props) {
     super(props);
 
-    this.authManagementUrl = 'http://localhost:3030/authmanagement/';
+    // TODO: Put in config
     this.sendAddress = 'noreply@visitseattle.org';
 
     this.state = {newUser: null};
@@ -14,35 +14,10 @@ export default class CreateAccountForm extends Component {
   }
 
   handleResendEmailClick() {
-    const payload = {
-      action: 'resendVerifySignup',
-      value: {email: this.state.newUser.email}
-    };
-
-    fetch(this.authManagementUrl, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-      headers: {'Content-Type': 'application/json'}
-    })
-      .then(response => {
-        return response.json(); // convert raw response body to JSON
-      })
-      .then(body => {
-        if (body.code >= 400) {
-          console.error(body.message);
-          this.props.updateMessagePanel({status: 'error', details: body.message});
-        } else {
-          console.debug('success!');
-          this.props.updateMessagePanel({
-            status: 'success',
-            details: `Email has been re-sent. If you still don't see it, make sure ${this.sendAddress} is in your spam whitelist.`
-          })
-        }
-      });
+    this.props.resendVerifyEmail();
   }
 
-  handleCreateAccountClick(e) {
-    e.preventDefault();
+  handleCreateAccountClick() {
     this.props.createUser()
       .then(result => {
         this.props.updateMessagePanel({
@@ -61,7 +36,8 @@ export default class CreateAccountForm extends Component {
   }
 
   render() {
-    const primaryButton = this.state.newUser ? <button type={'button'} onClick={this.handleResendEmailClick}>resend verification email</button>
+    const primaryButton = this.state.newUser ?
+      <button type={'button'} onClick={this.handleResendEmailClick}>resend verification email</button>
       : <button type={'button'} onClick={this.handleCreateAccountClick} className={'button-primary'}>create
         account</button>;
 
@@ -76,7 +52,8 @@ export default class CreateAccountForm extends Component {
                  onChange={this.props.handleInputChange} required />
         </div>
         <div className={'button-container'}>
-          <button type={'button'} className={'fakeLink'} onClick={this.props.toggleLoginState}><span>log in to account</span></button>
+          <button type={'button'} className={'fakeLink'} onClick={this.props.toggleLoginState}>
+            <span>log in to account</span></button>
           {primaryButton}
         </div>
       </form>

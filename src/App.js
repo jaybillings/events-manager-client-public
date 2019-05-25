@@ -25,9 +25,12 @@ import SinglePendingOrganizerLayout from './layouts/single/SinglePendingOrganize
 import SinglePendingNeighborhoodLayout from './layouts/single/SinglePendingNeighborhoodLayout';
 import SinglePendingTagLayout from './layouts/single/SinglePendingTagLayout';
 
-import NotFound from './pages/NotFound';
 import LoginLayout from './layouts/LoginLayout';
 import EmailVerification from './pages/EmailVerification';
+import RecoverPassword from "./pages/RecoverPassword";
+import ResetPassword from "./pages/ResetPassword";
+
+import NotFound from './pages/NotFound';
 
 class App extends Component {
   render() {
@@ -62,6 +65,8 @@ class App extends Component {
 
           <Route path={'/verify/:token*'} component={EmailVerification} />
           <Route path={'/login/:redirectUrl*'} component={LoginLayout} />
+          <Route path={'/recoverPassword/'} component={RecoverPassword} />
+          <Route path={'/resetPassword/:token*'} component={ResetPassword} />
 
           <PrivateRoute component={NotFound} />
         </Switch>

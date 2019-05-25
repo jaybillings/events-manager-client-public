@@ -48,10 +48,9 @@ export default class EmailVerification extends Component {
   }
 
   renderVerificationMessage() {
-    // TODO: Add redirection to login page if successfully verified.
-    if (this.state.verifySuccess === null) return <p>Verifying your token...</p>;
-    else if (this.state.verifySuccess) return <p>Congratulations! You have been verified! Click the login button above to log in to your account.</p>;
-    else return <p>Error: Verification failed. Please contact the HelpDesk for support.</p>
+    if (this.state.verifySuccess === null) return <p className={'single-message info'}>Verifying your token...</p>;
+    else if (this.state.verifySuccess) return <p className={'single-message success'}>Congratulations! You have been verified! Click the login button above to log in to your account.</p>;
+    else return <p className={'single-message error'}>Error: Verification failed. Please contact the HelpDesk for support.</p>
   }
 
   render() {
