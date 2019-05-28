@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Redirect, Route} from "react-router";
+import {Redirect, Route} from "react-router-dom";
 import app from '../services/socketio';
 import Header from "./common/Header";
 

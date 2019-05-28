@@ -1,30 +1,40 @@
 import React, {Component} from 'react';
 import app from "../services/socketio";
-import {Redirect} from "react-router";
+import {Redirect} from "react-router-dom";
 
 import Header from "../components/common/Header";
 import MessagePanel from "../components/common/MessagePanel";
+import CreateAccountForm from "../components/login/CreateAccountForm";
+import LoginForm from "../components/login/LoginForm";
 
 import "../styles/login-page.css";
 
 /**
  * LoginPage is a component that renders the page responsible for authenticating and creating users.
  */
-export default class LoginPage extends Component {
+export default class LoginLayout extends Component {
   constructor(props) {
     super(props);
 
-    this.messagePanel = React.createRef();
+    this.messagePanelRef = React.createRef();
 
-    this.state = {email: '', password: '', redirectCount: -1};
+    this.state = {email: '', password: '', redirectCount: -1, shouldCreateUser: false};
 
     this.usersService = app.service('users');
+    this.authManagementService = app.service('authManagement');
 
     this.redirectCountdown = this.redirectCountdown.bind(this);
-    this.handleFormLogin = this.handleFormLogin.bind(this);
-    this.handleUserCreate = this.handleUserCreate.bind(this);
+
+    this.logInUser = this.logInUser.bind(this);
+    this.createUser = this.createUser.bind(this);
+    this.resendVerifyEmail = this.resendVerifyEmail.bind(this);
+
+    this.toggleLoginState = this.toggleLoginState.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
+
     this.updateMessagePanel = this.updateMessagePanel.bind(this);
+
+    this.renderForm = this.renderForm.bind(this);
   }
 
   /**
@@ -72,8 +82,7 @@ export default class LoginPage extends Component {
    * Runs when the login button is clicked. Logs in an existing user using the credentials supplied in the login form.
    * Verifies user data and sets the app's user parameter.
    */
-  handleFormLogin(e) {
-    e.preventDefault();
+  logInUser() {
     app
       .authenticate({
         strategy: 'local',
@@ -104,25 +113,50 @@ export default class LoginPage extends Component {
    *
    * @note For security reasons, user is required to log in manually after account creation.
    */
-  handleUserCreate() {
+  createUser() {
     if (!this.state.email || !this.state.password) {
-      this.updateMessagePanel({status: 'error', details: 'A valid email address and password is required to create an account. Please try again.'});
+      this.updateMessagePanel({
+        status: 'error',
+        details: 'A valid email address and password is required to create an account. Please try again.'
+      });
       return;
     }
 
-    // TODO: Email/SMS verification
-    this.usersService.create({
+    return this.usersService.create({
       email: this.state.email,
       password: this.state.password,
       permissions: 'user:*'
-    }).then(() => {
-      this.updateMessagePanel({
-        status: 'info',
-        details: 'Account created. You can now login using the same credentials.'
+    });
+  }
+
+  resendVerifyEmail() {
+    this.authManagementService.create({
+      action: 'resendVerifySignup',
+      value: {email: this.state.newUser.email}
+    })
+      .then(() => {
+        this.updateMessagePanel({
+          status: 'success',
+          details: `Email has been re-sent. If you still don't see it, make sure ${this.sendAddress} is in your spam whitelist.`
+        });
+      })
+      .create(err => {
+        this.props.updateMessagePanel({status: 'error', details: err.message});
       });
-    }, err => {
-      this.updateMessagePanel({status: 'error', details: 'Error during user creation: ' + err.message});
-      console.error(err);
+  }
+
+  /**
+   * Runs when an input is changed. Saves the value to the component's state.
+   * @param {Event} e
+   */
+  handleInputChange(e) {
+    if (!e.target.name || !e.target.value) return;
+    this.setState({[e.target.name]: e.target.value.trim()});
+  }
+
+  toggleLoginState() {
+    this.setState((prevState) => {
+      return {shouldCreateUser: !prevState.shouldCreateUser}
     });
   }
 
@@ -132,47 +166,45 @@ export default class LoginPage extends Component {
    * @param {object} newMsg
    */
   updateMessagePanel(newMsg) {
-    this.messagePanel.current.addMessage(newMsg);
+    this.messagePanelRef.current.addMessage(newMsg);
   }
 
-  /**
-   * Runs when an input is changed. Saves the value to the component's state.
-   * @param {Event} e
-   */
-  handleInputChange(e) {
-    this.setState({[e.target.name]: e.target.value.trim()});
+  renderForm() {
+    if (this.state.shouldCreateUser) {
+      return <CreateAccountForm
+        email={this.state.email} password={this.state.password}
+        createUser={this.createUser} resendVerifyEmail={this.resendVerifyEmail}
+        handleInputChange={this.handleInputChange} toggleLoginState={this.toggleLoginState}
+        updateMessagePanel={this.updateMessagePanel}
+      />;
+    }
+
+    return <LoginForm
+      email={this.state.email} password={this.state.password}
+      logInUser={this.logInUser} handleInputChange={this.handleInputChange}
+      toggleLoginState={this.toggleLoginState}
+    />;
   }
 
   render() {
+    // TODO: Fill in missing password functionality
     const redirectCount = this.state.redirectCount;
     const successMsgClass = redirectCount > 0 ? '' : ' hidden';
     const warningMsgClass = redirectCount === -1 ? '' : ' hidden';
     const redirectTarget = this.props.match.params.redirectUrl || 'import';
+    const title = this.state.shouldCreateUser ? 'create new account' : 'log in to your account';
 
     if (redirectCount === 0) return <Redirect to={`/${redirectTarget}`} />;
 
     return (
       <div className={'container login-page'}>
         <Header />
-        <h2>Log In To Your Account</h2>
-        <MessagePanel ref={this.messagePanel} />
+        <h2>{title}</h2>
+        <MessagePanel ref={this.messagePanelRef} />
         <p className={'message success-message' + successMsgClass}>Logged in. Redirecting in {this.state.redirectCount}
           {redirectCount === 1 ? ' second' : ' seconds'}. </p>
         <p className={'message warning-message' + warningMsgClass}>You must log in to continue.</p>
-        <form onSubmit={this.handleFormLogin}>
-          <div className={'input-container'}>
-            <label htmlFor={'emailInput'}>Email Address</label>
-            <input id={'emailInput'} type={'text'} name={'email'} value={this.state.email}
-                   onChange={this.handleInputChange} required />
-            <label htmlFor={'passInput'}>Password</label>
-            <input id={'passInput'} type={'password'} name={'password'} value={this.state.password}
-                   onChange={this.handleInputChange} required />
-          </div>
-          <div className={'button-container'}>
-            <button type={'button'} onClick={this.handleUserCreate}>Create Account</button>
-            <button type={'submit'} className={'button-primary'}>Log In</button>
-          </div>
-        </form>
+        {this.renderForm()}
       </div>
     );
   }
