@@ -5,6 +5,7 @@ import {Link} from "react-router-dom";
 import StatusLabel from "./common/StatusLabel";
 
 import "../styles/schema-row.css";
+import {diffListings} from "../utilities";
 
 /**
  * PendingListingRow is a generic component that displays a single row from a pending listings table.
@@ -21,7 +22,7 @@ export default class PendingListingRow extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {editable: false, writeStatus: '', listingName: this.props.listing.name};
+    this.state = {editable: false, writeStatus: '', listingName: this.props.listing.name, matchingLiveListing: null};
 
     this.checkWriteStatus = this.checkWriteStatus.bind(this);
     this.startEdit = this.startEdit.bind(this);
@@ -38,6 +39,9 @@ export default class PendingListingRow extends Component {
    */
   componentDidMount() {
     this.checkWriteStatus();
+    this.props.queryForExact(this.props.listing).then(result => {
+      this.setState({matchingLiveListing: result.data[0]});
+    });
   }
 
   /**
@@ -148,6 +152,8 @@ export default class PendingListingRow extends Component {
     const writeStatus = this.state.writeStatus;
     const selectClass = this.props.selected ? ' is-selected' : '';
 
+    const listingParams = ['name'];
+
     if (this.state.editable) {
       return (
         <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
@@ -163,13 +169,15 @@ export default class PendingListingRow extends Component {
       );
     }
 
+    const classNameMap = this.state.matchingLiveListing ? diffListings(this.state.matchingLiveListing, this.props.listing, listingParams) : {};
+
     return (
       <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
         <td>
           <button type={'button'} className={'emphasize'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard</button>
         </td>
-        <td><Link to={`/pending${schema}/${listingID}`}>{listingName}</Link></td>
+        <td className={classNameMap['name']}><Link to={`/pending${schema}/${listingID}`}>{listingName}</Link></td>
         <td>{createdAt}</td>
         <td><StatusLabel writeStatus={writeStatus} schema={schema} /></td>
       </tr>

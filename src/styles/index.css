@@ -118,6 +118,18 @@ button[disabled]:hover {
   color: var(--disabled-text-color);
 }
 
+.button-with-spinner {
+  position: relative;
+  padding-right: 4.5rem !important;
+}
+
+.button-with-spinner > div {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.25rem 0.5rem;
+}
+
 .emphasize {
   padding: 0 2rem;
   color: var(--emphasis-color);
@@ -235,6 +247,12 @@ button[disabled]:hover {
   border-color: transparent;
 }
 
+.single-message.emphasize {
+  background: transparent;
+  color: var(--dull-orange);
+  border-color: var(--dull-orange);
+}
+
 .single-message.success {
   background: var(--pale-blue);
   color: var(--dark-blue);
@@ -245,6 +263,12 @@ button[disabled]:hover {
   color: var(--error-color);
   border-color: var(--error-color);
   background: var(--bright-pink-transparent);
+}
+
+.loading-message {
+  display: block;
+  width: fit-content;
+  padding: 1rem 4rem;
 }
 
 /* The following are container-specific styles that weren't worth putting in their own file */

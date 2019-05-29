@@ -1,4 +1,5 @@
 import React from "react";
+import {BeatLoader} from "react-spinners";
 import {displayErrorMessages, renderTableHeader, uniqueListingsOnly} from "../../utilities";
 import app from '../../services/socketio';
 
@@ -110,7 +111,7 @@ export default class PendingEventsModule extends PendingListingsModule {
     return {
       '$or': [
         {'fk_venues.name': likeClause},
-        {'fk_orgs.name':likeClause},
+        {'fk_orgs.name': likeClause},
         {'pending-events.name': likeClause},
         {'pending-events.uuid': likeClause}
       ]
@@ -372,10 +373,9 @@ export default class PendingEventsModule extends PendingListingsModule {
   renderTable() {
     if (!(this.state.listingsLoaded && this.state.venuesLoaded && this.state.pendingVenuesLoaded &&
       this.state.orgsLoaded && this.state.pendingOrgsLoaded)) {
-      return <p>Data is loading... Please be patient...</p>;
+      return <div className={'single-message info loading-message'}>Data is loading... Please be patient...</div>;
     }
-
-    if (this.state.pendingListingsTotal === 0) return <p>No pending events to list.</p>;
+    if (this.state.pendingListingsTotal === 0) return <div className={'single-message loading-message'}>No pending events to list.</div>;
 
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
@@ -391,9 +391,12 @@ export default class PendingEventsModule extends PendingListingsModule {
     const uniqueOrgs = uniqueListingsOnly(this.state.orgs, this.state.pendingOrgs);
     const selectedEvents = this.state.selectedListings;
     const schemaLabel = selectedEvents.length === 1 ? 'event' : 'events';
+
+    const spinnerClass = this.state.publishRunning ? ' button-with-spinner' : '';
     const publishButton = this.user.is_su ?
-      <button type={'button'} className={'button-primary'} onClick={this.handlePublishButtonClick}
+      <button type={'button'} className={`button-primary${spinnerClass}`} onClick={this.handlePublishButtonClick}
               disabled={selectedEvents.length === 0}>
+        <BeatLoader size={8} color={'#c2edfa'} loading={this.state.publishRunning} />
         Publish {selectedEvents.length || ''} {schemaLabel}
       </button> : '';
 
@@ -428,6 +431,7 @@ export default class PendingEventsModule extends PendingListingsModule {
                 })}
                 updateListing={this.updateListing} removeListing={this.removeListing}
                 selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}
+                queryForExact={this.queryForExact}
               />)
           }
           </tbody>

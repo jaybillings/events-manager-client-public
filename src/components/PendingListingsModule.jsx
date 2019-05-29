@@ -1,5 +1,6 @@
 import React, {Component} from "react";
 import LocalStorage from "localstorage";
+import {BeatLoader} from "react-spinners";
 import {buildColumnSort, buildSortQuery, displayErrorMessages, makeSingular, renderTableHeader} from "../utilities";
 import app from '../services/socketio';
 
@@ -38,7 +39,8 @@ export default class PendingListingsModule extends Component {
     this.state = {
       moduleVisible: true, pendingListings: [], pendingListingsTotal: 0,
       listingsLoaded: false, selectedListings: [], pageSize: this.props.defaultPageSize,
-      currentPage: 1, sort: this.props.defaultSortOrder, allIDs: [], searchTerm: ''
+      currentPage: 1, sort: this.props.defaultSortOrder, allIDs: [], searchTerm: '',
+      publishRunning: false
     };
 
     this.pendingListingsService = app.service(`pending-${this.schema}`);
@@ -230,12 +232,9 @@ export default class PendingListingsModule extends Component {
       $skip: this.state.pageSize * (this.state.currentPage - 1)
     };
 
-    console.debug(`${this.schema} query`, query);
-
     this.pendingListingsService
       .find({query})
       .then(message => {
-        console.debug('message', message);
         this.setState({
           pendingListings: message.data, pendingListingsTotal: message.total, listingsLoaded: true
         });
@@ -459,11 +458,13 @@ export default class PendingListingsModule extends Component {
 
   handlePublishButtonClick() {
     this.stopListening();
+    this.setState({publishRunning: true});
 
     const selectedListings = this.state.selectedListings;
 
     this.publishListings(selectedListings).finally(() => {
       this.startListening();
+      this.setState({publishRunning: false});
     });
   }
 
@@ -555,7 +556,7 @@ export default class PendingListingsModule extends Component {
   }
 
   createSearchQuery() {
-    /** @note This syntax is specific to KNEX and may need to be changed if the adapter chanegs. **/
+    /** @note This syntax is specific to KNEX and may need to be changed if the adapter changes. **/
     if (!this.state.searchTerm) return null;
 
     const likeClause = {$like: `%${this.state.searchTerm}%`};
@@ -568,7 +569,6 @@ export default class PendingListingsModule extends Component {
   }
 
   updateSearchQuery(searchTerm) {
-    console.debug('searchTerm', searchTerm);
     this.setState({searchTerm}, () => {
       this.fetchListings();
     });
@@ -580,8 +580,8 @@ export default class PendingListingsModule extends Component {
    * @returns {[*]}
    */
   renderTable() {
-    if (!this.state.listingsLoaded) return <p>Data is loading... Please be patient...</p>;
-    if (this.state.pendingListingsTotal === 0) return <p>No pending {this.schema} to list.</p>;
+    if (!this.state.listingsLoaded) return <div className={'single-message info loading-message'}>Data is loading... Please be patient...</div>;
+    if (this.state.pendingListingsTotal === 0) return <div className={'single-messgae loading-message'}>No pending {this.schema} to list.</div>;
 
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
@@ -592,9 +592,12 @@ export default class PendingListingsModule extends Component {
     const schema = this.schema;
     const selectedListings = this.state.selectedListings;
     const schemaLabel = selectedListings.length === 1 ? schema.slice(0, -1) : schema;
+
+    const spinnerClass = this.state.publishRunning ? ' button-with-spinner' : '';
     const publishButton = this.user.is_su ?
-      <button type={'button'} className={'button-primary'} onClick={this.handlePublishButtonClick}
+      <button type={'button'} className={`button-primary${spinnerClass}`} onClick={this.handlePublishButtonClick}
               disabled={selectedListings.length === 0}>
+        <BeatLoader size={8} sizeUnit={'px'} color={'#c2edfa'} loading={this.state.publishRunning} />
         Publish {selectedListings.length || ''} {schemaLabel}
       </button> : '';
 
@@ -619,10 +622,9 @@ export default class PendingListingsModule extends Component {
           {
             this.state.pendingListings.map(listing =>
               <PendingListingRow
-                key={`${this.schema}-${listing.id}`} schema={schema} listing={listing}
-                selected={selectedListings.includes(listing.id)}
-                updateListing={this.updateListing} removeListing={this.removeListing}
-                selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}
+                key={`${this.schema}-${listing.id}`} schema={schema} listing={listing} selected={selectedListings.includes(listing.id)}
+                updateListing={this.updateListing} removeListing={this.removeListing} selectListing={this.handleListingSelect}
+                queryForExisting={this.queryForExisting} queryForExact={this.queryForExact}
               />)
           }
           </tbody>

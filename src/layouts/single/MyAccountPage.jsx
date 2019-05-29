@@ -11,11 +11,11 @@ export default class MyAccountPage extends Component {
     super(props);
 
     this.user = app.get('user');
-    // todo: get from config
     this.sendAddress = 'noreply@visitseattle.org';
-    this.messagePanel = React.createRef();
 
-    this.user = app.get('user');
+    this.state = {updateRunning: false};
+
+    this.messagePanel = React.createRef();
     this.oldPassRef = React.createRef();
     this.newPassRef = React.createRef();
 
@@ -45,6 +45,8 @@ export default class MyAccountPage extends Component {
       return;
     }
 
+    this.setState({updateRunning: true});
+
     this.authManagementService.create({
       action: 'passwordChange',
       value: {
@@ -61,7 +63,8 @@ export default class MyAccountPage extends Component {
       })
       .catch(err => {
         this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
-      });
+      })
+      .finally(() => this.setState({updateRunning: false}));
   }
 
   resendVerifyEmail() {
@@ -104,6 +107,7 @@ export default class MyAccountPage extends Component {
   }
 
   render() {
+    const spinnerClass = this.state.updateRunning ? ' button-with-spinner' : '';
     return (
       <div className="container account-page">
         <Header />
@@ -124,16 +128,8 @@ export default class MyAccountPage extends Component {
               <label htmlFor={'newPass'}>New Password</label>
               <input type={'password'} id={'newPass'} ref={this.newPassRef} defaultValue={''} required />
             </div>
-            <button type={'button'} className={'default'} onClick={this.handlePasswordUpdate}>Update</button>
+            <button type={'button'} className={`default${spinnerClass}`} onClick={this.handlePasswordUpdate}>Update</button>
           </form>
-        </div>
-
-        <div className={'panel danger'} title={'WARNING: ACCOUNT DELETION IS PERMANENT.'}>
-          <h3>Delete Account</h3>
-          <div className={'button-container'}>
-            <button type={'button'} className={'warn more'}>Delete</button>
-            <span>your account.</span>
-          </div>
         </div>
       </div>
     );

@@ -22,7 +22,8 @@ export default class ReplaceNeighborhoodsModule extends Component {
     this.state = {
       liveHoods: [], pendingHoods: [], uniqueHoods: [], liveHoodsLoaded: false, liveHoodsTotal: 0,
       lookups: [], lookupsTotal: 0, lookupsLoaded: false,
-      sort: this.defaultSort, currentPage: 1, pageSize: this.props.defaultPageSize
+      sort: this.defaultSort, currentPage: 1, pageSize: this.props.defaultPageSize,
+      replaceRunning: false
     };
 
     this.hoodsService = app.service('neighborhoods');
@@ -249,6 +250,8 @@ export default class ReplaceNeighborhoodsModule extends Component {
       return;
     }
 
+    this.setState({replaceRunning: true});
+
     this.props.updateMessagePanel({status: 'info', details: 'Starting neighborhood replacement'});
     this.props.updateMessagePanel({status: 'info', details: 'Looking for neighborhoods to replace.'});
 
@@ -286,7 +289,8 @@ export default class ReplaceNeighborhoodsModule extends Component {
       .catch(err => {
         this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err.message)});
         console.error(err);
-      });
+      })
+      .finally(() => this.setState({replaceRunning: false}));
   }
 
   renderTable() {
@@ -338,7 +342,7 @@ export default class ReplaceNeighborhoodsModule extends Component {
         <h3>Replace Neighborhoods</h3>
         <ReplaceTermsForm
           schema={'neighborhoods'} uniqueListings={this.state.uniqueHoods} liveListings={this.state.liveHoods}
-          runTagReplacement={this.runHoodReplacement}
+          runTagReplacement={this.runHoodReplacement} replaceRunning={this.state.replaceRunning}
         />
         <h4>Manage Neighborhood Replacements</h4>
         {this.renderTable()}

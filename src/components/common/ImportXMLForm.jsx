@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import {BeatLoader} from 'react-spinners';
 
 import '../../styles/import-form.css';
 
@@ -7,6 +8,8 @@ import '../../styles/import-form.css';
  */
 export default class ImportXMLForm extends Component {
   render() {
+    const spinnerClass = this.props.importRunning ? ' button-with-spinner' : '';
+
     return (
       <div className={'schema-module'}>
         <form id={'form-import-xml'} className={'import-form'} onSubmit={this.props.handleImportClick}>
@@ -15,7 +18,10 @@ export default class ImportXMLForm extends Component {
             <input type={'file'} ref={this.props.fileInputRef} id={'fileInput'} accept={".xml"} multiple required />
           </div>
           <div>
-            <button type={'submit'} className={'button-primary'}>import data from file</button>
+            <button type={'submit'} className={`button-primary${spinnerClass}`}>
+              import data from file
+              <BeatLoader size={8} sizeUnit={"px"} color={'#c2edfa'} loading={this.props.importRunning} />
+            </button>
           </div>
         </form>
       </div>

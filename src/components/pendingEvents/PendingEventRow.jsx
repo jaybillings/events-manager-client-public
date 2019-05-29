@@ -1,7 +1,7 @@
 import React from 'react';
 import Moment from 'moment';
 import {Link} from 'react-router-dom';
-import {renderOptionList, renderSchemaLink} from "../../utilities";
+import {diffListings, renderOptionList, renderSchemaLink} from "../../utilities";
 
 import PendingListingRow from '../PendingListingRow';
 import StatusLabel from "../common/StatusLabel";
@@ -82,15 +82,20 @@ export default class PendingEventRow extends PendingListingRow {
             <button type={'button'} className={'emphasize'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
           </td>
-          <td><input type={'text'} name={'listingName'} value={listingName} onClick={e => e.stopPropagation()} /></td>
-          <td><input type={'date'} name={'listingStart'} value={startDateVal} onClick={e => e.stopPropagation()} /></td>
-          <td><input type={'date'} name={'listingEnd'} value={endDateVal} onClick={e => e.stopPropagation()} /></td>
+          <td><input type={'text'} name={'listingName'} value={listingName} onChange={this.handleInputChange}
+                     onClick={e => e.stopPropagation()} /></td>
+          <td><input type={'date'} name={'listingStart'} value={startDateVal} onChange={this.handleInputChange}
+                     onClick={e => e.stopPropagation()} /></td>
+          <td><input type={'date'} name={'listingEnd'} value={endDateVal} onChange={this.handleInputChange}
+                     onClick={e => e.stopPropagation()} /></td>
           <td>
-            <select name={'linkedVenueUUID'} value={venueUUID} onClick={e => e.stopPropagation()}>
+            <select name={'linkedVenueUUID'} value={venueUUID} onChange={this.handleInputChange}
+                    onClick={e => e.stopPropagation()}>
               {renderOptionList(venues, 'venues', 'uuid')}
             </select>
           </td>
-          <td><select name={'linkedOrgUUID'} value={orgUUID} onClick={e => e.stopPropagation()} required>
+          <td><select name={'linkedOrgUUID'} value={orgUUID} onChange={this.handleInputChange}
+                      onClick={e => e.stopPropagation()} required>
             {renderOptionList(orgs, 'organizers', 'uuid')}
           </select>
           </td>
@@ -104,6 +109,7 @@ export default class PendingEventRow extends PendingListingRow {
     const endDate = Moment(this.state.listingEnd).format('MM/DD/YYYY');
     const venueLink = this.props.venue ? renderSchemaLink(this.props.venue, 'venues') : 'NO VENUE';
     const orgLink = this.props.org ? renderSchemaLink(this.props.org, 'organizers') : 'NO ORGANIZER';
+    const classNameMap = this.state.matchingLiveListing ? diffListings(this.state.matchingLiveListing, this.props.listing, ['name', 'start_date', 'end_date', 'venue_uuid', 'org_uuid']) : {};
 
     return (
       <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
@@ -111,11 +117,11 @@ export default class PendingEventRow extends PendingListingRow {
           <button type={'button'} className={'emphasize'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard</button>
         </td>
-        <td><Link to={`/pendingEvents/${listingID}`}>{listingName}</Link></td>
-        <td>{startDate}</td>
-        <td>{endDate}</td>
-        <td>{venueLink}</td>
-        <td>{orgLink}</td>
+        <td className={classNameMap['name']}><Link to={`/pendingEvents/${listingID}`}>{listingName}</Link></td>
+        <td className={classNameMap['start_date']}>{startDate}</td>
+        <td className={classNameMap['end_date']}>{endDate}</td>
+        <td className={classNameMap['venue_uuid']}>{venueLink}</td>
+        <td className={classNameMap['org_uuid']}>{orgLink}</td>
         <td>{createdAt}</td>
         <td><StatusLabel writeStatus={writeStatus} schema={'events'} /></td>
       </tr>

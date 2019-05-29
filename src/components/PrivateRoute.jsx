@@ -20,6 +20,7 @@ export default class PrivateRoute extends Component {
    */
   componentDidMount() {
     app.authenticate().catch((err) => {
+      console.error(err);
       this.setState({login: null});
     });
 
@@ -77,7 +78,7 @@ export default class PrivateRoute extends Component {
           return (
             <div className={'container'}>
               <Header />
-              <p style={{'fontWeight': '700', 'color': 'var(--bright-pink)'}}>Authenticating...</p>
+              <p className={'single-message emphasize'}>Authenticating...</p>
             </div>
           );
         }
