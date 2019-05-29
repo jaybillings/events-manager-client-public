@@ -230,12 +230,9 @@ export default class PendingListingsModule extends Component {
       $skip: this.state.pageSize * (this.state.currentPage - 1)
     };
 
-    console.debug(`${this.schema} query`, query);
-
     this.pendingListingsService
       .find({query})
       .then(message => {
-        console.debug('message', message);
         this.setState({
           pendingListings: message.data, pendingListingsTotal: message.total, listingsLoaded: true
         });
@@ -568,7 +565,6 @@ export default class PendingListingsModule extends Component {
   }
 
   updateSearchQuery(searchTerm) {
-    console.debug('searchTerm', searchTerm);
     this.setState({searchTerm}, () => {
       this.fetchListings();
     });
@@ -619,10 +615,9 @@ export default class PendingListingsModule extends Component {
           {
             this.state.pendingListings.map(listing =>
               <PendingListingRow
-                key={`${this.schema}-${listing.id}`} schema={schema} listing={listing}
-                selected={selectedListings.includes(listing.id)}
-                updateListing={this.updateListing} removeListing={this.removeListing}
-                selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}
+                key={`${this.schema}-${listing.id}`} schema={schema} listing={listing} selected={selectedListings.includes(listing.id)}
+                updateListing={this.updateListing} removeListing={this.removeListing} selectListing={this.handleListingSelect}
+                queryForExisting={this.queryForExisting} queryForExact={this.queryForExact}
               />)
           }
           </tbody>

@@ -1,7 +1,7 @@
 import React from 'react';
 import Moment from 'moment';
 import {Link} from 'react-router-dom';
-import {renderOptionList, renderSchemaLink} from "../../utilities";
+import {diffListings, renderOptionList, renderSchemaLink} from "../../utilities";
 
 import PendingListingRow from "../PendingListingRow";
 import StatusLabel from "../common/StatusLabel";
@@ -21,7 +21,7 @@ export default class PendingVenueRow extends PendingListingRow {
   constructor(props) {
     super(props);
 
-    Object.assign(this.state,{
+    Object.assign(this.state, {
       listingName: this.props.listing.name, linkedHoodUUID: this.props.hood ? this.props.hood.uuid : null
     });
   }
@@ -84,6 +84,7 @@ export default class PendingVenueRow extends PendingListingRow {
       );
     }
 
+    const classNameMap = this.state.matchingLiveListing ? diffListings(this.state.matchingLiveListing, this.props.listing, ['name', 'hood_uuid']) : {};
     const hoodLink = this.props.hood ? renderSchemaLink(this.props.hood, 'neighborhoods') : 'NO NEIGHBORHOOD';
 
     return (
@@ -92,8 +93,8 @@ export default class PendingVenueRow extends PendingListingRow {
           <button type={'button'} className={'emphasize'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard</button>
         </td>
-        <td><Link to={`/pendingVenues/${listingID}`}>{listingName}</Link></td>
-        <td>{hoodLink}</td>
+        <td className={classNameMap['name']}><Link to={`/pendingVenues/${listingID}`}>{listingName}</Link></td>
+        <td className={classNameMap['hood_uuid']}>{hoodLink}</td>
         <td>{createdAt}</td>
         <td><StatusLabel writeStatus={writeStatus} schema={'venues'} /></td>
       </tr>

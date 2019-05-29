@@ -428,6 +428,7 @@ export default class PendingEventsModule extends PendingListingsModule {
                 })}
                 updateListing={this.updateListing} removeListing={this.removeListing}
                 selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}
+                queryForExact={this.queryForExact}
               />)
           }
           </tbody>

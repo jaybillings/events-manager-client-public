@@ -170,11 +170,13 @@ export default class PendingVenuesModule extends PendingListingsModule {
                 key={`venue-${venue.id}`} schema={'pending-venues'} listing={venue}
                 selected={selectedVenues.includes(venue.id)} hoods={uniqueHoods}
                 hood={(uniqueHoods.find(h => {
+                  /** @note Coercion is intentional, since UUID can be string or integer. */
                   // eslint-disable-next-line
                   return ('' + h.uuid) == ('' + venue.hood_uuid);
                 }))}
                 updateListing={this.updateListing} removeListing={this.removeListing}
                 selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}
+                queryForExact={this.queryForExact}
               />)
           }
           </tbody>
