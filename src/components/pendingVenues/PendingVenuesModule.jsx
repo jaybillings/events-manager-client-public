@@ -1,4 +1,5 @@
 import React from "react";
+import {BeatLoader} from "react-spinners";
 import {renderTableHeader, uniqueListingsOnly} from "../../utilities";
 import app from "../../services/socketio";
 
@@ -126,8 +127,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
   renderTable() {
     const pendingVenuesTotal = this.state.pendingListingsTotal;
 
-    if (!(this.state.listingsLoaded && this.state.hoodsLoaded)) return <p>Data is loading... Please be patient...</p>;
-    if (pendingVenuesTotal === 0) return <p>No pending venues to list.</p>;
+    if (!(this.state.listingsLoaded && this.state.hoodsLoaded)) return <div className={'single-message info loading-message'}>Data is loading... Please be patient...</div>;
+    if (pendingVenuesTotal === 0) return <div className={'single-message loading-message'}>No pending venues to list.</div>;
 
     const pendingVenues = this.state.pendingListings;
     const titleMap = new Map([
@@ -140,9 +141,12 @@ export default class PendingVenuesModule extends PendingListingsModule {
     const uniqueHoods = uniqueListingsOnly(this.state.hoods, this.state.pendingHoods);
     const selectedVenues = this.state.selectedListings;
     const schemaLabel = selectedVenues.length === 1 ? 'venue' : 'venues';
+
+    const spinnerClass = this.state.publishRunning ? ' button-with-spinner' : '';
     const publishButton = this.user.is_su ?
-      <button type={'button'} className={'button-primary'} onClick={this.handlePublishButtonClick}
+      <button type={'button'} className={`button-primary${spinnerClass}`} onClick={this.handlePublishButtonClick}
               disabled={selectedVenues.length === 0}>
+        <BeatLoader size={8} sizeUnit={"px"} color={'#c2edfa'} loading={this.state.publishRunning} />
         Publish {selectedVenues.length || ''} {schemaLabel}
       </button> : '';
 
@@ -170,9 +174,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
                 key={`venue-${venue.id}`} schema={'pending-venues'} listing={venue}
                 selected={selectedVenues.includes(venue.id)} hoods={uniqueHoods}
                 hood={(uniqueHoods.find(h => {
-                  /** @note Coercion is intentional, since UUID can be string or integer. */
-                  // eslint-disable-next-line
-                  return ('' + h.uuid) == ('' + venue.hood_uuid);
+                  return ('' + h.uuid) === ('' + venue.hood_uuid);
                 }))}
                 updateListing={this.updateListing} removeListing={this.removeListing}
                 selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}

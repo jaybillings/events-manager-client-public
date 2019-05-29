@@ -23,7 +23,8 @@ export default class ReplaceTagsModule extends Component {
     this.state = {
       liveTags: [], pendingTags: [], uniqueTags: [], liveTagsLoaded: false, liveTagTotal: 0,
       lookups: [], lookupsTotal: 0, lookupsLoaded: false,
-      sort: this.defaultSort, currentPage: 1, pageSize: this.props.defaultPageSize
+      sort: this.defaultSort, currentPage: 1, pageSize: this.props.defaultPageSize,
+      replaceRunning: false
     };
 
     this.tagsService = app.service('tags');
@@ -258,6 +259,8 @@ export default class ReplaceTagsModule extends Component {
       return;
     }
 
+    this.setState({replaceRunning: true});
+
     this.props.updateMessagePanel({status: 'info', details: 'Starting tag replacement'});
     this.props.updateMessagePanel({status: 'info', details: 'Looking for tags to replace.'});
 
@@ -295,7 +298,8 @@ export default class ReplaceTagsModule extends Component {
       .catch(err => {
         this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err.message)});
         console.error(err);
-      });
+      })
+      .finally(() => this.setState({replaceRunning: false}));
   }
 
   renderTable() {
@@ -347,7 +351,7 @@ export default class ReplaceTagsModule extends Component {
         <h3>Replace Tags</h3>
         <ReplaceTermsForm
           schema={'tags'} uniqueListings={this.state.uniqueTags} liveListings={this.state.liveTags}
-          runTagReplacement={this.runTagReplacement}
+          runTagReplacement={this.runTagReplacement} replaceRunning={this.state.replaceRunning}
         />
         <h4>Manage Tag Replacements</h4>
         {this.renderTable()}

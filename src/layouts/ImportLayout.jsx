@@ -29,6 +29,8 @@ export default class ImportLayout extends Component {
     this.defaultSortOrder = ['created_at', -1];
     this.user = app.get('user');
 
+    this.state = {'importRunning': false};
+
     this.fileInput = React.createRef();
     this.messagePanel = React.createRef();
     this.eventsModule = React.createRef();
@@ -113,6 +115,7 @@ export default class ImportLayout extends Component {
 
     app.passport.getJWT()
       .then(token => {
+        this.setState({importRunning: true});
         this.stopModuleListening();
         return fetch(this.API_URI, {
           method: 'POST',
@@ -124,6 +127,7 @@ export default class ImportLayout extends Component {
         return response.json(); // Convert raw response body to JSON
       })
       .then(body => {
+        this.setState({importRunning: false});
         if (body.code >= 400) {
           this.updateMessagePanel({status: 'error', details: body.message});
           console.error(body.message);
@@ -200,7 +204,7 @@ export default class ImportLayout extends Component {
         <Header />
         <MessagePanel ref={this.messagePanel} />
         <h2>Import Data From BeDynamic</h2>
-        <ImportXMLForm fileInputRef={this.fileInput} handleImportClick={this.importData} />
+        <ImportXMLForm fileInputRef={this.fileInput} importRunning={this.state.importRunning} handleImportClick={this.importData} />
         <h2>Review Unpublished Data</h2>
         <PendingEventsModule
           ref={this.eventsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}

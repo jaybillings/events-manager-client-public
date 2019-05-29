@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {makeSingular, renderOptionList} from "../../utilities";
+import {BeatLoader} from "react-spinners";
 
 export default class ReplaceTermsForm extends Component {
   constructor(props) {
@@ -24,6 +25,8 @@ export default class ReplaceTermsForm extends Component {
     const uniqueListings = this.props.uniqueListings;
     const liveListings = this.props.liveListings;
 
+    const spinnerClass = this.props.replaceRunning ? ' button-with-spinner' : '';
+
     return (
       <form id={`${schema}-replace-form`} className={'add-form'} onSubmit={this.handleSubmit}>
         <label>
@@ -38,7 +41,10 @@ export default class ReplaceTermsForm extends Component {
             {renderOptionList(liveListings, schema)}
           </select>
         </label>
-        <button type={'submit'} className={'emphasize'}>Replace and Delete {schema}</button>
+        <button type={'submit'} className={`emphasize${spinnerClass}`}>
+          <BeatLoader size={8} color={'#c2edfa'} loading={this.props.replaceRunning} />
+          Replace and Delete {schema}
+        </button>
       </form>
     );
   }

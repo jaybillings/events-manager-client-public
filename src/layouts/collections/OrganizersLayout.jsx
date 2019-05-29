@@ -22,7 +22,7 @@ export default class OrganizersLayout extends ListingsLayout {
    * @returns {*}
    */
   renderAddForm() {
-    if (!this.state.listingsLoaded) return <p>Data is loading... Please be patient...</p>;
+    if (!this.state.listingsLoaded) return <div className={'loading-message single-message info'}>Data is loading... Please be patient...</div>;
 
     return <OrganizerAddForm
       schema={'organizers'} listings={this.state.listings}
