@@ -10,11 +10,15 @@
   margin: auto 0;
 }
 
+.account-page form > button {
+  float: right;
+}
+
 .account-page .panel {
   position: relative;
   margin-top: 2.5rem;
   border: 2px solid var(--neutral-accent-color);
-  padding: 2rem;
+  padding: 2rem 2rem 3rem;
   border-radius: 4px;
   background-color: var(--true-white);
 }

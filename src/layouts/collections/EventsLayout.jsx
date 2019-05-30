@@ -405,7 +405,6 @@ export default class EventsLayout extends ListingsLayout {
    * @param {String} filterType
    */
   updateFilter(filterType) {
-    console.debug('filterType', filterType);
     this.setState({filterType, currentPage: 1}, () => {
       this.fetchListings();
     });
@@ -447,7 +446,7 @@ export default class EventsLayout extends ListingsLayout {
     } else if (this.state.listingsTotal === 0) {
       return [
         <Filters key={'events-filters'} filterType={this.state.filterType} updateFilter={this.updateFilter} />,
-        <div key={'events-message'} className={'loading-message single-message'}>No events to list.</div>
+        <div key={'events-message'} className={'single-message no-content'}>No events to list.</div>
       ];
     }
 

@@ -581,7 +581,7 @@ export default class PendingListingsModule extends Component {
    */
   renderTable() {
     if (!this.state.listingsLoaded) return <div className={'single-message info loading-message'}>Data is loading... Please be patient...</div>;
-    if (this.state.pendingListingsTotal === 0) return <div className={'single-messgae loading-message'}>No pending {this.schema} to list.</div>;
+    if (this.state.pendingListingsTotal === 0) return <div>No pending {this.schema} to list.</div>;
 
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],

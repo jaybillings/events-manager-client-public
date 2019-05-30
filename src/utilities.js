@@ -208,23 +208,34 @@ const arrayUnique = function (arr) {
  * @param {string} target - The target of the action.
  * @param {object} errors - The error object returned from the action.
  * @param {Function} displayFunc - The method used to display a message to the user.
- * @param {string} userPrompt - A code for additional prompts to add to the message.
+ * @param {string} userPrompt - A label for additional prompts to add to the message.
+ *  Non-false values or the value 'default' will include the default prompt.
  */
 const displayErrorMessages = function (action, target, errors, displayFunc, userPrompt = '') {
   const userPrompts = {
     reload: 'Reload the page to try again.',
     retry: 'Please try again.',
-    default: 'If this problem continues, please contact the Helpdesk.'
+    default: <span>If this problem continues, please <a href={"mailto:" + process.env.REACT_APP_HELP_ADDRESS}>contact the Helpdesk</a>.</span>
   };
-  const subscript = (userPrompts[userPrompt] || '') + ' ' + userPrompts.default;
 
   if (!Array.isArray(errors)) errors = [errors];
 
   for (let i = 0; i < errors.length; i++) {
     const subject = errors[i].dataPath ? errors[i].dataPath.substring(1) : '';
+    const messages = [];
+
+    messages.push(<span key={'msg0'}>Could not {action} {target} -- {subject} {errors[i].message}.</span>);
+
+    if (userPrompt === 'default') {
+      messages.push(<span key={'msg1'}>{userPrompts.default}</span>);
+    } else if (userPrompts[userPrompt]) {
+      messages.push(<span key={'msg1'}>{userPrompts[userPrompt]}</span>);
+      messages.push(<span key={'msg2'}>{userPrompts.default}</span>);
+    }
+
     displayFunc({
       status: 'error',
-      details: `Could not ${action} ${target} -- ${subject} ${errors[i].message}. ${subscript}`
+      details: messages
     });
   }
 };
@@ -252,6 +263,10 @@ const diffListings = function(listingA, listingB, parameters) {
   return classNameMap;
 };
 
+const printToConsole = function(errObj, type) {
+  if (JSON.stringify(errObj) && console[type]) console[type](errObj);
+};
+
 export {
   renderOptionList,
   renderCheckboxList,
@@ -263,5 +278,6 @@ export {
   makeSingular,
   arrayUnique,
   displayErrorMessages,
-  diffListings
+  diffListings,
+  printToConsole
 };

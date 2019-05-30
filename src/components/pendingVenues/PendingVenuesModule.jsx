@@ -128,7 +128,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
     const pendingVenuesTotal = this.state.pendingListingsTotal;
 
     if (!(this.state.listingsLoaded && this.state.hoodsLoaded)) return <div className={'single-message info loading-message'}>Data is loading... Please be patient...</div>;
-    if (pendingVenuesTotal === 0) return <div className={'single-message loading-message'}>No pending venues to list.</div>;
+    if (pendingVenuesTotal === 0) return <div>No pending venues to list.</div>;
 
     const pendingVenues = this.state.pendingListings;
     const titleMap = new Map([

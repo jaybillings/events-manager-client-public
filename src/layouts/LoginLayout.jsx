@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import pwRules from "password-rules";
 import app from "../services/socketio";
 import {Redirect} from "react-router-dom";
 
@@ -8,27 +9,29 @@ import CreateAccountForm from "../components/login/CreateAccountForm";
 import LoginForm from "../components/login/LoginForm";
 
 import "../styles/login-page.css";
+import {displayErrorMessages, printToConsole} from "../utilities";
 
 /**
- * LoginPage is a component that renders the page responsible for authenticating and creating users.
+ * LoginLayout renders the layout for the login page.
  */
 export default class LoginLayout extends Component {
   constructor(props) {
     super(props);
 
-    this.messagePanelRef = React.createRef();
-
     this.state = {email: '', password: '', redirectCount: -1, shouldCreateUser: false};
 
+    this.countdownTimeout = 1000;
     this.usersService = app.service('users');
     this.authManagementService = app.service('authManagement');
 
-    this.redirectCountdown = this.redirectCountdown.bind(this);
+    this.messagePanelRef = React.createRef();
 
     this.logInUser = this.logInUser.bind(this);
     this.createUser = this.createUser.bind(this);
+
     this.resendVerifyEmail = this.resendVerifyEmail.bind(this);
 
+    this.redirectCountdown = this.redirectCountdown.bind(this);
     this.toggleLoginState = this.toggleLoginState.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
 
@@ -40,6 +43,7 @@ export default class LoginLayout extends Component {
   /**
    * Runs once the component mounts. Tries to authenticate the user using the locally stored JWT token. If successful,
    * redirects to the import page.
+   *
    * @override
    */
   componentDidMount() {
@@ -52,30 +56,9 @@ export default class LoginLayout extends Component {
       })
       .catch(err => {
         if (err.code === 401) return;
-        console.error(err);
-        this.updateMessagePanel({status: 'error', details: 'Error fetching JWT: ' + err.message});
+        printToConsole(err, 'error');
+        displayErrorMessages('log in', 'user', err, this.updateMessagePanel);
       });
-  }
-
-  /**
-   * Redirects the user to the import page after a countdown is finished.
-   *
-   * @note The countdown helps prevent infinite redirects and gives the user time to comprehend the redirection.
-   */
-  redirectCountdown() {
-    const countdown = () => {
-      let count = this.state.redirectCount - 1;
-
-      this.setState({redirectCount: count});
-
-      if (count > 0) {
-        setTimeout(countdown, 1000);
-      }
-    };
-
-    this.setState({redirectCount: 5}, () => {
-      setTimeout(countdown, 1000);
-    });
   }
 
   /**
@@ -90,36 +73,36 @@ export default class LoginLayout extends Component {
         password: this.state.password
       })
       .then(message => {
-        console.log('authenticated!');
+        printToConsole('authenticated', 'log');
         return app.passport.verifyJWT(message.accessToken);
       })
       .then(payload => {
-        console.log('JWT payload', payload);
         return this.usersService.get(payload.userId);
       })
       .then(user => {
         app.set('user', user);
-        console.log('user', app.get('user'));
         this.setState({redirectCount: 0});
       })
       .catch(err => {
-        this.updateMessagePanel({status: 'error', details: 'Authentication error: ' + err.message});
-        console.error(err);
+        printToConsole(err, 'error');
+        displayErrorMessages('log in', 'user', err, this.updateMessagePanel);
       });
   }
 
   /**
    * Runs when the create user button is clicked. Creates a new user using the supplied credentials.
    *
+   * @async
    * @note For security reasons, user is required to log in manually after account creation.
    */
   createUser() {
     if (!this.state.email || !this.state.password) {
-      this.updateMessagePanel({
-        status: 'error',
-        details: 'A valid email address and password is required to create an account. Please try again.'
-      });
-      return;
+      return Promise.reject({message: 'A valid email address and password is required to create an account. Please try again.'});
+    }
+
+    const pwRulesRes = pwRules(this.state.password);
+    if (pwRulesRes) {
+      return Promise.reject({message: pwRulesRes.sentence.slice(0, -1)});
     }
 
     return this.usersService.create({
@@ -129,24 +112,50 @@ export default class LoginLayout extends Component {
     });
   }
 
-  resendVerifyEmail() {
+  /**
+   * Runs when the 'resend verification email' button is clicked. Triggers a server call to resend the email.
+   */
+  resendVerifyEmail(newUser) {
     this.authManagementService.create({
       action: 'resendVerifySignup',
-      value: {email: this.state.newUser.email}
+      value: {email: newUser.email}
     })
       .then(() => {
         this.updateMessagePanel({
           status: 'success',
-          details: `Email has been re-sent. If you still don't see it, make sure ${this.sendAddress} is in your spam whitelist.`
+          details: `Email has been re-sent. If you still don't see it, make sure ${process.env.REACT_APP_SEND_ADDRESS} is in your spam whitelist.`
         });
       })
-      .create(err => {
-        this.props.updateMessagePanel({status: 'error', details: err.message});
+      .catch(err => {
+        displayErrorMessages('create', 'new user', err, this.updateMessagePanel);
+        printToConsole(err, 'error');
       });
   }
 
   /**
+   * Redirects the user to the import page after a countdown is finished.
+   *
+   * @note The countdown helps prevent infinite redirects and gives the user time to comprehend the redirection.
+   */
+  redirectCountdown() {
+    const countdown = () => {
+      let count = this.state.redirectCount - 1;
+
+      this.setState({redirectCount: count}, () => {
+        if (count > 0) {
+          setTimeout(countdown, this.countdownTimeout);
+        }
+      });
+    };
+
+    this.setState({redirectCount: 5}, () => {
+      setTimeout(countdown, this.countdownTimeout);
+    });
+  }
+
+  /**
    * Runs when an input is changed. Saves the value to the component's state.
+   *
    * @param {Event} e
    */
   handleInputChange(e) {
@@ -154,6 +163,9 @@ export default class LoginLayout extends Component {
     this.setState({[e.target.name]: e.target.value.trim()});
   }
 
+  /**
+   * Swaps the view's state between login and user creation.
+   */
   toggleLoginState() {
     this.setState((prevState) => {
       return {shouldCreateUser: !prevState.shouldCreateUser}
@@ -169,6 +181,11 @@ export default class LoginLayout extends Component {
     this.messagePanelRef.current.addMessage(newMsg);
   }
 
+  /**
+   * Renders the user creation or login form, depending on what is required by the state.
+   *
+   * @returns {*}
+   */
   renderForm() {
     if (this.state.shouldCreateUser) {
       return <CreateAccountForm
@@ -186,11 +203,17 @@ export default class LoginLayout extends Component {
     />;
   }
 
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @override
+   * @returns {*}
+   */
   render() {
-    // TODO: Fill in missing password functionality
     const redirectCount = this.state.redirectCount;
-    const successMsgClass = redirectCount > 0 ? '' : ' hidden';
-    const warningMsgClass = redirectCount === -1 ? '' : ' hidden';
+    const hideSuccessClass = redirectCount > 0 ? '' : ' hidden';
+    const hideWarningClass = redirectCount === -1 ? '' : ' hidden';
     const redirectTarget = this.props.match.params.redirectUrl || 'import';
     const title = this.state.shouldCreateUser ? 'create new account' : 'log in to your account';
 
@@ -201,9 +224,9 @@ export default class LoginLayout extends Component {
         <Header />
         <h2>{title}</h2>
         <MessagePanel ref={this.messagePanelRef} />
-        <p className={'message success-message' + successMsgClass}>Logged in. Redirecting in {this.state.redirectCount}
+        <p className={'message success-message' + hideSuccessClass}>Logged in. Redirecting in {this.state.redirectCount}
           {redirectCount === 1 ? ' second' : ' seconds'}. </p>
-        <p className={'message warning-message' + warningMsgClass}>You must log in to continue.</p>
+        <p className={'message warning-message' + hideWarningClass}>You must log in to continue.</p>
         {this.renderForm()}
       </div>
     );

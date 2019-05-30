@@ -1,5 +1,8 @@
 import React, {Component} from 'react';
 
+/**
+ * LoginForm handles the form responsible for user account login.
+ */
 export default class LoginForm extends Component {
   constructor(props) {
     super(props);
@@ -7,11 +10,22 @@ export default class LoginForm extends Component {
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
+  /**
+   * Runs when the form submits.
+   * @param {Event} e
+   */
   handleSubmit(e) {
     e.preventDefault();
     this.props.logInUser();
   }
 
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @override
+   * @returns {*}
+   */
   render() {
     return (
       <form onSubmit={this.handleSubmit}>

@@ -375,7 +375,7 @@ export default class PendingEventsModule extends PendingListingsModule {
       this.state.orgsLoaded && this.state.pendingOrgsLoaded)) {
       return <div className={'single-message info loading-message'}>Data is loading... Please be patient...</div>;
     }
-    if (this.state.pendingListingsTotal === 0) return <div className={'single-message loading-message'}>No pending events to list.</div>;
+    if (this.state.pendingListingsTotal === 0) return <div>No pending events to list.</div>;
 
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],

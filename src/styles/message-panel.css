@@ -35,8 +35,12 @@
   text-transform: uppercase;
 }
 
-.messageContainer span {
+.messageContainer .msg-title {
   padding-right: 1rem;
+}
+
+.messageContainer span {
+  padding-right: 0.5rem;
 }
 
 .messageContainer strong {
@@ -53,6 +57,8 @@
   border: none;
   padding: 1rem;
   border-radius: var(--border-radius);
+  width: -moz-available;
+  width: available;
 }
 
 .messageContainer li.success {

@@ -294,7 +294,6 @@ export default class ListingsLayout extends Component {
   }
 
   updateSearchQuery(searchTerm) {
-    console.debug('searchTerm', searchTerm);
     this.setState({searchTerm}, () => {
       this.fetchListings();
     });
@@ -328,7 +327,7 @@ export default class ListingsLayout extends Component {
         Data is being loaded... Please be patient...
       </p>;
     } else if (this.state.listingsTotal === 0) {
-      return <p key={`${schema}-message`} className={'single-message loading-message'}>No {schema} to list.</p>
+      return <p key={`${schema}-message`} className={'single-message no-content'}>No {schema} to list.</p>
     }
 
     const titleMap = new Map([

@@ -1,27 +1,33 @@
 import React, {Component} from 'react';
 import {Redirect, Route} from "react-router-dom";
 import app from '../services/socketio';
+import {printToConsole} from "../utilities";
+
 import Header from "./common/Header";
 
 /**
- * PrivateRoute is a custom route component for routes that require authentication. If authentication fails, the client
- * is redirected to the login page.
+ * PrivateRoute is a custom route component for routes that require authentication.
+ * If authentication fails, the client is redirected to the login page.
+ * @class
  */
 export default class PrivateRoute extends Component {
   constructor(props) {
     super(props);
 
+    /** @note `login` is intentionally uninitialized. */
     this.state = {};
   }
 
   /**
-   * Runs after the component mounts. Authenticates the user and registers listeners for auth related events.
+   * Runs after the component mounts. Authenticates the user and registers listeners
+   *
+   * for auth related events.
    * @override
    */
   componentDidMount() {
     app.authenticate().catch((err) => {
-      console.error(err);
       this.setState({login: null});
+      printToConsole(err, 'error');
     });
 
     app
@@ -37,12 +43,12 @@ export default class PrivateRoute extends Component {
             this.setState({login});
           })
           .catch(err => {
-            console.log(JSON.stringify(err));
+            printToConsole(err, 'error');
           });
       })
-      .on('reauthentication-error', msg => {
+      .on('reauthentication-error', () => {
         app.authenticate().then(() => {
-          console.log('==== reconnected ====\n' + msg)
+          printToConsole('log', '==== reconnected ===');
         });
       })
       .on('logout', () => {
@@ -52,18 +58,22 @@ export default class PrivateRoute extends Component {
 
   /**
    * Runs before the component unmounts. Unregisters service listeners.
+   *
    * @override
    */
   componentWillUnmount() {
     app
       .removeAllListeners('authenticated')
       .removeAllListeners('reauthentication-error')
-      .removeAllListeners('logout');
+      .removeAllListeners('accountLogout');
   }
 
   /**
-   * Renders the component. If successfully authenticated, renders the requested route. If auth is undefined
-   * (i.e. authentication has not completed), renders a message. If auth fails, renders a redirect to the login page.
+   * Renders the component.
+   *
+   * If successfully authenticated, this renders the requested route. If auth is undefined
+   * (i.e. authentication has not completed), renders a message. If auth fails,
+   * renders a redirect to the login page.
    *
    * @render
    * @override

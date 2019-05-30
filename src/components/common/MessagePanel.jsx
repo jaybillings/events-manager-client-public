@@ -4,35 +4,35 @@ import {MdClose} from "react-icons/md";
 import "../../styles/message-panel.css";
 
 /**
- * The MessagePanel component displays a list of informational messages to the user.
+ * MessagePanel displays a list of informational messages to the user.
  *
  * @class
  */
 export default class MessagePanel extends Component {
-  /**
-   * The class's constructor.
-   * @constructor
-   */
   constructor(props) {
     super(props);
 
-    this.maxVisibleSeconds = 1000 * 45;
-
     this.state = {isVisible: false, messages: [], timeoutID: null};
 
-    this.dismissPanel = this.dismissPanel.bind(this);
+    this.maxVisibleSeconds = 45000;
+
     this.addMessage = this.addMessage.bind(this);
+    this.dismissPanel = this.dismissPanel.bind(this);
     this.renderMessages = this.renderMessages.bind(this);
   }
 
+  /**
+   * Runs when the component mounts. Clears the hide timeout.
+   */
   componentWillUnmount() {
     if (this.state.timeoutID) window.clearTimeout(this.state.timeoutID);
   }
 
-  dismissPanel() {
-    this.setState({isVisible: false, messages: [], timeoutID: null})
-  }
-
+  /**
+   * Adds a new message to the panel and re-starts the hide timeout.
+   *
+   * @param {string} newMsg
+   */
   addMessage(newMsg) {
     if (this.state.timeoutID) window.clearTimeout(this.state.timeoutID);
     const timeoutID = window.setTimeout(this.dismissPanel, this.maxVisibleSeconds);
@@ -43,11 +43,16 @@ export default class MessagePanel extends Component {
   }
 
   /**
+   * Hides the panel.
+   */
+  dismissPanel() {
+    this.setState({isVisible: false, messages: [], timeoutID: null})
+  }
+
+  /**
    * Renders the list of messages.
-   * @render
-   * @override
    *
-   * @returns {*}
+   * @returns {*[]}
    */
   renderMessages() {
     const messages = this.state.messages;
@@ -64,6 +69,7 @@ export default class MessagePanel extends Component {
    * Renders the component.
    *
    * @render
+   * @override
    * @returns {*}
    */
   render() {

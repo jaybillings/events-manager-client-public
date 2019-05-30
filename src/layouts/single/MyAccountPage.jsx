@@ -1,37 +1,41 @@
 import React, {Component} from 'react';
+import pwRules from "password-rules";
 import app from "../../services/socketio";
+import {BeatLoader} from 'react-spinners';
+import {displayErrorMessages, printToConsole} from "../../utilities";
 
 import Header from "../../components/common/Header";
 import MessagePanel from "../../components/common/MessagePanel";
 
 import "../../styles/account-page.css";
 
+/**
+ * MyAccountPage renders the user account page.
+ *
+ * @class
+ */
 export default class MyAccountPage extends Component {
   constructor(props) {
     super(props);
 
-    this.user = app.get('user');
-    this.sendAddress = 'noreply@visitseattle.org';
-
     this.state = {updateRunning: false};
+
+    this.user = app.get('user');
+    this.authManagementService = app.service('authManagement');
 
     this.messagePanel = React.createRef();
     this.oldPassRef = React.createRef();
     this.newPassRef = React.createRef();
 
-    this.authManagementService = app.service('authManagement');
-
     this.handlePasswordUpdate = this.handlePasswordUpdate.bind(this);
     this.resendVerifyEmail = this.resendVerifyEmail.bind(this);
     this.updateMessagePanel = this.updateMessagePanel.bind(this);
 
-    this.renderResendEmailButton = this.renderResendEmailButton.bind(this);
-
-    console.debug(app.get('user'));
+    this.renderResendBlock = this.renderResendBlock.bind(this);
   }
 
   /**
-   * Updates the logged-in user's password. Re-verifies old password before proceeding.
+   * Updates the logged-in user's password.
    */
   handlePasswordUpdate() {
     const oldPassword = this.oldPassRef.current.value;
@@ -41,6 +45,15 @@ export default class MyAccountPage extends Component {
       this.updateMessagePanel({
         status: 'error',
         details: 'To update your password, you must enter both your old and new passwords.'
+      });
+      return;
+    }
+
+    const pwRulesRes = pwRules(password);
+    if (pwRulesRes) {
+      this.updateMessagePanel({
+        status: 'error',
+        details: pwRulesRes.sentence.slice(0, -1)
       });
       return;
     }
@@ -55,18 +68,21 @@ export default class MyAccountPage extends Component {
         password
       }
     })
-      .then(result => {
-        console.debug('password change result', result);
+      .then(() => {
         this.updateMessagePanel({status: 'success', details: 'Your password has been changed successfully.'});
         this.oldPassRef.current.value = '';
         this.newPassRef.current.value = '';
       })
       .catch(err => {
-        this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+        displayErrorMessages('update', 'password', err, this.updateMessagePanel);
+        printToConsole(err, 'error');
       })
       .finally(() => this.setState({updateRunning: false}));
   }
 
+  /**
+   * Handles re-sending the verification email.
+   */
   resendVerifyEmail() {
     this.authManagementService.create({
       action: 'resendVerifySignup',
@@ -75,17 +91,23 @@ export default class MyAccountPage extends Component {
       .then(() => {
         this.updateMessagePanel({
           status: 'success',
-          details: `Verification email has been re-sent. If you still don't see it, make sure ${this.sendAddress} is in your spam whitelist.`
+          details: `Verification email has been re-sent. If you still don't see it, make sure ${process.env.REACT_APP_HELP_ADDRESS} is in your spam whitelist.`
         });
       })
       .catch(err => {
-        this.props.updateMessagePanel({status: 'error', details: err.message});
+        displayErrorMessages('resend', 'verification email', err, this.updateMessagePanel, 'default');
+        printToConsole(err, 'error');
       });
   }
 
-  logout() {
+  /**
+   * Handles logging out of the user account.
+   */
+  logoutAccount() {
     app.set('user', null);
-    app.logout();
+    app.logout().catch(err => {
+      printToConsole(err, 'error');
+    });
   }
 
   /**
@@ -97,28 +119,44 @@ export default class MyAccountPage extends Component {
     this.messagePanel.current.addMessage(newMsg);
   }
 
-  renderResendEmailButton() {
+  /**
+   * Renders the 'resend email verification' button and message.
+   *
+   * @returns {*}
+   */
+  renderResendBlock() {
     if (this.user.isVerified) return;
 
     return <div className={'verification-message'}>
-      <button type={'button'} className={'default'} onClick={this.resendVerifyEmail}>Resend Account Verification Email</button>
+      <button type={'button'} className={'default'} onClick={this.resendVerifyEmail}>Resend Account Verification Email
+      </button>
       <span>Your email address has not been verified. Account functions are limited.</span>
     </div>;
   }
 
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @override
+   * @returns {*}
+   */
   render() {
     const spinnerClass = this.state.updateRunning ? ' button-with-spinner' : '';
+
     return (
       <div className="container account-page">
         <Header />
         <h2>{this.user.email}'s Account</h2>
-
         <MessagePanel ref={this.messagePanel} />
+
         <div className={'button-container'}>
-          <button type={'button'} className={'button-primary emphasis'} onClick={this.logout}>Log Out</button>
+          <button type={'button'} className={'button-primary emphasis'} onClick={this.logoutAccount}>Log Out</button>
           <span>of your account.</span>
         </div>
-        {this.renderResendEmailButton()}
+
+        {this.renderResendBlock()}
+
         <div className={'panel'}>
           <h3>Update Password</h3>
           <form onSubmit={this.handlePasswordUpdate}>
@@ -128,7 +166,10 @@ export default class MyAccountPage extends Component {
               <label htmlFor={'newPass'}>New Password</label>
               <input type={'password'} id={'newPass'} ref={this.newPassRef} defaultValue={''} required />
             </div>
-            <button type={'button'} className={`default${spinnerClass}`} onClick={this.handlePasswordUpdate}>Update</button>
+            <button type={'button'} className={`default${spinnerClass}`} onClick={this.handlePasswordUpdate}>
+              Update Password
+              <BeatLoader size={8} sizeUnit={"px"} color={'#777'} loading={this.state.updateRunning} />
+            </button>
           </form>
         </div>
       </div>

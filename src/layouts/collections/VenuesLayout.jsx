@@ -89,6 +89,7 @@ export default class VenuesLayout extends ListingsLayout {
 
   /**
    * Renders the venue collection table.
+   *
    * @override
    * @returns {*}
    */
@@ -96,7 +97,7 @@ export default class VenuesLayout extends ListingsLayout {
     if (!(this.state.listingsLoaded && this.state.hoodsLoaded)) {
       return <p key={'venues-message'} className={'loading-message single-message info'}>Data is loading... Please be patient...</p>;
     } else if (this.state.listingsTotal === 0) {
-      return <p key={'venues-message'} className={'loading-message single-message'}>No venues to list.</p>
+      return <p key={'venues-message'} className={'single-message no-content'}>No venues to list.</p>
     }
 
     const titleMap = new Map([
@@ -138,6 +139,7 @@ export default class VenuesLayout extends ListingsLayout {
 
   /**
    * Renders the form for adding a new venue.
+   *
    * @override
    * @returns {*}
    */
