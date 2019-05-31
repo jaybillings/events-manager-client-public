@@ -263,8 +263,8 @@ const diffListings = function(listingA, listingB, parameters) {
   return classNameMap;
 };
 
-const printToConsole = function(errObj, type) {
-  if (JSON.stringify(errObj) && console[type]) console[type](errObj);
+const printToConsole = function(messageObj, type='error') {
+  if (JSON.stringify(messageObj) && console[type]) console[type](messageObj);
 };
 
 export {
