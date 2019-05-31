@@ -16,7 +16,7 @@ export default class PendingVenueRow extends PendingListingRow {
    * The component's constructor.
    * @constructor
    *
-   * @param {{schema: String, listing: Object, selected: Boolean, hoods: Array, hood: Object, updateListing: Function, removeListing: Function, selectListing: Function, queryForExisting: Function}} props
+   * @param {{schema: String, listing: Object, selected: Boolean, hoods: Array, hood: Object, updateListing: Function, removeListing: Function, selectListing: Function, queryForDuplicate: Function}} props
    */
   constructor(props) {
     super(props);
@@ -41,7 +41,7 @@ export default class PendingVenueRow extends PendingListingRow {
     };
 
     this.props.updateListing(this.props.listing, newData).then(() => {
-      this.checkWriteStatus();
+      this.getWriteStatus();
       this.setState({editable: false});
     });
   }

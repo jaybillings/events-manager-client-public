@@ -17,14 +17,14 @@ export default class PendingListingRow extends Component {
    * The component's constructor.
    * @constructor
    *
-   * @param {{schema: String, listing: Object, selected: Boolean, updateListing: Function, removeListing: Function, selectListing: Function, queryForExisting: Function}} props
+   * @param {{schema: String, listing: Object, selected: Boolean, updateListing: Function, removeListing: Function, selectListing: Function, queryForDuplicate: Function}} props
    */
   constructor(props) {
     super(props);
 
     this.state = {editable: false, writeStatus: '', listingName: this.props.listing.name, matchingLiveListing: null};
 
-    this.checkWriteStatus = this.checkWriteStatus.bind(this);
+    this.getWriteStatus = this.getWriteStatus.bind(this);
     this.startEdit = this.startEdit.bind(this);
     this.cancelEdit = this.cancelEdit.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
@@ -38,8 +38,11 @@ export default class PendingListingRow extends Component {
    * @override
    */
   componentDidMount() {
-    this.checkWriteStatus();
-    this.props.queryForExact(this.props.listing).then(result => {
+    this.getWriteStatus().then(writeStatus => {
+      this.setState({writeStatus});
+    });
+
+    this.props.queryForMatching(this.props.listing).then(result => {
       this.setState({matchingLiveListing: result.data[0]});
     });
   }
@@ -53,27 +56,16 @@ export default class PendingListingRow extends Component {
    *   - update (will update a preexisting listing)
    *   - duplicate (will make a new listing that might duplicate an existing listing)
    */
-  checkWriteStatus() {
+  async getWriteStatus() {
     const listing = this.props.listing;
 
-    this.props.queryForExisting(listing).then(message => {
-      let writeStatus;
+    if (this.state.matchingLiveListing) return 'update';
 
-      if (!message.total) {
-        writeStatus = 'new';
-      } else {
-        const uuids = message.data.map(row => row.uuid);
-        if (uuids.includes(listing.uuid)) {
-          writeStatus = 'update';
-        } else {
-          writeStatus = 'duplicate';
-        }
-      }
+    const similarListings = await this.props.queryForDuplicate(listing);
 
-      this.setState({writeStatus});
-    }, err => {
-      console.log('error checking write status', JSON.stringify(err));
-    });
+    if (similarListings.total) return 'duplicate';
+
+    return 'new';
   }
 
   /**
@@ -114,7 +106,7 @@ export default class PendingListingRow extends Component {
     const newData = {name: this.state.listingName};
 
     this.props.updateListing(this.props.listing, newData).then(() => {
-      this.checkWriteStatus();
+      this.getWriteStatus();
       this.setState({editable: false});
     });
   }

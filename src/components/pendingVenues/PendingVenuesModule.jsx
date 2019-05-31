@@ -111,7 +111,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
     });
   }
 
-  checkForLiveLinked(pendingListing) {
+  hasLiveLinked(pendingListing) {
     const linkedHood = this.state.hoods.find(hood => {
       return hood.uuid === pendingListing.hood_uuid;
     });
@@ -177,8 +177,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
                   return ('' + h.uuid) === ('' + venue.hood_uuid);
                 }))}
                 updateListing={this.updateListing} removeListing={this.removeListing}
-                selectListing={this.handleListingSelect} queryForExisting={this.queryForExisting}
-                queryForExact={this.queryForExact}
+                selectListing={this.handleListingSelect} queryForDuplicate={this.queryForDuplicate}
+                queryForMatching={this.queryForMatching}
               />)
           }
           </tbody>
