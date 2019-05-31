@@ -95,9 +95,9 @@ export default class VenuesLayout extends ListingsLayout {
    */
   renderTable() {
     if (!(this.state.listingsLoaded && this.state.hoodsLoaded)) {
-      return <p key={'venues-message'} className={'loading-message single-message info'}>Data is loading... Please be patient...</p>;
+      return <p key={'venues-message'} className={'message-compact single-message info'}>Data is loading... Please be patient...</p>;
     } else if (this.state.listingsTotal === 0) {
-      return <p key={'venues-message'} className={'single-message no-content'}>No venues to list.</p>
+      return <p key={'venues-message'} className={'message-compact single-message no-content'}>No venues to list.</p>
     }
 
     const titleMap = new Map([
@@ -145,7 +145,7 @@ export default class VenuesLayout extends ListingsLayout {
    */
   renderAddForm() {
     if (!this.state.hoodsLoaded) {
-      return <div className={'single-message info loading-message'}>Data is loading... Please be patient...</div>;
+      return <div className={'single-message info message-compact'}>Data is loading... Please be patient...</div>;
     }
 
     return <VenueAddForm

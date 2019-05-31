@@ -373,7 +373,7 @@ export default class PendingEventsModule extends PendingListingsModule {
   renderTable() {
     if (!(this.state.listingsLoaded && this.state.venuesLoaded && this.state.pendingVenuesLoaded &&
       this.state.orgsLoaded && this.state.pendingOrgsLoaded)) {
-      return <div className={'single-message info loading-message'}>Data is loading... Please be patient...</div>;
+      return <div className={'single-message info message-compact'}>Data is loading... Please be patient...</div>;
     }
     if (this.state.pendingListingsTotal === 0) return <div>No pending events to list.</div>;
 

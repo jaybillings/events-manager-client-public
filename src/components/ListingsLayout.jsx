@@ -323,11 +323,9 @@ export default class ListingsLayout extends Component {
     const schema = this.schema;
 
     if (!this.state.listingsLoaded) {
-      return <p key={`${schema}-message`} className={'loading-message single-message info'}>
-        Data is being loaded... Please be patient...
-      </p>;
+      return <p key={`${schema}-message`} className={'message-compact single-message info'}>Data is being loaded... Please be patient...</p>;
     } else if (this.state.listingsTotal === 0) {
-      return <p key={`${schema}-message`} className={'single-message no-content'}>No {schema} to list.</p>
+      return <p key={`${schema}-message`} className={'message-compact single-message no-content'}>No {schema} to list.</p>
     }
 
     const titleMap = new Map([
@@ -368,7 +366,7 @@ export default class ListingsLayout extends Component {
    * @returns {*}
    */
   renderAddForm() {
-    if (!this.state.listingsLoaded) return <div className={'loading-message single-message info'}>Data is loading... Please be patient...</div>;
+    if (!this.state.listingsLoaded) return <div className={'message-compact single-message info'}>Data is loading... Please be patient...</div>;
 
     return <ListingAddForm
       schema={this.schema} createListing={this.createListing}

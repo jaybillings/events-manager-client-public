@@ -270,7 +270,7 @@ button[disabled]:hover {
   background: var(--true-white);
 }
 
-.loading-message {
+.message-compact {
   display: block;
   width: fit-content;
   padding: 1rem 4rem;

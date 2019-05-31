@@ -442,11 +442,11 @@ export default class EventsLayout extends ListingsLayout {
   renderTable() {
     if (!(this.state.listingsLoaded && this.state.venuesLoaded &&
       this.state.orgsLoaded && this.state.liveIDsLoaded)) {
-      return <div key={'events-message'} className={'loading-message single-message info'}>Data is loading... Please be patient...</div>;
+      return <div key={'events-message'} className={'message-compact single-message info'}>Data is loading... Please be patient...</div>;
     } else if (this.state.listingsTotal === 0) {
       return [
         <Filters key={'events-filters'} filterType={this.state.filterType} updateFilter={this.updateFilter} />,
-        <div key={'events-message'} className={'single-message no-content'}>No events to list.</div>
+        <div key={'events-message'} className={'message-compact single-message no-content'}>No events to list.</div>
       ];
     }
 
