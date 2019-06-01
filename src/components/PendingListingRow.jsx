@@ -13,21 +13,16 @@ import {diffListings} from "../utilities";
  * @parent
  */
 export default class PendingListingRow extends Component {
-  /**
-   * The component's constructor.
-   * @constructor
-   *
-   * @param {{schema: String, listing: Object, selected: Boolean, updateListing: Function, removeListing: Function, selectListing: Function, queryForDuplicate: Function}} props
-   */
   constructor(props) {
     super(props);
 
-    this.state = {editable: false, writeStatus: '', listingName: this.props.listing.name, matchingLiveListing: null};
+    this.state = {editable: false, writeStatus: '', matchingLiveListing: null};
+
+    this.nameRef = React.createRef();
 
     this.getWriteStatus = this.getWriteStatus.bind(this);
     this.startEdit = this.startEdit.bind(this);
     this.cancelEdit = this.cancelEdit.bind(this);
-    this.handleInputChange = this.handleInputChange.bind(this);
     this.handleSaveClick = this.handleSaveClick.bind(this);
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
     this.handleRowClick = this.handleRowClick.bind(this);
@@ -87,27 +82,19 @@ export default class PendingListingRow extends Component {
   }
 
   /**
-   * Handles input changes by saving the data to the component's state.
-   * @param {Event} e
-   */
-  handleInputChange(e) {
-    if (!e.target.name) return;
-
-    this.setState({[e.target.name]: e.target.value});
-  }
-
-  /**
    * Handles the save button click by parsing new data and triggering a function to update the listing.
+   *
    * @param {Event} e
    */
   handleSaveClick(e) {
     e.stopPropagation();
 
-    const newData = {name: this.state.listingName};
+    const newData = {name: this.nameRef.current.value};
 
     this.props.updateListing(this.props.listing, newData).then(() => {
-      this.getWriteStatus();
-      this.setState({editable: false});
+      this.getWriteStatus().then(writeStatus => {
+        this.setState({editable: false, writeStatus});
+      });
     });
   }
 
@@ -139,29 +126,26 @@ export default class PendingListingRow extends Component {
   render() {
     const schema = this.props.schema;
     const listingID = this.props.listing.id;
-    const listingName = this.state.listingName;
+    const listingName = this.props.listing.name;
     const createdAt = Moment(this.props.listing.created_at).calendar();
-    const writeStatus = this.state.writeStatus;
     const selectClass = this.props.selected ? ' is-selected' : '';
-
-    const listingParams = ['name'];
+    const writeStatus = this.state.writeStatus;
 
     if (this.state.editable) {
       return (
         <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
           <td>
             <button type={'button'} className={'emphasize'} onClick={this.handleSaveClick}>Save</button>
-            <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
+            <button type={'button'} className={'default'} onClick={this.cancelEdit}>Cancel</button>
           </td>
-          <td><input type={'text'} name={'listingName'} value={listingName} onChange={this.handleInputChange}
-                     onClick={e => e.stopPropagation()} /></td>
+          <td><input ref={this.nameRef} type={'text'} defaultValue={listingName} onClick={e => e.stopPropagation()} /></td>
           <td>{createdAt}</td>
           <td><StatusLabel writeStatus={writeStatus} schema={schema} /></td>
         </tr>
       );
     }
 
-    const classNameMap = this.state.matchingLiveListing ? diffListings(this.state.matchingLiveListing, this.props.listing, listingParams) : {};
+    const classNameMap = this.state.matchingLiveListing ? diffListings(this.state.matchingLiveListing, this.props.listing, ['name']) : {};
 
     return (
       <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>

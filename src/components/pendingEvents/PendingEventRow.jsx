@@ -20,13 +20,10 @@ export default class PendingEventRow extends PendingListingRow {
   constructor(props) {
     super(props);
 
-    const linkedVenueUUID = this.props.venue ? this.props.venue.uuid : null;
-    const linkedOrgUUID = this.props.org ? this.props.org.uuid : null;
-
-    Object.assign(this.state, {
-      listingName: this.props.listing.name, listingStart: this.props.listing.start_date,
-      listingEnd: this.props.listing.end_date, linkedVenueUUID, linkedOrgUUID
-    });
+    this.startRef = React.createRef();
+    this.endRef = React.createRef();
+    this.venueRef = React.createRef();
+    this.orgRef = React.createRef();
   }
 
   /**
@@ -39,16 +36,17 @@ export default class PendingEventRow extends PendingListingRow {
     e.stopPropagation();
 
     const newData = {
-      name: this.state.listingName,
-      start_date: Moment(this.state.listingStart).valueOf(),
-      end_date: Moment(this.state.listingEnd).valueOf(),
-      venue_uuid: this.state.linkedVenueUUID,
-      org_uuid: this.state.linkedOrgUUID
+      name: this.nameRef.current.value,
+      start_date: Moment(this.startRef.current.value).valueOf(),
+      end_date: Moment(this.endRef.current.value).valueOf(),
+      venue_uuid: this.venueRef.current.value,
+      org_uuid: this.orgRef.current.value
     };
 
     this.props.updateListing(this.props.listing, newData).then(() => {
-      this.getWriteStatus();
-      this.setState({editable: false});
+      this.getWriteStatus().then(writeStatus => {
+        this.setState({editable: false, writeStatus});
+      });
     });
   }
 
@@ -62,40 +60,38 @@ export default class PendingEventRow extends PendingListingRow {
    */
   render() {
     const listingID = this.props.listing.id;
-    const listingName = this.state.listingName;
-    const venueUUID = this.state.linkedVenueUUID || '';
-    const orgUUID = this.state.linkedOrgUUID || '';
-    const writeStatus = this.state.writeStatus;
+    const listingName = this.props.listing.name;
     const venues = this.props.venues;
     const orgs = this.props.orgs;
+    const writeStatus = this.state.writeStatus;
 
+    const venueUUID = this.props.listing.venue_uuid || '';
+    const orgUUID = this.props.listing.org_uuid || '';
     const createdAt = Moment(this.props.listing.created_at).calendar();
     const selectClass = this.props.selected ? ' is-selected' : '';
 
     if (this.state.editable) {
-      const startDateVal = Moment(this.state.listingStart).format('YYYY-MM-DD');
-      const endDateVal = Moment(this.state.listingEnd).format('YYYY-MM-DD');
+      const startDateVal = Moment(this.props.listing.start_date).format('YYYY-MM-DD');
+      const endDateVal = Moment(this.props.listing.end_date).format('YYYY-MM-DD');
 
       return (
         <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
           <td>
             <button type={'button'} className={'emphasize'} onClick={this.handleSaveClick}>Save</button>
-            <button type={'button'} onClick={this.cancelEdit}>Cancel</button>
+            <button type={'button'} className={'default'} onClick={this.cancelEdit}>Cancel</button>
           </td>
-          <td><input type={'text'} name={'listingName'} value={listingName} onChange={this.handleInputChange}
+          <td><input ref={this.nameRef} type={'text'} name={'listingName'} defaultValue={listingName}
                      onClick={e => e.stopPropagation()} /></td>
-          <td><input type={'date'} name={'listingStart'} value={startDateVal} onChange={this.handleInputChange}
+          <td><input ref={this.startRef} type={'date'} name={'listingStart'} defaultValue={startDateVal}
                      onClick={e => e.stopPropagation()} /></td>
-          <td><input type={'date'} name={'listingEnd'} value={endDateVal} onChange={this.handleInputChange}
+          <td><input ref={this.endRef} type={'date'} name={'listingEnd'} defaultValue={endDateVal}
                      onClick={e => e.stopPropagation()} /></td>
           <td>
-            <select name={'linkedVenueUUID'} value={venueUUID} onChange={this.handleInputChange}
-                    onClick={e => e.stopPropagation()}>
+            <select ref={this.venueRef} name={'linkedVenueUUID'} defaultValue={venueUUID} onClick={e => e.stopPropagation()}>
               {renderOptionList(venues, 'venues', 'uuid')}
             </select>
           </td>
-          <td><select name={'linkedOrgUUID'} value={orgUUID} onChange={this.handleInputChange}
-                      onClick={e => e.stopPropagation()} required>
+          <td><select ref={this.orgRef} name={'linkedOrgUUID'} defaultValue={orgUUID} onClick={e => e.stopPropagation()} required>
             {renderOptionList(orgs, 'organizers', 'uuid')}
           </select>
           </td>
@@ -105,8 +101,8 @@ export default class PendingEventRow extends PendingListingRow {
       );
     }
 
-    const startDate = Moment(this.state.listingStart).format('MM/DD/YYYY');
-    const endDate = Moment(this.state.listingEnd).format('MM/DD/YYYY');
+    const startDate = Moment(this.props.listing.start_date).format('MM/DD/YYYY');
+    const endDate = Moment(this.props.listing.end_date).format('MM/DD/YYYY');
     const venueLink = this.props.venue ? renderSchemaLink(this.props.venue, 'venues') : 'NO VENUE';
     const orgLink = this.props.org ? renderSchemaLink(this.props.org, 'organizers') : 'NO ORGANIZER';
     const classNameMap = this.state.matchingLiveListing ? diffListings(this.state.matchingLiveListing, this.props.listing, ['name', 'start_date', 'end_date', 'venue_uuid', 'org_uuid']) : {};
