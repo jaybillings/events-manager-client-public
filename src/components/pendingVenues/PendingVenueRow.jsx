@@ -7,7 +7,8 @@ import PendingListingRow from "../PendingListingRow";
 import StatusLabel from "../common/StatusLabel";
 
 /**
- * PendingVenueRow is a component which displays a single row from a pending venues table.
+ * PendingVenueRow displays a single row in a pending venues table.
+ *
  * @class
  * @child
  */
@@ -19,9 +20,10 @@ export default class PendingVenueRow extends PendingListingRow {
   }
 
   /**
-   * Handles the save button click by parsing new data and triggering a function to update the venue.
-   * @override
+   * `handleSaveClick` handles the save button click by parsing the new data
+   * and triggering the update function.
    *
+   * @override
    * @param {Event} e
    */
   handleSaveClick(e) {
@@ -33,20 +35,14 @@ export default class PendingVenueRow extends PendingListingRow {
     };
 
     this.props.updateListing(this.props.listing, newData)
-      .then(() => {
-        return this.getWriteStatus();
-      })
-      .then(writeStatus => {
-        this.setState({editable: false, writeStatus});
-      });
+      .then(() => this.setState({editable: false}));
   }
 
   /**
    * Renders the component.
-   * @note The render has two different paths depending on whether the row can be edited.
+   *
    * @override
    * @render
-   *
    * @returns {*}
    */
   render() {

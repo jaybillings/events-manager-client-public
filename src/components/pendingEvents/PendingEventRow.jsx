@@ -7,16 +7,12 @@ import PendingListingRow from '../PendingListingRow';
 import StatusLabel from "../common/StatusLabel";
 
 /**
- * PendingEventRow is a component which displays a single row for a pending event table.
+ * PendingEventRow displays a single row in a pending event table.
+ *
  * @class
  * @child
  */
 export default class PendingEventRow extends PendingListingRow {
-  /**
-   * The component's constructor.
-   *
-   * @param {{selected: Boolean, schema: String, listing: Object, venues: Array, orgs: Array, venue: Object, org: Object, updateListing: Function, removeListing: Function, selectListing: Function, queryForDuplicate: Function}} props
-   */
   constructor(props) {
     super(props);
 
@@ -27,9 +23,10 @@ export default class PendingEventRow extends PendingListingRow {
   }
 
   /**
-   * Handles the save button click by parsing new data and triggering a function to update the pending event.
-   * @override
+   * `handleSaveClick` handles the save button click by parsing the new data
+   * and triggering the update function.
    *
+   * @override
    * @param {Event} e
    */
   handleSaveClick(e) {
@@ -43,19 +40,15 @@ export default class PendingEventRow extends PendingListingRow {
       org_uuid: this.orgRef.current.value
     };
 
-    this.props.updateListing(this.props.listing, newData).then(() => {
-      this.getWriteStatus().then(writeStatus => {
-        this.setState({editable: false, writeStatus});
-      });
-    });
+    this.props.updateListing(this.props.listing, newData)
+      .then(() => this.setState({editable: false}));
   }
 
   /**
    * Renders the component.
-   * @note The render has two different paths depending on whether the row can be edited.
+   *
    * @override
    * @render
-   *
    * @returns {*}
    */
   render() {
@@ -87,11 +80,13 @@ export default class PendingEventRow extends PendingListingRow {
           <td><input ref={this.endRef} type={'date'} name={'listingEnd'} defaultValue={endDateVal}
                      onClick={e => e.stopPropagation()} /></td>
           <td>
-            <select ref={this.venueRef} name={'linkedVenueUUID'} defaultValue={venueUUID} onClick={e => e.stopPropagation()}>
+            <select ref={this.venueRef} name={'linkedVenueUUID'} defaultValue={venueUUID}
+                    onClick={e => e.stopPropagation()}>
               {renderOptionList(venues, 'venues', 'uuid')}
             </select>
           </td>
-          <td><select ref={this.orgRef} name={'linkedOrgUUID'} defaultValue={orgUUID} onClick={e => e.stopPropagation()} required>
+          <td><select ref={this.orgRef} name={'linkedOrgUUID'} defaultValue={orgUUID} onClick={e => e.stopPropagation()}
+                      required>
             {renderOptionList(orgs, 'organizers', 'uuid')}
           </select>
           </td>

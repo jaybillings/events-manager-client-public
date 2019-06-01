@@ -1,14 +1,16 @@
 import React, {Component} from 'react';
 import Moment from 'moment';
 import {Link} from "react-router-dom";
+import {diffListings} from "../utilities";
 
 import StatusLabel from "./common/StatusLabel";
 
 import "../styles/schema-row.css";
-import {diffListings} from "../utilities";
 
 /**
- * PendingListingRow is a generic component that displays a single row from a pending listings table.
+ * PendingListingRow is a parent component that displays a single row in a
+ * pending listing table.
+ *
  * @class
  * @parent
  */
@@ -29,27 +31,31 @@ export default class PendingListingRow extends Component {
   }
 
   /**
-   * Runs once the component mounts. Checks the publish/write status of the listing.
+   * Runs once the component mounts.
+   *
+   * During `componentDidMount`, the component checks the publish/write status
+   * of the listing and queries for a matching live listing.
    * @override
    */
   componentDidMount() {
-    this.getWriteStatus().then(writeStatus => {
-      this.setState({writeStatus});
-    });
-
-    this.props.queryForMatching(this.props.listing).then(result => {
-      this.setState({matchingLiveListing: result.data[0]});
-    });
+    this.props.queryForMatching(this.props.listing)
+      .then(result => {
+        this.setState({matchingLiveListing: result.data[0], editable: false}, () => {
+          this.getWriteStatus().then(writeStatus => {
+            this.setState({writeStatus});
+          });
+        });
+      });
   }
 
   /**
-   * Checks the publish/write status of a single listing.
+   * `checkWriteStatus` determines how a pending listing relates to the published data.
    *
-   * checkWriteStatus checks the status of a single listing -- what will potentially happen if it's published. Possible
-   * results are:
-   *   - new (will make a new listing)
-   *   - update (will update a preexisting listing)
-   *   - duplicate (will make a new listing that might duplicate an existing listing)
+   *  `checkWriteStatus` returns a label indicating what will happen to a given listing
+   *  when published. Possible results are:
+   *   - "new": will make a new listing
+   *   - "update:" will update a preexisting listing
+   *   - "duplicate": will make a new listing that may duplicate an existing listing
    */
   async getWriteStatus() {
     const listing = this.props.listing;
@@ -64,7 +70,8 @@ export default class PendingListingRow extends Component {
   }
 
   /**
-   * Marks the row as editable to trigger a UI change.
+   * `startEdit` marks a row as editable.
+   *
    * @param {Event} e
    */
   startEdit(e) {
@@ -73,7 +80,7 @@ export default class PendingListingRow extends Component {
   }
 
   /**
-   * Marks the row as not editable to trigger a UI change.
+   * `endEdit` marks a row as not editable.
    * @param {Event} e
    */
   cancelEdit(e) {
@@ -82,7 +89,8 @@ export default class PendingListingRow extends Component {
   }
 
   /**
-   * Handles the save button click by parsing new data and triggering a function to update the listing.
+   * `handleSaveClick` handles the save button click by parsing the new data
+   * and triggering the update function.
    *
    * @param {Event} e
    */
@@ -91,34 +99,31 @@ export default class PendingListingRow extends Component {
 
     const newData = {name: this.nameRef.current.value};
 
-    this.props.updateListing(this.props.listing, newData).then(() => {
-      this.getWriteStatus().then(writeStatus => {
-        this.setState({editable: false, writeStatus});
-      });
-    });
+    this.props.updateListing(this.props.listing, newData)
+      .then(() => this.setState({editable: false}));
   }
 
   /**
-   * Handles the delete button click by triggering a function to delete the listing.
-   * @param {Event} e
+   * `handleDeleteClick` handles the delete button click by triggering the delete
+   * function.
    */
   handleDeleteClick(e) {
     e.stopPropagation();
+
     this.props.removeListing(this.props.listing);
   }
 
   /**
-   * Handles the row click by marking the listing as selected and triggering a handler function.
+   * `handleRowClick` handles the row click by marking the listing as selected
+   * and triggering the selection handler function.
    */
   handleRowClick() {
-    const selected = !this.props.selected;
-    /** @var {Function} this.props.selectListing */
-    this.props.selectListing(this.props.listing.id, selected);
+    this.props.handleListingSelect(this.props.listing.id, !this.props.selected);
   }
 
   /**
    * Renders the component.
-   * @note The render has two different paths depending on whether the row can be edited.
+   *
    * @override
    * @render
    * @returns {*}
@@ -138,7 +143,8 @@ export default class PendingListingRow extends Component {
             <button type={'button'} className={'emphasize'} onClick={this.handleSaveClick}>Save</button>
             <button type={'button'} className={'default'} onClick={this.cancelEdit}>Cancel</button>
           </td>
-          <td><input ref={this.nameRef} type={'text'} defaultValue={listingName} onClick={e => e.stopPropagation()} /></td>
+          <td><input ref={this.nameRef} type={'text'} defaultValue={listingName} onClick={e => e.stopPropagation()} />
+          </td>
           <td>{createdAt}</td>
           <td><StatusLabel writeStatus={writeStatus} schema={schema} /></td>
         </tr>

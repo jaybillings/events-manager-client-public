@@ -746,7 +746,7 @@ export default class PendingListingsModule extends Component {
                 key={`${this.schema}-${listing.id}`} schema={schema} listing={listing}
                 selected={selectedListings.includes(listing.id)}
                 updateListing={this.updateListing} removeListing={this.removeListing}
-                selectListing={this.handleListingSelect}
+                handleListingSelect={this.handleListingSelect}
                 queryForDuplicate={this.queryForDuplicate} queryForMatching={this.queryForMatching}
               />)
           }
