@@ -491,7 +491,9 @@ export default class PendingListingsModule extends Component {
 
     return this.publishPageOfListings(selectedIDs, liveListingData)
       .then(result => {
-        if (!Array.isArray(result)) return;
+        console.debug(result);
+
+        if (!result[0]) return;
 
         const idsToRemove = result.map(listing => {
           return listing.id;

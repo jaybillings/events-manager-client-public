@@ -177,7 +177,7 @@ export default class PendingVenuesModule extends PendingListingsModule {
                   return ('' + h.uuid) === ('' + venue.hood_uuid);
                 }))}
                 updateListing={this.updateListing} removeListing={this.removeListing}
-                selectListing={this.handleListingSelect} queryForDuplicate={this.queryForDuplicate}
+                handleListingSelect={this.handleListingSelect} queryForDuplicate={this.queryForDuplicate}
                 queryForMatching={this.queryForMatching}
               />)
           }

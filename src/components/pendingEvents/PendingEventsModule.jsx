@@ -141,11 +141,11 @@ export default class PendingEventsModule extends PendingListingsModule {
    */
   hasLiveLinked(pendingListing) {
     const linkedVenue = this.state.venues.find(venue => {
-      return venue.uuid === pendingListing.venue_uuid;
-    });
+      return venue.uuid + '' === pendingListing.venue_uuid + '';
+    }) || false;
     const linkedOrg = this.state.orgs.find(org => {
-      return org.uuid === pendingListing.org_uuid;
-    });
+      return org.uuid + '' === pendingListing.org_uuid;
+    }) || false;
 
     return linkedOrg.total && linkedVenue.total;
   }
@@ -477,7 +477,7 @@ export default class PendingEventsModule extends PendingListingsModule {
                   return ('' + o.uuid) === ('' + event.org_uuid);
                 })}
                 updateListing={this.updateListing} removeListing={this.removeListing}
-                selectListing={this.handleListingSelect} queryForDuplicate={this.queryForDuplicate}
+                handleListingSelect={this.handleListingSelect} queryForDuplicate={this.queryForDuplicate}
                 queryForMatching={this.queryForMatching}
               />)
           }

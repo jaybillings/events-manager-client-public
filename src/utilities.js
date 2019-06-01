@@ -214,8 +214,7 @@ const arrayUnique = function (arr) {
 const displayErrorMessages = function (action, target, errors, displayFunc, userPrompt = '') {
   const userPrompts = {
     reload: 'Reload the page to try again.',
-    retry: 'Please try again.',
-    default: <span>If this problem continues, please <a href={"mailto:" + process.env.REACT_APP_HELP_ADDRESS}>contact the Helpdesk</a>.</span>
+    retry: 'Please try again.'
   };
 
   if (!Array.isArray(errors)) errors = [errors];
@@ -226,12 +225,7 @@ const displayErrorMessages = function (action, target, errors, displayFunc, user
 
     messages.push(<span key={'msg0'}>Could not {action} {target} -- {subject} {errors[i].message}.</span>);
 
-    if (userPrompt === 'default') {
-      messages.push(<span key={'msg1'}>{userPrompts.default}</span>);
-    } else if (userPrompts[userPrompt]) {
-      messages.push(<span key={'msg1'}>{userPrompts[userPrompt]}</span>);
-      messages.push(<span key={'msg2'}>{userPrompts.default}</span>);
-    }
+    if (userPrompts[userPrompt]) messages.push(<span key={'msg1'}>{userPrompts[userPrompt]}</span>);
 
     displayFunc({
       status: 'error',

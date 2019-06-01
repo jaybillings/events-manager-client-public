@@ -95,7 +95,7 @@ export default class MyAccountPage extends Component {
         });
       })
       .catch(err => {
-        displayErrorMessages('resend', 'verification email', err, this.updateMessagePanel, 'default');
+        displayErrorMessages('resend', 'verification email', err, this.updateMessagePanel);
         printToConsole(err, 'error');
       });
   }

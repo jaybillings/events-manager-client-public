@@ -144,7 +144,7 @@ export default class ImportLayout extends Component {
       })
       .catch(err => {
         printToConsole(err, 'error');
-        displayErrorMessages('data file', 'import', err, this.updateMessagePanel, 'default');
+        displayErrorMessages('data file', 'import', err, this.updateMessagePanel);
         this.setState({importRunning: false});
       });
   }
@@ -182,7 +182,7 @@ export default class ImportLayout extends Component {
       })
       .catch(error => {
         printToConsole(error, 'error');
-        displayErrorMessages('publish', 'pending listings', error, this.updateMessagePanel, 'default');
+        displayErrorMessages('publish', 'pending listings', error, this.updateMessagePanel);
       })
       .finally(() => {
         this.resumeModuleListening();
