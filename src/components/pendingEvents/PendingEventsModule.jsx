@@ -133,24 +133,6 @@ export default class PendingEventsModule extends PendingListingsModule {
   }
 
   /**
-   * `hasLiveLinked` determines whether a pending listing's linked schema have live
-   * equivalents.
-   *
-   * @param {Object} pendingListing
-   * @returns {boolean}
-   */
-  hasLiveLinked(pendingListing) {
-    const linkedVenue = this.state.venues.find(venue => {
-      return venue.uuid + '' === pendingListing.venue_uuid + '';
-    }) || false;
-    const linkedOrg = this.state.orgs.find(org => {
-      return org.uuid + '' === pendingListing.org_uuid;
-    }) || false;
-
-    return linkedOrg.total && linkedVenue.total;
-  }
-
-  /**
    * `createSearchQuery` creates a query for searching on a term.
    *
    * For the event class, `createSearchQuery` allows searching on the name, UUID,

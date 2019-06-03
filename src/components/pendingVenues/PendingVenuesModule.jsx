@@ -111,14 +111,6 @@ export default class PendingVenuesModule extends PendingListingsModule {
     });
   }
 
-  hasLiveLinked(pendingListing) {
-    const linkedHood = this.state.hoods.find(hood => {
-      return hood.uuid === pendingListing.hood_uuid;
-    });
-
-    return !!linkedHood;
-  }
-
   /**
    * Renders the table of listings.
    * @override
