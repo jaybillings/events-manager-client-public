@@ -3,33 +3,28 @@ import {Redirect} from "react-router";
 import {Link} from "react-router-dom";
 import app from "../services/socketio";
 import {MdChevronLeft} from "react-icons/md";
-import {displayErrorMessages} from "../utilities";
+import {displayErrorMessages, printToConsole} from "../utilities";
 
 import ListingRecordUniversal from "./ListingRecordUniversal";
 import Header from "./common/Header";
 import MessagePanel from "./common/MessagePanel";
 
 /**
- * SingleListingLayout is a generic component which lays out a single listing page.
+ * SingleListingLayout is a generic component which lays out the single listing view.
+ *
  * @class
  * @parent
  */
 export default class SingleListingLayout extends Component {
-  /**
-   * The component's constructor.
-   *
-   * @param props
-   * @param schema - The schema to display. Supplied by child.
-   */
   constructor(props, schema) {
     super(props);
+
+    this.state = {listing: {}, listingLoaded: false, hasDeleted: false, notFound: false};
 
     this.schema = schema;
     this.listingID = this.props.match.params.id;
     this.defaultQuery = {$sort: {name: 1}, $select: ['name', 'uuid'], $limit: 1000};
     this.messagePanel = React.createRef();
-
-    this.state = {listing: {}, listingLoaded: false, hasDeleted: false, notFound: false};
 
     const schemaArr = schema.split("-");
     this.listingsService = schemaArr[1] ? app.service(schemaArr[1]) : app.service(schema);
@@ -37,7 +32,7 @@ export default class SingleListingLayout extends Component {
 
     this.fetchAllData = this.fetchAllData.bind(this);
     this.fetchListing = this.fetchListing.bind(this);
-    this.queryForExisting = this.queryForExisting.bind(this);
+    this.queryForDuplicate = this.queryForDuplicate.bind(this);
 
     this.updateListing = this.updateListing.bind(this);
     this.deleteListing = this.deleteListing.bind(this);
@@ -47,7 +42,11 @@ export default class SingleListingLayout extends Component {
   }
 
   /**
-   * Runs once the component mounts. Fetches required data.
+   * Runs once the component mounts.
+   *
+   * During `componentDidMount`, the component fetches required data and
+   * registers service listeners.
+   *
    * @override
    */
   componentDidMount() {
@@ -55,26 +54,38 @@ export default class SingleListingLayout extends Component {
 
     this.listingsService
       .on('patched', result => {
-        if (parseInt(result.id, 10) !== parseInt(this.listingID, 10)) return;
+        if (result.id !== this.listingID) return;
         this.updateMessagePanel({status: 'success', details: `Saved changes to "${result.name}".`});
-        this.fetchListing();
+        this.setState({listing: result, listingLoaded: true});
       })
       .on('updated', result => {
         if (result.id !== this.listingID) return;
         this.updateMessagePanel({status: 'success', details: `Saved changes to "${result.name}".`});
-        this.fetchListing();
+        this.setState({listing: result, listingLoaded: true});
+      })
+      .on('removed', result => {
+        if (result.id !== this.listingID) return;
+        this.setState({hasDeleted: true});
       });
   }
 
+  /**
+   * Runs when the component unmounts.
+   *
+   * During `componentWillUnmount`, the component unregisters service listeners.
+   *
+   * @override
+   */
   componentWillUnmount() {
     this.listingsService
       .removeAllListeners('patched')
-      .removeAllListeners('updated');
+      .removeAllListeners('updated')
+      .removeAllListeners('removed');
   }
 
   /**
-   * Fetches all data required for the page.
-   * @note This function pattern exists to cut down on extraneous requests for components with linked schema.
+   * `fetchAllData` fetches all data required for the page.
+   * @note This function pattern exists to cut down on extraneous requests in components with linked schema.
    */
   fetchAllData() {
     this.fetchListing();
@@ -84,65 +95,52 @@ export default class SingleListingLayout extends Component {
    * Fetches data for the single listing.
    */
   fetchListing() {
-    this.listingsService
-      .get(this.listingID)
+    this.listingsService.get(this.listingID)
       .then(result => {
         this.setState({listing: result, listingLoaded: true});
+        return result;
       })
-      .catch(errors => {
-        console.error(errors);
+      .catch(err => {
+        printToConsole(err);
         this.setState({notFound: true});
-        displayErrorMessages('fetch', `${this.schema} #${this.listingID}`, errors, this.updateMessagePanel);
       });
   }
 
   /**
-   * Determines whether the listing may duplicate an existing listing.
-   * @async
+   * `queryForDuplicate` determines whether the listing may duplicate an existing published listing.
    *
+   * @async
    * @returns {Promise<*>}
    */
-  queryForExisting() {
-    return this.listingsService.find({
-      query: {
-        $or: [{uuid: this.state.listing.uuid}, {description: this.state.listing.description}, {
-          name: this.state.listing.name,
-        }],
-        $select: ['uuid']
-      }
-    });
+  queryForDuplicate() {
+    return this.listingsService.find({query: {name: this.state.listing.name, $select: ['uuid']}});
   }
 
   /**
-   * Updates the listing's data by calling the service's PATCH method.
+   * `updateListing` Updates the listing's data by calling the service's PATCH method.
+   *
    * @param {object} newData
    */
   updateListing(newData) {
     app.service(this.schema).patch(this.listingID, newData)
-      .then(result => {
-        this.setState({listing: result, listingLoaded: true});
-        this.updateMessagePanel({status: 'success', details: `Saved changes to "${result.name}"`});
-      })
       .catch(errors => {
         displayErrorMessages('save changes to', this.state.listing.name || '', errors, this.updateMessagePanel);
       });
   }
 
   /**
-   * Removes the listing from the database by calling the service's REMOVE method.
+   * `deleteListing` removes the listing by calling the service's REMOVE method.
    */
   deleteListing() {
     app.service(this.schema).remove(this.listingID)
-      .then(() => {
-        this.setState({hasDeleted: true});
-      })
       .catch(errors => {
         displayErrorMessages('delete', this.state.listing.name || '', errors, this.updateMessagePanel);
       });
   }
 
   /**
-   * Adds a message to the message panel.
+   * `updateMessagePanel` adds a message to the message panel.
+   *
    * @param {object} newMsg
    */
   updateMessagePanel(newMsg) {
@@ -150,22 +148,23 @@ export default class SingleListingLayout extends Component {
   }
 
   /**
-   * Renders the single listing's record.
-   * @note `queryForExisting` is only used in pending schema classes.
+   * `renderRecord` renders the single listing's record.
+   *
    * @returns {*}
    */
   renderRecord() {
-    if (!this.state.listingLoaded) return <p>Data is loading... Please be patient...</p>;
+    if (!this.state.listingLoaded) return <div className={'message-compact single-message info'}>Data is loading... Please be patient...</div>;
 
     return <ListingRecordUniversal
       listing={this.state.listing} schema={this.schema}
       updateListing={this.updateListing} deleteListing={this.deleteListing}
-      queryForExisting={this.queryForExisting}
+      queryForDuplicate={this.queryForDuplicate}
     />
   }
 
   /**
    * Renders the component.
+   *
    * @override
    * @render
    * @returns {*}
@@ -177,12 +176,14 @@ export default class SingleListingLayout extends Component {
 
     if (this.state.hasDeleted) return <Redirect to={`/${returnTarget}`} />;
 
+    const listingName = this.state.listing.name;
+
     return (
       <div className={'container'}>
         <Header />
         <p className={'message-atom'}><Link to={`/${returnTarget}`}><MdChevronLeft/>Return to {returnTarget}</Link></p>
         <MessagePanel ref={this.messagePanel} />
-        <div><h2>{this.state.listing.name}</h2></div>
+        <div><h2>{listingName}</h2></div>
         {this.renderRecord()}
       </div>
     );

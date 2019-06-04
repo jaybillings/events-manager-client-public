@@ -4,31 +4,28 @@ import PendingOrganizerRecord from "../../components/pendingOrganizers/PendingOr
 import SinglePendingListingLayout from "../../components/SinglePendingListingLayout";
 
 /**
- * SinglePendingOrganizerLayout is a component which lays out a single pending organizer page.
+ * `SinglePendingOrganizerLayout` lays out the single pending organizer view.
+ *
+ * @class
+ * @child
  */
 export default class SinglePendingOrganizerLayout extends SinglePendingListingLayout {
-  /**
-   * The component's constructor.
-   * @constructor
-   *
-   * @param props
-   */
   constructor(props) {
     super(props, 'pending-organizers');
   }
 
   /**
-   * Renders the record.
-   * @override
+   * `renderRecord` renders the single pending organizer's record.
    *
+   * @override
    * @returns {*}
    */
   renderRecord() {
-    if (!this.state.listingLoaded) return <p>Data is loading... Please be patient...</p>;
+    if (!this.state.listingLoaded) return <div className={'message-compact single-message info'}>Data is loading... Please be patient...</div>;
 
     return <PendingOrganizerRecord
       schema={this.schema} listing={this.state.listing} matchingLiveListing={this.state.matchingLiveListing}
-      updateListing={this.updateListing} deleteListing={this.deleteListing} queryForExisting={this.queryForExisting}
+      updateListing={this.updateListing} deleteListing={this.deleteListing} queryForDuplicate={this.queryForDuplicate}
     />;
   }
 }

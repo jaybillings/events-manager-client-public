@@ -16,7 +16,7 @@ export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
    * @override
    */
   componentDidMount() {
-    this.checkWriteStatus();
+    this.getWriteStatus();
   }
 
   /**

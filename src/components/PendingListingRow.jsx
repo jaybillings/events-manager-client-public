@@ -8,7 +8,7 @@ import StatusLabel from "./common/StatusLabel";
 import "../styles/schema-row.css";
 
 /**
- * PendingListingRow is a parent component that displays a single row in a
+ * `PendingListingRow` is a generic component that displays a single row in the
  * pending listing table.
  *
  * @class
@@ -35,6 +35,7 @@ export default class PendingListingRow extends Component {
    *
    * During `componentDidMount`, the component checks the publish/write status
    * of the listing and queries for a matching live listing.
+   *
    * @override
    */
   componentDidMount() {
@@ -49,10 +50,10 @@ export default class PendingListingRow extends Component {
   }
 
   /**
-   * `checkWriteStatus` determines how a pending listing relates to the published data.
+   * `getWriteStatus` determines how a pending listing relates to the published data.
    *
-   *  `checkWriteStatus` returns a label indicating what will happen to a given listing
-   *  when published. Possible results are:
+   *  Returns a label indicating what will happen to a given listing when published.
+   *  Possible results are:
    *   - "new": will make a new listing
    *   - "update:" will update a preexisting listing
    *   - "duplicate": will make a new listing that may duplicate an existing listing
@@ -81,6 +82,7 @@ export default class PendingListingRow extends Component {
 
   /**
    * `endEdit` marks a row as not editable.
+   *
    * @param {Event} e
    */
   cancelEdit(e) {
@@ -106,6 +108,8 @@ export default class PendingListingRow extends Component {
   /**
    * `handleDeleteClick` handles the delete button click by triggering the delete
    * function.
+   *
+   * @param {Event} e
    */
   handleDeleteClick(e) {
     e.stopPropagation();

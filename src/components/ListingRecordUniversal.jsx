@@ -7,63 +7,49 @@ import "../styles/schema-record.css";
 
 /**
  * ListingRecordUniversal is a generic component which displays a single listing record.
+ *
  * @class
  * @parent
  */
 export default class ListingRecordUniversal extends Component {
-  /**
-   * The class's constructor.
-   * @constructor
-   *
-   * @param {{listing: Object, schema: String, updateListing: Function, deleteListing: Function, queryForExisting: Function}} props
-   */
   constructor(props) {
     super(props);
+
+    this.state = {writeStatus: ''};
 
     this.user = app.get('user');
     this.nameInput = React.createRef();
 
-    this.state = {writeStatus: ''};
-
-    this.checkWriteStatus = this.checkWriteStatus.bind(this);
+    this.getWriteStatus = this.getWriteStatus.bind(this);
     this.handleSaveClick = this.handleSaveClick.bind(this);
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
   }
 
   /**
-   * Checks the publish/write status of a single listing.
+   * `getWriteStatus` determines how a pending listing relates to the published data.
    *
-   * checkWriteStatus checks the status of a single listing -- what will potentially happen if it's published. Possible
-   * results are:
-   *   - new (will make a new listing)
-   *   - update (will update a preexisting listing)
-   *   - duplicate (will make a new listing that might duplicate an existing listing)
+   * Returns a label indicating what will happen to a given listing when published.
+   * Possible results are:
+   *   - "new": will make a new listing
+   *   - "update": will update a preexisting listing
+   *   - "duplicate": will make a new listing that might duplicate an existing listing
    */
-  checkWriteStatus() {
+  async getWriteStatus() {
     const listing = this.props.listing;
 
-    this.props.queryForExisting(listing).then(message => {
-      let writeStatus;
+    console.debug(this.props);
 
-      if (!message.total) {
-        writeStatus = 'new';
-      } else {
-        const uuids = message.data.map(row => row.uuid);
-        if (uuids.includes(listing.uuid)) {
-          writeStatus = 'update';
-        } else {
-          writeStatus = 'duplicate';
-        }
-      }
+    if (this.props.matchingLiveListing) return 'update';
 
-      this.setState({writeStatus});
-    }, err => {
-      console.log('error in checking write status', JSON.stringify(err));
-    });
+    const similarListings = await this.props.queryForDuplicate(listing);
+
+    if (similarListings.total) return 'duplicate';
+
+    return 'new';
   }
 
   /**
-   * Handles the submit action by parsing new data and calling a function to create a new listing.
+   * `handleSaveClick` parses the new data and calls a function to create a new listing.
    *
    * @param {Event} e
    */
@@ -73,7 +59,7 @@ export default class ListingRecordUniversal extends Component {
   }
 
   /**
-   * Handles the delete button click by calling a function to delete the listing.
+   * `handleDeleteClick` calls a function to delete the listing.
    */
   handleDeleteClick() {
     this.props.deleteListing(this.props.listing.id);
@@ -81,9 +67,9 @@ export default class ListingRecordUniversal extends Component {
 
   /**
    * Renders the component.
+   *
    * @override
    * @render
-   *
    * @returns {*}
    */
   render() {
@@ -95,7 +81,8 @@ export default class ListingRecordUniversal extends Component {
     const publishButton = schema.indexOf('pending') !== -1 || this.user.is_su
       ? <button type={'submit'} className={'button-primary'}>Save Changes</button> : '';
     const deleteButton = schema.indexOf('pending') !== -1 || this.user.is_admin
-      ? <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete {makeSingular(schema)}</button> : '';
+      ? <button type={'button'} className={'warn'}
+                onClick={this.handleDeleteClick}>Delete {makeSingular(schema)}</button> : '';
     const disableAll = schema.indexOf('pending') !== -1 && !this.user.is_su;
 
     return (

@@ -30,7 +30,7 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
    * @override
    */
   componentDidMount() {
-    this.checkWriteStatus();
+    this.getWriteStatus();
   }
 
   /**

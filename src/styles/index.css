@@ -193,11 +193,11 @@ button[disabled]:hover {
   display: block;
 }
 
-.highlight-diff :first-child {
+.highlight-diff > :first-child {
   box-shadow: 0 0 4px 4px var(--true-blue-transparent);
 }
 
-td.highlight-diff :first-child {
+td.highlight-diff > :first-child {
   display: inline-block;
 }
 

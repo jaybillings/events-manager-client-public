@@ -15,7 +15,7 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
    * The class's constructor.
    * @constructor
    *
-   * @param {{listing: Object, schema: String, hoods: Array, updateListing: Function, deleteListing: Function, queryForExisting: Function}} props
+   * @param {{listing: Object, schema: String, hoods: Array, updateListing: Function, deleteListing: Function, queryForDuplicate: Function}} props
    */
   constructor(props) {
     super(props);
@@ -36,7 +36,7 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
    * @override
    */
   componentDidMount() {
-    this.checkWriteStatus();
+    this.getWriteStatus();
   }
 
   /**

@@ -16,7 +16,7 @@ export default class PendingTagRecord extends ListingRecordUniversal {
    * @override
    */
   componentDidMount() {
-    this.checkWriteStatus();
+    this.getWriteStatus();
   }
 
   /**

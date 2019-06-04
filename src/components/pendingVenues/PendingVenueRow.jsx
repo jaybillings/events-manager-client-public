@@ -7,7 +7,7 @@ import PendingListingRow from "../PendingListingRow";
 import StatusLabel from "../common/StatusLabel";
 
 /**
- * PendingVenueRow displays a single row in a pending venues table.
+ * PendingVenueRow displays a single row in the pending venues table.
  *
  * @class
  * @child

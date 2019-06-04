@@ -7,7 +7,7 @@ import PendingListingRow from '../PendingListingRow';
 import StatusLabel from "../common/StatusLabel";
 
 /**
- * PendingEventRow displays a single row in a pending event table.
+ * `PendingEventRow` displays a single row in the pending event table.
  *
  * @class
  * @child
@@ -102,15 +102,13 @@ export default class PendingEventRow extends PendingListingRow {
     const orgLink = this.props.org ? renderSchemaLink(this.props.org, 'organizers') : <span>NO ORGANIZER</span>;
     const classNameMap = this.state.matchingLiveListing ? diffListings(this.state.matchingLiveListing, this.props.listing, ['name', 'start_date', 'end_date', 'venue_uuid', 'org_uuid']) : {};
 
-    if (this.props.listing.id === 939) console.debug(classNameMap);
-
     return (
       <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
         <td>
           <button type={'button'} className={'emphasize'} onClick={this.startEdit}>Edit</button>
           <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard</button>
         </td>
-        <td className={classNameMap['name']}><Link to={`/pendingEvents/${listingID}`}>{listingName}</Link></td>
+        <td className={classNameMap['name']}><Link to={`/pendingEvents/${listingID}`} onClick={e => e.stopPropagation()}>{listingName}</Link></td>
         <td className={classNameMap['start_date']}><span>{startDate}</span></td>
         <td className={classNameMap['end_date']}><span>{endDate}</span></td>
         <td className={classNameMap['venue_uuid']}>{venueLink}</td>

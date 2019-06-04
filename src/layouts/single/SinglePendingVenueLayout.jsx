@@ -20,7 +20,7 @@ export default class SinglePendingVenueLayout extends SinglePendingListingLayout
   constructor(props) {
     super(props, 'pending-venues');
 
-    Object.assign(this.state, {hoods: [], hoodsLoaded: false, pendingHoods: [], pendingHoodsLoaded: false});
+    this.state = {...this.state, hoods: [], hoodsLoaded: false, pendingHoods: [], pendingHoodsLoaded: false};
 
     this.hoodsService = app.service('neighborhoods');
     this.pendingHoodsService = app.service('pending-neighborhoods');
@@ -81,9 +81,11 @@ export default class SinglePendingVenueLayout extends SinglePendingListingLayout
    * Fetches published neighborhoods.
    */
   fetchHoods() {
-    this.hoodsService.find({query: this.defaultQuery}).then(message => {
+    this.hoodsService.find({query: this.defaultQuery})
+      .then(message => {
       this.setState({hoods: message.data, hoodsLoaded: true});
-    }, err => {
+    })
+      .catch(err => {
       this.setState({hoodsLoaded: false});
       displayErrorMessages('fetch', 'neighborhoods', err, this.updateMessagePanel, 'reload');
     });
@@ -93,9 +95,11 @@ export default class SinglePendingVenueLayout extends SinglePendingListingLayout
    * Fetches pending neighborhoods.
    */
   fetchPendingHoods() {
-    this.pendingHoodsService.find({query: this.defaultQuery}).then(message => {
+    this.pendingHoodsService.find({query: this.defaultQuery})
+      .then(message => {
       this.setState({pendingHoods: message.data, pendingHoodsLoaded: true});
-    }, err => {
+    })
+      .catch(err => {
       this.setState({pendingHoodsLoaded: false});
       displayErrorMessages('fetch', 'pending neighborhoods', err, this.pendingHoodsService, 'reload');
     });
@@ -107,7 +111,7 @@ export default class SinglePendingVenueLayout extends SinglePendingListingLayout
    * @returns {*}
    */
   renderRecord() {
-    if (!(this.state.listingLoaded && this.state.hoodsLoaded && this.state.pendingHoodsLoaded)) {
+    if (!(this.state.listingLoaded && this.state.pendingHoodsLoaded)) {
       return <p>Data is loading... Please be patient...</p>
     }
 
@@ -116,7 +120,7 @@ export default class SinglePendingVenueLayout extends SinglePendingListingLayout
     return <PendingVenueRecord
       schema={this.schema} listing={this.state.listing} matchingLiveListing={this.state.matchingLiveListing}
       hoods={uniqueHoods} updateListing={this.updateListing} deleteListing={this.deleteListing}
-      queryForExisting={this.queryForExisting}
+      queryForDuplicate={this.queryForDuplicate}
     />;
   }
 }
