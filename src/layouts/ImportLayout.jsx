@@ -1,6 +1,7 @@
 import React, {Component} from "react";
 import app from "../services/socketio";
 import fetch from "node-fetch";
+import {BeatLoader} from "react-spinners";
 import {displayErrorMessages, printToConsole} from "../utilities";
 
 import Header from "../components/common/Header";
@@ -12,6 +13,7 @@ import PendingOrganizersModule from "../components/pendingOrganizers/PendingOrga
 import PendingNeighborhoodsModule from "../components/pendingNeighborhoods/PendingNeighborhoodsModule";
 import ImportXMLForm from "../components/common/ImportXMLForm";
 
+
 /**
  * ImportLayout renders the layout that handles importing and processing external data.
  *
@@ -21,7 +23,7 @@ export default class ImportLayout extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {importRunning: false};
+    this.state = {importRunning: false, publishRunning: false};
 
     this.API_URI = `http://${process.env.REACT_APP_SERVER_URL}/importer`;
     this.defaultPageSize = 5;
@@ -159,6 +161,7 @@ export default class ImportLayout extends Component {
   publishListings() {
     this.updateMessagePanel({status: 'info', details: 'Publish started. This make take several minutes.'});
     this.stopModuleListening();
+    this.setState({publishRunning: true});
 
     Promise
       .all([
@@ -185,6 +188,7 @@ export default class ImportLayout extends Component {
         displayErrorMessages('publish', 'pending listings', error, this.updateMessagePanel);
       })
       .finally(() => {
+        this.setState({publishRunning: false});
         this.resumeModuleListening();
       });
   }
@@ -207,9 +211,11 @@ export default class ImportLayout extends Component {
    */
   render() {
     // TODO: Change label to 'Publish All Listings' or 'Publish Selected Listings' depending on selections
+    const spinnerClass = this.state.publishRunning ? ' button-with-spinner' : '';
     const publishButton = this.user.is_su ?
-      <button type={'button'} className={'button-primary button-publish'} onClick={this.publishListings}>
+      <button type={'button'} className={`button-primary button-publish${spinnerClass}`} onClick={this.publishListings}>
         Publish Pending Listings
+        <BeatLoader size={8} sizeUnit={"px"} color={'#c2edfa'} loading={this.state.publishRunning} />
       </button> : '';
 
     return (

@@ -16,6 +16,8 @@ export default class PrivateRoute extends Component {
 
     /** @note `login` is intentionally uninitialized. */
     this.state = {};
+
+    this.runAuthentication = this.runAuthentication.bind(this);
   }
 
   /**
@@ -25,9 +27,11 @@ export default class PrivateRoute extends Component {
    * @override
    */
   componentDidMount() {
-    app.authenticate().catch((err) => {
-      this.setState({login: null});
-      printToConsole(err, 'error');
+    this.runAuthentication();
+
+    window.addEventListener('focus', () => {
+      // Check authentication after user refocuses
+      this.runAuthentication();
     });
 
     app
@@ -66,6 +70,19 @@ export default class PrivateRoute extends Component {
       .removeAllListeners('authenticated')
       .removeAllListeners('reauthentication-error')
       .removeAllListeners('accountLogout');
+  }
+
+  /**
+   * `runAuthentication` tries to authenticate the user.
+   *
+   * If authentication fails, the login token is nullified so the app will redirect to the login screen.
+   */
+  runAuthentication() {
+    console.debug('Checking auth status'); // TODO: Make sure this doesn't run more than once
+    app.authenticate().catch((err) => {
+      this.setState({login: null});
+      printToConsole(err, 'error');
+    });
   }
 
   /**

@@ -5,7 +5,7 @@ export default class EmailVerification extends Component {
   constructor(props) {
     super(props);
 
-    this.authManagementUrl = 'http://localhost:3030/authmanagement/';
+    this.authManagementUrl = `http://${process.env.REACT_APP_SERVER_URL}/authmanagement/`;
 
     this.state = {verifySuccess: null};
 
