@@ -140,7 +140,7 @@ export default class EventAddForm extends ListingAddForm {
         </label>
         <label>
           Tags
-          {renderCheckboxList(this.props.tags, [], 'uuid')}
+          {renderCheckboxList(this.props.tags, [])}
         </label>
         <label>
           Email Address

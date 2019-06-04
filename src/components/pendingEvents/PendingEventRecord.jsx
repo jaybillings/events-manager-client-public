@@ -115,8 +115,13 @@ export default class PendingEventRecord extends ListingRecordUniversal {
 
     const eventParams = ['name', 'start_date', 'end_date', 'venue_uuid',
       'org_uuid', 'description', 'email', 'url', 'phone', 'hours',
-    'ticket_url', 'ticket_phone', 'ticket_prices', 'flag_ongoing'];
+      'ticket_url', 'ticket_phone', 'ticket_prices', 'flag_ongoing'];
     const classNameMap = diffListings(liveEvent, event, eventParams);
+
+    let tagDiffList = [];
+    if (this.props.tagsForListing && this.props.tagsForPendingListing) {
+      tagDiffList = diffTags(this.props.tagsForListing, this.props.tagsForPendingListing);
+    }
 
     return (
       <form id={'pending-event-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
@@ -172,7 +177,7 @@ export default class PendingEventRecord extends ListingRecordUniversal {
         </label>
         <label>
           Tags
-          {renderCheckboxList(tags, tagsForListing, 'uuid')}
+          {renderCheckboxList(tags, tagsForPendingListing, tagDiffList)}
         </label>
         <label className={classNameMap['email']}>
           Email Address

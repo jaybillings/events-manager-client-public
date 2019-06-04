@@ -34,17 +34,18 @@ const renderOptionList = function (schemaData, schema, keyType='uuid') {
  *
  * @param {Array} schemaMembers
  * @param {Array} selectedIds - IDs of the members that should be selected,
- * @param {string} keyType - What to use as the key. ID or UUID.
+ * @param diffList
  * @param {Boolean} disableAll - Whether checkboxes should be disabled (read-only)
  * @returns {*}
  */
-const renderCheckboxList = function (schemaMembers, selectedIds, keyType = 'id', disableAll=false) {
+const renderCheckboxList = function (schemaMembers, selectedIds, diffList=[], disableAll=false) {
   let chkbxList = [];
 
   schemaMembers.forEach(record => {
-    const inputValue = keyType === 'uuid' ? record.uuid : record.id;
+    const inputValue = record.uuid;
+    //const diffClass = diffList.includes(inputValue) ? ' highlight-diff' : '';
     chkbxList.push(
-      <li key={record.uuid}>
+      <li key={record.uuid} className={diffList.includes(inputValue) ? ' highlight-diff' : ''}>
         <label>
           <input
             type={'checkbox'} className={'js-checkbox'} value={inputValue}
@@ -108,7 +109,7 @@ const renderSchemaLink = function (listing, baseSchema) {
   const schemaPath = listing.fromPending ? `pending${baseSchema}` : baseSchema;
   const linkText = listing.fromPending ? `${listing.name} [Pending]` : listing.name;
 
-  return <Link to={`/${schemaPath}/${listing.id}`}>{linkText}</Link>;
+  return <Link to={`/${schemaPath}/${listing.id}`} onClick={e => e.stopPropagation()}>{linkText}</Link>;
 };
 
 /**
@@ -257,6 +258,18 @@ const diffListings = function(listingA, listingB, parameters) {
   return classNameMap;
 };
 
+const diffTags = function(tagGroupA, tagGroupB) {
+  const jsdiff = require('diff');
+  let diffList = [];
+
+  const diff = jsdiff.diffArrays(tagGroupA, tagGroupB);
+  diff.forEach(diffLine => {
+    if (diffLine.added || diffLine.removed) diffList = [...diffList, ...diffLine.value];
+  });
+
+  return diffList;
+};
+
 const printToConsole = function(messageObj, type='error') {
   if (JSON.stringify(messageObj) && console[type]) console[type](messageObj);
 };
@@ -273,5 +286,6 @@ export {
   arrayUnique,
   displayErrorMessages,
   diffListings,
+  diffTags,
   printToConsole
 };

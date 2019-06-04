@@ -193,7 +193,7 @@ export default class EventRecord extends ListingRecordUniversal {
         </label>
         <label>
           Tags
-          {renderCheckboxList(tags, eventTags, 'uuid', disableAll)}
+          {renderCheckboxList(tags, eventTags, [], disableAll)}
         </label>
         <label>
           Email Address
