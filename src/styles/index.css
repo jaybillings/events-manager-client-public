@@ -197,6 +197,10 @@ button[disabled]:hover {
   box-shadow: 0 0 4px 4px var(--true-blue-transparent);
 }
 
+td.highlight-diff :first-child {
+  display: inline-block;
+}
+
 .container {
   max-width: 1200px;
   margin-bottom: 2em;

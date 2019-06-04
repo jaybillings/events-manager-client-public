@@ -77,7 +77,7 @@ export default class PendingVenueRow extends PendingListingRow {
     }
 
     const classNameMap = this.state.matchingLiveListing ? diffListings(this.state.matchingLiveListing, this.props.listing, ['name', 'hood_uuid']) : {};
-    const hoodLink = this.props.hood ? renderSchemaLink(this.props.hood, 'neighborhoods') : 'NO NEIGHBORHOOD';
+    const hoodLink = this.props.hood ? renderSchemaLink(this.props.hood, 'neighborhoods') : <span>NO NEIGHBORHOOD</span>;
 
     return (
       <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>

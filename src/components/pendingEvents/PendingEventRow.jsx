@@ -96,11 +96,13 @@ export default class PendingEventRow extends PendingListingRow {
       );
     }
 
-    const startDate = Moment(this.props.listing.start_date).format('MM/DD/YYYY');
-    const endDate = Moment(this.props.listing.end_date).format('MM/DD/YYYY');
-    const venueLink = this.props.venue ? renderSchemaLink(this.props.venue, 'venues') : 'NO VENUE';
-    const orgLink = this.props.org ? renderSchemaLink(this.props.org, 'organizers') : 'NO ORGANIZER';
+    const startDate = this.props.listing.start_date ? Moment(this.props.listing.start_date).format('MM/DD/YYYY') : 'NO START DATE';
+    const endDate = this.props.listing.end_date ? Moment(this.props.listing.end_date).format('MM/DD/YYYY') : 'NO END DATE';
+    const venueLink = this.props.venue ? renderSchemaLink(this.props.venue, 'venues') : <span>NO VENUE</span>;
+    const orgLink = this.props.org ? renderSchemaLink(this.props.org, 'organizers') : <span>NO ORGANIZER</span>;
     const classNameMap = this.state.matchingLiveListing ? diffListings(this.state.matchingLiveListing, this.props.listing, ['name', 'start_date', 'end_date', 'venue_uuid', 'org_uuid']) : {};
+
+    if (this.props.listing.id === 939) console.debug(classNameMap);
 
     return (
       <tr className={`schema-row${selectClass}`} onClick={this.handleRowClick} title={'Click to select me!'}>
@@ -109,8 +111,8 @@ export default class PendingEventRow extends PendingListingRow {
           <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard</button>
         </td>
         <td className={classNameMap['name']}><Link to={`/pendingEvents/${listingID}`}>{listingName}</Link></td>
-        <td className={classNameMap['start_date']}>{startDate}</td>
-        <td className={classNameMap['end_date']}>{endDate}</td>
+        <td className={classNameMap['start_date']}><span>{startDate}</span></td>
+        <td className={classNameMap['end_date']}><span>{endDate}</span></td>
         <td className={classNameMap['venue_uuid']}>{venueLink}</td>
         <td className={classNameMap['org_uuid']}>{orgLink}</td>
         <td>{createdAt}</td>
