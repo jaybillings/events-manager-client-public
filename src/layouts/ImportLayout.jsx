@@ -15,7 +15,7 @@ import ImportXMLForm from "../components/common/ImportXMLForm";
 
 
 /**
- * ImportLayout renders the layout that handles importing and processing external data.
+ * `ImportLayout` is a layout component rendering the import view.
  *
  * @class
  */
@@ -86,7 +86,7 @@ export default class ImportLayout extends Component {
   }
 
   /**
-   * Resumes service listening for included modules.
+   * `resumeModuleListening` resumes data service listening for modules.
    */
   resumeModuleListening() {
     // TODO: Find way to do this that doesn't use refs.
@@ -98,7 +98,7 @@ export default class ImportLayout extends Component {
   }
 
   /**
-   * Stops service listening for included modules.
+   * `stopModuleListening` stops service listening for modules.
    */
   stopModuleListening() {
     // TODO: Find way to do this that doesn't use refs.
@@ -110,7 +110,7 @@ export default class ImportLayout extends Component {
   }
 
   /**
-   * Handles the importing of data from the supplied XML file.
+   * `importData` handles the XML form submit action by triggering data import.
    *
    * @param {Event} e
    */
@@ -138,25 +138,21 @@ export default class ImportLayout extends Component {
       .then(body => {
         if (body.code >= 400) {
           this.updateMessagePanel({status: 'error', details: body.message});
-          printToConsole(body, 'error');
+          printToConsole(body);
           this.setState({importRunning: false});
         } else {
           this.updateMessagePanel({status: 'notice', details: 'Importer is running. This may take several minutes.'});
         }
       })
       .catch(err => {
-        printToConsole(err, 'error');
+        printToConsole(err);
         displayErrorMessages('data file', 'import', err, this.updateMessagePanel);
         this.setState({importRunning: false});
       });
   }
 
   /**
-   * Triggers the publishing of pending listings for all schema.
-   *
-   * @note Unlike when publishing listings manually, publishListings publishes them in the correct order to prevent
-   * missing linked schema. It also stops on the first error encountered. It is likely better than publishing large
-   * datasets manually.
+   * `publishListings` triggers the publishing of all pending listings, regardless of schema.
    */
   publishListings() {
     this.updateMessagePanel({status: 'info', details: 'Publish started. This make take several minutes.'});
@@ -183,9 +179,9 @@ export default class ImportLayout extends Component {
       .then(() => {
         this.updateMessagePanel({status: 'notice', details: 'Publish complete.'});
       })
-      .catch(error => {
-        printToConsole(error, 'error');
-        displayErrorMessages('publish', 'pending listings', error, this.updateMessagePanel);
+      .catch(err => {
+        printToConsole(err);
+        displayErrorMessages('publish', 'pending listings', err, this.updateMessagePanel);
       })
       .finally(() => {
         this.setState({publishRunning: false});
@@ -194,9 +190,9 @@ export default class ImportLayout extends Component {
   }
 
   /**
-   * Adds a message to the message panel.
+   * `updateMessagePanel` adds a message to the message panel.
    *
-   * @param {object} newMsg
+   * @param {Object|Array} newMsg
    */
   updateMessagePanel(newMsg) {
     this.messagePanel.current.addMessage(newMsg);
@@ -223,7 +219,7 @@ export default class ImportLayout extends Component {
         <Header />
         <MessagePanel ref={this.messagePanel} />
         <h2>Import Data From BeDynamic</h2>
-        <ImportXMLForm fileInputRef={this.fileInput} importRunning={this.state.importRunning} handleImportClick={this.importData} />
+        <ImportXMLForm fileInputRef={this.fileInput} importRunning={this.state.importRunning} handleSubmit={this.importData} />
         <h2>Review Unpublished Data</h2>
         <PendingEventsModule
           ref={this.eventsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}

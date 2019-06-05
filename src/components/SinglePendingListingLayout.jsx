@@ -2,12 +2,12 @@ import React from 'react';
 import {Redirect} from "react-router";
 import {Link} from "react-router-dom";
 import {MdChevronLeft} from "react-icons/md";
+import {printToConsole} from "../utilities";
 
 import SingleListingLayout from "./SingleListingLayout";
 import ListingRecordUniversal from "./ListingRecordUniversal";
 import Header from "./common/Header";
 import MessagePanel from "./common/MessagePanel";
-import {printToConsole} from "../utilities";
 
 /**
  * `SinglePendingListingLayout` is a generic component which lays out the single pending listing view.
@@ -26,7 +26,7 @@ export default class SinglePendingListingLayout extends SingleListingLayout {
   }
 
   /**
-   * Fetches all data required for the page.
+   * Fetches all data required for the view.
    *
    * @override
    */
@@ -35,7 +35,10 @@ export default class SinglePendingListingLayout extends SingleListingLayout {
   }
 
   /**
-   * Fetches data for the single listing.
+   * `fetchListing` fetches data for the single listing and saves it to the state.
+   *
+   * For pending listings, once the listing is returned `fetchListing` also fetches
+   * the matching published listing.
    *
    * @override
    */
@@ -52,8 +55,11 @@ export default class SinglePendingListingLayout extends SingleListingLayout {
   }
 
   /**
+   * `fetchMatchingLiveListing` queries the database for a published listing with
+   * the same UUID as the pending listing and saves the result to the state.
+   *
    * @override
-   * @param uuid
+   * @param {String|int} uuid
    */
   fetchMatchingLiveListing(uuid) {
     this.listingsService.find({query: {uuid}})
@@ -65,7 +71,7 @@ export default class SinglePendingListingLayout extends SingleListingLayout {
   }
 
   /**
-   * `renderRecord` renders the single listing's record.
+   * `renderRecord` renders the listing's record.
    *
    * @override
    * @returns {*}

@@ -10,6 +10,10 @@ import StatusLabel from "../common/StatusLabel";
  *
  * @class
  * @child
+ * @param {{schema: String, listing: Object, matchingLiveListing: Object,
+ * venues: Array, orgs: Array, tags: Array, tagsForListing: Array,
+ * tagsForPendingListing: Array, updateListing: Function, deleteListing: Function,
+ * queryForDuplicate: Function}} props
  */
 export default class PendingEventRecord extends ListingRecordUniversal {
   constructor(props) {
@@ -32,7 +36,9 @@ export default class PendingEventRecord extends ListingRecordUniversal {
   }
 
   /**
-   * Runs when the component mounts. Checks the event's publish status.
+   * Runs before the component is unmounted.
+   *
+   * During `componentDidMount`, the component fetches the listing's write status.
    *
    * @override
    */
@@ -40,13 +46,15 @@ export default class PendingEventRecord extends ListingRecordUniversal {
     this.getWriteStatus()
       .then(writeStatus => {
         console.debug('writeStatus', writeStatus);
-        this.setState({writeStatus})
+        this.setState({writeStatus});
       });
   }
 
   /**
-   * `handleSaveClick` parses the new data and calls a function to create a new pending organizer.
-   * It also modifies the associations between the pending event and its tags as needed.
+   * `handleSaveClick` handles the save action by parsing the new data and calling
+   * an update handler.
+   *
+   * For events, it also modifies the associations between the pending event and its tags as needed.
    *
    * @override
    * @param {Event} e

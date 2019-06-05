@@ -6,10 +6,11 @@ import {makeSingular} from "../utilities";
 import "../styles/schema-record.css";
 
 /**
- * ListingRecordUniversal is a generic component which displays a single listing record.
+ * `ListingRecordUniversal` is a generic component that displays a single listing record.
  *
  * @class
  * @parent
+ * @param {{listing: Object, schema: String, updateListing: Function, deleteListing: Function, queryForDuplicate: Function}} props
  */
 export default class ListingRecordUniversal extends Component {
   constructor(props) {
@@ -49,7 +50,8 @@ export default class ListingRecordUniversal extends Component {
   }
 
   /**
-   * `handleSaveClick` parses the new data and calls a function to create a new listing.
+   * `handleSaveClick` handles the save action by parsing the new data and calling
+   * an update handler.
    *
    * @param {Event} e
    */

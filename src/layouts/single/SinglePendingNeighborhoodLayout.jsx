@@ -4,7 +4,7 @@ import SinglePendingListingLayout from "../../components/SinglePendingListingLay
 import PendingNeighborhoodRecord from "../../components/pendingNeighborhoods/PendingNeighborhoodRecord";
 
 /**
- * SinglePendingNeighborhoodLayout lays out the single pending neighborhood view.
+ * `SinglePendingNeighborhoodLayout` lays out the single pending neighborhood view.
  *
  * @class
  * @child
@@ -15,7 +15,7 @@ export default class SinglePendingNeighborhoodLayout extends SinglePendingListin
   }
 
   /**
-   * `renderRecord ` renders the neighborhood record.
+   * `renderRecord` renders the the pending neighborhood record.
    *
    * @override
    * @returns {*}

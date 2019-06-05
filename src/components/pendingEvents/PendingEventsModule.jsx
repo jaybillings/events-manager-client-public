@@ -10,10 +10,11 @@ import ShowHideToggle from "../common/ShowHideToggle";
 import SelectionControl from "../common/SelectionControl";
 
 /**
- * PendingEventsModule displays pending events as a module within a layout.
+ * `PendingEventsModule` displays the pending events data table as a module.
  *
  * @class
  * @child
+ * @param {{defaultPageSize: Number, defaultSortOrder: Object, updateMessagePanel: Function}} props
  */
 export default class PendingEventsModule extends PendingListingsModule {
   constructor(props) {
@@ -46,6 +47,7 @@ export default class PendingEventsModule extends PendingListingsModule {
 
   /**
    * `stopListening` removes data service listeners.
+   *
    * @override
    */
   stopListening() {
@@ -73,6 +75,7 @@ export default class PendingEventsModule extends PendingListingsModule {
 
   /**
    * `listenForChanges` registers data service listeners.
+   *
    * @override
    */
   listenForChanges() {
@@ -95,16 +98,12 @@ export default class PendingEventsModule extends PendingListingsModule {
 
     this.pendingEventsTagsLookupService
       .on('created', message => {
-        this.props.updateMessagePanel({
-          status: 'info',
-          details: `Linked tag ${message.tag_uuid} with event #${message.event_uuid}.`
-        });
+        // Don't need to fetch the actual data, just inform the user
+        this.props.updateMessagePanel({status: 'info', details: `Linked tag ${message.tag_uuid} with pending event ${message.event_uuid}.`});
       })
       .on('removed', message => {
-        this.props.updateMessagePanel({
-          status: 'info',
-          details: `Unlinked tag ${message.tag_uuid} from event #${message.event_uuid}`
-        });
+        // Don't need to fetch the actual data, just inform the user
+        this.props.updateMessagePanel({status: 'info', details: `Unlinked tag ${message.tag_uuid} from pending event ${message.event_uuid}.`});
       });
   }
 
@@ -133,13 +132,12 @@ export default class PendingEventsModule extends PendingListingsModule {
   }
 
   /**
-   * `createSearchQuery` creates a query for searching on a term.
+   * `createSearchQuery` creates a Common API compatible query from a search term.
    *
-   * For the event class, `createSearchQuery` allows searching on the name, UUID,
-   * venue name, or organizer name.
+   * For venues, the text search matches again the name, UUID, venue name, and organizer name.
    *
    * @override
-   * @returns {Object|null}
+   * @returns {Object}
    */
   createSearchQuery() {
     if (!this.state.searchTerm) return null;
@@ -157,7 +155,7 @@ export default class PendingEventsModule extends PendingListingsModule {
   }
 
   /**
-   * `fetchAllData` fetches data for the module.
+   * `fetchAllData` fetches data required by the module.
    *
    * @override
    */
@@ -170,7 +168,7 @@ export default class PendingEventsModule extends PendingListingsModule {
   }
 
   /**
-   * `fetchVenues` fetches live venues.
+   * `fetchVenues` fetches published venues and saves them to the state.
    */
   fetchVenues() {
     this.venuesService.find({query: this.defaultQuery, paginate: false})
@@ -185,7 +183,7 @@ export default class PendingEventsModule extends PendingListingsModule {
   }
 
   /**
-   * `fetchPendingVenues` fetches pending venues.
+   * `fetchPendingVenues` fetches pending venues and saves them to the state.
    */
   fetchPendingVenues() {
     this.pendingVenuesService.find({query: this.defaultQuery, paginate: false})
@@ -200,7 +198,7 @@ export default class PendingEventsModule extends PendingListingsModule {
   }
 
   /**
-   * `fetchOrgs` fetches live organizers.
+   * `fetchOrgs` fetches published organizers and saves them to the state.
    */
   fetchOrgs() {
     this.orgsService.find({query: this.defaultQuery, paginate: false})
@@ -215,7 +213,7 @@ export default class PendingEventsModule extends PendingListingsModule {
   }
 
   /**
-   * `fetchPendingOrgs` fetches pending organizers.
+   * `fetchPendingOrgs` fetches pending organizers and saves them to the state.
    */
   fetchPendingOrgs() {
     this.pendingOrgsService.find({query: this.defaultQuery, paginate: false}).then(message => {
@@ -341,8 +339,9 @@ export default class PendingEventsModule extends PendingListingsModule {
    * Registers a listing as live.
    *
    * @async
-   * @param {int} eventID
-   * @param {string} eventName
+   * @param eventID
+   * @param eventName
+   * @returns {Promise<*>}
    */
   registerLiveListing(eventID, eventName) {
     return this.liveEventsService.create({event_id: eventID})
@@ -372,7 +371,8 @@ export default class PendingEventsModule extends PendingListingsModule {
         return {};
       })
       .catch(err => {
-        printToConsole(err);
+        printToConsole(JSON.stringify(err));
+        if (err.code === 'SQLITE_CONSTRAINT') return; // Benign error -- hide from user
         displayErrorMessages('copy', 'event-tag links', err, this.props.updateMessagePanel);
       });
   }

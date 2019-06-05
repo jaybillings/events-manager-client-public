@@ -21,19 +21,15 @@ import '../styles/schema-module.css';
 import '../styles/schema-table.css';
 
 /**
- * PendingListingsModule is a parent component that renders pending listings as
- * a module within a layout.
+ * `PendingListingsModule` is a generic component that renders a schema's data table
+ * as a module.
+ *
  * @class
  * @parent
+ * @param {{defaultPageSize: Number, defaultSortOrder: Object, updateMessagePanel: Function}} props
+ * @param {string} schema
  */
 export default class PendingListingsModule extends Component {
-  /**
-   * The class's constructor.
-   *
-   * @constructor
-   * @param {Object} props
-   * @param {String} schema
-   */
   constructor(props, schema) {
     super(props);
 
@@ -148,7 +144,7 @@ export default class PendingListingsModule extends Component {
   }
 
   /**
-   * `startListening` triggers functions related to data management.
+   * `startListening` resumes data service listening and fetches new data.
    */
   startListening() {
     this.listenForChanges();
@@ -196,7 +192,7 @@ export default class PendingListingsModule extends Component {
       })
       .on('removed', message => {
         this.props.updateMessagePanel({
-          status: 'info',
+          status: 'success',
           details: `Removed pending ${schemaSingular} "${message.name}"`
         });
         this.fetchListings();
@@ -268,7 +264,7 @@ export default class PendingListingsModule extends Component {
 
   /**
    * `queryForMatching` queries the live service for listings with the same uuid.
-   * @note Due to SQL constraints, this should only ever return one listing.
+   * @note Due to table constraints, this should only ever return one listing.
    *
    * @async
    * @param {Object} pendingListing
@@ -279,7 +275,7 @@ export default class PendingListingsModule extends Component {
   };
 
   /**
-   * `queryForIDs` queries the listing service for a list of all pending listings. Returns the ID.
+   * `queryForIDs` queries the listing service for a list of all pending listings. Selects the ID.
    *
    * @async
    * @returns {Promise<{}>}
@@ -289,7 +285,7 @@ export default class PendingListingsModule extends Component {
   }
 
   /**
-   * `queryForPublishedUUIDs` queries for the live listing service for all live listings. Returns the name and UUID.
+   * `queryForPublishedUUIDs` queries for the live listing service for all live listings. Selects the name and UUID.
    *
    * @async
    * @returns {Promise<{}>}
@@ -299,9 +295,9 @@ export default class PendingListingsModule extends Component {
   }
 
   /**
-   * `createSearchQuery` creates a query for searching on a term.
+   * `createSearchQuery` creates a Common API compatible query from a search term.
    *
-   * For the parent class, `createSearchQuery` allows searching on the name and UUID.
+   * For generic schema, `createSearchQuery` matches against the name and UUID.
    *
    * @returns {Object|null}
    */
@@ -320,7 +316,7 @@ export default class PendingListingsModule extends Component {
   }
 
   /**
-   * `updateSearchQuery` updates the query searched upon and re-fetches results.
+   * `updateSearchQuery` updates the text search query and fetches new data.
    *
    * @param {String} searchTerm
    */
@@ -331,7 +327,7 @@ export default class PendingListingsModule extends Component {
   }
 
   /**
-   * `fetchAllData` fetches data for the module.
+   * `fetchAllData` fetches data required by the module.
    */
   fetchAllData() {
     this.fetchListings();
@@ -396,11 +392,11 @@ export default class PendingListingsModule extends Component {
       .then(results => {
         this.handleListingSelect(results.id, false);
         return results;
-      });/*
+      })
       .catch(err => {
         printToConsole(err, 'error');
         displayErrorMessages('remove', `pending ${this.schemaSingular} "${listing.name}"`, err, this.props.updateMessagePanel, 'retry');
-      })*/
+      });
   }
 
   /**
@@ -507,7 +503,6 @@ export default class PendingListingsModule extends Component {
 
     return this.pendingListingsService.find({query, paginate: false})
       .then(result => {
-        console.debug(`${this.schema} fetch result`, result);
         return Promise.all(result.data.map(listing => {
           const liveMatch = liveListingData.find(row => {
             return row.uuid === listing.uuid
@@ -536,10 +531,11 @@ export default class PendingListingsModule extends Component {
           }
         }));
       })
-      /*.catch(error => {
+      .catch(error => {
+        console.error('top level error');
         printToConsole(error);
         displayErrorMessages('publish', `pending ${this.schema}`, error, this.props.updateMessagePanel, 'retry');
-      })*/;
+      });
   }
 
   /**

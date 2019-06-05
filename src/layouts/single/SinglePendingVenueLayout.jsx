@@ -6,17 +6,12 @@ import PendingVenueRecord from "../../components/pendingVenues/PendingVenueRecor
 import SinglePendingListingLayout from "../../components/SinglePendingListingLayout";
 
 /**
- * SinglePendingVenueLayout is a component which lays out a single pending venue page.
+ * `SinglePendingVenueLayout` lays out a single pending venue view.
+ *
  * @class
  * @child
  */
 export default class SinglePendingVenueLayout extends SinglePendingListingLayout {
-  /**
-   * The class's constructor.
-   * @constructor
-   *
-   * @param {object} props
-   */
   constructor(props) {
     super(props, 'pending-venues');
 
@@ -30,7 +25,11 @@ export default class SinglePendingVenueLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Runs once the component mounts. Registers data service listeners.
+   * Runs once the component mounts.
+   *
+   * During `componentDidMount`, the component fetches required data and
+   * registers service listeners.
+   *
    * @override
    */
   componentDidMount() {
@@ -50,7 +49,10 @@ export default class SinglePendingVenueLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Runs before the component unmounts. Unregisters data service listeners.
+   * Runs when the component unmounts.
+   *
+   * During `componentWillUnmount`, the component unregisters service listeners.
+   *
    * @override
    */
   componentWillUnmount() {
@@ -68,7 +70,8 @@ export default class SinglePendingVenueLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Fetches all data required for the page.
+   * `fetchAllData` fetches all data required for the view.
+   *
    * @override
    */
   fetchAllData() {
@@ -78,7 +81,7 @@ export default class SinglePendingVenueLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Fetches published neighborhoods.
+   * `fetchHoods` fetches published neighborhoods and saves them to the state.
    */
   fetchHoods() {
     this.hoodsService.find({query: this.defaultQuery})
@@ -92,7 +95,7 @@ export default class SinglePendingVenueLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Fetches pending neighborhoods.
+   * `fetchPendingHoods` fetches pending neighborhoods and saves them to the state.
    */
   fetchPendingHoods() {
     this.pendingHoodsService.find({query: this.defaultQuery})
@@ -106,7 +109,8 @@ export default class SinglePendingVenueLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Renders the pending venue record.
+   * `renderRecord` renders the single pending venue's record.
+   *
    * @override
    * @returns {*}
    */

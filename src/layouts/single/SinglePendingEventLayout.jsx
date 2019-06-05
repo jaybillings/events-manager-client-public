@@ -6,24 +6,29 @@ import PendingEventRecord from "../../components/pendingEvents/PendingEventRecor
 import SinglePendingListingLayout from "../../components/SinglePendingListingLayout";
 
 /**
- * SinglePendingEventLayout is a component which lays out a single pending event page.
+ * SinglePendingEventLayout lays out the single pending event view.
+ *
  * @class
  * @child
  */
 export default class SinglePendingEventLayout extends SinglePendingListingLayout {
-  /**
-   * The component's constructor.
-   * @constructor
-   *
-   * @param props
-   */
   constructor(props) {
     super(props, 'pending-events');
 
-    this.state = {...this.state,
-      venues: [], orgs: [], tags: [], tagsForListing: [],
-      pendingVenues: [], pendingOrgs: [], pendingTags: [], tagsForPendingListing: [],
-      pendingVenuesLoaded: false, pendingOrgsLoaded: false, pendingTagsLoaded: false, pendingTagAssociationsLoaded: false
+    this.state = {
+      ...this.state,
+      venues: [],
+      orgs: [],
+      tags: [],
+      tagsForListing: [],
+      pendingVenues: [],
+      pendingOrgs: [],
+      pendingTags: [],
+      tagsForPendingListing: [],
+      pendingVenuesLoaded: false,
+      pendingOrgsLoaded: false,
+      pendingTagsLoaded: false,
+      pendingTagAssociationsLoaded: false
     };
 
     this.venuesService = app.service('venues');
@@ -49,7 +54,11 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Runs once the component mounts. Registers data service listeners and fetches data.
+   * Runs once the component mounts.
+   *
+   * During `componentDidMount`, the component fetches required data and
+   * registers service listeners.
+   *
    * @override
    */
   componentDidMount() {
@@ -75,28 +84,35 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
     this.pendingEventsTagsLookupService
       .on('created', message => {
         if (this.state.listing.uuid && (message.event_uuid === this.state.listing.uuid)) {
-          this.updateMessagePanel({status: 'info', details: 'Linked tag with pending event.'});
+          this.updateMessagePanel({status: 'info', details: `Linked tag ${message.tag_uuid} with pending event.`});
           this.fetchPendingTagAssociations(this.state.listing.uuid);
         }
       })
       .on('removed', message => {
         if (this.state.listing.uuid && (message.event_uuid === this.state.listing.uuid)) {
-          this.updateMessagePanel({status: 'info', details: 'Unlinked tag from pending event.'});
+          this.updateMessagePanel({status: 'info', details: `Unlinked tag ${message.tag_uuid} from pending event.`});
           this.fetchPendingTagAssociations(this.state.listing.uuid);
         }
       });
 
     this.eventsTagsLookupService
       .on('created', message => {
-        if (message.event_uuid === this.state.listing.uuid) this.fetchTagAssociations(this.state.listing.uuid);
+        if (this.state.listing.uuid && (message.event_uuid === this.state.listing.uuid)) {
+          this.fetchTagAssociations(this.state.listing.uuid);
+        }
       })
       .on('removed', message => {
-        if (message.event_uuid === this.state.listing.uuid) this.fetchTagAssociations(this.state.listing.uuid);
+        if (this.state.listing.uuid && (message.event_uuid === this.state.listing.uuid)) {
+          this.fetchTagAssociations(this.state.listing.uuid);
+        }
       });
   }
 
   /**
-   * Runs before the component unmounts. Unregisters data service listeners.
+   * Runs when the component unmounts.
+   *
+   * During `componentWillUnmount`, the component unregisters service listeners.
+   *
    * @override
    */
   componentWillUnmount() {
@@ -127,7 +143,7 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Fetches all data required for the page.
+   * `fetchAllData` fetches all data required for the view.
    *
    * @override
    */
@@ -142,10 +158,11 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Fetches data for the single listings.
-   * @note Unlike default, this returns a promise.
+   * `fetchListing` fetches data for the single listing and saves it to the state.
    *
-   * @async
+   * For pending events, once the listing is returned `fetchListing` also fetches
+   * the tag associations, matching published listing, and the published listing's tag associations.
+   *
    * @override
    */
   fetchListing() {
@@ -163,7 +180,7 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Fetches published venues.
+   * `fetchVenues` fetches published venues and saves them to the state.
    */
   fetchVenues() {
     this.venuesService.find({query: this.defaultQuery})
@@ -178,7 +195,7 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Fetches pending venues.
+   * `fetchPendingVenues` fetches pending venues and saves them to the state.
    */
   fetchPendingVenues() {
     this.pendingVenuesService.find({query: this.defaultQuery})
@@ -193,7 +210,7 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Fetches published organizers.
+   * `fetchOrgs` fetches published organizers and saves them to the state.
    */
   fetchOrgs() {
     this.orgsService.find({query: this.defaultQuery})
@@ -208,7 +225,7 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Fetches pending organizers.
+   * `fetchPendingOrgs` fetches pending organizers  and saves them to the state.
    */
   fetchPendingOrgs() {
     this.pendingOrgsService.find({query: this.defaultQuery})
@@ -223,7 +240,7 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Fetches published tags.
+   * `fetchTags` fetches published tags and saves them to the state.
    */
   fetchTags() {
     this.tagsService.find({query: this.defaultQuery})
@@ -238,7 +255,7 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Fetches pending tags.
+   * `fetchPendingTags` fetches pending tags and saves them to the state.
    */
   fetchPendingTags() {
     this.pendingTagsService.find({query: this.defaultQuery})
@@ -253,7 +270,8 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Fetches associations between a published event and published tags.
+   * `fetchTagAssociations` fetches associations between a published event and
+   * published tags. These are saved to the state.
    *
    * @param {string|number} eventUUID
    */
@@ -269,7 +287,8 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Fetches associations between a pending event and all tags (published or pending).
+   * `fetchPendingTagAssociations` fetches associations between a pending event
+   * and all tags (published or pending). These are saved to the state.
    *
    * @param {string|number} eventUUID
    */
@@ -286,64 +305,65 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Determines whether the listing may duplicate an existing listing.
+   * `queryForDuplicate` queries the published events table for listings that may
+   * duplicate the pending listing.
+   *
+   * In the case of the events, it matches against a combination of name,
+   * start date, and end date (since many valid events might have the same name but different dates).
+   *
    * @override
    * @async
-   *
-   * @returns {Promise}
+   * @returns {Promise<*>}
    */
   queryForDuplicate() {
     return this.listingsService.find({
       query: {
-        $or: [
-          {uuid: this.state.listing.uuid},
-          {
-            name: this.state.listing.name,
-            start_date: this.state.listing.start_date,
-            end_date: this.state.listing.end_date
-          }
-        ],
+        name: this.state.listing.name,
+        start_date: this.state.listing.start_date,
+        end_date: this.state.listing.end_date,
         $select: ['uuid']
       }
     });
   }
 
   /**
-   * Updates the event's data by calling the service's PATCH method.
-   * @override
+   * `updateListing` updates the event's data by calling the service's PATCH method. The new data
+   * is saved to the state.
    *
+   * @override
    * @param {object} listingData
    */
   updateListing(listingData) {
-    this.pendingListingsService.patch(this.listingID, listingData.eventData).then(result => {
-      if (listingData.tagsToSave) this.createPendingTagAssociations(listingData.tagsToSave);
-      if (listingData.tagsToRemove) this.removePendingTagAssociations(listingData.tagsToRemove);
+    this.pendingListingsService.patch(this.listingID, listingData.eventData)
+      .catch(err => {
+        printToConsole(err);
+        displayErrorMessages('save changes to', this.state.listing.name, err, this.updateMessagePanel, 'retry');
+      });
 
-      this.setState({listing: result, listingLoaded: true});
-      this.updateMessagePanel({status: 'success', details: `Saved changes to "${result.name}"`});
-    }, err => {
-      displayErrorMessages('save changes to', this.state.listing.name, err, this.updateMessagePanel, 'retry');
-    });
+    if (listingData.tagsToSave) this.createPendingTagAssociations(listingData.tagsToSave);
+    if (listingData.tagsToRemove) this.removePendingTagAssociations(listingData.tagsToRemove);
   }
 
   /**
-   * Deletes the pending event by calling the service's REMOVE method.
+   * `deleteListing` removes the listing by calling the service's REMOVE method.
+   *
    * @override
    */
   deleteListing() {
-    this.pendingListingsService
-      .remove(this.listingID)
+    this.pendingListingsService.remove(this.listingID)
       .then((result) => {
         this.pendingEventsTagsLookupService.remove(null, {query: {event_uuid: result.uuid}});
         this.setState({hasDeleted: true});
       })
       .catch(err => {
+        printToConsole(err);
         displayErrorMessages('delete', `"${this.state.listing.name}"`, err, this.updateMessagePanel, 'retry');
       });
   }
 
   /**
-   * Creates associations between tags and pending event.
+   * `createPendingTagAssociations` creates associations between tags and the
+   * pending event.
    *
    * @param {object[]} tagsToSave
    */
@@ -351,12 +371,14 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
     this.pendingEventsTagsLookupService
       .create(tagsToSave)
       .catch(err => {
-        displayErrorMessages('create', 'event-tag link', err, this.updateMessagePanel, 'retry');
+        printToConsole(err);
+        displayErrorMessages('create', 'event-tag link', err, this.updateMessagePanel);
       });
   }
 
   /**
-   * Deletes associations between tags and the pending event.
+   * `removePendingTagAssociations` deletes associations between tags and the
+   * pending event.
    *
    * @param {object[]} tagsToRemove
    */
@@ -367,14 +389,14 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
     this.pendingEventsTagsLookupService
       .remove(null, {query: query})
       .catch(err => {
-        displayErrorMessages('remove', 'event-tag link', err, this.updateMessagePanel, 'retry');
+        displayErrorMessages('remove', 'event-tag link', err, this.updateMessagePanel);
       });
   }
 
   /**
-   * Renders the single pending event's record.
-   * @override
+   * `renderRecord` renders the single pending event's record.
    *
+   * @override
    * @returns {*}
    */
   renderRecord() {

@@ -7,23 +7,33 @@ import {diffListings} from "../../utilities";
 
 /**
  * PendingTagRecord is a component which displays a single pending tag's record.
+ *
  * @class
  * @child
+ * @param {{schema: String, listing: Object, matchingLiveListing: Object,
+ * updateListing: Function, deleteListing: Function, queryForDuplicate: Function}} props
  */
 export default class PendingTagRecord extends ListingRecordUniversal {
   /**
-   * Runs when the component mounts. Checks the publish status of the listing.
+   * Runs before the component is unmounted.
+   *
+   * During `componentDidMount`, the component fetches the listing's write status.
+   *
    * @override
    */
   componentDidMount() {
-    this.getWriteStatus();
+    this.getWriteStatus()
+      .then(writeStatus => {
+        console.debug('writeStatus', writeStatus);
+        this.setState({writeStatus});
+      });
   }
 
   /**
    * Renders the component.
+   *
    * @override
    * @render
-   *
    * @returns {*}
    */
   render() {
@@ -38,6 +48,10 @@ export default class PendingTagRecord extends ListingRecordUniversal {
 
     return (
       <form id={'pending-tag-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
+        <div>
+          <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Discard Tag</button>
+          <button type={'submit'} className={'button-primary'}>Save Changes</button>
+        </div>
         <label>
           Status
           <div>

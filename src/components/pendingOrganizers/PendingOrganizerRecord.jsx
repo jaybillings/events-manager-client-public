@@ -6,17 +6,14 @@ import StatusLabel from "../common/StatusLabel";
 import {diffListings} from "../../utilities";
 
 /**
- * PendingOrganizerRecord is a component which displays a single pending organizer's record.
+ * `PendingOrganizerRecord` which displays a single pending organizer's record.
+ *
  * @class
  * @child
+ * @param {{schema: String, listing: Object, matchingLiveListing: Object,
+ * updateListing: Function, deleteListing: Function, queryForDuplicate: Function}} props
  */
 export default class PendingOrganizerRecord extends ListingRecordUniversal {
-  /**
-   * The class's constructor.
-   * @constructor
-   *
-   * @param {object} props
-   */
   constructor(props) {
     super(props);
 
@@ -26,17 +23,25 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
   }
 
   /**
-   * Runs when the component mounts. Checks the event's publish status.
+   * Runs before the component is unmounted.
+   *
+   * During `componentDidMount`, the component fetches the listing's write status.
+   *
    * @override
    */
   componentDidMount() {
-    this.getWriteStatus();
+    this.getWriteStatus()
+      .then(writeStatus => {
+        console.debug('writeStatus', writeStatus);
+        this.setState({writeStatus});
+      });
   }
 
   /**
-   * Handles the submit action by parsing new data and calling a function to create a new pending organizer.
-   * @override
+   * `handleSaveClick` handles the save action by parsing the new data and calling
+   * an update handler.
    *
+   * @override
    * @param {Event} e
    */
   handleSaveClick(e) {
@@ -56,9 +61,9 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
 
   /**
    * Renders the component.
+   *
    * @override
    * @render
-   *
    * @returns {*}
    */
   render() {
@@ -73,6 +78,10 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
 
     return (
       <form id={'pending-org-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
+        <div>
+          <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Discard Organizer</button>
+          <button type={'submit'} className={'button-primary'}>Save Changes</button>
+        </div>
         <label>
           Status
           <div>

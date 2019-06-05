@@ -6,8 +6,9 @@ import {printToConsole} from "../utilities";
 import Header from "./common/Header";
 
 /**
- * PrivateRoute is a custom route component for routes that require authentication.
+ * `PrivateRoute` is a custom route component for routes that require authentication.
  * If authentication fails, the client is redirected to the login page.
+ *
  * @class
  */
 export default class PrivateRoute extends Component {
@@ -108,11 +109,10 @@ export default class PrivateRoute extends Component {
               <p className={'single-message emphasize'}>Authenticating...</p>
             </div>
           );
-        }
-        else if (this.state.login) return <Component {...props} />;
+        } else if (this.state.login) return <Component {...props} />;
 
         return <Redirect to={`/login${this.props.location.pathname}`} />;
       }} />
     );
   }
-}
+};
