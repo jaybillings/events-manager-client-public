@@ -4,16 +4,12 @@ import {MdCancel} from "react-icons/md";
 import '../../styles/searchbar.css';
 
 /**
- * The Searchbar component displays an input for searching within tables.
+ * `Searchbar` displays an input for text search within data tables.
+ *
  * @class
+ * @param {{searchTerm: String, updateSearchQuery: Function}}
  */
 export default class Searchbar extends Component {
-  /**
-   * The class's constructor.
-   * @constructor
-   *
-   * @param {{updateFilter: Function}} props
-   */
   constructor(props) {
     super(props);
 
@@ -24,27 +20,43 @@ export default class Searchbar extends Component {
     this.renderClearButton = this.renderClearButton.bind(this);
   }
 
+  /**
+   * `handleTermChange` is a handler for the input change event. It triggers a function to update
+   * the search query.
+   *
+   * @param {Event} e
+   */
   handleTermChange(e) {
-    // TODO: Delay slightly before generating search (?)
+    // TODO: Delay slightly before generating search
     const searchTerm = e.target ? e.target.value : this.state.searchTerm;
 
     this.setState({showCancel: !searchTerm});
     this.props.updateSearchQuery(searchTerm);
   }
 
+  /**
+   * `handleTermClear` is a handler for the clear button. It triggers a function that
+   * clears the search query.
+   */
   handleTermClear() {
     this.props.updateSearchQuery('');
   }
 
+  /**
+   * `renderClearButton` renders the clear button when there is content in the
+   * input.
+   *
+   * @returns {*}
+   */
   renderClearButton() {
     if (this.props.searchTerm !== '') return <span onClick={this.handleTermClear}><MdCancel /></span>;
   }
 
   /**
    * Renders the component.
+   *
    * @override
    * @render
-   *
    * @returns {*}
    */
   render() {

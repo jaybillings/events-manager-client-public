@@ -4,7 +4,7 @@ import {MdClose} from "react-icons/md";
 import "../../styles/message-panel.css";
 
 /**
- * MessagePanel displays a list of informational messages to the user.
+ * `MessagePanel` displays app-related messages to the user.
  *
  * @class
  */
@@ -22,19 +22,22 @@ export default class MessagePanel extends Component {
   }
 
   /**
-   * Runs when the component mounts. Clears the hide timeout.
+   * Runs before the component unmounts. Clears the hide timeout.
    */
   componentWillUnmount() {
     if (this.state.timeoutID) window.clearTimeout(this.state.timeoutID);
   }
 
   /**
-   * Adds a new message to the panel and re-starts the hide timeout.
+   * `addMessage` adds a new message to the panel and re-starts the hide timeout.
+   *
+   * @note This function is accessed outside the component, through the ref.
    *
    * @param {string} newMsg
    */
   addMessage(newMsg) {
     if (this.state.timeoutID) window.clearTimeout(this.state.timeoutID);
+
     const timeoutID = window.setTimeout(this.dismissPanel, this.maxVisibleSeconds);
 
     this.setState(prevState => {
@@ -43,14 +46,14 @@ export default class MessagePanel extends Component {
   }
 
   /**
-   * Hides the panel.
+   * `dismissPanel` hides the panel and clears relevant state data.
    */
   dismissPanel() {
     this.setState({isVisible: false, messages: [], timeoutID: null})
   }
 
   /**
-   * Renders the list of messages.
+   * `renderMessages` renders the list of messages.
    *
    * @returns {*[]}
    */

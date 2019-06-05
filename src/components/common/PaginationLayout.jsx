@@ -4,17 +4,12 @@ import Pagination from 'react-js-pagination';
 import "../../styles/pagination.css";
 
 /**
- * The PaginationLayout component displays table pagination.
+ * `PaginationLayout` displays pagination for data tables.
  *
  * @class
+ * @param {{schema: String, total: int, pageSize: int, activePage: int, updatePageSize: Function, updateCurrentPage: Function}} props
  */
 export default class PaginationLayout extends Component {
-  /**
-   * The class's constructor.
-   * @constructor
-   *
-   * @param {{schema: String, total: int, pageSize: int, activePage: int, updatePageSize: Function, updateCurrentPage: Function}} props
-   */
   constructor(props) {
     super(props);
 
@@ -22,22 +17,26 @@ export default class PaginationLayout extends Component {
     this.renderPageOptions = this.renderPageOptions.bind(this);
   }
 
+  /**
+   * `handlePageChange` handles the select change event by triggering a function to
+   * update the page number.
+   *
+   * @param {Event} e
+   */
   handlePageChange(e) {
-    console.debug(e);
     const newPageSize = e.target.value;
     if (typeof newPageSize === 'undefined' || newPageSize === this.props.pageSize) return;
     this.props.updatePageSize(newPageSize);
   }
 
   /**
-   * Renders the rows-per-page option block.
+   * `renderPageOptions` generates the rows-per-page option block as JSX.
    *
    * @returns {Array}
    */
   renderPageOptions() {
     const schema = this.props.schema;
-    const includeAll = this.props.includeAll;
-    const pageSizes = includeAll ? [5, 25, 50, 100] : [5, 10]; // TODO: Fix this hack. Include 'sizes' prop.
+    const pageSizes = this.props.includeAll ? [5, 25, 50, 100] : [5, 10]; // TODO: This is a hack. Ingest 'sizes' as prop.
     let pageOptions = [];
 
     pageSizes.forEach(size => {
@@ -54,6 +53,7 @@ export default class PaginationLayout extends Component {
   /**
    * Renders the component.
    *
+   * @override
    * @render
    * @returns {*}
    */
@@ -65,8 +65,9 @@ export default class PaginationLayout extends Component {
 
     return (
       <div className={'pagination-container'}>
-        <select defaultValue={this.props.pageSize}
-                onChange={this.handlePageChange}>{this.renderPageOptions()}</select>
+        <select defaultValue={this.props.pageSize} onChange={this.handlePageChange}>
+          {this.renderPageOptions()}
+        </select>
         <Pagination
           activePage={this.props.activePage} itemsCountPerPage={this.props.pageSize}
           totalItemsCount={this.props.total} onChange={this.props.updateCurrentPage}

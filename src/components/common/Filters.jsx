@@ -3,20 +3,22 @@ import React, {Component} from 'react';
 import "../../styles/filters.css";
 
 /**
- * Filters renders filter buttons for event tables.
+ * `Filters` renders filter buttons for event tables.
  *
  * @class
+ * @param {{filterType: String, updateFilter: Function}} props
  */
 export default class Filters extends Component {
   constructor(props) {
-    // TODO: Get initial state from props
     super(props);
 
     this.handleButtonClick = this.handleButtonClick.bind(this);
   }
 
   /**
-   * Runs when a filter button is clicked. Handles label changes.
+   * `handleButtonClick` handles the click action by triggering a function to update
+   * the active filter.
+   *
    * @param {Event} e
    */
   handleButtonClick(e) {
@@ -26,7 +28,7 @@ export default class Filters extends Component {
   }
 
   /**
-   * Renders a filter button.
+   * `renderButton` renders an individual filter button.
    *
    * @param {string} type
    * @param {string} text

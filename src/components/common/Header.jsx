@@ -5,7 +5,7 @@ import app from '../../services/socketio';
 import "../../styles/header.css";
 
 /**
- * The Header component displays the page header and main navigation.
+ * `Header` component displays the app's header, including primary navigation.
  *
  * @class
  */
@@ -18,8 +18,15 @@ export default class Header extends Component {
     this.renderAccountLinks = this.renderAccountLinks.bind(this);
   }
 
+  /**
+   * `renderAccountLinks` renders secondary links having to do with authentication and
+   * account management.
+   *
+   * @returns {*[]}
+   */
   renderAccountLinks() {
-    const accountLinks = this.user ? [<NavLink to={`/account`} activeClassName={'current'}>{this.user.email}'s Account</NavLink>]
+    const accountLinks = this.user
+      ? [<NavLink to={`/account`} activeClassName={'current'}>{this.user.email}'s Account</NavLink>]
       : [<NavLink to={'/recoverPassword'} activeClassName={'current'}>Recover Lost Password</NavLink>,
         <NavLink to={'/login'} activeClassName={'current'}>Log In/Create Account</NavLink>];
 
@@ -30,14 +37,14 @@ export default class Header extends Component {
 
   /**
    * Renders the component.
+   *
    * @render
    * @override
-   *
    * @returns {*}
    */
   render() {
-    const adminNav =this.user && this.user.permissions.indexOf('admin') !== -1
-      ? <li><NavLink to={`/admin/`} activeClassName={'current'}>Admin Tools</NavLink></li> : '';
+    const adminToolsLink = this.user && this.user.is_admin ?
+      <li><NavLink to={`/admin/`} activeClassName={'current'}>Admin Tools</NavLink></li> : '';
 
     return (
       <header>
@@ -52,7 +59,7 @@ export default class Header extends Component {
             <li><NavLink to={`/organizers/`} activeClassName={'current'}>Organizers</NavLink></li>
             <li><NavLink to={`/neighborhoods/`} activeClassName={'current'}>Neighborhoods</NavLink></li>
             <li><NavLink to={`/tags/`} activeClassName={'current'}>Tags</NavLink></li>
-            {adminNav}
+            {adminToolsLink}
             {this.renderAccountLinks()}
           </ul>
         </nav>
