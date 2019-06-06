@@ -93,7 +93,7 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
     return (
       <form id={'pending-venue-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
         <div>
-          <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Discard Venue</button>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard Venue</button>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
         </div>
         <label>
@@ -157,7 +157,7 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
           <input type={'text'} ref={this.zipInput} defaultValue={venue.address_zip} />
         </label>
         <div>
-          <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Discard Venue</button>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard Venue</button>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
         </div>
       </form>

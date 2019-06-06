@@ -79,7 +79,7 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
     return (
       <form id={'pending-org-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
         <div>
-          <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Discard Organizer</button>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard Organizer</button>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
         </div>
         <label>
@@ -117,7 +117,7 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
           <input type={'tel'} ref={this.phoneInput} defaultValue={org.phone} maxLength={20} />
         </label>
         <div>
-          <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Discard Organizer</button>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard Organizer</button>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
         </div>
       </form>

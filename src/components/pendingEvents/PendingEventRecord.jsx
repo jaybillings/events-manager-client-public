@@ -134,7 +134,7 @@ export default class PendingEventRecord extends ListingRecordUniversal {
     return (
       <form id={'pending-event-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
         <div>
-          <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Discard Event</button>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard Event</button>
           <button type={'submit'} className={"button-primary"}>Save Changes</button>
         </div>
         <label>
@@ -220,7 +220,7 @@ export default class PendingEventRecord extends ListingRecordUniversal {
           Ongoing Event
         </label>
         <div>
-          <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Discard Event</button>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard Event</button>
           <button type={'submit'} className={"button-primary"}>Save Changes</button>
         </div>
       </form>

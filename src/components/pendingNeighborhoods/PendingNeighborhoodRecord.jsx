@@ -49,7 +49,7 @@ export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
     return (
       <form id={'pending-hood-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
         <div>
-          <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Discard Neighborhood</button>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard Neighborhood</button>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
         </div>
         <label>
@@ -75,7 +75,7 @@ export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
           <input type={'text'} ref={this.nameInput} defaultValue={hood.name} required maxLength={100} />
         </label>
         <div>
-          <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Discard Neighborhood</button>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard Neighborhood</button>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
         </div>
       </form>
