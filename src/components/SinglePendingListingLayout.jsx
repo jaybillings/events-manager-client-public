@@ -50,7 +50,7 @@ export default class SinglePendingListingLayout extends SingleListingLayout {
       .catch(err => {
         printToConsole(err);
         this.setState({notFound: true});
-      })
+      });
   }
 
   /**
@@ -76,13 +76,22 @@ export default class SinglePendingListingLayout extends SingleListingLayout {
    * @returns {*}
    */
   renderRecord() {
-    if (!(this.state.listingLoaded && this.state.matchingListingLoaded)) return <div className={'message-compact single-message info'}>Data is loading...
+    if (!(this.state.listingLoaded && this.state.matchingListingLoaded)) return <div
+      className={'message-compact single-message info'}>Data is loading...
       Please be patient...</div>;
 
     return <ListingRecordUniversal
       schema={this.schema} listing={this.state.listing} matchingLiveListing={this.state.matchingLiveListing}
       updateListing={this.updateListing} deleteListing={this.deleteListing} queryForDuplicate={this.queryForDuplicate}
     />
+  }
+
+  renderHeader() {
+    if (!this.state.listing.name) return '';
+
+    return <div className={'block-warning'}><h2
+      title={'Caution: This event is pending. It must be pushed live before it is visible on the site.'}>{this.state.listing.name}</h2>
+    </div>
   }
 
   /**
@@ -96,18 +105,15 @@ export default class SinglePendingListingLayout extends SingleListingLayout {
     if (this.state.notFound) return <Redirect to={'/404'} />;
 
     const returnTarget = 'import';
-    const headerTitle = 'Caution: This event is pending. It must be pushed live before it is visible on the site.';
 
     if (this.state.hasDeleted) return <Redirect to={`/${returnTarget}`} />;
-
-    const listingName = this.state.listing.name;
 
     return (
       <div className={'container'}>
         <Header />
         <p className={'message-atom'}><Link to={`/${returnTarget}`}><MdChevronLeft />Return to {returnTarget}</Link></p>
         <MessagePanel ref={this.messagePanel} />
-        <div className={'block-warning'}><h2 title={headerTitle}>{listingName}</h2></div>
+        {this.renderHeader()}
         {this.renderRecord()}
       </div>
     );
