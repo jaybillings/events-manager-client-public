@@ -215,7 +215,7 @@ export default class PendingListingsModule extends Component {
     const [err, moduleState] = this.localStorageObj.get('moduleState');
 
     if (err) {
-      printToConsole(err, 'error');
+      printToConsole(err);
       return {};
     }
 
@@ -244,7 +244,7 @@ export default class PendingListingsModule extends Component {
     const [err, queryState] = this.localStorageObj.get('queryState');
 
     if (err) {
-      printToConsole(err, 'error');
+      printToConsole(err);
       return {};
     }
 
@@ -267,11 +267,11 @@ export default class PendingListingsModule extends Component {
    * @note Due to table constraints, this should only ever return one listing.
    *
    * @async
-   * @param {Object} pendingListing
+   * @param {Object} uuid
    * @returns {Promise<{}>}
    */
-  queryForMatching(pendingListing) {
-    return this.listingsService.find({query: {uuid: pendingListing.uuid}});
+  queryForMatching(uuid) {
+    return this.listingsService.find({query: {uuid}});
   };
 
   /**
@@ -357,7 +357,7 @@ export default class PendingListingsModule extends Component {
         this.setState({pendingListings: result.data, pendingListingsTotal: result.total, listingsLoaded: true});
       })
       .catch(err => {
-        printToConsole(err, 'error');
+        printToConsole(err);
         displayErrorMessages('fetch', this.schema, err, this.props.updateMessagePanel, 'reload');
         this.setState({listingsLoaded: false});
       });
@@ -375,8 +375,8 @@ export default class PendingListingsModule extends Component {
     /** @var {Function} this.pendingListingsService.patch */
     return this.pendingListingsService.patch(oldListing.id, newData)
       .catch(err => {
-        printToConsole(err, 'error');
-        displayErrorMessages('update', `"${oldListing.name}"`, err, this.props.updateMessagePanel);
+        printToConsole(err);
+        displayErrorMessages('update', `"${oldListing.name}"`, err, this.props.updateMessagePanel, 'retry');
       });
   }
 
@@ -394,8 +394,9 @@ export default class PendingListingsModule extends Component {
         return results;
       })
       .catch(err => {
-        printToConsole(err, 'error');
-        displayErrorMessages('remove', `pending ${this.schemaSingular} "${listing.name}"`, err, this.props.updateMessagePanel, 'retry');
+        printToConsole(err);
+        displayErrorMessages('remove', `pending ${this.schemaSingular} "${listing.name}"`,
+          err, this.props.updateMessagePanel, 'retry');
       });
   }
 
@@ -412,7 +413,8 @@ export default class PendingListingsModule extends Component {
     return this.listingsService.create(listingData)
       .catch(err => {
         printToConsole(err);
-        displayErrorMessages('publish', `pending ${this.schemaSingular} "${pendingListing.name}"`, err, this.props.updateMessagePanel, 'retry');
+        displayErrorMessages('publish', `pending ${this.schemaSingular} "${pendingListing.name}"`,
+          err, this.props.updateMessagePanel, 'retry');
       });
   }
 
@@ -430,7 +432,8 @@ export default class PendingListingsModule extends Component {
     return this.listingsService.update(target.id, listingData)
       .catch(err => {
         printToConsole(err); // TODO: Will this happen automatically?
-        displayErrorMessages('publish', `pending ${this.schemaSingular} "${pendingListing.name}"`, err, this.props.updateMessagePanel, 'retry');
+        displayErrorMessages('publish', `pending ${this.schemaSingular} "${pendingListing.name}"`,
+          err, this.props.updateMessagePanel, 'retry');
       });
   }
 
@@ -480,8 +483,6 @@ export default class PendingListingsModule extends Component {
           return !idsToRemove.includes(id);
         });
 
-        console.log('newSelections', newSelections);
-
         return this.publishListingsRecursive(newSelections, liveListingData);
       });
   }
@@ -513,9 +514,10 @@ export default class PendingListingsModule extends Component {
               .then(() => {
                 return this.removeListing(listing);
               })
-              .catch((error) => {
-                printToConsole(error);
-                displayErrorMessages('publish', `pending ${this.schema}`, error, this.props.updateMessagePanel, 'retry');
+              .catch((err) => {
+                printToConsole(err);
+                displayErrorMessages('publish', `pending ${this.schema}`,
+                  err, this.props.updateMessagePanel, 'retry');
                 return listing;
               });
           } else {
@@ -523,18 +525,20 @@ export default class PendingListingsModule extends Component {
               .then(() => {
                 return this.removeListing(listing);
               })
-              .catch((error) => {
-                printToConsole(error);
-                displayErrorMessages('publish', `pending ${this.schema}`, error, this.props.updateMessagePanel, 'retry');
+              .catch((err) => {
+                printToConsole(err);
+                displayErrorMessages('publish', `pending ${this.schema}`,
+                  err, this.props.updateMessagePanel, 'retry');
                 return listing
               });
           }
         }));
       })
-      .catch(error => {
+      .catch(err => {
         console.error('top level error');
-        printToConsole(error);
-        displayErrorMessages('publish', `pending ${this.schema}`, error, this.props.updateMessagePanel, 'retry');
+        printToConsole(err);
+        displayErrorMessages('publish', `pending ${this.schema}`,
+          err, this.props.updateMessagePanel, 'retry');
       });
   }
 
@@ -562,7 +566,8 @@ export default class PendingListingsModule extends Component {
       })
       .catch(err => {
         printToConsole(err);
-        displayErrorMessages('delete', `pending ${this.schema}`, err, this.props.updateMessagePanel, 'retry');
+        displayErrorMessages('delete', `pending ${this.schema}`,
+          err, this.props.updateMessagePanel, 'retry');
       })
       .finally(() => {
         this.setState({selectedListings: []});
@@ -632,7 +637,7 @@ export default class PendingListingsModule extends Component {
   }
 
   /**
-   * `updatePageSize` updates the data table page size.
+   * `updatePageSize` updates the data table page size, then fetches new data.
    *
    * @param pageSize
    */
@@ -641,7 +646,7 @@ export default class PendingListingsModule extends Component {
   }
 
   /**
-   * `updateCurrentPage` updates the data table page's.
+   * `updateCurrentPage` updates the data table's current page, then fetches new data.
    *
    * @param {String} page
    */
@@ -711,7 +716,8 @@ export default class PendingListingsModule extends Component {
       return <div className={'single-message info message-compact'}>Data is loading... Please be patient...</div>;
     }
 
-    if (this.state.pendingListingsTotal === 0) return <div>No pending {this.schema} to list.</div>;
+    if (this.state.pendingListingsTotal === 0) return <div className={'message-compact single-message no-content'}>No
+      pending {this.schema} to list.</div>;
 
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
@@ -731,7 +737,7 @@ export default class PendingListingsModule extends Component {
         Publish {selectedListings.length || ''} {schemaLabel}
       </button> : '';
 
-    return [
+    return ([
       <ShowHideToggle
         key={`${schema}-module-showhide`} isVisible={this.state.moduleVisible}
         changeVisibility={this.toggleModuleVisibility}
@@ -769,7 +775,7 @@ export default class PendingListingsModule extends Component {
           </button>
         </div>
       </div>
-    ];
+    ]);
   }
 
   /**

@@ -18,7 +18,7 @@ export default class EventRow extends ListingRow {
    * The component's constructor.
    * @constructor
    *
-   * @param {{schema: String, listing: Object, venues: Array, orgs: Array, venue: Object, org: Object, updateListing: Function, deleteListing: Function, createPendingListing: Function, listingIsLive: Boolean, checkForPending: Function}} props
+   * @param {{schema: String, listing: Object, venues: Array, orgs: Array, venue: Object, org: Object, updateListing: Function, deleteListing: Function, createPendingListing: Function, listingIsLive: Boolean, queryForMatching: Function}} props
    */
   constructor(props) {
     super(props);

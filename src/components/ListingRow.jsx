@@ -15,7 +15,7 @@ export default class ListingRow extends Component {
    * The component's constructor.
    * @constructor
    *
-   * @param {{schema: String, listing: Object, updateListing: Function, deleteListing: Function, createPendingListing: Function, checkForPending: Function}} props
+   * @param {{schema: String, listing: Object, updateListing: Function, deleteListing: Function, createPendingListing: Function, queryForMatching: Function}} props
    */
   constructor(props) {
     super(props);
@@ -45,7 +45,7 @@ export default class ListingRow extends Component {
    * Checks for the presence pending listings that duplicate the listing (have the same UUID).
    */
   listingHasPending() {
-    this.props.checkForPending(this.props.listing.uuid).then(message => {
+    this.props.queryForMatching(this.props.listing.uuid).then(message => {
       if (message.total) this.setState({pendingID: message.data[0].id});
     }, err => {
       console.log("Error fetching pending listings: ", JSON.stringify(err));

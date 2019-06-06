@@ -117,7 +117,7 @@ export default class VenuesLayout extends ListingsLayout {
       />,
       <div className={'wrapper'} key={'venues-table-wrapper'}>
         <table key={'venues-table'} className={'schema-table'}>
-          <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColumnSort)}</thead>
+          <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColSort)}</thead>
           <tbody>
           {
             this.state.listings.map(venue =>
@@ -127,7 +127,7 @@ export default class VenuesLayout extends ListingsLayout {
                   return h.uuid === venue.hood_uuid
                 })}
                 updateListing={this.updateListing} deleteListing={this.deleteListing}
-                createPendingListing={this.createPendingListing} checkForPending={this.checkForPending}
+                createPendingListing={this.createPendingListing} checkForPending={this.queryForMatching}
               />
             )
           }

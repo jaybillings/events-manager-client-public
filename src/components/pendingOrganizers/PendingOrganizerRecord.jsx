@@ -11,7 +11,7 @@ import {diffListings} from "../../utilities";
  * @class
  * @child
  * @param {{schema: String, listing: Object, matchingLiveListing: Object,
- * updateListing: Function, deleteListing: Function, queryForDuplicate: Function}} props
+ * updateListing: Function, removeListing: Function, queryForDuplicate: Function}} props
  */
 export default class PendingOrganizerRecord extends ListingRecordUniversal {
   constructor(props) {

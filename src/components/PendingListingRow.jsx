@@ -39,7 +39,7 @@ export default class PendingListingRow extends Component {
    * @override
    */
   componentDidMount() {
-    this.props.queryForMatching(this.props.listing)
+    this.props.queryForMatching(this.props.listing.uuid)
       .then(result => {
         this.setState({matchingLiveListing: result.data[0], editable: false}, () => {
           this.getWriteStatus().then(writeStatus => {

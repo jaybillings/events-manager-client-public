@@ -458,7 +458,7 @@ export default class EventsLayout extends ListingsLayout {
       ['fk_venues.name', 'Venue'],
       ['fk_orgs.name', 'Organizer'],
       ['updated_at', 'Last Modified'],
-      ['is_published_NOSORT', 'Status']
+      ['is_published_NOSORT', 'Is Live?']
     ]);
 
     const venues = this.state.venues;
@@ -473,7 +473,7 @@ export default class EventsLayout extends ListingsLayout {
       />,
       <div className={'wrapper'} key={'events-table-wrapper'}>
         <table key={'events-table'} className={'schema-table'}>
-          <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColumnSort)}</thead>
+          <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColSort)}</thead>
           <tbody>
           {
             this.state.listings.map(event =>
@@ -488,7 +488,7 @@ export default class EventsLayout extends ListingsLayout {
                 })}
                 updateListing={this.updateListing} deleteListing={this.deleteListing}
                 createPendingListing={this.createPendingListing} listingIsLive={this.state.liveIDs.includes(event.id)}
-                checkForPending={this.checkForPending}
+                checkForPending={this.queryForMatching}
               />
             )
           }
