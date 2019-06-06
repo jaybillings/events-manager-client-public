@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
-import {Redirect} from "react-router";
-import {Link} from "react-router-dom";
+import {Redirect, Link} from "react-router-dom";
 import app from "../services/socketio";
 import {MdChevronLeft} from "react-icons/md";
 import {displayErrorMessages, printToConsole} from "../utilities";
