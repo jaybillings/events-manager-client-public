@@ -1,7 +1,7 @@
 import ListingsLayout from "../../components/ListingsLayout";
 
 /**
- * NeighborhoodsLayout is a component which lays out a neighborhood collection page.
+ * NeighborhoodsLayout is a component which lays the neighborhood collection view.
  * @class
  * @child
  */

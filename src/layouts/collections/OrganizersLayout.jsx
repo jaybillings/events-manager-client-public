@@ -3,21 +3,19 @@ import ListingsLayout from "../../components/ListingsLayout";
 import OrganizerAddForm from "../../components/organizers/OrganizerAddForm";
 
 /**
- * OrganizersLayout is a component which lays out an organizer collection page.
+ * `OrganizersLayout` lays out the organizer collection view.
+ *
  * @class
  * @child
  */
 export default class OrganizersLayout extends ListingsLayout {
-  /**
-   * The class's constructor.
-   * @param {object} props
-   */
   constructor(props) {
     super(props, 'organizers');
   }
 
   /**
    * Renders the form for adding a new organizer.
+   *
    * @override
    * @returns {*}
    */

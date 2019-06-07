@@ -20,33 +20,30 @@ export default class VenueRow extends ListingRow {
   constructor(props) {
     super(props);
 
-    const hoodID = this.props.hood ? this.props.hood.id : (this.props.hoods[0] ? this.props.hoods[0].id : null);
+    const linkedHoodUUID = this.props.hood ? this.props.hood.uuid : (this.props.hoods[0] ? this.props.hoods[0].uuid : null);
 
-    Object.assign(this.state, {venueHood: hoodID});
+    this.state = {...this.state, linkedHoodUUID};
   }
 
   /**
-   * Handles the save button click by triggering the updating of an existing listing.
-   * @override
+   * `handleSaveClick` runs when the save button is clicked. It initiates the saving of the row's data.
    *
+   * @override
    * @param {Event} e
    */
   handleSaveClick(e) {
     e.stopPropagation();
 
-    const newData = {
-      uuid: this.props.listing.uuid,
-      name: this.state.listingName,
-      hood_id: this.state.venueHood
-    };
+    const newData = {name: this.state.listingName, hood_uuid: this.state.linkedHoodUUID};
 
-    this.props.updateListing(this.props.listing.id, newData).then(() => {
+    this.props.updateListing(this.props.listing, newData).then(() => {
       this.setState({editable: false});
     });
   }
 
   /**
-   * Hands the copy button click by triggering the creation of a pending listing using the live listing's data.
+   * `handleCopyClick` runs whn the copy button is clicked. It initiates the creation of a pending
+   * listing from the published listing's data.
    *
    * @param {Event} e
    */
@@ -60,17 +57,16 @@ export default class VenueRow extends ListingRow {
     venueData.created_at = Moment(venueData.created_at).valueOf();
     venueData.updated_at = Moment(venueData.updated_at).valueOf();
 
-    this.props.createPendingListing(venueData).then(() => {
-      this.listingHasPending();
+    this.props.createPendingListing(venueData).then(result => {
+      this.setState({matchingPendingListing: result});
     });
   }
 
   /**
    * Renders the component.
-   * @note The render has two different paths depending on whether the row can be edited.
+   *
    * @override
    * @render
-   *
    * @returns {*}
    */
   render() {
@@ -79,8 +75,6 @@ export default class VenueRow extends ListingRow {
     const updatedAt = Moment(this.props.listing.updated_at).calendar();
 
     if (this.state.editable) {
-      const defaultHood = this.state.venueHood || this.props.hoods[0].id;
-
       return (
         <tr className={'schema-row'}>
           <td>
@@ -89,7 +83,7 @@ export default class VenueRow extends ListingRow {
           </td>
           <td><input type={'text'} name={'listingName'} value={name} onChange={this.handleInputChange} /></td>
           <td>
-            <select name={'venueHood'} value={defaultHood} onChange={this.handleInputChange}>
+            <select name={'linkedHoodUUID'} value={this.state.linkedHoodUUID} onChange={this.handleInputChange}>
               {renderOptionList(this.props.hoods, 'neighborhoods')}
             </select>
           </td>

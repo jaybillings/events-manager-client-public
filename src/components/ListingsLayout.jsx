@@ -39,12 +39,12 @@ export default class ListingsLayout extends Component {
 
     this.schema = schema;
     this.singularSchema = makeSingular(schema);
-    this.localStorageObj = new LocalStorage(`vs-coe-${schema}:`);
     this.defaultPageSize = 5;
     this.defaultTableSort = ['updated_at', -1];
     this.defaultLimit = 3000;
     this.defaultQuery = {$sort: {name: 1}, $select: ['name', 'uuid'], $limit: this.defaultLimit};
 
+    this.localStorageObj = new LocalStorage(`vs-coe-${schema}:`);
     this.messagePanel = React.createRef();
 
     this.listingsService = app.service(this.schema);
@@ -184,7 +184,7 @@ export default class ListingsLayout extends Component {
    * @returns {Object}
    */
   createSearchQuery() {
-    if (!this.state.searchTerm) return {};
+    if (!this.state.searchTerm) return null;
 
     /** @note This syntax is specific to KNEX and may need to be changed if the adapter changes. **/
     return {'name': {$like: `%${this.state.searchTerm}%`}};
@@ -219,16 +219,19 @@ export default class ListingsLayout extends Component {
    */
   fetchListings() {
     const searchFilter = this.createSearchQuery();
+    const currentPage = searchFilter ? 1 : this.state.currentPage;
+
     const query = {
       ...searchFilter,
       $sort: buildSortQuery(this.state.sort),
       $limit: this.state.pageSize,
-      $skip: this.state.pageSize * (this.state.currentPage - 1)
+      $skip: this.state.pageSize * (currentPage - 1)
     };
 
     this.listingsService.find({query})
       .then(result => {
-        this.setState({listings: result.data, listingsTotal: result.total, listingsLoaded: true});
+        console.debug(result);
+        this.setState({listings: result.data, listingsTotal: result.total, listingsLoaded: true, currentPage: currentPage});
       })
       .catch(err => {
         printToConsole(err);
@@ -290,6 +293,7 @@ export default class ListingsLayout extends Component {
    * @returns {Promise}
    */
   updateListing(oldListing, newData) {
+    console.debug(oldListing);
     return this.listingsService.patch(oldListing.id, newData)
       .catch(err => {
         printToConsole(err);
@@ -430,7 +434,8 @@ export default class ListingsLayout extends Component {
         <MessagePanel ref={this.messagePanel} />
         {pendingListingLink}
         <h2>Browse {filterType} {schema}</h2>
-        <Searchbar key={`${schema}-search`} searchTerm={this.state.searchTerm} updateSearchQuery={this.updateSearchQuery} />
+        <Searchbar key={`${schema}-search`} searchTerm={this.state.searchTerm}
+                   updateSearchQuery={this.updateSearchQuery} />
         {this.renderTable()}
         <h2>Add New {this.singularSchema}</h2>
         {this.renderAddForm()}

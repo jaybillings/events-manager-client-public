@@ -8,21 +8,16 @@ import ListingsLayout from "../../components/ListingsLayout";
 import PaginationLayout from "../../components/common/PaginationLayout";
 
 /**
- * VenuesLayout is a component which lays out the venues collection page.
+ * `VenuesLayout` lays out the venues collection page.
+ *
  * @class
  * @child
  */
 export default class VenuesLayout extends ListingsLayout {
-  /**
-   * The class's constructor.
-   * @param {object} props
-   */
   constructor(props) {
     super(props, 'venues');
 
-    Object.assign(this.state, {
-      hoods: [], hoodsLoaded: false
-    });
+    this.state = {...this.state, hoods: [], hoodeLoaded: false};
 
     this.hoodsService = app.service('neighborhoods');
 
@@ -30,7 +25,11 @@ export default class VenuesLayout extends ListingsLayout {
   }
 
   /**
-   * Runs when the component mounts. Fetches data and registers data service listeners.
+   * Runs once the component is mounted.
+   *
+   * During`componentDidMount`, the component restores the table state,
+   * fetches all data, and registers data service listeners.
+   *
    * @override
    */
   componentDidMount() {
@@ -52,7 +51,11 @@ export default class VenuesLayout extends ListingsLayout {
   }
 
   /**
-   * Runs before the component unmounts. Unregisters data service listeners.
+   * Runs before the component is unmounted.
+   *
+   * During `componentWillUnmount`, the component unregisters data service
+   * listeners and saves the table state to local storage.
+   *
    * @override
    */
   componentWillUnmount() {
@@ -66,15 +69,19 @@ export default class VenuesLayout extends ListingsLayout {
   }
 
   /**
-   * Fetches all data required for the table.
+   * `fetchAllData` fetches all data required by the layout.
+   *
+   * @note This function pattern exists to cut down on extraneous requests for
+   * components with linked schema.
    */
   fetchAllData() {
     super.fetchAllData();
+
     this.fetchHoods();
   }
 
   /**
-   * Fetches data for all published neighborhoods.
+   * `fetchHoods` fetches published neighborhoods according to the query.
    */
   fetchHoods() {
     this.hoodsService.find({query: this.defaultQuery})
@@ -106,7 +113,6 @@ export default class VenuesLayout extends ListingsLayout {
       ['fk_hoods.name', 'Neighborhood'],
       ['updated_at', 'Last Modified']
     ]);
-
     const hoods = this.state.hoods;
 
     return ([
@@ -127,7 +133,7 @@ export default class VenuesLayout extends ListingsLayout {
                   return h.uuid === venue.hood_uuid
                 })}
                 updateListing={this.updateListing} deleteListing={this.deleteListing}
-                createPendingListing={this.createPendingListing} checkForPending={this.queryForMatching}
+                createPendingListing={this.createPendingListing} queryForMatching={this.queryForMatching}
               />
             )
           }

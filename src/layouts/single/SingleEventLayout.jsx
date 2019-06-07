@@ -272,6 +272,7 @@ export default class SingleEventLayout extends SingleListingLayout {
    * @returns {Promise<any>}
    */
   createTagAssociations(newTagData) {
+    // TODO: Ignore SQLITE_CONSRAINT
     return this.eventsTagsLookupService.create(newTagData)
       .catch(err => {
         displayErrorMessages('associate', 'tags with event', err, this.updateMessagePanel, 'retry');
@@ -295,6 +296,7 @@ export default class SingleEventLayout extends SingleListingLayout {
    * Registers event as live by removing it from the dropped list and adding it to the live list.
    */
   registerEventLive() {
+    // TODO: Ignore SQLITE_CONSRAINT
     Promise
       .all([
         this.liveEventsService.create({event_id: this.listingID}),
@@ -324,6 +326,7 @@ export default class SingleEventLayout extends SingleListingLayout {
    * @returns {Promise<*>}
    */
   registerEventDeleted() {
+    // TODO: Ignore SQLITE_CONSRAINT
     return Promise
       .all([
         this.deletedEventsService.create({event_id: this.listingID}),

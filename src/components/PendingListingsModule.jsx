@@ -302,6 +302,7 @@ export default class PendingListingsModule extends Component {
    * @returns {Object|null}
    */
   createSearchQuery() {
+    // TODO: Reset current page to 1
     if (!this.state.searchTerm) return null;
 
     /** @note This syntax is specific to KNEX and may need to be changed if the adapter changes. **/
@@ -343,6 +344,8 @@ export default class PendingListingsModule extends Component {
     this.queryForIDs().then(result => {
       this.setState({allIDs: result.data.map(row => row.id)});
     });
+
+    // TODO: Set current page to 1 if search query
 
     const searchFilter = this.createSearchQuery();
     const query = {
