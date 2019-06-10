@@ -203,7 +203,7 @@ export default class ListingsLayout extends Component {
 
 
   /**
-   * Fetches all data required by the layout.
+   * `fetchAllData` fetches all data required by the layout.
    *
    * @note This function pattern exists to cut down on extraneous requests for
    * components with linked schema.

@@ -25,7 +25,7 @@ export default class ImportLayout extends Component {
 
     this.state = {importRunning: false, publishRunning: false};
 
-    this.API_URI = `http://${process.env.REACT_APP_SERVER_URL}/importer`;
+    this.IMPORT_URI = `http://${process.env.REACT_APP_SERVER_URL}/importer`;
     this.defaultPageSize = 5;
     this.defaultSortOrder = ['created_at', -1];
     this.user = app.get('user');
@@ -50,7 +50,9 @@ export default class ImportLayout extends Component {
   }
 
   /**
-   * Runs after the component mounts. Registers data service listeners.
+   * Runs once the component is mounted.
+   *
+   * During `componentDidMount`, the component registers data service listeners.
    *
    * @override
    */
@@ -77,7 +79,10 @@ export default class ImportLayout extends Component {
   }
 
   /**
-   * Runs before the component unmounts. Unregisters data service listeners.
+   * Runs before the component is unmounted.
+   *
+   * During `componentWillUnmount`, the component unregisters data service
+   * listeners.
    *
    * @override
    */
@@ -126,7 +131,7 @@ export default class ImportLayout extends Component {
       .then(token => {
         this.setState({importRunning: true});
         this.stopModuleListening();
-        return fetch(this.API_URI, {
+        return fetch(this.IMPORT_URI, {
           method: 'POST',
           body: importData,
           headers: {'Authorization': token}

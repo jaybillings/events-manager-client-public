@@ -116,7 +116,7 @@ export default class SinglePendingVenueLayout extends SinglePendingListingLayout
    */
   renderRecord() {
     if (!(this.state.listingLoaded && this.state.pendingHoodsLoaded)) {
-      return <p>Data is loading... Please be patient...</p>
+      return <div className={'single-message info message-compact'}>Data is loading... Please be patient...</div>
     }
 
     const uniqueHoods = uniqueListingsOnly(this.state.hoods, this.state.pendingHoods);

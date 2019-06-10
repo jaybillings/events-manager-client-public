@@ -525,7 +525,7 @@ export default class EventsLayout extends ListingsLayout {
    */
   renderAddForm() {
     if (!(this.state.venuesLoaded && this.state.orgsLoaded && this.state.tagsLoaded)) {
-      return <p>Data is loading... Please be patient...</p>;
+      return <div className={'single-message info message-compact'}>Data is loading... Please be patient...</div>;
     }
 
     return <EventAddForm

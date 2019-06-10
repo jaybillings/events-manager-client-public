@@ -102,7 +102,7 @@ export default class PendingListingsModule extends Component {
   /**
    * Runs once the component is mounted.
    *
-   * During`componentDidMount`, the component restores module and table states,
+   * During `componentDidMount`, the component restores module and table states,
    * fetches all data, and registers data service listeners.
    *
    * @override

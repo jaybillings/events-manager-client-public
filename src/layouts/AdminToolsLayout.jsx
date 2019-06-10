@@ -10,18 +10,22 @@ import '../styles/admin-tools.css';
 import '../styles/schema-module.css';
 import '../styles/schema-table.css';
 
+/**
+ * `AdminToolsLayout` lays out the admin tools view.
+ */
 export default class AdminToolsLayout extends Component {
   constructor(props) {
     super(props);
 
     this.defaultPageSize = 5;
+
     this.messagePanel = React.createRef();
 
     this.updateMessagePanel = this.updateMessagePanel.bind(this);
   }
 
   /**
-   * Adds a message to the message panel.
+   * `updateMessagePanel` adds a message to the message panel.
    *
    * @param {object} newMsg
    */
@@ -29,6 +33,13 @@ export default class AdminToolsLayout extends Component {
     this.messagePanel.current.addMessage(newMsg);
   }
 
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @override
+   * @returns {*}
+   */
   render() {
     return (
       <div className="container">
@@ -36,13 +47,9 @@ export default class AdminToolsLayout extends Component {
         <MessagePanel ref={this.messagePanel} />
         <h2>Admin Tools</h2>
         <ManageUsersModule updateMessagePanel={this.updateMessagePanel} />
-        <ReplaceNeighborhoodsModule updateMessagePanel={this.updateMessagePanel} defaultPageSize={this.defaultPageSize} />
+        <ReplaceNeighborhoodsModule updateMessagePanel={this.updateMessagePanel}
+                                    defaultPageSize={this.defaultPageSize} />
         <ReplaceTagsModule updateMessagePanel={this.updateMessagePanel} defaultPageSize={this.defaultPageSize} />
-        <div className={'schema-module'}>
-          <h3>Import/Export</h3>
-          <a className={'button emphasize'} href={`http://${process.env.REACT_APP_SERVER_URL}/exporter/json'`} target={'_blank'}>Export All Data</a>
-          <span> as a JSON file.</span>
-        </div>
       </div>
     );
   }
