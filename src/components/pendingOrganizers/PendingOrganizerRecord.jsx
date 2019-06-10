@@ -110,7 +110,7 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
         </label>
         <label className={classNameMap['url']}>
           Url
-          <input type={'url'} ref={this.urlInput} defaultValue={org.url} maxLength={100} />
+          <input type={'text'} ref={this.urlInput} defaultValue={org.url} maxLength={100} />
         </label>
         <label className={classNameMap['phone']}>
           Phone #

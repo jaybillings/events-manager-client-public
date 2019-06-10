@@ -1,29 +1,25 @@
 import React from "react";
+import {displayErrorMessages, printToConsole} from "../../utilities";
 import app from "../../services/socketio";
 
 import EventRecord from "../../components/events/EventRecord";
 import SingleListingLayout from "../../components/SingleListingLayout";
-import {displayErrorMessages} from "../../utilities";
 
 /**
- * SingleEventLayout is a component which lays out a single event page.
+ * `SingleEventLayout` lays out a single event page.
+ *
  * @class
  * @child
  */
 export default class SingleEventLayout extends SingleListingLayout {
-  /**
-   * The class's constructor.
-   * @constructor
-   *
-   * @param {object} props
-   */
   constructor(props) {
     super(props, 'events');
 
-    Object.assign(this.state, {
+    this.state = {
+      ...this.state,
       publishState: '', venues: [], orgs: [], tags: [], tagsForListing: [],
       venuesLoaded: false, orgsLoaded: false, tagsLoaded: false, tagAssociationsLoaded: false
-    });
+    };
 
     this.venuesService = app.service('venues');
     this.orgsService = app.service('organizers');
@@ -46,7 +42,11 @@ export default class SingleEventLayout extends SingleListingLayout {
   }
 
   /**
-   * Runs once the component mounts. Registers data service listeners and fetches data.
+   * Runs once the component mounts.
+   *
+   * During `componentDidMount`, the component fetches required data and
+   * registers service listeners.
+   *
    * @override
    */
   componentDidMount() {
@@ -73,22 +73,13 @@ export default class SingleEventLayout extends SingleListingLayout {
     this.deletedEventsService
       .on('created', () => this.updateMessagePanel({status: 'info', details: 'Event added to deleted list.'}))
       .on('removed', () => this.updateMessagePanel({status: 'info', details: 'Event removed from deleted list'}));
-
-    this.eventsTagsLookupService
-      .on('created', message => {
-        if (this.state.listing && (message.event_uuid === this.state.listing.uuid)) {
-          this.updateMessagePanel({status: 'info', details: 'Saved tags associated with event.'})
-        }
-      })
-      .on('removed', message => {
-        if (this.state.listing && (message.event_uuid === this.state.listing.uuid)) {
-          this.updateMessagePanel({status: 'info', details: 'Removed tags from event.'})
-        }
-      });
   }
 
   /**
-   * Runs before the component unmounts. Unregisters data service listeners.
+   * Runs when the component unmounts.
+   *
+   * During `componentWillUnmount`, the component unregisters service listeners.
+   *
    * @override
    */
   componentWillUnmount() {
@@ -108,8 +99,7 @@ export default class SingleEventLayout extends SingleListingLayout {
 
     const otherServices = [
       this.liveEventsService,
-      this.deletedEventsService,
-      this.eventsTagsLookupService
+      this.deletedEventsService
     ];
 
     otherServices.forEach(service => {
@@ -120,7 +110,8 @@ export default class SingleEventLayout extends SingleListingLayout {
   }
 
   /**
-   * Fetches all data required for the page.
+   * `fetchAllData` fetches all data required for the view.
+   *
    * @override
    */
   fetchAllData() {
@@ -131,21 +122,25 @@ export default class SingleEventLayout extends SingleListingLayout {
     this.fetchLiveStatus();
   }
 
+  /**
+   * fetchListing` fetches data for the single listing and saves it to the state.
+   *
+   * For events, it also fetches the tag associations.
+   */
   fetchListing() {
-    return app.service(this.schema).get(this.listingID)
+    this.listingsService.get(this.listingID)
       .then(result => {
         this.setState({listing: result, listingLoaded: true});
         this.fetchTagAssociations(result.uuid);
       })
-      .catch(errors => {
+      .catch(err => {
+        printToConsole(err);
         this.setState({notFound: true});
-        displayErrorMessages('fetch', `${this.schema} #${this.listingID}`, errors, this.updateMessagePanel);
       });
   }
 
   /**
-   * Fetches published venues.
-   * @async
+   * `fetchVenues` fetches published venues and saves them to the state.
    */
   fetchVenues() {
     this.venuesService.find({query: this.defaultQuery})
@@ -153,14 +148,14 @@ export default class SingleEventLayout extends SingleListingLayout {
         this.setState({venues: result.data, venuesLoaded: true});
       })
       .catch(err => {
+        printToConsole(err);
         this.setState({venuesLoaded: false});
         displayErrorMessages('fetch', 'venues', err, this.updateMessagePanel, 'reload');
       });
   }
 
   /**
-   * Fetches published organizers.
-   * @async
+   * `fetchOrgs` fetches published organizers and saves them to the state.
    */
   fetchOrgs() {
     this.orgsService.find({query: this.defaultQuery})
@@ -168,29 +163,29 @@ export default class SingleEventLayout extends SingleListingLayout {
         this.setState({orgs: result.data, orgsLoaded: true});
       })
       .catch(err => {
+        printToConsole(err);
         this.setState({orgsLoaded: false});
         displayErrorMessages('fetch', 'organizers', err, this.updateMessagePanel, 'reload');
       });
   }
 
   /**
-   * Fetches published tags.
-   * @async
+   * `fetchTags` fetches published tags and saves them to the state.
    */
   fetchTags() {
-    return this.tagsService.find({query: this.defaultQuery})
+    this.tagsService.find({query: this.defaultQuery})
       .then(result => {
         this.setState({tags: result.data, tagsLoaded: true});
       })
       .catch(err => {
+        printToConsole(err);
         this.setState({tagsLoaded: false});
         displayErrorMessages('fetch', 'tags', err, this.updateMessagePanel, 'reload');
       });
   }
 
   /**
-   * Fetches associations between published tags and the event.
-   * @async
+   * `fetchTagAssociations` fetches links between published tags and the event and saves them to the state.
    */
   fetchTagAssociations(eventUUID) {
     this.eventsTagsLookupService.find({query: {event_uuid: eventUUID}})
@@ -198,155 +193,152 @@ export default class SingleEventLayout extends SingleListingLayout {
         this.setState({tagsForListing: result.data, tagAssociationsLoaded: true});
       })
       .catch(err => {
+        printToConsole(err);
         this.setState({tagAssociationsLoaded: false});
         displayErrorMessages('fetch', 'associations between tags and events', err, this.updateMessagePanel, 'reload');
       });
   }
 
   /**
-   * Checks for the presence of the listing in the live lookup table.
-   * @async
+   * `fetchLiveStatus` checks for the presence of the listing in the live lookup table.
    */
   fetchLiveStatus() {
     this.liveEventsService.find({query: {event_id: this.listingID}})
       .then(result => {
         const publishState = result.total > 0 ? 'live' : 'dropped';
         this.setState({publishState});
-      }, err => {
-        console.log('error in checking live status', JSON.stringify(err));
+      })
+      .catch(err => {
+        printToConsole(err);
+        displayErrorMessages('fetch', 'event\'s publish status', err, this.updateMessagePanel, 'reload');
       });
   }
 
   /**
-   * Updates the event's data by calling the service's PATCH method.
-   * @override
+   * `updateListing` updates the event's data by calling the service's PATCH method.
    *
+   * For events, it also updates tag associations and changes the live state, if necessary.
+   *
+   * @override
    * @param {object} listingData
    */
   updateListing(listingData) {
-    console.log('~ in updatelisting!', listingData);
     this.listingsService.patch(this.listingID, listingData.eventData)
       .then(result => {
-        console.log('~ event saved!', result);
-
         this.setState({listing: result, listingLoaded: true});
-        this.updateMessagePanel({status: 'success', details: `Saved changes to "${result.name}"`});
-
-        this.removeTagAssociations().then(() => {
-          console.log('tag associations removed');
-          if (listingData.tagsToSave) this.createTagAssociations(listingData.tagsToSave);
-        });
 
         if (listingData.publishState === 'publish') this.registerEventLive();
         else if (listingData.publishState === 'drop') this.registerEventDropped();
+
+        return this.removeTagAssociations();
+      })
+      .then(() => {
+        this.updateMessagePanel({status: 'info', details: 'Saved tag associations for event.'});
+        if (listingData.tagsToSave) this.createTagAssociations(listingData.tagsToSave);
       })
       .catch(err => {
+        printToConsole(err);
         displayErrorMessages('save changes to', this.state.listing.name, err, this.updateMessagePanel, 'retry');
       });
   }
 
   /**
-   * Deletes the event by calling the service's REMOVE method.
+   * `deleteListing` deletes the event by calling the service's REMOVE method.
+   *
+   * For events, it also removes tag associations and registers the event as deleted.
+   *
    * @override
    */
   deleteListing() {
     this.listingsService.remove(this.listingID)
       .then(() => {
         this.setState({hasDeleted: true});
-        return Promise.all([
-          this.removeTagAssociations(),
-          this.registerEventDeleted()
-        ]);
+        this.removeTagAssociations();
+        this.registerEventDeleted();
       })
       .catch(err => {
-        this.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+        printToConsole(err);
         displayErrorMessages('delete', this.state.listing.name, err, this.updateMessagePanel, 'retry');
       });
   }
 
   /**
-   * Creates associations between tags and event.
-   * @async
+   * `createTagAssociations` creates associations between tags and event.
    *
    * @param {object} newTagData
-   * @returns {Promise<any>}
    */
   createTagAssociations(newTagData) {
-    // TODO: Ignore SQLITE_CONSRAINT
-    return this.eventsTagsLookupService.create(newTagData)
+    this.eventsTagsLookupService.create(newTagData)
       .catch(err => {
+        printToConsole(err);
+        if (err.code === 'SQLITE_CONSTRAINT') return; // Benign error -- hide from user
         displayErrorMessages('associate', 'tags with event', err, this.updateMessagePanel, 'retry');
       });
   }
 
   /**
-   * Deletes all associations between tags and the event.
-   * @async
-   *
-   * @returns {Promise<*>}
+   * `removeTagAssociations` deletes all associations between tags and the event.
    */
   removeTagAssociations() {
-    return this.eventsTagsLookupService.remove(null, {query: {event_uuid: this.state.listing.uuid}})
+    this.eventsTagsLookupService.remove(null, {query: {event_uuid: this.state.listing.uuid}})
       .catch(err => {
+        printToConsole(err);
         displayErrorMessages('de-associate', 'tags from event', err, this.updateMessagePanel, 'retry');
       });
   }
 
   /**
-   * Registers event as live by removing it from the dropped list and adding it to the live list.
+   * `registerEventLive` registers event as live by removing it from the deleted list and adding it to the live list.
    */
   registerEventLive() {
-    // TODO: Ignore SQLITE_CONSRAINT
-    Promise
-      .all([
-        this.liveEventsService.create({event_id: this.listingID}),
-        this.deletedEventsService.remove(null, {query: {event_id: this.listingID}})
-      ])
+    Promise.all([
+      this.liveEventsService.create({event_id: this.state.listing.id}),
+      this.deletedEventsService.remove(null, {query: {event_uuid: this.state.listing.uuid}})
+    ])
       .catch(err => {
+        printToConsole(err);
+        if (err.code === 'SQLITE_CONSTRAINT') return; // Benign error -- hide from user
         displayErrorMessages('register', 'event as live', err, this.updateMessagePanel);
       });
   }
 
   /**
-   * Register event as dropped by removing it from the live list.
-   *
-   * @returns {Promise<*>}
+   * `registerEventDropped` registers the event as dropped by removing it from the live list.
    */
   registerEventDropped() {
-    return this.liveEventsService
-      .remove(null, {query: {event_id: this.listingID}})
+    this.liveEventsService.remove(null, {query: {event_id: this.state.listing.id}})
       .catch(err => {
+        printToConsole(err);
         displayErrorMessages('remove', 'event from dropped list', err, this.updateMessagePanel);
       });
   }
 
   /**
-   * Register an event as deleted by removing it from the live list and adding it to the deleted list.
-   *
-   * @returns {Promise<*>}
+   * `registerEventDeleted` registers an event as deleted by removing it from the
+   * live list and adding it to the deleted list.
    */
   registerEventDeleted() {
-    // TODO: Ignore SQLITE_CONSRAINT
-    return Promise
-      .all([
-        this.deletedEventsService.create({event_id: this.listingID}),
-        this.liveEventsService.remove(null, {query: {event_id: this.listingID}})
-      ])
+    Promise.all([
+      this.deletedEventsService.create({event_uuid: this.state.listing.uuid}),
+      this.liveEventsService.remove(null, {query: {event_id: this.state.listing.id}})
+    ])
       .catch(err => {
+        printToConsole(err);
+        if (err.code === 'SQLITE_CONSTRAINT') return; // Benign error -- hide from user
         displayErrorMessages('register', 'event as deleted', err, this.updateMessagePanel);
       });
   }
 
   /**
-   * Renders the single event's record.
-   * @override
+   * Renders the event's record.
    *
+   * @override
    * @returns {*}
    */
   renderRecord() {
     if (!(this.state.listingLoaded && this.state.venuesLoaded && this.state.orgsLoaded && this.state.tagsLoaded
       && this.state.tagAssociationsLoaded)) {
-      return <p>Data is loading... Please be patient...</p>;
+      return <div className={'message-compact single-message info'}>Data is loading... Please be patient...</div>;
     }
 
     return <EventRecord

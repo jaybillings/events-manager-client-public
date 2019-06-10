@@ -5,17 +5,13 @@ import {renderCheckboxList, renderOptionList} from '../../utilities';
 import ListingAddForm from "../ListingAddForm";
 
 /**
- * EventAddForm is a component which displays a form for adding new events.
+ * `EventAddForm` displays a form for adding new events.
+ *
  * @class
  * @child
+ * @param {{schema: String, venues: Array, orgs: Array, tags: Array, createListing: Function, createPendingListing: Function}} props
  */
 export default class EventAddForm extends ListingAddForm {
-  /**
-   * The class's constructor.
-   *
-   * @constructor
-   * @param {{schema: String, venues: Array, orgs: Array, tags: Array, createListing: Function, createPendingListing: Function}} props
-   */
   constructor(props) {
     super(props);
 
@@ -36,9 +32,9 @@ export default class EventAddForm extends ListingAddForm {
   }
 
   /**
-   * Compiles the data required for creating a new listing.
-   * @override
+   * `buildNewListing` compiles data for creating a new listing.
    *
+   * @override
    * @returns {*}
    */
   buildNewListing() {
@@ -73,7 +69,8 @@ export default class EventAddForm extends ListingAddForm {
   }
 
   /**
-   * Clears the form by setting all values to a default or empty value.
+   * `clearForm` clears the add form by resetting the input values.
+   *
    * @override
    */
   clearForm() {
@@ -96,20 +93,26 @@ export default class EventAddForm extends ListingAddForm {
 
   /**
    * Renders the component.
+   *
    * @override
    * @render
-   *
    * @returns {*}
    */
   render() {
     const defaultVenue = this.props.venues.length > 0 ? this.props.venues[0].id : '';
     const defaultOrg = this.props.orgs.length > 0 ? this.props.orgs[0].id : '';
+
     const currentDate = Moment().format('YYYY-MM-DD');
+
     const submitAction = this.user.is_admin ? this.handleAddClick : this.handleAddPendingClick;
     const submitLabel = this.user.is_admin ? 'Publish Event' : 'Add Pending Event';
 
     return (
       <form id={'event-add-form'} className={'add-form'} onSubmit={submitAction}>
+        <div>
+          <button type={'button'} className={'default'} onClick={this.clearForm}>Reset</button>
+          <button type={'submit'} className={'button-primary'}>{submitLabel}</button>
+        </div>
         <label className={'required'}>
           Name
           <input type={'text'} ref={this.nameInput} required maxLength={100} />
@@ -148,7 +151,7 @@ export default class EventAddForm extends ListingAddForm {
         </label>
         <label>
           URL
-          <input type={'url'} ref={this.urlInput} />
+          <input type={'text'} ref={this.urlInput} />
         </label>
         <label>
           Phone Number
@@ -160,7 +163,7 @@ export default class EventAddForm extends ListingAddForm {
         </label>
         <label>
           Ticketing URL
-          <input type={'url'} ref={this.ticketUrlInput} />
+          <input type={'text'} ref={this.ticketUrlInput} />
         </label>
         <label>
           Ticketing Phone Number

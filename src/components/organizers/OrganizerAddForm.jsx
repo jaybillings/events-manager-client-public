@@ -2,17 +2,13 @@ import React from 'react';
 import ListingAddForm from "../ListingAddForm";
 
 /**
- * OrganizerAddForm is a component which displays a form for adding new organizers.
+ * `OrganizerAddForm` displays a form for adding new organizers.
+ *
  * @class
  * @child
+ * @param {{schema: String, listings: Object, createListing: Function, createPendingListing: Function}} props
  */
 export default class OrganizerAddForm extends ListingAddForm {
-  /**
-   * The class's constructor.
-   *
-   * @constructor
-   * @param {{schema: String, listings: Object, createListing: Function, createPendingListing: Function}} props
-   */
   constructor(props) {
     super(props);
 
@@ -22,9 +18,10 @@ export default class OrganizerAddForm extends ListingAddForm {
   }
 
   /**
-   * Compiles the data required for creating a new listing from the form fields.
+   * `buildNewListing` compiles data for creating a new listing.
    *
-   * @returns {{name: string, description: string}}
+   * @override
+   * @returns {*}
    */
   buildNewListing() {
     const orgObj = {
@@ -39,7 +36,8 @@ export default class OrganizerAddForm extends ListingAddForm {
   }
 
   /**
-   * Clears the form by setting all values to their empty value.
+   * `clearForm` clears the add form by resetting the input values.
+   *
    * @override
    */
   clearForm() {
@@ -62,6 +60,10 @@ export default class OrganizerAddForm extends ListingAddForm {
 
     return (
       <form id={'organizers-add-form'} className={'add-form'} onSubmit={submitAction}>
+        <div>
+          <button type={'button'} className={'default'} onClick={this.clearForm}>Reset</button>
+          <button type={'submit'} className={'button-primary'}>{submitLabel}</button>
+        </div>
         <label className={'required'}>
           Name
           <input type={'text'} ref={this.nameInput} required maxLength={100} />
@@ -72,7 +74,7 @@ export default class OrganizerAddForm extends ListingAddForm {
         </label>
         <label>
           URL
-          <input type={'url'} ref={this.urlInput} />
+          <input type={'text'} ref={this.urlInput} />
         </label>
         <label>
           Phone Number

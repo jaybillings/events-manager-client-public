@@ -50,7 +50,7 @@ export default class ListingRecordUniversal extends Component {
   }
 
   /**
-   * `handleSaveClick` handles the save action by parsing the new data and calling
+   * `handleSaveClick` handles the submit action by parsing the new data and calling
    * an update handler.
    *
    * @param {Event} e

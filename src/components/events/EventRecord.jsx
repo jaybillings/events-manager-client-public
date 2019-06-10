@@ -7,17 +7,12 @@ import ListingRecordUniversal from "../ListingRecordUniversal";
 import "../../styles/toggle.css";
 
 /**
- * EventRecord is a component which displays a single event's record.
+ * `EventRecord` displays a single event's record.
+ *
  * @class
  * @child
  */
 export default class EventRecord extends ListingRecordUniversal {
-  /**
-   * The class's constructor.
-   * @constructor
-   *
-   * @param {Object} props
-   */
   constructor(props) {
     super(props);
 
@@ -44,10 +39,10 @@ export default class EventRecord extends ListingRecordUniversal {
   }
 
   /**
-   * Handles the submit action by parsing new data and calling a function to create a new event. Also modifies
-   * associations between the event and its tags.
-   * @override
+   * `handlesSaveClick` runs on submit. It parses the record's data,
+   * including tag associations, and initiates save.
    *
+   * @override
    * @param {Event} e
    */
   handleSaveClick(e) {
@@ -91,19 +86,16 @@ export default class EventRecord extends ListingRecordUniversal {
   }
 
   /**
-   * Flips the publish status of the event.
-   *
-   * toggleStatus changes the new publish status of the event, depending on the previous status. It uses the new publish
-   * status if it is set, so the status can be properly toggled.
+   * `toggleStatus` flips the publish status of the event.
    */
   toggleStatus() {
     this.setState(prevState => ({newPublishState: prevState.newPublishState === 'live' ? 'dropped' : 'live'}));
   }
 
   /**
-   * Determines if the publish status of the listing should change, and if so, to what.
+   * `shouldPublishOrDrop` determines if the publish status of the listing should change, and if so, to what.
    *
-   * shouldPublishOrDrop provides data to tell the save function whether it should publish the event (set its status
+   * `shouldPublishOrDrop` provides data to tell the save function whether it should publish the event (set its status
    * to 'live') or drop it. There are actually three valid options, to cut down on extraneous server requests:
    *   * 'live' - Event should be published/set as 'live'
    *   * 'dropped' - Event should be dropped/set as 'dropped'
@@ -118,9 +110,9 @@ export default class EventRecord extends ListingRecordUniversal {
 
   /**
    * Renders the component.
+   *
    * @override
    * @render
-   *
    * @returns {*}
    */
   render() {
@@ -201,7 +193,7 @@ export default class EventRecord extends ListingRecordUniversal {
         </label>
         <label>
           URL
-          <input type={'url'} ref={this.urlInput} defaultValue={event.url} maxLength={100} disabled={disableAll} />
+          <input type={'text'} ref={this.urlInput} defaultValue={event.url} maxLength={100} disabled={disableAll} />
         </label>
         <label>
           Phone Number
@@ -213,7 +205,7 @@ export default class EventRecord extends ListingRecordUniversal {
         </label>
         <label>
           Ticketing URL
-          <input type={'url'} ref={this.ticketUrlInput} defaultValue={event.ticket_url} maxLength={150} disabled={disableAll} />
+          <input type={'text'} ref={this.ticketUrlInput} defaultValue={event.ticket_url} maxLength={150} disabled={disableAll} />
         </label>
         <label>
           Ticketing Phone Number

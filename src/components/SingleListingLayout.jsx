@@ -9,7 +9,7 @@ import Header from "./common/Header";
 import MessagePanel from "./common/MessagePanel";
 
 /**
- * SingleListingLayout is a generic component which lays out the single listing view.
+ * `SingleListingLayout` is a generic component which lays out the single listing view.
  *
  * @class
  * @parent

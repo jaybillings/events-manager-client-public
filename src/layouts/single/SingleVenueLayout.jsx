@@ -5,20 +5,16 @@ import VenueRecord from "../../components/venues/VenueRecord";
 import SingleListingLayout from "../../components/SingleListingLayout";
 
 /**
- * SingleVenueLayout is a component which lays out a single venue page.
+ * `SingleVenueLayout` lays out a single venue view.
+ *
  * @class
  * @child
  */
 export default class SingleVenueLayout extends SingleListingLayout {
-  /**
-   * The class's constructor.
-   * @constructor
-   * @param {object} props
-   */
   constructor(props) {
     super(props, 'venues');
 
-    Object.assign(this.state, {hoods: [], hoodsLoaded: false});
+    this.state = {...this.state, hoods: [], hoodsLoaded: false};
 
     this.hoodsService = app.service('neighborhoods');
 
@@ -26,7 +22,11 @@ export default class SingleVenueLayout extends SingleListingLayout {
   }
 
   /**
-   * Runs once the component mounts. Registers data service listeners.
+   * Runs once the component mounts.
+   *
+   * During `componentDidMount`, the component fetches required data and
+   * registers service listeners.
+   *
    * @override
    */
   componentDidMount() {
@@ -40,7 +40,10 @@ export default class SingleVenueLayout extends SingleListingLayout {
   }
 
   /**
-   * Runs before the component unmounts. Unregisters data service listeners.
+   * Runs when the component unmounts.
+   *
+   * During `componentWillUnmount`, the component unregisters service listeners.
+   *
    * @override
    */
   componentWillUnmount() {
@@ -52,7 +55,8 @@ export default class SingleVenueLayout extends SingleListingLayout {
   }
 
   /**
-   * Fetches all data required for the page.
+   * `fetchAllData` fetches all data required for the view.
+   *
    * @override
    */
   fetchAllData() {
@@ -61,7 +65,7 @@ export default class SingleVenueLayout extends SingleListingLayout {
   }
 
   /**
-   * Fetches published neighborhoods.
+   * `fetchHoods` fetches published neighborhoods and saves them to the state.
    */
   fetchHoods() {
     this.hoodsService.find({query: this.defaultQuery}).then(message => {
@@ -71,12 +75,13 @@ export default class SingleVenueLayout extends SingleListingLayout {
 
   /**
    * Renders the venue record.
+   *
    * @override
    * @returns {*}
    */
   renderRecord() {
     if (!(this.state.listingLoaded && this.state.hoodsLoaded)) {
-      return <p>Data is loading... Pleased be patient...</p>
+      return <div className={'message-compact single-message info'}>Data is loading... Pleased be patient...</div>
     }
 
     return <VenueRecord

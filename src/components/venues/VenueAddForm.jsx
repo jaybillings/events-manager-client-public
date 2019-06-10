@@ -4,17 +4,13 @@ import {renderOptionList} from '../../utilities';
 import ListingAddForm from "../ListingAddForm";
 
 /**
- * VenueAddForm is a component which displays a form for adding new venues.
+ * `VenueAddForm` displays a form for adding new venues.
+ *
  * @class
  * @child
+ * @param {{schema: String, hoods: Array, createListing: Function, createPendingListing: Function}} props
  */
 export default class VenueAddForm extends ListingAddForm {
-  /**
-   * The class's constructor.
-   *
-   * @constructor
-   * @param {{schema: String, hoods: Array, createListing: Function, createPendingListing: Function}} props
-   */
   constructor(props) {
     super(props);
 
@@ -30,10 +26,10 @@ export default class VenueAddForm extends ListingAddForm {
   }
 
   /**
-   * Compiles the data required for creating a new listing.
-   * @override
+   * `buildNewListing` compiles data for creating a new listing.
    *
-   * @returns {Object}
+   * @override
+   * @returns {*}
    */
   buildNewListing() {
     const venueObj = {
@@ -55,7 +51,8 @@ export default class VenueAddForm extends ListingAddForm {
   }
 
   /**
-   * Clears the form by setting all fields to a default or empty value.
+   * `clearForm` clears the add form by resetting the input values.
+   *
    * @override
    */
   clearForm() {
@@ -85,6 +82,10 @@ export default class VenueAddForm extends ListingAddForm {
 
     return (
       <form id={'venue-add-form'} className={'add-form'} onSubmit={submitAction}>
+        <div>
+          <button type={'button'} className={'default'} onClick={this.clearForm}>Reset</button>
+          <button type={'submit'} className={'button-primary'}>{submitLabel}</button>
+        </div>
         <label className={'required'}>
           Name
           <input type={'text'} ref={this.nameInput} required maxLength={100} />
@@ -105,7 +106,7 @@ export default class VenueAddForm extends ListingAddForm {
         </label>
         <label>
           URL
-          <input type={'url'} ref={this.urlInput} />
+          <input type={'text'} ref={this.urlInput} />
         </label>
         <label>
           Phone Number

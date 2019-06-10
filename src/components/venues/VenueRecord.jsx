@@ -5,17 +5,12 @@ import {renderOptionList} from "../../utilities";
 import ListingRecordUniversal from "../ListingRecordUniversal";
 
 /**
- * VenueRecord is a component which displays a single venue's record.
+ * `VenueRecord` displays a single venue's record.
+ *
  * @class
  * @child
  */
 export default class VenueRecord extends ListingRecordUniversal {
-  /**
-   * The class's constructor.
-   * @constructor
-   *
-   * @param {object} props
-   */
   constructor(props) {
     super(props);
 
@@ -31,9 +26,9 @@ export default class VenueRecord extends ListingRecordUniversal {
   }
 
   /**
-   * Handles the submit action by parsing new data and calling a function to create a new venue.
-   * @override
+   * `handleSaveClick` runs on submit. It parses new data and initiates a save.
    *
+   * @override
    * @param {Event} e
    */
   handleSaveClick(e) {
@@ -49,18 +44,18 @@ export default class VenueRecord extends ListingRecordUniversal {
     this.emailInput.current.value !== '' && (newData.email = this.emailInput.current.value);
     this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value);
     this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value);
-    this.streetInput.current.value !== '' && (newData.street = this.streetInput.current.value);
-    this.cityInput.current.value !== '' && (newData.city = this.cityInput.current.value);
-    this.stateInput.current.value !== '' && (newData.state = this.stateInput.current.value);
-    this.zipInput.current.value !== '' && (newData.zip = this.zipInput.current.value);
+    this.streetInput.current.value !== '' && (newData.address_street = this.streetInput.current.value);
+    this.cityInput.current.value !== '' && (newData.address_city = this.cityInput.current.value);
+    this.stateInput.current.value !== '' && (newData.address_state = this.stateInput.current.value);
+    this.zipInput.current.value !== '' && (newData.address_zip = this.zipInput.current.value);
 
     this.props.updateListing(newData);
   }
 
   /**
    * Renders the component.
-   * @render
    *
+   * @render
    * @returns {*}
    */
   render() {
@@ -111,7 +106,7 @@ export default class VenueRecord extends ListingRecordUniversal {
         </label>
         <label>
           URL
-          <input type={'url'} ref={this.urlInput} defaultValue={venue.url} maxLength={100} disabled={disableAll} />
+          <input type={'text'} ref={this.urlInput} defaultValue={venue.url} maxLength={100} disabled={disableAll} />
         </label>
         <label>
           Phone Number

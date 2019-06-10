@@ -230,7 +230,6 @@ export default class ListingsLayout extends Component {
 
     this.listingsService.find({query})
       .then(result => {
-        console.debug(result);
         this.setState({listings: result.data, listingsTotal: result.total, listingsLoaded: true, currentPage: currentPage});
       })
       .catch(err => {

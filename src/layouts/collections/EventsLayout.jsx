@@ -10,7 +10,7 @@ import PaginationLayout from "../../components/common/PaginationLayout";
 import Filters from "../../components/common/Filters";
 
 /**
- * EventsLayout is a lays out the event collection page.
+ * `EventsLayout` lays out the event collection page.
  *
  * @class
  * @child
@@ -76,22 +76,21 @@ export default class EventsLayout extends ListingsLayout {
     }
 
     this.liveEventsService
-      .on('created', message => {
-        console.debug(message);
-        this.updateMessagePanel({status: 'info', details: `Event #${message.event_uuid} added to live list.`});
+      .on('created', () => {
+        this.updateMessagePanel({status: 'info', details: 'Event added to live list.'});
         this.fetchLiveEvents();
       })
-      .on('removed', message => {
-        this.updateMessagePanel({status: 'info', details: `Event #${message.event_uuid} removed from live list.`});
+      .on('removed', () => {
+        this.updateMessagePanel({status: 'info', details: 'Event removed from live list.'});
         this.fetchLiveEvents();
       });
 
     this.eventsTagsLookupService
-      .on('created', message => {
-        this.updateMessagePanel({status: 'info', details: `Linked tag #${message.tag_uuid} with event.`});
+      .on('created', () => {
+        this.updateMessagePanel({status: 'info', details: 'Linked tag with event.'});
       })
-      .on('removed', message => {
-        this.updateMessagePanel({status: 'info', details: `Removed link between tag #${message.tag_uuid} and event.`});
+      .on('removed', () => {
+        this.updateMessagePanel({status: 'info', details: 'Removed link between tag and event.'});
       });
   }
 
@@ -303,9 +302,10 @@ export default class EventsLayout extends ListingsLayout {
     this.listingsService.remove(listing.id)
       .then(() => {
         this.removeTagAssociations(listing.uuid);
-        this.registerEventDeleted(listing.id);
+        this.registerEventDeleted(listing.id, listing.uuid);
       })
       .catch(err => {
+        printToConsole(err);
         displayErrorMessages('delete', `"${listing.name}"`, err,
           this.updateMessagePanel, 'retry');
       });
@@ -379,7 +379,8 @@ export default class EventsLayout extends ListingsLayout {
   registerEventLive(id) {
     this.liveEventsService.create({event_id: id})
       .catch(err => {
-        printToConsole(err);
+        printToConsole(JSON.stringify(err));
+        if (err.code === 'SQLITE_CONSTRAINT') return; // Benign error -- hide from user
         displayErrorMessages('add to live list', 'event', err, this.updateMessagePanel);
       });
   }
@@ -404,14 +405,16 @@ export default class EventsLayout extends ListingsLayout {
    * @note This exists because the API needs to know when events are deleted.
    *
    * @param {int} id
+   * @param {int|string} uuid
    */
-  registerEventDeleted(id) {
+  registerEventDeleted(id, uuid) {
     Promise.all([
-      this.deletedEventsService.create({event_id: id}),
+      this.deletedEventsService.create({event_uuid: uuid}),
       this.liveEventsService.remove(null, {query: {event_id: id}})
     ])
       .catch(err => {
         printToConsole(err);
+        if (err.code === 'SQLITE_CONSTRAINT') return; // Benign error -- hide from user
         displayErrorMessages('add', 'event to deleted list', err, this.updateMessagePanel);
       });
   }

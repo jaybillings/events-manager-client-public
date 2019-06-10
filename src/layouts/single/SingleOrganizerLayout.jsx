@@ -4,29 +4,25 @@ import SingleListingLayout from "../../components/SingleListingLayout";
 import OrganizerRecord from "../../components/organizers/OrganizerRecord";
 
 /**
- * SingleOrganizerLayout is a component which lays out a single organizer page.
+ * `SingleOrganizerLayout` lays out a single organizer view.
+ *
  * @class
  * @child
  */
 export default class SingleOrganizerLayout extends SingleListingLayout {
-  /**
-   * The class's constructor.
-   *
-   * @constructor
-   * @param {object} props
-   */
   constructor(props) {
     super(props, 'organizers');
   }
 
   /**
    * Renders the organizer record.
+   *
    * @override
    * @returns {*}
    */
   renderRecord() {
     if (!this.state.listingLoaded) {
-      return <p>Data is loading... Please be patient...</p>;
+      return <div className={'message-compact single-message info'}>Data is loading... Please be patient...</div>;
     }
 
     return <OrganizerRecord

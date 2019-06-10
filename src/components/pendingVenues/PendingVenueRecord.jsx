@@ -134,7 +134,7 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
         </label>
         <label className={classNameMap['url']}>
           Url
-          <input type={'url'} ref={this.urlInput} defaultValue={venue.url} />
+          <input type={'text'} ref={this.urlInput} defaultValue={venue.url} />
         </label>
         <label className={classNameMap['phone']}>
           Phone #

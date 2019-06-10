@@ -1,6 +1,6 @@
 import React from "react";
 import app from "../../services/socketio";
-import {displayErrorMessages, renderTableHeader} from "../../utilities";
+import {displayErrorMessages, printToConsole, renderTableHeader} from "../../utilities";
 
 import VenueRow from "../../components/venues/VenueRow";
 import VenueAddForm from "../../components/venues/VenueAddForm";
@@ -89,6 +89,7 @@ export default class VenuesLayout extends ListingsLayout {
         this.setState({hoods: message.data, hoodsLoaded: true});
       })
       .catch(err => {
+        printToConsole(err);
         displayErrorMessages('fetch', 'neighborhoods', err, this.updateMessagePanel, 'reload');
         this.setState({hoodsLoaded: false});
       });
