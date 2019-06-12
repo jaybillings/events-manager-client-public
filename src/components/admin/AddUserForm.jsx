@@ -20,8 +20,6 @@ export default class AddUserForm extends Component {
       numbers: true, symbols: true, excludeSimilar: true
     });
 
-    console.log('password', password);
-
     this.setState({password});
   }
 

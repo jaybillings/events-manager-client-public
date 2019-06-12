@@ -101,12 +101,10 @@ export default class PendingListingRow extends Component {
     const newData = {name: this.nameRef.current.value};
 
     this.props.updateListing(this.props.listing, newData)
-      .then(result => {
-        console.debug(result);
+      .then(() => {
         return this.getWriteStatus();
       })
       .then(writeStatus => {
-        console.debug(writeStatus);
         this.setState({writeStatus, editable: false})
       });
   }

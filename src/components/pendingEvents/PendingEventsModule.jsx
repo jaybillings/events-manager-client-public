@@ -348,7 +348,6 @@ export default class PendingEventsModule extends PendingListingsModule {
     return this.liveEventsService.create({event_id: eventID})
       .catch(err => {
         displayErrorMessages('register as live', `"${eventName}"`, err, this.props.updateMessagePanel);
-        console.log(`~ error in registerLiveListing`, err);
       });
   }
 

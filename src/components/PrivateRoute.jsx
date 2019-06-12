@@ -79,7 +79,6 @@ export default class PrivateRoute extends Component {
    * If authentication fails, the login token is nullified so the app will redirect to the login screen.
    */
   runAuthentication() {
-    console.debug('Checking auth status'); // TODO: Make sure this doesn't run more than once
     app.authenticate().catch((err) => {
       this.setState({login: null});
       printToConsole(err, 'error');

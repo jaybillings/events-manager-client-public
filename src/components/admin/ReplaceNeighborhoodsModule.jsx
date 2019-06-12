@@ -175,7 +175,6 @@ export default class ReplaceNeighborhoodsModule extends Component {
   fetchPendingHoods() {
     return this.pendingHoodsService.find({query: this.defaultQuery})
       .then(result => {
-        console.debug(result);
         this.setState({pendingHoodsLoaded: true});
         if (result.total) {
           this.setState({

@@ -80,8 +80,6 @@ export default class SinglePendingListingLayout extends SingleListingLayout {
       className={'message-compact single-message info'}>Data is loading...
       Please be patient...</div>;
 
-    console.debug(this.state.matchingListingLoaded);
-
     return <ListingRecordUniversal
       schema={this.schema} listing={this.state.listing} matchingLiveListing={this.state.matchingLiveListing}
       updateListing={this.updateListing} deleteListing={this.deleteListing} queryForDuplicate={this.queryForDuplicate}

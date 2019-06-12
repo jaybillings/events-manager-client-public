@@ -477,12 +477,8 @@ export default class PendingListingsModule extends Component {
   publishListingsRecursive(selectedIDs, liveListingData) {
     if (selectedIDs.length === 0) return;
 
-    console.debug(`${this.schema}`, selectedIDs);
-    console.debug(`${this.schema}`, liveListingData);
-
     return this.publishPageOfListings(selectedIDs, liveListingData)
       .then(result => {
-        console.debug(`${this.schema} result`, result);
 
         const idsToRemove = result.map(listing => {
           return listing.id;
@@ -543,7 +539,7 @@ export default class PendingListingsModule extends Component {
         }));
       })
       .catch(err => {
-        console.error('top level error');
+        printToConsole('top level error occurred', 'debug');
         printToConsole(err);
         displayErrorMessages('publish', `pending ${this.schema}`,
           err, this.props.updateMessagePanel, 'retry');

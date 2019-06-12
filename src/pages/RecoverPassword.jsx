@@ -1,12 +1,13 @@
 import React, {Component} from 'react';
 import app from "../services/socketio";
 import {Link} from "react-router-dom";
+import {BeatLoader} from "react-spinners";
+import {printToConsole} from "../utilities";
 
 import Header from "../components/common/Header";
 import MessagePanel from "../components/common/MessagePanel";
 
 import '../styles/account-form.css';
-import {BeatLoader} from "react-spinners";
 
 export default class RecoverPassword extends Component {
   constructor(props) {
@@ -55,7 +56,7 @@ export default class RecoverPassword extends Component {
         });
       })
       .catch(err => {
-        console.error(err);
+        printToConsole(err);
         this.updateMessagePanel({
           status: 'error',
           details: [<span key={'error-msg'}>Could not send password recovery request. If this continues, please <Link

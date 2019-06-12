@@ -179,7 +179,6 @@ export default class EventsLayout extends ListingsLayout {
 
     this.listingsService.find({query})
       .then(result => {
-        console.debug(result);
         this.setState({listings: result.data, listingsTotal: result.total, listingsLoaded: true, currentPage: currentPage});
       })
       .catch(err => {
@@ -320,7 +319,6 @@ export default class EventsLayout extends ListingsLayout {
   createPendingListing(listingData) {
     return this.pendingListingsService.create(listingData.eventObj)
       .then(result => {
-        console.debug(result);
         this.setState({newPendingListing: result});
         this.updateMessagePanel({
           status: 'success',
@@ -334,7 +332,6 @@ export default class EventsLayout extends ListingsLayout {
           const tagData = listingData.tagsToSave.map(tag => {
             return {tag_uuid: tag, event_uuid: result.uuid};
           });
-          console.debug(tagData);
           this.pendingEventsTagsLookupService.create(tagData)
             .catch(err => {
               printToConsole(err);

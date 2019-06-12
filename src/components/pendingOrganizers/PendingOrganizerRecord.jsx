@@ -32,7 +32,6 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
   componentDidMount() {
     this.getWriteStatus()
       .then(writeStatus => {
-        console.debug('writeStatus', writeStatus);
         this.setState({writeStatus});
       });
   }

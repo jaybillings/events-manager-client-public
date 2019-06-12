@@ -24,7 +24,6 @@ export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
   componentDidMount() {
     this.getWriteStatus()
       .then(writeStatus => {
-        console.debug('writeStatus', writeStatus);
         this.setState({writeStatus});
       });
   }

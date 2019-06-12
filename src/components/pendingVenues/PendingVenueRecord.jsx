@@ -38,7 +38,6 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
   componentDidMount() {
     this.getWriteStatus()
       .then(writeStatus => {
-        console.debug('writeStatus', writeStatus);
         this.setState({writeStatus});
       });
   }

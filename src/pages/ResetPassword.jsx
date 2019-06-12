@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import pwRules from "password-rules";
+import {printToConsole} from "../utilities";
 import app from "../services/socketio";
 
 import Header from "../components/common/Header";
@@ -55,8 +56,7 @@ export default class ResetPassword extends Component {
         });
       })
       .catch(err => {
-
-        console.error(err);
+        printToConsole(err);
 
         let errorMsg = 'Could not reset password.';
 

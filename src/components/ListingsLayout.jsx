@@ -161,7 +161,7 @@ export default class ListingsLayout extends Component {
   loadQueryState() {
     const [err, queryState] = this.localStorageObj.get('queryState');
     if (err) {
-      console.error(err);
+      printToConsole(err);
       return {};
     } else return queryState;
   }
@@ -292,7 +292,6 @@ export default class ListingsLayout extends Component {
    * @returns {Promise}
    */
   updateListing(oldListing, newData) {
-    console.debug(oldListing);
     return this.listingsService.patch(oldListing.id, newData)
       .catch(err => {
         printToConsole(err);

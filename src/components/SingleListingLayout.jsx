@@ -123,7 +123,6 @@ export default class SingleListingLayout extends Component {
    * @returns {Promise<*>}
    */
   updateListing(newData) {
-    console.debug('updating listing');
     return app.service(this.schema).patch(this.listingID, newData)
       .catch(err => {
         printToConsole(err);

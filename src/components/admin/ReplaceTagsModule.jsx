@@ -413,7 +413,7 @@ export default class ReplaceTagsModule extends Component {
       })
       .catch(err => {
         this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err.message)});
-        console.error(err);
+        printToConsole(err);
       })
       .finally(() => this.setState({replaceRunning: false}));
   }
@@ -459,7 +459,7 @@ export default class ReplaceTagsModule extends Component {
       })
       .catch(err => {
         this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err.message)});
-        console.error(err);
+        printToConsole(err);
       })
       .finally(() => this.setState({replaceRunning: false}));
   }

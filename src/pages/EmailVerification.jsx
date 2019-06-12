@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import Header from "../components/common/Header";
+import {printToConsole} from "../utilities";
 
 export default class EmailVerification extends Component {
   constructor(props) {
@@ -24,10 +25,6 @@ export default class EmailVerification extends Component {
       value: token
     };
 
-    console.debug(token);
-    console.debug(JSON.stringify(payload));
-    console.debug(payload);
-
     fetch(this.authManagementUrl, {
       method: 'POST',
       body: JSON.stringify(payload),
@@ -38,10 +35,9 @@ export default class EmailVerification extends Component {
       })
       .then(body => {
         if (body.code >= 400) {
-          console.error(body.message);
+          printToConsole(body.message);
           this.setState({verifySuccess: false});
         } else {
-          console.debug('success!');
           this.setState({verifySuccess: true});
         }
       });
