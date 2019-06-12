@@ -45,9 +45,9 @@ export default class PaginationLayout extends Component {
       }
     });
 
-    if (this.props.includeAll) pageOptions.push(<option key={`option-${this.props.total}`} value={this.props.total}>All</option>);
+    if (this.props.includeAll || pageOptions.length === 0) pageOptions.push(<option key={`option-${this.props.total}`} value={this.props.total}>All</option>);
 
-    return pageOptions;
+    return <select defaultValue={this.props.pageSize} onChange={this.handlePageChange}>{pageOptions}</select>;
   }
 
   /**
@@ -65,9 +65,7 @@ export default class PaginationLayout extends Component {
 
     return (
       <div className={'pagination-container'}>
-        <select defaultValue={this.props.pageSize} onChange={this.handlePageChange}>
           {this.renderPageOptions()}
-        </select>
         <Pagination
           activePage={this.props.activePage} itemsCountPerPage={this.props.pageSize}
           totalItemsCount={this.props.total} onChange={this.props.updateCurrentPage}

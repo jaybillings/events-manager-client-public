@@ -52,6 +52,7 @@ export default class ReplaceNeighborhoodsModule extends Component {
     this.deleteHoodReplacementLookup = this.deleteHoodReplacementLookup.bind(this);
 
     this.runHoodReplacement = this.runHoodReplacement.bind(this);
+    this.runReplacementOnly = this.runReplacementOnly.bind(this);
 
     this.renderTable = this.renderTable.bind(this);
   }
@@ -346,7 +347,7 @@ export default class ReplaceNeighborhoodsModule extends Component {
    *
    * @param {string} nameToReplace
    * @param {int|string} uuidOfReplacement
-   * @returns {Promise<*>}
+   * @returns {Promise<void>}
    */
   async runHoodReplacement(nameToReplace, uuidOfReplacement) {
     const replacement = this.state.uniqueHoods.find(hood => {
@@ -382,11 +383,10 @@ export default class ReplaceNeighborhoodsModule extends Component {
 
     this.props.updateMessagePanel({status: 'info', details: 'Linking venues to replacement neighborhood.'});
 
-    Promise
-      .all([
-        ReplaceNeighborhoodsModule.replaceHoodLinks(replacement.uuid, liveUUIDsToReplace, this.venuesService),
-        ReplaceNeighborhoodsModule.replaceHoodLinks(replacement.uuid, pendingUUIDsToReplace, this.pendingVenuesService)
-      ])
+    Promise.all([
+      ReplaceNeighborhoodsModule.replaceHoodLinks(replacement.uuid, liveUUIDsToReplace, this.venuesService),
+      ReplaceNeighborhoodsModule.replaceHoodLinks(replacement.uuid, pendingUUIDsToReplace, this.pendingVenuesService)
+    ])
       .then(() => {
         this.props.updateMessagePanel({status: 'info', details: 'Deleting old neighborhoods.'});
         return Promise.all([
@@ -410,6 +410,50 @@ export default class ReplaceNeighborhoodsModule extends Component {
         printToConsole(err);
       })
       .finally(() => this.setState({replaceRunning: false}));
+  }
+
+  /**
+   * `runReplacementOnly` runs neighborhood replacement without creating lookup tables.
+   *
+   * @param {string} nameToReplace
+   * @param {Object} replacement
+   * @returns {Promise<void>}
+   */
+  async runReplacementOnly(nameToReplace, replacement) {
+    this.setState({replaceRunning: true});
+
+    this.props.updateMessagePanel({status: 'info', details: 'Starting neighborhood replacement.'});
+    this.props.updateMessagePanel({status: 'info', details: 'Looking for neighborhoods to replace.'});
+
+    const liveLookupRes = await ReplaceNeighborhoodsModule.fetchHoodsToReplace(nameToReplace, this.hoodsService);
+    const pendingLookupRes = await ReplaceNeighborhoodsModule.fetchHoodsToReplace(nameToReplace, this.pendingHoodsService);
+
+    const liveUUIDsToReplace = liveLookupRes.data.map(row => row.uuid);
+    const pendingUUIDsToReplace = pendingLookupRes.data.map(row => row.uuid);
+
+    this.props.updateMessagePanel({status: 'info', details: 'Linking venues to replacement neighborhood.'});
+
+    Promise.all([
+      ReplaceNeighborhoodsModule.replaceHoodLinks(replacement.uuid, liveUUIDsToReplace, this.venuesService),
+      ReplaceNeighborhoodsModule.replaceHoodLinks(replacement.uuid, pendingUUIDsToReplace, this.pendingVenuesService)
+    ])
+      .then(() => {
+        this.props.updateMessagePanel({status: 'info', details: 'Deleting old neighborhoods.'});
+        return Promise.all([
+          ReplaceNeighborhoodsModule.deleteOldHoods(liveUUIDsToReplace, this.hoodsService),
+          ReplaceNeighborhoodsModule.deleteOldHoods(pendingUUIDsToReplace, this.pendingHoodsService)
+        ]);
+      })
+      .then(() => {
+        this.props.updateMessagePanel({status: 'success', details: `Replaced all neighborhoods named "${replacement.name}" with neighborhood named "${replacement.name}"`});
+      })
+      .catch(err => {
+        displayErrorMessages('run', 'neighborhood replacement', err, this.props.updateMessagePanel);
+        printToConsole(err);
+      })
+      .finally(() => {
+        this.setState({replaceRunning: false});
+      });
   }
 
   /**
@@ -451,7 +495,7 @@ export default class ReplaceNeighborhoodsModule extends Component {
               })}
               termToReplaceRowName={'bd_region_name'}
               deleteRow={this.deleteHoodReplacementLookup}
-              runReplacement={this.runHoodReplacement}
+              runReplacementOnly={this.runReplacementOnly}
             />;
           })
         }

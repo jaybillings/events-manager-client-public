@@ -26,9 +26,9 @@ export default class TermReplacementRow extends Component {
    */
   handleRunClick() {
     // TODO: Create proper method that doesn't make a new row
-    this.props.runReplacement(
+    this.props.runReplacementOnly(
       this.props.lookup[this.props.termToReplaceRowName],
-      this.props.listing.uuid
+      this.props.listing
     );
   }
 
@@ -48,7 +48,7 @@ export default class TermReplacementRow extends Component {
     return (
       <tr className={'schema-row'}>
         <td>
-        <button type={'button'} onClick={this.handleRunClick}>Run Replacement</button>
+        <button type={'button'} className={'emphasize'} onClick={this.handleRunClick}>Run Replacement</button>
           <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete</button>
         </td>
         <td>{termToReplace}</td>

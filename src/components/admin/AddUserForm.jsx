@@ -59,6 +59,8 @@ export default class AddUserForm extends Component {
 
   render() {
     const pwHiddenClass = this.state.showPWField ? '' : ' hidden';
+    const passwordNotification = this.state.password ?
+      <div className={'single-message'}>Password is: {this.state.password}</div> : '';
 
     return (
       <form key={'user-add-form'} className={'user-add-form'} onSubmit={this.createUser}>
@@ -81,6 +83,7 @@ export default class AddUserForm extends Component {
           <input type={'password'} name={'password'} value={this.state.password} required={this.state.showPWField}
                  onChange={this.handleInputChange} />
           <button type={'button'} onClick={this.generatePassword}>Generate Password</button>
+          {passwordNotification}
         </label>
         <div className={'buttons'}>
           <button type={'button'} className={'default'} onClick={this.clearForm}>Reset</button>

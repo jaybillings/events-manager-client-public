@@ -4,7 +4,8 @@ import {
   arrayUnique,
   buildColumnSort,
   buildSortQuery,
-  displayErrorMessages, printToConsole,
+  displayErrorMessages,
+  printToConsole,
   renderTableHeader,
   uniqueListingsOnly
 } from "../../utilities";
@@ -53,6 +54,7 @@ export default class ReplaceTagsModule extends Component {
 
     this.replaceEventTagMappings = this.replaceEventTagMappings.bind(this);
     this.runTagReplacement = this.runTagReplacement.bind(this);
+    this.runReplacementOnly = this.runReplacementOnly.bind(this);
 
     this.renderTable = this.renderTable.bind(this);
   }
@@ -351,7 +353,7 @@ export default class ReplaceTagsModule extends Component {
    *
    * @param {String} nameToReplace
    * @param {String|int} uuidOfReplacement
-   * @returns {Proimse<*>}
+   * @returns {Promise<*>}
    */
   async runTagReplacement(nameToReplace, uuidOfReplacement) {
     const replacement = this.state.uniqueTags.find(tag => {
@@ -388,11 +390,10 @@ export default class ReplaceTagsModule extends Component {
 
     this.props.updateMessagePanel({status: 'info', details: 'Relinking events.'});
 
-    Promise
-      .all([
-        this.replaceEventTagMappings(uuidsToReplace, uuidOfReplacement, this.eventsTagsLookupService),
-        this.replaceEventTagMappings(uuidsToReplace, uuidOfReplacement, this.pendingEventsTagsLookupService)
-      ])
+    Promise.all([
+      this.replaceEventTagMappings(liveUUIDsToReplace, uuidOfReplacement, this.eventsTagsLookupService),
+      this.replaceEventTagMappings(uuidsToReplace, uuidOfReplacement, this.pendingEventsTagsLookupService)
+    ])
       .then(() => {
         this.props.updateMessagePanel({status: 'info', details: 'Deleting old tags.'});
         return Promise.all([
@@ -403,6 +404,52 @@ export default class ReplaceTagsModule extends Component {
       .then(() => {
         this.props.updateMessagePanel({status: 'info', details: 'Creating replacement lookup row in database'});
         return this.createTagReplacementLookup(nameToReplace, replacement);
+      })
+      .then(() => {
+        this.props.updateMessagePanel({
+          status: 'success',
+          details: `Replaced all tags named "${nameToReplace}" with tag named "${replacement.name}"`
+        });
+      })
+      .catch(err => {
+        this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err.message)});
+        console.error(err);
+      })
+      .finally(() => this.setState({replaceRunning: false}));
+  }
+
+  /**
+   * `runReplacementOnly` runs term replacement without creating a lookup row.
+   *
+   * @param {string} nameToReplace
+   * @param {object} replacement
+   * @returns {Promise<void>}
+   */
+  async runReplacementOnly(nameToReplace, replacement) {
+    this.setState({replaceRunning: true});
+
+    this.props.updateMessagePanel({status: 'info', details: 'Starting tag replacement.'});
+    this.props.updateMessagePanel({status: 'info', details: 'Looking for tags to replace.'});
+
+    const liveLookupRes = await ReplaceTagsModule.fetchTagsToReplace(nameToReplace, this.tagsService);
+    const pendingLookupRes = await ReplaceTagsModule.fetchTagsToReplace(nameToReplace, this.pendingTagsService);
+
+    const liveUUIDsToReplace = liveLookupRes.data.map(row => row.uuid);
+    const pendingUUIDsToReplace = pendingLookupRes.data.map(row => row.uuid);
+    const uuidsToReplace = arrayUnique([...liveUUIDsToReplace, ...pendingUUIDsToReplace]);
+
+    this.props.updateMessagePanel({status: 'info', details: 'Relinking events.'});
+
+    Promise.all([
+      this.replaceEventTagMappings(liveUUIDsToReplace, replacement.uuid, this.eventsTagsLookupService),
+      this.replaceEventTagMappings(uuidsToReplace, replacement.uuid, this.pendingEventsTagsLookupService)
+    ])
+      .then(() => {
+        this.props.updateMessagePanel({status: 'info', details: 'Deleting old tags.'});
+        return Promise.all([
+          ReplaceTagsModule.deleteOldTags(liveUUIDsToReplace, this.tagsService),
+          ReplaceTagsModule.deleteOldTags(pendingUUIDsToReplace, this.pendingTagsService)
+        ]);
       })
       .then(() => {
         this.props.updateMessagePanel({
@@ -456,7 +503,7 @@ export default class ReplaceTagsModule extends Component {
               })}
               termToReplaceRowName={'bd_keyword_name'}
               deleteRow={this.deleteTagReplacementLookup}
-              runReplacement={this.runTagReplacement}
+              runReplacementOnly={this.runReplacementOnly}
             />;
           })
         }
