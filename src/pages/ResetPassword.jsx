@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import pwRules from "password-rules";
 import app from "../services/socketio";
 
 import Header from "../components/common/Header";
@@ -11,7 +12,6 @@ export default class ResetPassword extends Component {
     super(props);
 
     // TODO: Put this in config
-    this.helpdeskEmail = 'helpdesk@visitseattle.org';
     this.passwordRef = React.createRef();
     this.messagePanelRef = React.createRef();
 
@@ -35,6 +35,12 @@ export default class ResetPassword extends Component {
         status: 'error',
         details: 'Please enter a new password.'
       });
+      return;
+    }
+
+    const pwRulesRes = pwRules(password);
+    if (pwRulesRes) {
+      this.updateMessagePanel({status: 'error', details: `Could not reset password. ${pwRulesRes.sentence}`});
       return;
     }
 
@@ -70,7 +76,7 @@ export default class ResetPassword extends Component {
       <div className={'container'}>
         <Header />
         <MessagePanel ref={this.messagePanelRef} />
-        <p className={'single-message'}>Enter your new password.</p>
+        <p className={'single-message'}>Enter your new password.<br/>Passwords must be at least 8 letters long, contain a capital letter, and contain a number.</p>
         <form onSubmit={this.handleSubmit} className={'account-form'}>
           <label htmlFor={'passInput'}>New Password</label>
           <input ref={this.passwordRef} id={'passInput'} type={'password'} defaultValue={''} required />

@@ -188,19 +188,26 @@ export default class LoginLayout extends Component {
    */
   renderForm() {
     if (this.state.shouldCreateUser) {
-      return <CreateAccountForm
-        email={this.state.email} password={this.state.password}
-        createUser={this.createUser} resendVerifyEmail={this.resendVerifyEmail}
-        handleInputChange={this.handleInputChange} toggleLoginState={this.toggleLoginState}
-        updateMessagePanel={this.updateMessagePanel}
-      />;
+      return [
+        <span className={'message single-message'}>Passwords must be at least 8 letters long, contain a capital letter, and contain a number.</span>,
+        <CreateAccountForm
+          email={this.state.email} password={this.state.password}
+          createUser={this.createUser} resendVerifyEmail={this.resendVerifyEmail}
+          handleInputChange={this.handleInputChange} toggleLoginState={this.toggleLoginState}
+          updateMessagePanel={this.updateMessagePanel}
+        />
+      ];
     }
 
-    return <LoginForm
-      email={this.state.email} password={this.state.password}
-      logInUser={this.logInUser} handleInputChange={this.handleInputChange}
-      toggleLoginState={this.toggleLoginState}
-    />;
+    const hideWarningClass = this.state.redirectCount === -1 ? '' : ' hidden';
+    return [
+      <p className={'message single-message warning-message' + hideWarningClass}>You must log in to continue.</p>,
+      <LoginForm
+        email={this.state.email} password={this.state.password}
+        logInUser={this.logInUser} handleInputChange={this.handleInputChange}
+        toggleLoginState={this.toggleLoginState}
+      />
+    ];
   }
 
   /**
@@ -213,7 +220,6 @@ export default class LoginLayout extends Component {
   render() {
     const redirectCount = this.state.redirectCount;
     const hideSuccessClass = redirectCount > 0 ? '' : ' hidden';
-    const hideWarningClass = redirectCount === -1 ? '' : ' hidden';
     const redirectTarget = this.props.match.params.redirectUrl || 'import';
     const title = this.state.shouldCreateUser ? 'create new account' : 'log in to your account';
 
@@ -226,7 +232,6 @@ export default class LoginLayout extends Component {
         <MessagePanel ref={this.messagePanelRef} />
         <p className={'message success-message' + hideSuccessClass}>Logged in. Redirecting in {this.state.redirectCount}
           {redirectCount === 1 ? ' second' : ' seconds'}. </p>
-        <p className={'message warning-message' + hideWarningClass}>You must log in to continue.</p>
         {this.renderForm()}
       </div>
     );

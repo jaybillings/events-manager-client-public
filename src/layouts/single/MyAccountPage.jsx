@@ -159,6 +159,7 @@ export default class MyAccountPage extends Component {
 
         <div className={'panel'}>
           <h3>Update Password</h3>
+          <div className={'single-message'}>Passwords must be at least 8 letters long, contain a capital letter, and contain a number.</div>
           <form onSubmit={this.handlePasswordUpdate}>
             <div className={'input-container'}>
               <label htmlFor={'oldPass'}>Old Password</label>
