@@ -55,8 +55,8 @@ export default class OrganizerAddForm extends ListingAddForm {
    * @returns {*}
    */
   render() {
-    const submitAction = this.user.is_admin ? this.handleAddClick : this.handleAddPendingClick;
-    const submitLabel = this.user.is_admin ? 'Publish Organizer' : 'Add Pending Organizer';
+    const submitAction = this.user.is_su ? this.handleAddClick : this.handleAddPendingClick;
+    const submitLabel = this.user.is_su ? 'Publish Organizer' : 'Add Pending Organizer';
 
     return (
       <form id={'organizers-add-form'} className={'add-form'} onSubmit={submitAction}>

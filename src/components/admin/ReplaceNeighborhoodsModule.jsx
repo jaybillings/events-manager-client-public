@@ -445,7 +445,10 @@ export default class ReplaceNeighborhoodsModule extends Component {
         ]);
       })
       .then(() => {
-        this.props.updateMessagePanel({status: 'success', details: `Replaced all neighborhoods named "${replacement.name}" with neighborhood named "${replacement.name}"`});
+        this.props.updateMessagePanel({
+          status: 'success',
+          details: `Replaced all neighborhoods named "${replacement.name}" with neighborhood named "${replacement.name}"`
+        });
       })
       .catch(err => {
         displayErrorMessages('run', 'neighborhood replacement', err, this.props.updateMessagePanel);

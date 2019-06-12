@@ -80,12 +80,12 @@ export default class ListingRecordUniversal extends Component {
     const createdAt = Moment(listing.created_at).calendar();
     const updatedAt = Moment(listing.updated_at).calendar();
 
-    const publishButton = schema.indexOf('pending') !== -1 || this.user.is_su
-      ? <button type={'submit'} className={'button-primary'}>Save Changes</button> : '';
-    const deleteButton = schema.indexOf('pending') !== -1 || this.user.is_admin
+    const publishButton = schema.includes('pending') || this.user.is_su
+      ? <button type={'submit'} className={'button-primary'}>save changes</button> : '';
+    const deleteButton = schema.includes('pending') || this.user.is_su
       ? <button type={'button'} className={'warn'}
-                onClick={this.handleDeleteClick}>Delete {makeSingular(schema)}</button> : '';
-    const disableAll = schema.indexOf('pending') !== -1 && !this.user.is_su;
+                onClick={this.handleDeleteClick}>permanently delete {makeSingular(schema)}</button> : '';
+    const disableAll = !schema.includes('pending') && !this.user.is_su;
 
     return (
       <form id={`${schema}-listing-form`} className={'schema-record'} onSubmit={this.handleSaveClick}>

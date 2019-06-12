@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import app from "../services/socketio";
 
 import Header from '../components/common/Header';
 import MessagePanel from "../components/common/MessagePanel";
@@ -18,6 +19,7 @@ export default class AdminToolsLayout extends Component {
     super(props);
 
     this.defaultPageSize = 5;
+    this.user = app.get('user');
 
     this.messagePanel = React.createRef();
 
@@ -41,12 +43,13 @@ export default class AdminToolsLayout extends Component {
    * @returns {*}
    */
   render() {
+    const userManagementModule = this.user.is_admin ? <ManageUsersModule updateMessagePanel={this.updateMessagePanel} /> : '';
     return (
       <div className="container">
         <Header />
         <MessagePanel ref={this.messagePanel} />
         <h2>Admin Tools</h2>
-        <ManageUsersModule updateMessagePanel={this.updateMessagePanel} />
+        {userManagementModule}
         <ReplaceNeighborhoodsModule updateMessagePanel={this.updateMessagePanel}
                                     defaultPageSize={this.defaultPageSize} />
         <ReplaceTagsModule updateMessagePanel={this.updateMessagePanel} defaultPageSize={this.defaultPageSize} />

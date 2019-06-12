@@ -164,7 +164,6 @@ export default class EventRow extends ListingRow {
       );
     }
 
-
     const startDate = Moment(this.state.eventStart).format('MM/DD/YYYY');
     const endDate = Moment(this.state.eventEnd).format('MM/DD/YYYY');
     const eventStatus = this.state.is_published ? 'live' : 'dropped';
@@ -173,8 +172,8 @@ export default class EventRow extends ListingRow {
       ? <Link to={`/venues/${this.props.venue.id}`}>{this.props.venue.name}</Link> : 'NO VENUE';
     const orgLink = this.props.org
       ? <Link to={`/organizers/${this.props.org.id}`}>{this.props.org.name}</Link> : 'NO ORGANIZER';
-    const deleteButton = this.user.is_admin ?
-      <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete</button> : '';
+    const deleteButton = this.user.is_su ?
+      <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete forever</button> : '';
 
     return (
       <tr className={'schema-row'}>

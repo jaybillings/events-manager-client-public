@@ -66,8 +66,8 @@ export default class VenueRecord extends ListingRecordUniversal {
 
     const publishButton = this.user.is_su
       ? <button type={'submit'} className={'button-primary'}>Save Changes</button> : '';
-    const deleteButton = this.user.is_admin ?
-      <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete Venue</button> : '';
+    const deleteButton = this.user.is_su ?
+      <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>permanently Delete Venue</button> : '';
     const disableAll = !this.user.is_su;
 
     return (

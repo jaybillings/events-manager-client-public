@@ -53,8 +53,8 @@ export default class OrganizerRecord extends ListingRecordUniversal {
 
     const publishButton = this.user.is_su ?
       <button type={'submit'} className={'button-primary'}>Save Changes</button> : '';
-    const deleteButton = this.user.is_admin ?
-      <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete Organizer</button> : '';
+    const deleteButton = this.user.is_su ?
+      <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>permanently Delete Organizer</button> : '';
     const disableAll = !this.user.is_su;
 
     return (

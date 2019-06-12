@@ -77,8 +77,8 @@ export default class VenueAddForm extends ListingAddForm {
    */
   render() {
     const defaultHood = this.props.hoods.length > 0 ? this.props.hoods[0].id : '';
-    const submitAction = this.user.is_admin ? this.handleAddClick : this.handleAddPendingClick;
-    const submitLabel = this.user.is_admin ? 'Publish Venue' : 'Add Pending Venue';
+    const submitAction = this.user.is_su ? this.handleAddClick : this.handleAddPendingClick;
+    const submitLabel = this.user.is_su ? 'Publish Venue' : 'Add Pending Venue';
 
     return (
       <form id={'venue-add-form'} className={'add-form'} onSubmit={submitAction}>

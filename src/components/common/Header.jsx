@@ -43,7 +43,7 @@ export default class Header extends Component {
    * @returns {*}
    */
   render() {
-    const adminToolsLink = this.user && this.user.is_admin ?
+    const adminToolsLink = this.user && this.user.is_su ?
       <li><NavLink to={`/admin/`} activeClassName={'current'}>Admin Tools</NavLink></li> : '';
 
     return (

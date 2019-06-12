@@ -104,8 +104,8 @@ export default class EventAddForm extends ListingAddForm {
 
     const currentDate = Moment().format('YYYY-MM-DD');
 
-    const submitAction = this.user.is_admin ? this.handleAddClick : this.handleAddPendingClick;
-    const submitLabel = this.user.is_admin ? 'Publish Event' : 'Add Pending Event';
+    const submitAction = this.user.is_su ? this.handleAddClick : this.handleAddPendingClick;
+    const submitLabel = this.user.is_su ? 'Publish Event' : 'Add Pending Event';
 
     return (
       <form id={'event-add-form'} className={'add-form'} onSubmit={submitAction}>

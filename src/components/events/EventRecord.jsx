@@ -130,8 +130,8 @@ export default class EventRecord extends ListingRecordUniversal {
 
     const publishButton = this.user.is_su
     ? <button type={'submit'} className={'button-primary'}>Save Changes</button> : '';
-    const deleteButton = this.user.is_admin
-      ?  <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Delete Event</button> : '';
+    const deleteButton = this.user.is_su
+      ?  <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>permanently Delete Event</button> : '';
     const disableAll = !this.user.is_su;
 
     return (

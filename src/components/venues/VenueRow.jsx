@@ -94,8 +94,8 @@ export default class VenueRow extends ListingRow {
 
     const hoodNameLink = this.props.hood
       ? <Link to={`/neighborhoods/${this.props.hood.id}`}>{this.props.hood.name}</Link> : 'NO NEIGHBORHOOD';
-    const deleteButton = this.user.is_admin
-      ? <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete</button> : '';
+    const deleteButton = this.user.is_su
+      ? <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete forever</button> : '';
 
     return (
       <tr className={'schema-row'}>

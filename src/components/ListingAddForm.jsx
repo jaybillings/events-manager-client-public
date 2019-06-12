@@ -74,8 +74,8 @@ export default class ListingAddForm extends Component {
    */
   render() {
     const schema = this.props.schema;
-    const submitAction = this.user.is_admin ? this.handleAddClick : this.handleAddPendingClick;
-    const submitLabel = this.user.is_admin ? `Publish ${makeSingular(schema)}` : `Add Pending ${makeSingular(schema)}`;
+    const submitAction = this.user.is_su ? this.handleAddClick : this.handleAddPendingClick;
+    const submitLabel = this.user.is_su ? `Publish ${makeSingular(schema)}` : `Add Pending ${makeSingular(schema)}`;
 
     return (
       <form id={`${schema}-add-form`} className={'add-form'} onSubmit={submitAction}>

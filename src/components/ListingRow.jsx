@@ -181,8 +181,8 @@ export default class ListingRow extends Component {
       );
     }
 
-    const deleteButton = this.user.is_admin
-      ? <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete</button> : '';
+    const deleteButton = this.user.is_su
+      ? <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete forever</button> : '';
 
     return (
       <tr className={'schema-row'}>
