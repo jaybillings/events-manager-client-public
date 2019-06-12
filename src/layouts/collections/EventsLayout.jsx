@@ -318,26 +318,34 @@ export default class EventsLayout extends ListingsLayout {
    * @returns {Promise<{}>}
    */
   createPendingListing(listingData) {
-    return this.pendingListingsService.create(listingData)
+    return this.pendingListingsService.create(listingData.eventObj)
       .then(result => {
+        console.debug(result);
         this.setState({newPendingListing: result});
         this.updateMessagePanel({
           status: 'success',
           details: [
-            <span>`Pending event "${listingData.name}" created.`</span>,
-            <Link to={`/pendingevent/${result.id}`}>Click here to edit.</Link>
+            <span key={'pending-message'}>Pending event {listingData.name} created.</span>,
+            <Link key={'pending-link'} to={`/pendingEvents/${result.id}`}>Click here to edit.</Link>
           ]
         });
-        return this.eventsTagsLookupService.find({query: {event_uuid: this.state.listing.uuid}})
-      })
-      .then(result => {
-        if (result.total) this.pendingEventsTagsLookupService.create(result.data);
+
+        if (listingData.tagsToSave) {
+          const tagData = listingData.tagsToSave.map(tag => {
+            return {tag_uuid: tag, event_uuid: result.uuid};
+          });
+          console.debug(tagData);
+          this.pendingEventsTagsLookupService.create(tagData)
+            .catch(err => {
+              printToConsole(err);
+              displayErrorMessages('create', 'event-tag links', err, this.updateMessagePanel);
+            });
+        }
       })
       .catch(err => {
         printToConsole(err);
         displayErrorMessages('create', 'pending event from event', err, this.updateMessagePanel, 'retry');
       });
-
   }
 
   /**

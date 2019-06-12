@@ -270,8 +270,8 @@ export default class ListingsLayout extends Component {
         this.updateMessagePanel({
           status: 'success',
           details: [
-            <span>`Pending ${this.singularSchema} "${result.name}" created.`</span>,
-            <Link to={`/pending${this.schema}/${result.id}`}>Click here to edit.</Link>
+            <span key={'pending-message'}>Pending {this.singularSchema} "{result.name}" created.</span>,
+            <Link key={'pending-link'} to={`/pending${this.schema}/${result.id}`}>Click here to edit.</Link>
           ]
         });
         return result;
@@ -419,19 +419,13 @@ export default class ListingsLayout extends Component {
    */
   render() {
     const schema = this.schema;
-    const pendingListing = this.state.newPendingListing;
 
     const filterType = this.state.filterType === 'none' ? 'All' : this.state.filterType;
-
-    let pendingListingLink = pendingListing.id ? <div className={'pending-link'}>
-      <Link to={`/pending${this.schema}/${pendingListing.id}`}>Click here to edit {pendingListing.name}</Link>
-    </div> : '';
 
     return (
       <div className={'container'}>
         <Header />
         <MessagePanel ref={this.messagePanel} />
-        {pendingListingLink}
         <h2>Browse {filterType} {schema}</h2>
         <Searchbar key={`${schema}-search`} searchTerm={this.state.searchTerm}
                    updateSearchQuery={this.updateSearchQuery} />

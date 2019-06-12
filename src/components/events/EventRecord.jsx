@@ -129,9 +129,10 @@ export default class EventRecord extends ListingRecordUniversal {
     const updatedAt = Moment(event.updated_at).calendar();
 
     const publishButton = this.user.is_su
-    ? <button type={'submit'} className={'button-primary'}>Save Changes</button> : '';
+      ? <button type={'submit'} className={'button-primary'}>Save Changes</button> : '';
     const deleteButton = this.user.is_su
-      ?  <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>permanently Delete Event</button> : '';
+      ? <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>permanently Delete
+        Event</button> : '';
     const disableAll = !this.user.is_su;
 
     return (
@@ -157,7 +158,8 @@ export default class EventRecord extends ListingRecordUniversal {
         </label>
         <label className={'required'}>
           Name
-          <input type={'text'} ref={this.nameInput} defaultValue={event.name} required maxLength={100} disabled={disableAll} />
+          <input type={'text'} ref={this.nameInput} defaultValue={event.name} required maxLength={100}
+                 disabled={disableAll} />
         </label>
         <label className={'required'}>
           Start Date
@@ -181,7 +183,8 @@ export default class EventRecord extends ListingRecordUniversal {
         </label>
         <label className={'required'}>
           Description
-          <textarea ref={this.descInput} defaultValue={event.description} maxLength={500} disabled={disableAll} required />
+          <textarea ref={this.descInput} defaultValue={event.description} maxLength={500} disabled={disableAll}
+                    required />
         </label>
         <label>
           Tags
@@ -205,15 +208,18 @@ export default class EventRecord extends ListingRecordUniversal {
         </label>
         <label>
           Ticketing URL
-          <input type={'text'} ref={this.ticketUrlInput} defaultValue={event.ticket_url} maxLength={150} disabled={disableAll} />
+          <input type={'text'} ref={this.ticketUrlInput} defaultValue={event.ticket_url} maxLength={150}
+                 disabled={disableAll} />
         </label>
         <label>
           Ticketing Phone Number
-          <input type={'tel'} ref={this.ticketPhoneInput} defaultValue={event.ticket_phone} maxLength={20} disabled={disableAll} />
+          <input type={'tel'} ref={this.ticketPhoneInput} defaultValue={event.ticket_phone} maxLength={20}
+                 disabled={disableAll} />
         </label>
         <label>
           Ticket Prices
-          <input type={'text'} ref={this.ticketPricesInput} defaultValue={event.ticket_prices} maxLength={50} disabled={disableAll} />
+          <input type={'text'} ref={this.ticketPricesInput} defaultValue={event.ticket_prices} maxLength={50}
+                 disabled={disableAll} />
         </label>
         <label>
           <input type='checkbox' ref={this.ongoingInput} defaultChecked={event.flag_ongoing} disabled={disableAll} />

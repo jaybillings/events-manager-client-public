@@ -65,7 +65,7 @@ export default class EventAddForm extends ListingAddForm {
       tagsToSave.push(chkbx.value);
     });
 
-    return {eventID: null, eventObj: eventObj, tagsToSave: tagsToSave};
+    return {eventObj: eventObj, tagsToSave: tagsToSave};
   }
 
   /**
