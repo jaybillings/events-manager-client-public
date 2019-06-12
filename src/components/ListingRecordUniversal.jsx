@@ -38,12 +38,9 @@ export default class ListingRecordUniversal extends Component {
   async getWriteStatus() {
     const listing = this.props.listing;
 
-    console.debug(this.props);
-
     if (this.props.matchingLiveListing) return 'update';
 
     const similarListings = await this.props.queryForDuplicate(listing);
-
     if (similarListings.total) return 'duplicate';
 
     return 'new';
@@ -57,7 +54,13 @@ export default class ListingRecordUniversal extends Component {
    */
   handleSaveClick(e) {
     e.preventDefault();
-    this.props.updateListing({name: this.nameInput.current.value});
+    this.props.updateListing({name: this.nameInput.current.value})
+      .then(() => {
+        return this.getWriteStatus();
+      })
+      .then(writeStatus => {
+        this.setState({writeStatus});
+      });
   }
 
   /**

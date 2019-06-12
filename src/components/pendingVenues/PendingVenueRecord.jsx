@@ -68,7 +68,13 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
     this.stateInput.current.value !== '' && (newData.address_state = this.stateInput.current.value);
     this.zipInput.current.value !== '' && (newData.address_zip = this.zipInput.current.value);
 
-    this.props.updateListing(newData);
+    this.props.updateListing(newData)
+      .then(() => {
+        return this.getWriteStatus()
+      })
+      .then(writeStatus => {
+        this.setState({writeStatus})
+      });
   }
 
   /**

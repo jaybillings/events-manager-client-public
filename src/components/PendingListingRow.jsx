@@ -64,7 +64,6 @@ export default class PendingListingRow extends Component {
     if (this.state.matchingLiveListing) return 'update';
 
     const similarListings = await this.props.queryForDuplicate(listing);
-
     if (similarListings.total) return 'duplicate';
 
     return 'new';
@@ -102,7 +101,14 @@ export default class PendingListingRow extends Component {
     const newData = {name: this.nameRef.current.value};
 
     this.props.updateListing(this.props.listing, newData)
-      .then(() => this.setState({editable: false}));
+      .then(result => {
+        console.debug(result);
+        return this.getWriteStatus();
+      })
+      .then(writeStatus => {
+        console.debug(writeStatus);
+        this.setState({writeStatus, editable: false})
+      });
   }
 
   /**

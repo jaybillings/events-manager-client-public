@@ -115,7 +115,7 @@ export default class SinglePendingVenueLayout extends SinglePendingListingLayout
    * @returns {*}
    */
   renderRecord() {
-    if (!(this.state.listingLoaded && this.state.pendingHoodsLoaded)) {
+    if (!(this.state.listingLoaded && this.state.matchingListingLoaded && this.state.pendingHoodsLoaded)) {
       return <div className={'single-message info message-compact'}>Data is loading... Please be patient...</div>
     }
 

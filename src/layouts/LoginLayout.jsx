@@ -189,9 +189,10 @@ export default class LoginLayout extends Component {
   renderForm() {
     if (this.state.shouldCreateUser) {
       return [
-        <span className={'message single-message'}>Passwords must be at least 8 letters long, contain a capital letter, and contain a number.</span>,
+        <div key={'create-password-msg'} className={'message single-message'}>Passwords must be at least 8 letters long,
+          contain a capital letter, and contain a number.</div>,
         <CreateAccountForm
-          email={this.state.email} password={this.state.password}
+          key={'create-account-form'} email={this.state.email} password={this.state.password}
           createUser={this.createUser} resendVerifyEmail={this.resendVerifyEmail}
           handleInputChange={this.handleInputChange} toggleLoginState={this.toggleLoginState}
           updateMessagePanel={this.updateMessagePanel}
@@ -201,8 +202,10 @@ export default class LoginLayout extends Component {
 
     const hideWarningClass = this.state.redirectCount === -1 ? '' : ' hidden';
     return [
-      <p className={'message single-message warning-message' + hideWarningClass}>You must log in to continue.</p>,
+      <p key={'login-warning'} className={'message single-message warning-message' + hideWarningClass}>You must log in
+        to continue.</p>,
       <LoginForm
+        key={'login-form'}
         email={this.state.email} password={this.state.password}
         logInUser={this.logInUser} handleInputChange={this.handleInputChange}
         toggleLoginState={this.toggleLoginState}

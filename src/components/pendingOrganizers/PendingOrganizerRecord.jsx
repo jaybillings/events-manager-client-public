@@ -56,7 +56,13 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
     this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value);
     this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value);
 
-    this.props.updateListing(newData);
+    this.props.updateListing(newData)
+      .then(() => {
+        return this.getWriteStatus();
+      })
+      .then(writeStatus => {
+        this.setState({writeStatus});
+      });
   }
 
   /**

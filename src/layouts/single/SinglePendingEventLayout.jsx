@@ -332,16 +332,18 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
    *
    * @override
    * @param {object} listingData
+   * @returns {Promise<*>}
    */
   updateListing(listingData) {
-    this.pendingListingsService.patch(this.listingID, listingData.eventData)
+    return this.pendingListingsService.patch(this.listingID, listingData.eventData)
+      .then(() => {
+        if (listingData.tagsToSave) this.createPendingTagAssociations(listingData.tagsToSave);
+        if (listingData.tagsToRemove) this.removePendingTagAssociations(listingData.tagsToRemove);
+      })
       .catch(err => {
         printToConsole(err);
         displayErrorMessages('save changes to', this.state.listing.name, err, this.updateMessagePanel, 'retry');
       });
-
-    if (listingData.tagsToSave) this.createPendingTagAssociations(listingData.tagsToSave);
-    if (listingData.tagsToRemove) this.removePendingTagAssociations(listingData.tagsToRemove);
   }
 
   /**

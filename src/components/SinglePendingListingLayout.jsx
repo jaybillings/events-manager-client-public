@@ -80,13 +80,20 @@ export default class SinglePendingListingLayout extends SingleListingLayout {
       className={'message-compact single-message info'}>Data is loading...
       Please be patient...</div>;
 
+    console.debug(this.state.matchingListingLoaded);
+
     return <ListingRecordUniversal
       schema={this.schema} listing={this.state.listing} matchingLiveListing={this.state.matchingLiveListing}
       updateListing={this.updateListing} deleteListing={this.deleteListing} queryForDuplicate={this.queryForDuplicate}
     />
   }
 
-  renderHeader() {
+  /**
+   * `renderHeading` renders the view's heading.
+   *
+   * @returns {string|*}
+   */
+  renderHeading() {
     if (!this.state.listing.name) return '';
 
     return <div className={'block-warning'}><h2
@@ -113,7 +120,7 @@ export default class SinglePendingListingLayout extends SingleListingLayout {
         <Header />
         <p className={'message-atom'}><Link to={`/${returnTarget}`}><MdChevronLeft />Return to {returnTarget}</Link></p>
         <MessagePanel ref={this.messagePanel} />
-        {this.renderHeader()}
+        {this.renderHeading()}
         {this.renderRecord()}
       </div>
     );

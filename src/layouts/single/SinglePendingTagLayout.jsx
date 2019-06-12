@@ -21,7 +21,7 @@ export default class SinglePendingTagLayout extends SinglePendingListingLayout {
    * @returns {*}
    */
   renderRecord() {
-    if (!this.state.listingLoaded) return <div className={'message-compact single-message info'}>Data is loading... Please be patient...</div>;
+    if (!(this.state.listingLoaded && this.state.matchingListingLoaded)) return <div className={'message-compact single-message info'}>Data is loading... Please be patient...</div>;
 
     return <PendingTagRecord
       schema={this.schema} listing={this.state.listing} matchingLiveListing={this.state.matchingLiveListing}

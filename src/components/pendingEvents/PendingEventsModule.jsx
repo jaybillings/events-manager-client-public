@@ -99,11 +99,17 @@ export default class PendingEventsModule extends PendingListingsModule {
     this.pendingEventsTagsLookupService
       .on('created', message => {
         // Don't need to fetch the actual data, just inform the user
-        this.props.updateMessagePanel({status: 'info', details: `Linked tag ${message.tag_uuid} with pending event ${message.event_uuid}.`});
+        this.props.updateMessagePanel({
+          status: 'info',
+          details: `Linked tag ${message.tag_uuid} with pending event ${message.event_uuid}.`
+        });
       })
       .on('removed', message => {
         // Don't need to fetch the actual data, just inform the user
-        this.props.updateMessagePanel({status: 'info', details: `Unlinked tag ${message.tag_uuid} from pending event ${message.event_uuid}.`});
+        this.props.updateMessagePanel({
+          status: 'info',
+          details: `Unlinked tag ${message.tag_uuid} from pending event ${message.event_uuid}.`
+        });
       });
   }
 
@@ -118,14 +124,9 @@ export default class PendingEventsModule extends PendingListingsModule {
   queryForDuplicate(pendingListing) {
     return this.listingsService.find({
       query: {
-        $or: [
-          {uuid: pendingListing.uuid},
-          {
-            name: pendingListing.name,
-            start_date: pendingListing.start_date,
-            end_date: pendingListing.end_date
-          }
-        ],
+        name: pendingListing.name,
+        start_date: pendingListing.start_date,
+        end_date: pendingListing.end_date,
         $select: ['uuid']
       }
     });
@@ -404,7 +405,8 @@ export default class PendingEventsModule extends PendingListingsModule {
       this.state.orgsLoaded && this.state.pendingOrgsLoaded)) {
       return <div className={'single-message info message-compact'}>Data is loading... Please be patient...</div>;
     }
-    if (this.state.pendingListingsTotal === 0) return <div className={'message-compact single-message no-content'}>No pending events to list.</div>;
+    if (this.state.pendingListingsTotal === 0) return <div className={'message-compact single-message no-content'}>No
+      pending events to list.</div>;
 
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],

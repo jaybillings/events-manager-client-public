@@ -259,7 +259,12 @@ export default class PendingListingsModule extends Component {
    * @returns {Promise<{}>}
    */
   queryForDuplicate(pendingListing) {
-    return this.listingsService.find({query: {name: pendingListing.name, $select: ['uuid']}});
+    return this.listingsService.find({
+      query: {
+        name: pendingListing.name,
+        $select: ['uuid']
+      }
+    });
   }
 
   /**

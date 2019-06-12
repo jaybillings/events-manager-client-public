@@ -118,11 +118,13 @@ export default class SingleListingLayout extends Component {
   /**
    * `updateListing` updates the listing's data by calling the service's PATCH method.
    *
+   * @async
    * @param {object} newData
+   * @returns {Promise<*>}
    */
   updateListing(newData) {
     console.debug('updating listing');
-    app.service(this.schema).patch(this.listingID, newData)
+    return app.service(this.schema).patch(this.listingID, newData)
       .catch(err => {
         printToConsole(err);
         displayErrorMessages('save changes to', this.state.listing.name || '', err, this.updateMessagePanel, 'retry');

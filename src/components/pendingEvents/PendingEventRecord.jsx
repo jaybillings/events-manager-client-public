@@ -97,7 +97,13 @@ export default class PendingEventRecord extends ListingRecordUniversal {
       }
     });
 
-    this.props.updateListing({eventData: newData, tagsToSave: tagsToSave, tagsToRemove: tagsToRemove});
+    this.props.updateListing({eventData: newData, tagsToSave: tagsToSave, tagsToRemove: tagsToRemove})
+      .then(() => {
+        return this.getWriteStatus();
+      })
+      .then(writeStatus => {
+        this.setState({writeStatus});
+      });
   }
 
   /**
@@ -127,7 +133,7 @@ export default class PendingEventRecord extends ListingRecordUniversal {
     const classNameMap = diffListings(liveEvent, event, eventParams);
 
     let tagDiffList = [];
-    if (this.props.tagsForListing && this.props.tagsForPendingListing) {
+    if (this.props.tagsForListing.length && this.props.tagsForPendingListing.length) {
       tagDiffList = diffTags(this.props.tagsForListing, this.props.tagsForPendingListing);
     }
 
