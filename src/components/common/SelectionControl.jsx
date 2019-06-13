@@ -3,7 +3,8 @@ import React, {Component} from 'react';
 import '../../styles/selection-control.css';
 
 /**
- * The SelectionControl component displays a button for selecting all/no rows.
+ * `SelectionControl` displays a button that allows for selecting all/row rows of a data table.
+ *
  * @class
  *
  * @param {{numSelected: int, total: int, schema: string, selectPage: Function, selectAll: Function, selectNone: Function}} props
@@ -11,10 +12,10 @@ import '../../styles/selection-control.css';
 export default class SelectionControl extends Component {
   /**
    * Renders the component.
-   * @override
-   * @render
    *
-   * @returns {*}
+   * @render
+   * @override
+   * @returns {*[]}
    */
   render() {
     const classNames = 'selection-control default';

@@ -4,6 +4,7 @@ import {
   buildColumnSort,
   buildSortQuery,
   displayErrorMessages,
+  printToConsole,
   renderTableHeader,
   uniqueListingsOnly
 } from "../../utilities";
@@ -12,6 +13,9 @@ import ReplaceTermsForm from "./ReplaceTermsForm";
 import PaginationLayout from "../common/PaginationLayout";
 import TermReplacementRow from "./TermReplacementRow";
 
+/**
+ * `ReplaceNeighborhoodsModule` displays the module for replacing neighborhood terms.
+ */
 export default class ReplaceNeighborhoodsModule extends Component {
   constructor(props) {
     super(props);
@@ -20,7 +24,8 @@ export default class ReplaceNeighborhoodsModule extends Component {
     this.defaultSort = ['created_at', 1];
 
     this.state = {
-      liveHoods: [], pendingHoods: [], uniqueHoods: [], liveHoodsLoaded: false, liveHoodsTotal: 0,
+      liveHoods: [], liveHoodsLoaded: false, liveHoodsTotal: 0,
+      pendingHoods: [], pendingHoodsLoaded: false, pendingHoodsTotal: 0, uniqueHoods: [],
       lookups: [], lookupsTotal: 0, lookupsLoaded: false,
       sort: this.defaultSort, currentPage: 1, pageSize: this.props.defaultPageSize,
       replaceRunning: false
@@ -47,10 +52,18 @@ export default class ReplaceNeighborhoodsModule extends Component {
     this.deleteHoodReplacementLookup = this.deleteHoodReplacementLookup.bind(this);
 
     this.runHoodReplacement = this.runHoodReplacement.bind(this);
+    this.runReplacementOnly = this.runReplacementOnly.bind(this);
 
     this.renderTable = this.renderTable.bind(this);
   }
 
+  /**
+   * Runs once the component is mounted.
+   *
+   * During`componentDidMount`, the component fetches all data and registers data service listeners.
+   *
+   * @override
+   */
   componentDidMount() {
     this.fetchAllData();
 
@@ -80,6 +93,14 @@ export default class ReplaceNeighborhoodsModule extends Component {
     }
   }
 
+  /**
+   * Runs before the component is unmounted.
+   *
+   * During `componentWillUnmount`, the component unregisters data service
+   * listeners..
+   *
+   * @override
+   */
   componentWillUnmount() {
     this.vsBdHoodLookupService
       .removeAllListeners('created')
@@ -99,6 +120,9 @@ export default class ReplaceNeighborhoodsModule extends Component {
     });
   }
 
+  /**
+   * `fetchAllData` fetches all data required by the layout.
+   */
   fetchAllData() {
     this.fetchReplacementLookups();
 
@@ -108,78 +132,133 @@ export default class ReplaceNeighborhoodsModule extends Component {
         this.fetchPendingHoods()
       ])
       .then(([liveHoodResult, pendingHoodResult]) => {
-        const uniqueHoods = uniqueListingsOnly(liveHoodResult.data, pendingHoodResult.data);
-        this.setState({
-          liveHoods: liveHoodResult.data,
-          pendingHoods: pendingHoodResult.data,
-          uniqueHoods
-        });
+        let uniqueHoods = [];
+
+        if (liveHoodResult.data && pendingHoodResult.data) {
+          uniqueHoods = uniqueListingsOnly(liveHoodResult.data, pendingHoodResult.data);
+          this.setState({uniqueHoods});
+        }
+      });
+  }
+
+  /**
+   * `fetchHoods` fetches published hoods and saves data to the state.
+   *
+   * @async
+   * @returns {Promise<*>}
+   */
+  fetchHoods() {
+    return this.hoodsService.find({query: this.defaultQuery})
+      .then(result => {
+        if (result.total) {
+          this.setState({
+            liveHoods: result.data,
+            liveHoodsTotal: result.total,
+            liveHoodsLoaded: true
+          });
+        }
+        return result;
       })
       .catch(err => {
-        displayErrorMessages('fetch', 'neighborhood data', err, this.props.updateMessagePanel);
+        this.setState({liveHoodsLoaded: false});
+        printToConsole(err);
+        displayErrorMessages('fetch', 'live neighborhoods', err, this.props.updateMessagePanel);
       });
   }
 
-  fetchHoods() {
-    return this.hoodsService
-      .find({query: this.defaultQuery})
-      .then(results => {
-        this.setState({liveHoodsLoaded: true});
-        return results;
-      });
-  }
-
+  /**
+   * `fetchPendingHoods` fetches pending neighborhoods BUT DOES NOT save them to the state.
+   *
+   * @async
+   * @returns {Promise<*>}
+   */
   fetchPendingHoods() {
-    return this.pendingHoodsService.find({query: this.defaultQuery});
+    return this.pendingHoodsService.find({query: this.defaultQuery})
+      .then(result => {
+        this.setState({pendingHoodsLoaded: true});
+        if (result.total) {
+          this.setState({
+            pendingHoods: result.data,
+            pendingHoodsTotal: result.total,
+          });
+        }
+        return result;
+      })
+      .catch(err => {
+        this.setState({pendingHoodsLoaded: false});
+        printToConsole(err);
+        displayErrorMessages('fetch', 'pending neighborhoods', err, this.props.updateMessagePanel);
+      });
   }
 
+  /**
+   * `fetchReplacementLookups` fetches neighborhood replacement data and saves it to the state.
+   */
   fetchReplacementLookups() {
-    this.vsBdHoodLookupService
-      .find({
-        query: {
-          $sort: buildSortQuery(this.state.sort, false),
-          $limit: this.state.pageSize,
-          $skip: this.state.pageSize * (this.state.currentPage - 1)
-        }
-      })
+    this.vsBdHoodLookupService.find({
+      query: {
+        $sort: buildSortQuery(this.state.sort, false),
+        $limit: this.state.pageSize,
+        $skip: this.state.pageSize * (this.state.currentPage - 1)
+      }
+    })
       .then(results => {
         this.setState({lookups: results.data, lookupsTotal: results.total, lookupsLoaded: true});
       })
-      .catch(errors => {
-        displayErrorMessages('fetch', 'neighborhood replacement data', errors,
+      .catch(err => {
+        displayErrorMessages('fetch', 'neighborhood replacement data', err,
           this.props.updateMessagePanel, 'retry');
         this.setState({lookupsLoaded: false});
+        printToConsole(err);
       });
   }
 
+  /**
+   * `fetchLiveAndUpdateUnique` fetches live listings and updates the unique listings state.
+   */
   fetchLiveAndUpdateUnique() {
     this.fetchHoods()
       .then(result => {
+        if (!result.total) return;
         const uniqueHoods = uniqueListingsOnly(result.data, this.state.pendingHoods);
-        this.setState({liveHoods: result.data, uniqueHoods});
+        this.setState({liveHoods: result.data, liveHoodsTotal: result.total, uniqueHoods});
       })
       .catch(err => {
+        printToConsole(err);
         displayErrorMessages('fetch', 'live hoods', err, this.props.updateMessagePanel);
       });
   }
 
+  /**
+   * `fetchPendingAndUpdateUnique` fetches pending listings and updates the unique listings state.
+   */
   fetchPendingAndUpdateUnique() {
     this.fetchPendingHoods()
       .then(result => {
+        if (!result.total) return;
         const uniqueHoods = uniqueListingsOnly(this.state.liveHoods, result.data);
-        this.setState({pendingHoods: result.data, uniqueHoods});
+        this.setState({pendingHoods: result.data, pendingHoodsTotal: result.total, uniqueHoods});
       })
       .catch(err => {
+        printToConsole(err);
         displayErrorMessages('fetch', 'pending hoods', err, this.props.updateMessagePanel);
       });
   }
 
+  /**
+   * `fetchHoodsToReplace` fetches neighborhoods that match the term to be replaced.
+   *
+   * @param {String} nameToReplace
+   * @param {Object} service
+   * @returns {Promise<*>}
+   */
   static fetchHoodsToReplace(nameToReplace, service) {
     return service.find({query: {name: nameToReplace}});
   }
 
   /**
-   * Updates the component's page size and respective data.
+   * `updatePageSize` updates the component's page size, then fetches new listings.
+   *
    * @param pageSize
    */
   updatePageSize(pageSize) {
@@ -187,7 +266,8 @@ export default class ReplaceNeighborhoodsModule extends Component {
   }
 
   /**
-   * Updates the component's current page and respective data.
+   * `updateCurrentPage` updates the data table's current page, then fetches new listings.
+   *
    * @param {string} page
    */
   updateCurrentPage(page) {
@@ -195,7 +275,8 @@ export default class ReplaceNeighborhoodsModule extends Component {
   }
 
   /**
-   * Updates the component's column sorting and respective data.
+   * `updateColumnSort` updates the data table's column sorting, then fetches new listings.
+   *
    * @param {Event} e
    */
   updateColumnSort(e) {
@@ -203,6 +284,14 @@ export default class ReplaceNeighborhoodsModule extends Component {
     this.setState({sort: colSortState}, () => this.fetchAllData());
   }
 
+  /**
+   * `createHoodReplacementLookup` creates a hood replacement lookup row in the database.
+   *
+   * @async
+   * @param {string} targetName
+   * @param {Object} replacement
+   * @returns {Promise<*>}
+   */
   createHoodReplacementLookup(targetName, replacement) {
     return this.vsBdHoodLookupService.create({
       bd_region_name: targetName,
@@ -211,24 +300,54 @@ export default class ReplaceNeighborhoodsModule extends Component {
     });
   }
 
+  /**
+   * `replaceHoodLinks` replaces the hood link within a venue to the new hood.
+   *
+   * @async
+   * @param {int|string} uuidOfReplacement
+   * @param {Array} uuidsToReplace
+   * @param {Object} linkedService
+   * @returns {Promise<*>}
+   */
   static replaceHoodLinks(uuidOfReplacement, uuidsToReplace, linkedService) {
     return linkedService.patch(null, {hood_uuid: uuidOfReplacement}, {query: {hood_uuid: {$in: uuidsToReplace}}});
   }
 
+  /**
+   * `deleteHoodReplacementLookup` deletes a hood replacement lookup row.
+   *
+   * @param {int} rowID
+   */
   deleteHoodReplacementLookup(rowID) {
-    this.vsBdHoodLookupService
-      .remove(rowID)
-      .catch(errors => {
+    this.vsBdHoodLookupService.remove(rowID)
+      .catch(err => {
+        printToConsole(err);
         displayErrorMessages('delete', `neighborhood lookup row #${rowID}`,
-          errors, this.props.updateMessagePanel, 'retry');
-        this.fetchReplacementLookups();
+          err, this.props.updateMessagePanel, 'retry');
       })
+      .finally(() => {
+        this.fetchReplacementLookups();
+      });
   }
 
+  /**
+   * `deleteOldHoods` deletes the neighborhoods that have been replaced.
+   *
+   * @param {Array} uuidsToRemove
+   * @param {Object} service
+   * @returns {Promise<*>}
+   */
   static deleteOldHoods(uuidsToRemove, service) {
     return service.remove(null, {query: {uuid: {$in: uuidsToRemove}}});
   }
 
+  /**
+   * `runHoodReplacement` runs the process to find and replace neighborhoods.
+   *
+   * @param {string} nameToReplace
+   * @param {int|string} uuidOfReplacement
+   * @returns {Promise<void>}
+   */
   async runHoodReplacement(nameToReplace, uuidOfReplacement) {
     const replacement = this.state.uniqueHoods.find(hood => {
       return hood.uuid === uuidOfReplacement
@@ -263,11 +382,10 @@ export default class ReplaceNeighborhoodsModule extends Component {
 
     this.props.updateMessagePanel({status: 'info', details: 'Linking venues to replacement neighborhood.'});
 
-    Promise
-      .all([
-        ReplaceNeighborhoodsModule.replaceHoodLinks(replacement.uuid, liveUUIDsToReplace, this.venuesService),
-        ReplaceNeighborhoodsModule.replaceHoodLinks(replacement.uuid, pendingUUIDsToReplace, this.pendingVenuesService)
-      ])
+    Promise.all([
+      ReplaceNeighborhoodsModule.replaceHoodLinks(replacement.uuid, liveUUIDsToReplace, this.venuesService),
+      ReplaceNeighborhoodsModule.replaceHoodLinks(replacement.uuid, pendingUUIDsToReplace, this.pendingVenuesService)
+    ])
       .then(() => {
         this.props.updateMessagePanel({status: 'info', details: 'Deleting old neighborhoods.'});
         return Promise.all([
@@ -275,8 +393,7 @@ export default class ReplaceNeighborhoodsModule extends Component {
           ReplaceNeighborhoodsModule.deleteOldHoods(pendingUUIDsToReplace, this.pendingHoodsService)
         ]);
       })
-      .then((results) => {
-        console.debug('delete results', results);
+      .then(() => {
         this.props.updateMessagePanel({status: 'info', details: 'Creating replacement lookup row in database.'});
         return this.createHoodReplacementLookup(nameToReplace, replacement);
       })
@@ -287,19 +404,72 @@ export default class ReplaceNeighborhoodsModule extends Component {
         });
       })
       .catch(err => {
-        this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err.message)});
-        console.error(err);
+        if (err.code === 'SQLITE_CONSTRAINT') return;
+        displayErrorMessages('run', 'neighborhood replacement', err, this.props.updateMessagePanel);
+        printToConsole(err);
       })
       .finally(() => this.setState({replaceRunning: false}));
   }
 
+  /**
+   * `runReplacementOnly` runs neighborhood replacement without creating lookup tables.
+   *
+   * @param {string} nameToReplace
+   * @param {Object} replacement
+   * @returns {Promise<void>}
+   */
+  async runReplacementOnly(nameToReplace, replacement) {
+    this.setState({replaceRunning: true});
+
+    this.props.updateMessagePanel({status: 'info', details: 'Starting neighborhood replacement.'});
+    this.props.updateMessagePanel({status: 'info', details: 'Looking for neighborhoods to replace.'});
+
+    const liveLookupRes = await ReplaceNeighborhoodsModule.fetchHoodsToReplace(nameToReplace, this.hoodsService);
+    const pendingLookupRes = await ReplaceNeighborhoodsModule.fetchHoodsToReplace(nameToReplace, this.pendingHoodsService);
+
+    const liveUUIDsToReplace = liveLookupRes.data.map(row => row.uuid);
+    const pendingUUIDsToReplace = pendingLookupRes.data.map(row => row.uuid);
+
+    this.props.updateMessagePanel({status: 'info', details: 'Linking venues to replacement neighborhood.'});
+
+    Promise.all([
+      ReplaceNeighborhoodsModule.replaceHoodLinks(replacement.uuid, liveUUIDsToReplace, this.venuesService),
+      ReplaceNeighborhoodsModule.replaceHoodLinks(replacement.uuid, pendingUUIDsToReplace, this.pendingVenuesService)
+    ])
+      .then(() => {
+        this.props.updateMessagePanel({status: 'info', details: 'Deleting old neighborhoods.'});
+        return Promise.all([
+          ReplaceNeighborhoodsModule.deleteOldHoods(liveUUIDsToReplace, this.hoodsService),
+          ReplaceNeighborhoodsModule.deleteOldHoods(pendingUUIDsToReplace, this.pendingHoodsService)
+        ]);
+      })
+      .then(() => {
+        this.props.updateMessagePanel({
+          status: 'success',
+          details: `Replaced all neighborhoods named "${replacement.name}" with neighborhood named "${replacement.name}"`
+        });
+      })
+      .catch(err => {
+        displayErrorMessages('run', 'neighborhood replacement', err, this.props.updateMessagePanel);
+        printToConsole(err);
+      })
+      .finally(() => {
+        this.setState({replaceRunning: false});
+      });
+  }
+
+  /**
+   * `renderTable` renders the lookup table.
+   *
+   * @returns {*[]|*}
+   */
   renderTable() {
-    if (!this.state.lookupsLoaded || !this.state.liveHoodsLoaded) {
-      return <p>Data is loading... Please be patient...</p>;
+    if (!this.state.lookupsLoaded || !this.state.liveHoodsLoaded || !this.state.pendingHoodsLoaded) {
+      return <div className={'message-compact single-message info'}>Data is loading... Please be patient...</div>;
     }
 
     if (this.state.lookupsTotal === 0) {
-      return <p>No neighborhood lookup rows to list.</p>;
+      return <div className={'message-compact single-message no-content'}>No neighborhood lookup rows to list.</div>;
     }
 
     const titleMap = new Map([
@@ -327,7 +497,7 @@ export default class ReplaceNeighborhoodsModule extends Component {
               })}
               termToReplaceRowName={'bd_region_name'}
               deleteRow={this.deleteHoodReplacementLookup}
-              runReplacement={this.runHoodReplacement}
+              runReplacementOnly={this.runReplacementOnly}
             />;
           })
         }
@@ -336,13 +506,18 @@ export default class ReplaceNeighborhoodsModule extends Component {
     ])
   }
 
+  /**
+   * Renders the component.
+   *
+   * @returns {*}
+   */
   render() {
     return (
       <div className={'schema-module admin-module'}>
         <h3>Replace Neighborhoods</h3>
         <ReplaceTermsForm
           schema={'neighborhoods'} uniqueListings={this.state.uniqueHoods} liveListings={this.state.liveHoods}
-          runTagReplacement={this.runHoodReplacement} replaceRunning={this.state.replaceRunning}
+          runReplacement={this.runHoodReplacement} replaceRunning={this.state.replaceRunning}
         />
         <h4>Manage Neighborhood Replacements</h4>
         {this.renderTable()}

@@ -7,16 +7,13 @@ import StatusLabel from "../common/StatusLabel";
 
 /**
  * PendingVenueRecord is a component which displays a single pending venue's record.
+ *
  * @class
  * @child
+ * @param {{schema: String, listing: Object, matchingLiveListing: Object, hoods: Array,
+ * updateListing: Function, deleteListing: Function, queryForDuplicate: Function}} props
  */
 export default class PendingVenueRecord extends ListingRecordUniversal {
-  /**
-   * The class's constructor.
-   * @constructor
-   *
-   * @param {{listing: Object, schema: String, hoods: Array, updateListing: Function, deleteListing: Function, queryForExisting: Function}} props
-   */
   constructor(props) {
     super(props);
 
@@ -32,17 +29,24 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
   }
 
   /**
-   * Runs after the component mounts. Checks for write status of listing.
+   * Runs before the component is unmounted.
+   *
+   * During `componentDidMount`, the component fetches the listing's write status.
+   *
    * @override
    */
   componentDidMount() {
-    this.checkWriteStatus();
+    this.getWriteStatus()
+      .then(writeStatus => {
+        this.setState({writeStatus});
+      });
   }
 
   /**
-   * Handles the submit action by parsing new data and calling a function to create a new pending venue.
-   * @override
+   * `handleSaveClick` handles the save action by parsing the new data and calling
+   * an update handler.
    *
+   * @override
    * @param {Event} e
    */
   handleSaveClick(e) {
@@ -63,14 +67,20 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
     this.stateInput.current.value !== '' && (newData.address_state = this.stateInput.current.value);
     this.zipInput.current.value !== '' && (newData.address_zip = this.zipInput.current.value);
 
-    this.props.updateListing(newData);
+    this.props.updateListing(newData)
+      .then(() => {
+        return this.getWriteStatus()
+      })
+      .then(writeStatus => {
+        this.setState({writeStatus})
+      });
   }
 
   /**
    * Renders the component.
+   *
    * @override
    * @render
-   *
    * @returns {*}
    */
   render() {
@@ -87,6 +97,10 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
 
     return (
       <form id={'pending-venue-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
+        <div>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard Venue</button>
+          <button type={'submit'} className={'button-primary'}>Save Changes</button>
+        </div>
         <label>
           Status
           <div>
@@ -125,7 +139,7 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
         </label>
         <label className={classNameMap['url']}>
           Url
-          <input type={'url'} ref={this.urlInput} defaultValue={venue.url} />
+          <input type={'text'} ref={this.urlInput} defaultValue={venue.url} />
         </label>
         <label className={classNameMap['phone']}>
           Phone #
@@ -148,7 +162,7 @@ export default class PendingVenueRecord extends ListingRecordUniversal {
           <input type={'text'} ref={this.zipInput} defaultValue={venue.address_zip} />
         </label>
         <div>
-          <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Discard Venue</button>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard Venue</button>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
         </div>
       </form>

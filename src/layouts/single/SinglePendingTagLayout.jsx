@@ -1,34 +1,31 @@
 import React from 'react';
 
-import PendingTagRecord from "../../components/pendingTags/PendingTagRecord";
 import SinglePendingListingLayout from "../../components/SinglePendingListingLayout";
+import PendingTagRecord from "../../components/pendingTags/PendingTagRecord";
 
 /**
- * SinglePendingTagLayout is a component which lays out a single pending tag page.
+ * `SinglePendingTagLayout` lays out the single pending tag view.
+ *
+ * @class
+ * @child
  */
 export default class SinglePendingTagLayout extends SinglePendingListingLayout {
-  /**
-   * The component's constructor.
-   * @constructor
-   *
-   * @param props
-   */
   constructor(props) {
     super(props, 'pending-tags');
   }
 
   /**
-   * Renders the pending tag record.
-   * @override
+   * `renderRecord` renders the single pending tag's record.
    *
+   * @override
    * @returns {*}
    */
   renderRecord() {
-    if (!this.state.listingLoaded) return <p>Data is loading... Please be patient...</p>;
+    if (!(this.state.listingLoaded && this.state.matchingListingLoaded)) return <div className={'message-compact single-message info'}>Data is loading... Please be patient...</div>;
 
     return <PendingTagRecord
       schema={this.schema} listing={this.state.listing} matchingLiveListing={this.state.matchingLiveListing}
-      updateListing={this.updateListing} deleteListing={this.deleteListing} queryForExisting={this.queryForExisting}
+      updateListing={this.updateListing} deleteListing={this.deleteListing} queryForDuplicate={this.queryForDuplicate}
     />
   }
 }

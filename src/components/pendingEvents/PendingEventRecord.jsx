@@ -1,20 +1,21 @@
 import React from 'react';
 import Moment from 'moment';
-import {diffListings, renderCheckboxList, renderOptionList} from "../../utilities";
+import {diffListings, diffTags, renderCheckboxList, renderOptionList} from "../../utilities";
 
 import ListingRecordUniversal from "../ListingRecordUniversal";
 import StatusLabel from "../common/StatusLabel";
 
 /**
- * PendingEventRecord is a component which displays a single pending event's record.
+ * `PendingEventRecord` displays a single pending event record.
+ *
  * @class
  * @child
+ * @param {{schema: String, listing: Object, matchingLiveListing: Object,
+ * venues: Array, orgs: Array, tags: Array, tagsForListing: Array,
+ * tagsForPendingListing: Array, updateListing: Function, deleteListing: Function,
+ * queryForDuplicate: Function}} props
  */
 export default class PendingEventRecord extends ListingRecordUniversal {
-  /**
-   * The class's constructor.
-   * @constructor
-   */
   constructor(props) {
     super(props);
 
@@ -35,18 +36,26 @@ export default class PendingEventRecord extends ListingRecordUniversal {
   }
 
   /**
-   * Runs when the component mounts. Checks the event's publish status.
+   * Runs before the component is unmounted.
+   *
+   * During `componentDidMount`, the component fetches the listing's write status.
+   *
    * @override
    */
   componentDidMount() {
-    this.checkWriteStatus();
+    this.getWriteStatus()
+      .then(writeStatus => {
+        this.setState({writeStatus});
+      });
   }
 
   /**
-   * Handles the submit action by parsing new data and calling a function to create a new pending organizer. Also
-   * modifies associations between the pending event and its tags.
-   * @override
+   * `handleSaveClick` handles the save action by parsing the new data and calling
+   * an update handler.
    *
+   * For events, it also modifies the associations between the pending event and its tags as needed.
+   *
+   * @override
    * @param {Event} e
    */
   handleSaveClick(e) {
@@ -61,8 +70,6 @@ export default class PendingEventRecord extends ListingRecordUniversal {
       description: this.descInput.current.value,
       flag_ongoing: this.ongoingInput.current.checked
     };
-
-    console.log('newData', newData);
 
     // Add non-required only if it has changed
     this.emailInput.current.value !== '' && (newData.email = this.emailInput.current.value);
@@ -79,24 +86,30 @@ export default class PendingEventRecord extends ListingRecordUniversal {
     let uncheckedBoxes = document.querySelectorAll('.js-checkbox:not(:checked)');
 
     checkedBoxes.forEach(input => {
-      if (!this.props.tagsForListing.includes(input.value)) {
+      if (!this.props.tagsForPendingListing.includes(input.value)) {
         tagsToSave.push({event_uuid: this.props.listing.uuid, tag_uuid: input.value});
       }
     });
     uncheckedBoxes.forEach(input => {
-      if (this.props.tagsForListing.includes(input.value)) {
+      if (this.props.tagsForPendingListing.includes(input.value)) {
         tagsToRemove.push(input.value)
       }
     });
 
-    this.props.updateListing({eventData: newData, tagsToSave: tagsToSave, tagsToRemove: tagsToRemove});
+    this.props.updateListing({eventData: newData, tagsToSave: tagsToSave, tagsToRemove: tagsToRemove})
+      .then(() => {
+        return this.getWriteStatus();
+      })
+      .then(writeStatus => {
+        this.setState({writeStatus});
+      });
   }
 
   /**
    * Renders the component.
+   *
    * @override
    * @render
-   *
    * @returns {*}
    */
   render() {
@@ -106,7 +119,7 @@ export default class PendingEventRecord extends ListingRecordUniversal {
     const venues = this.props.venues;
     const orgs = this.props.orgs;
     const tags = this.props.tags;
-    const tagsForListing = this.props.tagsForListing;
+    const tagsForPendingListing = this.props.tagsForPendingListing;
 
     const startDate = Moment(event.start_date).format('YYYY-MM-DD');
     const endDate = Moment(event.end_date).format('YYYY-MM-DD');
@@ -115,13 +128,18 @@ export default class PendingEventRecord extends ListingRecordUniversal {
 
     const eventParams = ['name', 'start_date', 'end_date', 'venue_uuid',
       'org_uuid', 'description', 'email', 'url', 'phone', 'hours',
-    'ticket_url', 'ticket_phone', 'ticket_prices', 'flag_ongoing'];
+      'ticket_url', 'ticket_phone', 'ticket_prices', 'flag_ongoing'];
     const classNameMap = diffListings(liveEvent, event, eventParams);
+
+    let tagDiffList = [];
+    if (this.props.tagsForListing.length && this.props.tagsForPendingListing.length) {
+      tagDiffList = diffTags(this.props.tagsForListing, this.props.tagsForPendingListing);
+    }
 
     return (
       <form id={'pending-event-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
         <div>
-          <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Discard Event</button>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard Event</button>
           <button type={'submit'} className={"button-primary"}>Save Changes</button>
         </div>
         <label>
@@ -172,7 +190,7 @@ export default class PendingEventRecord extends ListingRecordUniversal {
         </label>
         <label>
           Tags
-          {renderCheckboxList(tags, tagsForListing, 'uuid')}
+          {renderCheckboxList(tags, tagsForPendingListing, tagDiffList)}
         </label>
         <label className={classNameMap['email']}>
           Email Address
@@ -207,7 +225,7 @@ export default class PendingEventRecord extends ListingRecordUniversal {
           Ongoing Event
         </label>
         <div>
-          <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Discard Event</button>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard Event</button>
           <button type={'submit'} className={"button-primary"}>Save Changes</button>
         </div>
       </form>

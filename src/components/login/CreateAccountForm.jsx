@@ -1,11 +1,14 @@
 import React, {Component} from 'react';
+import {displayErrorMessages, printToConsole} from "../../utilities";
 
+/**
+ * CreateAccountForm handles the form responsible for user account creation.
+ *
+ * @class
+ */
 export default class CreateAccountForm extends Component {
   constructor(props) {
     super(props);
-
-    // TODO: Put in config
-    this.sendAddress = 'noreply@visitseattle.org';
 
     this.state = {newUser: null};
 
@@ -13,11 +16,20 @@ export default class CreateAccountForm extends Component {
     this.handleCreateAccountClick = this.handleCreateAccountClick.bind(this);
   }
 
+  /**
+   * Runs on 'resend verification email' click.
+   */
   handleResendEmailClick() {
-    this.props.resendVerifyEmail();
+    this.props.resendVerifyEmail(this.state.newUser);
   }
 
-  handleCreateAccountClick() {
+  /**
+   * Runs on 'create account' button click.
+   *
+   * @param {Event} e
+   */
+  handleCreateAccountClick(e) {
+    e.preventDefault();
     this.props.createUser()
       .then(result => {
         this.props.updateMessagePanel({
@@ -25,21 +37,26 @@ export default class CreateAccountForm extends Component {
           details: 'Account created. A verification email has been sent to your address.'
             + ' Follow the emailed instructions to finish account creation.'
         });
-        console.debug('handlecreateaccount result', result);
         this.setState({newUser: result});
       })
       .catch(err => {
-        this.props.updateMessagePanel({status: 'error', details: 'Error during user creation: ' + err.message});
         this.setState({newUser: {}});
-        console.error(err);
+        displayErrorMessages('create', 'new user', err, this.props.updateMessagePanel);
+        printToConsole(err, 'error');
       });
   }
 
+  /**
+   * Renders the component.
+   *
+   * @render
+   * @override
+   * @returns {*}
+   */
   render() {
     const primaryButton = this.state.newUser ?
       <button type={'button'} onClick={this.handleResendEmailClick}>resend verification email</button>
-      : <button type={'button'} onClick={this.handleCreateAccountClick} className={'button-primary'}>create
-        account</button>;
+      : <button type={'button'} onClick={this.handleCreateAccountClick} className={'button-primary'}>create account</button>;
 
     return (
       <form>

@@ -6,21 +6,16 @@ import PendingVenueRecord from "../../components/pendingVenues/PendingVenueRecor
 import SinglePendingListingLayout from "../../components/SinglePendingListingLayout";
 
 /**
- * SinglePendingVenueLayout is a component which lays out a single pending venue page.
+ * `SinglePendingVenueLayout` lays out a single pending venue view.
+ *
  * @class
  * @child
  */
 export default class SinglePendingVenueLayout extends SinglePendingListingLayout {
-  /**
-   * The class's constructor.
-   * @constructor
-   *
-   * @param {object} props
-   */
   constructor(props) {
     super(props, 'pending-venues');
 
-    Object.assign(this.state, {hoods: [], hoodsLoaded: false, pendingHoods: [], pendingHoodsLoaded: false});
+    this.state = {...this.state, hoods: [], hoodsLoaded: false, pendingHoods: [], pendingHoodsLoaded: false};
 
     this.hoodsService = app.service('neighborhoods');
     this.pendingHoodsService = app.service('pending-neighborhoods');
@@ -30,7 +25,11 @@ export default class SinglePendingVenueLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Runs once the component mounts. Registers data service listeners.
+   * Runs once the component mounts.
+   *
+   * During `componentDidMount`, the component fetches required data and
+   * registers service listeners.
+   *
    * @override
    */
   componentDidMount() {
@@ -50,7 +49,10 @@ export default class SinglePendingVenueLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Runs before the component unmounts. Unregisters data service listeners.
+   * Runs when the component unmounts.
+   *
+   * During `componentWillUnmount`, the component unregisters service listeners.
+   *
    * @override
    */
   componentWillUnmount() {
@@ -68,7 +70,8 @@ export default class SinglePendingVenueLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Fetches all data required for the page.
+   * `fetchAllData` fetches all data required for the view.
+   *
    * @override
    */
   fetchAllData() {
@@ -78,37 +81,42 @@ export default class SinglePendingVenueLayout extends SinglePendingListingLayout
   }
 
   /**
-   * Fetches published neighborhoods.
+   * `fetchHoods` fetches published neighborhoods and saves them to the state.
    */
   fetchHoods() {
-    this.hoodsService.find({query: this.defaultQuery}).then(message => {
+    this.hoodsService.find({query: this.defaultQuery})
+      .then(message => {
       this.setState({hoods: message.data, hoodsLoaded: true});
-    }, err => {
+    })
+      .catch(err => {
       this.setState({hoodsLoaded: false});
       displayErrorMessages('fetch', 'neighborhoods', err, this.updateMessagePanel, 'reload');
     });
   }
 
   /**
-   * Fetches pending neighborhoods.
+   * `fetchPendingHoods` fetches pending neighborhoods and saves them to the state.
    */
   fetchPendingHoods() {
-    this.pendingHoodsService.find({query: this.defaultQuery}).then(message => {
+    this.pendingHoodsService.find({query: this.defaultQuery})
+      .then(message => {
       this.setState({pendingHoods: message.data, pendingHoodsLoaded: true});
-    }, err => {
+    })
+      .catch(err => {
       this.setState({pendingHoodsLoaded: false});
       displayErrorMessages('fetch', 'pending neighborhoods', err, this.pendingHoodsService, 'reload');
     });
   }
 
   /**
-   * Renders the pending venue record.
+   * `renderRecord` renders the single pending venue's record.
+   *
    * @override
    * @returns {*}
    */
   renderRecord() {
-    if (!(this.state.listingLoaded && this.state.hoodsLoaded && this.state.pendingHoodsLoaded)) {
-      return <p>Data is loading... Please be patient...</p>
+    if (!(this.state.listingLoaded && this.state.matchingListingLoaded && this.state.pendingHoodsLoaded)) {
+      return <div className={'single-message info message-compact'}>Data is loading... Please be patient...</div>
     }
 
     const uniqueHoods = uniqueListingsOnly(this.state.hoods, this.state.pendingHoods);
@@ -116,7 +124,7 @@ export default class SinglePendingVenueLayout extends SinglePendingListingLayout
     return <PendingVenueRecord
       schema={this.schema} listing={this.state.listing} matchingLiveListing={this.state.matchingLiveListing}
       hoods={uniqueHoods} updateListing={this.updateListing} deleteListing={this.deleteListing}
-      queryForExisting={this.queryForExisting}
+      queryForDuplicate={this.queryForDuplicate}
     />;
   }
 }

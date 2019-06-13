@@ -1,11 +1,12 @@
 import React, {Component} from 'react';
 import Header from "../components/common/Header";
+import {printToConsole} from "../utilities";
 
 export default class EmailVerification extends Component {
   constructor(props) {
     super(props);
 
-    this.authManagementUrl = 'http://localhost:3030/authmanagement/';
+    this.authManagementUrl = `http://${process.env.REACT_APP_SERVER_URL}/authmanagement/`;
 
     this.state = {verifySuccess: null};
 
@@ -24,10 +25,6 @@ export default class EmailVerification extends Component {
       value: token
     };
 
-    console.debug(token);
-    console.debug(JSON.stringify(payload));
-    console.debug(payload);
-
     fetch(this.authManagementUrl, {
       method: 'POST',
       body: JSON.stringify(payload),
@@ -38,10 +35,9 @@ export default class EmailVerification extends Component {
       })
       .then(body => {
         if (body.code >= 400) {
-          console.error(body.message);
+          printToConsole(body.message);
           this.setState({verifySuccess: false});
         } else {
-          console.debug('success!');
           this.setState({verifySuccess: true});
         }
       });

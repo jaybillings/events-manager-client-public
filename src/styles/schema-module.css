@@ -1,7 +1,7 @@
 .schema-module {
   position: relative;
   border: 1px solid var(--neutral-accent-color);
-  margin: 2rem 0;
+  margin: 3rem 0;
   padding: 1rem 2rem;
   background: var(--true-white);
 }
@@ -51,8 +51,15 @@
   display: none;
 }
 
-/* Overriding searchbar styles */
+/* Overriding styles */
+
 .schema-module .searchbar {
   position: absolute;
-  right: 2rem;
+  top: 0;
+  right: 0;
+  margin: 2rem;
+}
+
+.schema-module .single-message {
+ margin-bottom: 1rem;
 }

@@ -4,7 +4,10 @@ import {BeatLoader} from 'react-spinners';
 import '../../styles/import-form.css';
 
 /**
- * @param {{fileInputRef: Object, handleImportClick: Function}} props
+ * `ImportXMLForm` renders a form that takes in an XML file for importing.
+ *
+ * @class
+ * @param {{importRunning: Boolean, importData: Function}} props
  */
 export default class ImportXMLForm extends Component {
   render() {
@@ -12,7 +15,7 @@ export default class ImportXMLForm extends Component {
 
     return (
       <div className={'schema-module'}>
-        <form id={'form-import-xml'} className={'import-form'} onSubmit={this.props.handleImportClick}>
+        <form id={'form-import-xml'} className={'import-form'} onSubmit={this.props.handleSubmit}>
           <div>
             <label htmlFor={'fileInput'}>Select file to import:</label>
             <input type={'file'} ref={this.props.fileInputRef} id={'fileInput'} accept={".xml"} multiple required />

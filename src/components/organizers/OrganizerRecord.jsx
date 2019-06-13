@@ -4,16 +4,12 @@ import Moment from 'moment';
 import ListingRecordUniversal from "../ListingRecordUniversal";
 
 /**
- * OrganizerRecord is a component which displays a single organizer's records.
+ * `OrganizerRecord` displays a single organizer's records.
+ *
  * @class
  * @child
  */
 export default class OrganizerRecord extends ListingRecordUniversal {
-  /**
-   * The class's constructor.
-   * @constructor
-   * @param {object} props
-   */
   constructor(props) {
     super(props);
 
@@ -23,7 +19,8 @@ export default class OrganizerRecord extends ListingRecordUniversal {
   }
 
   /**
-   * Handles the submit action by parsing new data and calling a function to create a new organizer.
+   * `handleSaveClick` runs on submit. Parses new data and initiates a save.
+   *
    * @override
    * @param {Event} e
    */
@@ -44,6 +41,7 @@ export default class OrganizerRecord extends ListingRecordUniversal {
 
   /**
    * Renders the component.
+   *
    * @override
    * @render
    * @returns {*}
@@ -55,8 +53,8 @@ export default class OrganizerRecord extends ListingRecordUniversal {
 
     const publishButton = this.user.is_su ?
       <button type={'submit'} className={'button-primary'}>Save Changes</button> : '';
-    const deleteButton = this.user.is_admin ?
-      <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete Organizer</button> : '';
+    const deleteButton = this.user.is_su ?
+      <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>permanently Delete Organizer</button> : '';
     const disableAll = !this.user.is_su;
 
     return (

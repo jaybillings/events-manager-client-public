@@ -2,6 +2,9 @@ import React, {Component} from 'react';
 import {makeSingular, renderOptionList} from "../../utilities";
 import {BeatLoader} from "react-spinners";
 
+/**
+ * `ReplaceTermsForm` displays the form for replacing listings.
+ */
 export default class ReplaceTermsForm extends Component {
   constructor(props) {
     super(props);
@@ -12,13 +15,23 @@ export default class ReplaceTermsForm extends Component {
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
+  /**
+   * `handleSubmit` runs on submit. It triggers the term replacement.
+   * @param e
+   */
   handleSubmit(e) {
     e.preventDefault();
 
-    //TODO: DO everything except making the new lookup row?
-    this.props.runTagReplacement(this.toReplaceRef.current.value, this.replaceWithRef.current.value);
+    this.props.runReplacement(this.toReplaceRef.current.value, this.replaceWithRef.current.value);
   }
 
+  /**
+   * Renders the component.
+   *
+   * @override
+   * @render
+   * @returns {*}
+   */
   render() {
     const schema = this.props.schema;
     const schemaSingular = makeSingular(schema);

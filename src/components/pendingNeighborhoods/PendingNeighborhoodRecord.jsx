@@ -6,17 +6,26 @@ import StatusLabel from "../common/StatusLabel";
 import {diffListings} from "../../utilities";
 
 /**
- * PendingNeighborhoodRecord is a component which displays a single pending neighborhood's record.
+ * `PendingNeighborhoodRecord` displays a single pending neighborhood's record.
+ *
  * @class
  * @child
+ * @param {{schema: String, listing: Object, matchingLiveListing: Object, updateListing: Function,
+ * deleteListing: Function, queryForDuplicate: Function}} props
  */
 export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
   /**
-   * Runs when the component mounts. Checks for write status of listing.
+   * Runs before the component is unmounted.
+   *
+   * During `componentDidMount`, the component fetches the listing's write status.
+   *
    * @override
    */
   componentDidMount() {
-    this.checkWriteStatus();
+    this.getWriteStatus()
+      .then(writeStatus => {
+        this.setState({writeStatus});
+      });
   }
 
   /**
@@ -38,6 +47,10 @@ export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
 
     return (
       <form id={'pending-hood-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
+        <div>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard Neighborhood</button>
+          <button type={'submit'} className={'button-primary'}>Save Changes</button>
+        </div>
         <label>
           Status
           <div>
@@ -61,7 +74,7 @@ export default class PendingNeighborhoodRecord extends ListingRecordUniversal {
           <input type={'text'} ref={this.nameInput} defaultValue={hood.name} required maxLength={100} />
         </label>
         <div>
-          <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Discard Neighborhood</button>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard Neighborhood</button>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
         </div>
       </form>

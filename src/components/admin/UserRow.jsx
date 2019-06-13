@@ -1,15 +1,10 @@
 import React, {Component} from 'react';
 
 /**
- * UserRow is a component which displays a single row from the user table.
+ * `UserRow` displays a single row from the user table.
  * @class
  */
 export default class UserRow extends Component {
-  /**
-   * The component's constructor.
-   * @constructor
-   * @param {object} props
-   */
   constructor(props) {
     super(props);
 
@@ -23,16 +18,17 @@ export default class UserRow extends Component {
   }
 
   /**
-   * Handles input changes by saving the data to the component's state.
+   * `handleInputChange` runs when input changes and saves the new value to the state.
+   *
    * @param {Event} e
    */
   handleInputChange(e) {
-    if (!e.target.name) return;
+    if (!e.target.name || !e.target.value) return;
     this.setState({[e.target.name]: e.target.value.trim()});
   }
 
   /**
-   * Runs when the save button is clicked. Triggers saving of the row's data.
+   * `handleSaveClick` runs when the save button is clicked. Triggers saving of the row's data.
    */
   handleSaveClick() {
     const newData = {permissions: this.state.permissions};
@@ -41,7 +37,7 @@ export default class UserRow extends Component {
   }
 
   /**
-   * Runs when the delete button is clicked. Triggers deletion of the user.
+   * `handleDeleteClick` runs when the delete button is clicked. Triggers deletion of the user.
    */
   handleDeleteClick() {
     if (window.confirm(`Are you sure you want to delete ${this.props.user.email}? This action is PERMANENT.`)) {
@@ -51,6 +47,7 @@ export default class UserRow extends Component {
 
   /**
    * Renders the component.
+   *
    * @override
    * @render
    * @returns {*}
@@ -60,8 +57,8 @@ export default class UserRow extends Component {
     return (
       <tr className={'schema-row'}>
         <td>
-          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete User</button>
           <button type={'button'} className={'emphasize'} onClick={this.handleSaveClick}>Save Changes</button>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete User</button>
         </td>
         <td>{this.props.user.email}</td>
         <td>{this.props.user.api_key}</td>

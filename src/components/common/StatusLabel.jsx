@@ -3,9 +3,9 @@ import React, {Component} from 'react';
 import '../../styles/status-label.css';
 
 /**
- * The StatusLabel component displays a label showing the publish status of a row.
- * @class
+ * `StatusLabel` component displays a label showing the publish status of a row.
  *
+ * @class
  * @param {{writeStatus: String, schema: String}} props
  */
 export default class StatusLabel extends Component {

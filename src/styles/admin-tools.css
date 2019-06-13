@@ -16,6 +16,10 @@
   margin-bottom: 2.5rem;
 }
 
+.admin-module .schema-row td {
+  text-align: left;
+}
+
 .admin-module .schema-row td:first-child {
   width: min-content;
 }

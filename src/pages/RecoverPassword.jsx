@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import app from "../services/socketio";
 import {Link} from "react-router-dom";
+import {BeatLoader} from "react-spinners";
+import {printToConsole} from "../utilities";
 
 import Header from "../components/common/Header";
 import MessagePanel from "../components/common/MessagePanel";
@@ -10,6 +12,8 @@ import '../styles/account-form.css';
 export default class RecoverPassword extends Component {
   constructor(props) {
     super(props);
+
+    this.state = {requestRunning: false};
 
     // TODO: Put this in config
     this.senderEmail = 'noreply@visitseattle.org';
@@ -39,6 +43,8 @@ export default class RecoverPassword extends Component {
       return;
     }
 
+    this.setState({requestRunning: true});
+
     this.authManagementService.create({
       action: 'sendResetPwd',
       value: {email}
@@ -50,17 +56,21 @@ export default class RecoverPassword extends Component {
         });
       })
       .catch(err => {
-        console.error(err);
+        printToConsole(err);
         this.updateMessagePanel({
           status: 'error',
           details: [<span key={'error-msg'}>Could not send password recovery request. If this continues, please <Link
             to={`mailto:${this.helpdeskEmail}`}>contact the help desk</Link>. Include the following error:</span>,
             <code key={'error-code'}>{JSON.stringify(err)}</code>]
         });
+      })
+      .finally(() => {
+        this.setState({requestRunning: false});
       });
   }
 
   render() {
+    const spinnerClass = this.state.requestRunning ? ' button-with-spinner' : '';
     return (
       <div className={'container'}>
         <Header />
@@ -71,7 +81,10 @@ export default class RecoverPassword extends Component {
         <form onSubmit={this.handleSubmit} className={'account-form'}>
           <label htmlFor={'emailInput'}>Email Address</label>
           <input ref={this.emailRef} id={'emailInput'} type={'email'} defaultValue={''} required />
-          <button type={'submit'} className={'button-primary'}>Send Recovery Email</button>
+          <button type={'submit'} className={`button-primary${spinnerClass}`}>
+            <BeatLoader size={8} color={'#c2edfa'} loading={this.state.requestRunning} />
+            Send Recovery Email
+          </button>
         </form>
       </div>
     );

@@ -34,17 +34,18 @@ const renderOptionList = function (schemaData, schema, keyType='uuid') {
  *
  * @param {Array} schemaMembers
  * @param {Array} selectedIds - IDs of the members that should be selected,
- * @param {string} keyType - What to use as the key. ID or UUID.
+ * @param diffList
  * @param {Boolean} disableAll - Whether checkboxes should be disabled (read-only)
  * @returns {*}
  */
-const renderCheckboxList = function (schemaMembers, selectedIds, keyType = 'id', disableAll=false) {
+const renderCheckboxList = function (schemaMembers, selectedIds, diffList=[], disableAll=false) {
   let chkbxList = [];
 
   schemaMembers.forEach(record => {
-    const inputValue = keyType === 'uuid' ? record.uuid : record.id;
+    const inputValue = record.uuid;
+    //const diffClass = diffList.includes(inputValue) ? ' highlight-diff' : '';
     chkbxList.push(
-      <li key={record.uuid}>
+      <li key={record.uuid} className={diffList.includes(inputValue) ? ' highlight-diff' : ''}>
         <label>
           <input
             type={'checkbox'} className={'js-checkbox'} value={inputValue}
@@ -108,7 +109,7 @@ const renderSchemaLink = function (listing, baseSchema) {
   const schemaPath = listing.fromPending ? `pending${baseSchema}` : baseSchema;
   const linkText = listing.fromPending ? `${listing.name} [Pending]` : listing.name;
 
-  return <Link to={`/${schemaPath}/${listing.id}`}>{linkText}</Link>;
+  return <Link to={`/${schemaPath}/${listing.id}`} onClick={e => e.stopPropagation()}>{linkText}</Link>;
 };
 
 /**
@@ -208,23 +209,28 @@ const arrayUnique = function (arr) {
  * @param {string} target - The target of the action.
  * @param {object} errors - The error object returned from the action.
  * @param {Function} displayFunc - The method used to display a message to the user.
- * @param {string} userPrompt - A code for additional prompts to add to the message.
+ * @param {string} userPrompt - A label for additional prompts to add to the message.
+ *  Non-false values or the value 'default' will include the default prompt.
  */
 const displayErrorMessages = function (action, target, errors, displayFunc, userPrompt = '') {
   const userPrompts = {
     reload: 'Reload the page to try again.',
-    retry: 'Please try again.',
-    default: 'If this problem continues, please contact the Helpdesk.'
+    retry: 'Please try again.'
   };
-  const subscript = (userPrompts[userPrompt] || '') + ' ' + userPrompts.default;
 
   if (!Array.isArray(errors)) errors = [errors];
 
   for (let i = 0; i < errors.length; i++) {
     const subject = errors[i].dataPath ? errors[i].dataPath.substring(1) : '';
+    const messages = [];
+
+    messages.push(<span key={'msg0'}>Could not {action} {target} -- {subject} {errors[i].message}.</span>);
+
+    if (userPrompts[userPrompt]) messages.push(<span key={'msg1'}>{userPrompts[userPrompt]}</span>);
+
     displayFunc({
       status: 'error',
-      details: `Could not ${action} ${target} -- ${subject} ${errors[i].message}. ${subscript}`
+      details: messages
     });
   }
 };
@@ -252,6 +258,22 @@ const diffListings = function(listingA, listingB, parameters) {
   return classNameMap;
 };
 
+const diffTags = function(tagGroupA, tagGroupB) {
+  const jsdiff = require('diff');
+  let diffList = [];
+
+  const diff = jsdiff.diffArrays(tagGroupA, tagGroupB);
+  diff.forEach(diffLine => {
+    if (diffLine.added || diffLine.removed) diffList = [...diffList, ...diffLine.value];
+  });
+
+  return diffList;
+};
+
+const printToConsole = function(messageObj, type='error') {
+  if (JSON.stringify(messageObj) && console[type]) console[type](messageObj);
+};
+
 export {
   renderOptionList,
   renderCheckboxList,
@@ -263,5 +285,7 @@ export {
   makeSingular,
   arrayUnique,
   displayErrorMessages,
-  diffListings
+  diffListings,
+  diffTags,
+  printToConsole
 };

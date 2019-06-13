@@ -6,17 +6,14 @@ import StatusLabel from "../common/StatusLabel";
 import {diffListings} from "../../utilities";
 
 /**
- * PendingOrganizerRecord is a component which displays a single pending organizer's record.
+ * `PendingOrganizerRecord` which displays a single pending organizer's record.
+ *
  * @class
  * @child
+ * @param {{schema: String, listing: Object, matchingLiveListing: Object,
+ * updateListing: Function, removeListing: Function, queryForDuplicate: Function}} props
  */
 export default class PendingOrganizerRecord extends ListingRecordUniversal {
-  /**
-   * The class's constructor.
-   * @constructor
-   *
-   * @param {object} props
-   */
   constructor(props) {
     super(props);
 
@@ -26,17 +23,24 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
   }
 
   /**
-   * Runs when the component mounts. Checks the event's publish status.
+   * Runs before the component is unmounted.
+   *
+   * During `componentDidMount`, the component fetches the listing's write status.
+   *
    * @override
    */
   componentDidMount() {
-    this.checkWriteStatus();
+    this.getWriteStatus()
+      .then(writeStatus => {
+        this.setState({writeStatus});
+      });
   }
 
   /**
-   * Handles the submit action by parsing new data and calling a function to create a new pending organizer.
-   * @override
+   * `handleSaveClick` handles the save action by parsing the new data and calling
+   * an update handler.
    *
+   * @override
    * @param {Event} e
    */
   handleSaveClick(e) {
@@ -51,14 +55,20 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
     this.urlInput.current.value !== '' && (newData.url = this.urlInput.current.value);
     this.phoneInput.current.value !== '' && (newData.phone = this.phoneInput.current.value);
 
-    this.props.updateListing(newData);
+    this.props.updateListing(newData)
+      .then(() => {
+        return this.getWriteStatus();
+      })
+      .then(writeStatus => {
+        this.setState({writeStatus});
+      });
   }
 
   /**
    * Renders the component.
+   *
    * @override
    * @render
-   *
    * @returns {*}
    */
   render() {
@@ -73,6 +83,10 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
 
     return (
       <form id={'pending-org-listing-form'} className={'schema-record'} onSubmit={this.handleSaveClick}>
+        <div>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard Organizer</button>
+          <button type={'submit'} className={'button-primary'}>Save Changes</button>
+        </div>
         <label>
           Status
           <div>
@@ -101,14 +115,14 @@ export default class PendingOrganizerRecord extends ListingRecordUniversal {
         </label>
         <label className={classNameMap['url']}>
           Url
-          <input type={'url'} ref={this.urlInput} defaultValue={org.url} maxLength={100} />
+          <input type={'text'} ref={this.urlInput} defaultValue={org.url} maxLength={100} />
         </label>
         <label className={classNameMap['phone']}>
           Phone #
           <input type={'tel'} ref={this.phoneInput} defaultValue={org.phone} maxLength={20} />
         </label>
         <div>
-          <button type={'button'} className={'default'} onClick={this.handleDeleteClick}>Discard Organizer</button>
+          <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Discard Organizer</button>
           <button type={'submit'} className={'button-primary'}>Save Changes</button>
         </div>
       </form>

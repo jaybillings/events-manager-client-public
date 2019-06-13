@@ -1,6 +1,6 @@
 import React from "react";
 import app from "../../services/socketio";
-import {displayErrorMessages, renderTableHeader} from "../../utilities";
+import {displayErrorMessages, printToConsole, renderTableHeader} from "../../utilities";
 
 import VenueRow from "../../components/venues/VenueRow";
 import VenueAddForm from "../../components/venues/VenueAddForm";
@@ -8,21 +8,16 @@ import ListingsLayout from "../../components/ListingsLayout";
 import PaginationLayout from "../../components/common/PaginationLayout";
 
 /**
- * VenuesLayout is a component which lays out the venues collection page.
+ * `VenuesLayout` lays out the venues collection page.
+ *
  * @class
  * @child
  */
 export default class VenuesLayout extends ListingsLayout {
-  /**
-   * The class's constructor.
-   * @param {object} props
-   */
   constructor(props) {
     super(props, 'venues');
 
-    Object.assign(this.state, {
-      hoods: [], hoodsLoaded: false
-    });
+    this.state = {...this.state, hoods: [], hoodeLoaded: false};
 
     this.hoodsService = app.service('neighborhoods');
 
@@ -30,7 +25,11 @@ export default class VenuesLayout extends ListingsLayout {
   }
 
   /**
-   * Runs when the component mounts. Fetches data and registers data service listeners.
+   * Runs once the component is mounted.
+   *
+   * During`componentDidMount`, the component restores the table state,
+   * fetches all data, and registers data service listeners.
+   *
    * @override
    */
   componentDidMount() {
@@ -52,7 +51,11 @@ export default class VenuesLayout extends ListingsLayout {
   }
 
   /**
-   * Runs before the component unmounts. Unregisters data service listeners.
+   * Runs before the component is unmounted.
+   *
+   * During `componentWillUnmount`, the component unregisters data service
+   * listeners and saves the table state to local storage.
+   *
    * @override
    */
   componentWillUnmount() {
@@ -66,15 +69,19 @@ export default class VenuesLayout extends ListingsLayout {
   }
 
   /**
-   * Fetches all data required for the table.
+   * `fetchAllData` fetches all data required by the layout.
+   *
+   * @note This function pattern exists to cut down on extraneous requests for
+   * components with linked schema.
    */
   fetchAllData() {
     super.fetchAllData();
+
     this.fetchHoods();
   }
 
   /**
-   * Fetches data for all published neighborhoods.
+   * `fetchHoods` fetches published neighborhoods according to the query.
    */
   fetchHoods() {
     this.hoodsService.find({query: this.defaultQuery})
@@ -82,6 +89,7 @@ export default class VenuesLayout extends ListingsLayout {
         this.setState({hoods: message.data, hoodsLoaded: true});
       })
       .catch(err => {
+        printToConsole(err);
         displayErrorMessages('fetch', 'neighborhoods', err, this.updateMessagePanel, 'reload');
         this.setState({hoodsLoaded: false});
       });
@@ -89,14 +97,15 @@ export default class VenuesLayout extends ListingsLayout {
 
   /**
    * Renders the venue collection table.
+   *
    * @override
    * @returns {*}
    */
   renderTable() {
     if (!(this.state.listingsLoaded && this.state.hoodsLoaded)) {
-      return <p key={'venues-message'} className={'loading-message single-message info'}>Data is loading... Please be patient...</p>;
+      return <p key={'venues-message'} className={'message-compact single-message info'}>Data is loading... Please be patient...</p>;
     } else if (this.state.listingsTotal === 0) {
-      return <p key={'venues-message'} className={'loading-message single-message'}>No venues to list.</p>
+      return <p key={'venues-message'} className={'message-compact single-message no-content'}>No venues to list.</p>
     }
 
     const titleMap = new Map([
@@ -105,7 +114,6 @@ export default class VenuesLayout extends ListingsLayout {
       ['fk_hoods.name', 'Neighborhood'],
       ['updated_at', 'Last Modified']
     ]);
-
     const hoods = this.state.hoods;
 
     return ([
@@ -116,7 +124,7 @@ export default class VenuesLayout extends ListingsLayout {
       />,
       <div className={'wrapper'} key={'venues-table-wrapper'}>
         <table key={'venues-table'} className={'schema-table'}>
-          <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColumnSort)}</thead>
+          <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColSort)}</thead>
           <tbody>
           {
             this.state.listings.map(venue =>
@@ -126,7 +134,7 @@ export default class VenuesLayout extends ListingsLayout {
                   return h.uuid === venue.hood_uuid
                 })}
                 updateListing={this.updateListing} deleteListing={this.deleteListing}
-                createPendingListing={this.createPendingListing} checkForPending={this.checkForPending}
+                createPendingListing={this.createPendingListing} queryForMatching={this.queryForMatching}
               />
             )
           }
@@ -138,12 +146,13 @@ export default class VenuesLayout extends ListingsLayout {
 
   /**
    * Renders the form for adding a new venue.
+   *
    * @override
    * @returns {*}
    */
   renderAddForm() {
     if (!this.state.hoodsLoaded) {
-      return <div className={'single-message info loading-message'}>Data is loading... Please be patient...</div>;
+      return <div className={'single-message info message-compact'}>Data is loading... Please be patient...</div>;
     }
 
     return <VenueAddForm

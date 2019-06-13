@@ -2,7 +2,7 @@ import io from 'socket.io-client';
 import feathers from '@feathersjs/client';
 import auth from '@feathersjs/authentication-client';
 
-const socket = io('http://localhost:3030');
+const socket = io(`http://${process.env.REACT_APP_SERVER_URL}`);
 
 const app = feathers();
 

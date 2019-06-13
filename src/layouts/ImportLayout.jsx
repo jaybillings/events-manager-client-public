@@ -1,6 +1,8 @@
 import React, {Component} from "react";
 import app from "../services/socketio";
 import fetch from "node-fetch";
+import {BeatLoader} from "react-spinners";
+import {displayErrorMessages, printToConsole} from "../utilities";
 
 import Header from "../components/common/Header";
 import MessagePanel from "../components/common/MessagePanel";
@@ -11,25 +13,24 @@ import PendingOrganizersModule from "../components/pendingOrganizers/PendingOrga
 import PendingNeighborhoodsModule from "../components/pendingNeighborhoods/PendingNeighborhoodsModule";
 import ImportXMLForm from "../components/common/ImportXMLForm";
 
+
 /**
- * The ImportLayout component lays out the page that handles importing and processing external data.
+ * `ImportLayout` is a layout component rendering the import view.
+ *
  * @class
  */
 export default class ImportLayout extends Component {
-  /**
-   * The class's constructor.
-   * @constructor
-   * @param {object} props
-   */
   constructor(props) {
     super(props);
 
-    this.API_URI = 'http://localhost:3030/importer';
+    this.state = {importRunning: false, publishRunning: false};
+
+    this.IMPORT_URI = `http://${process.env.REACT_APP_SERVER_URL}/importer`;
     this.defaultPageSize = 5;
     this.defaultSortOrder = ['created_at', -1];
     this.user = app.get('user');
 
-    this.state = {'importRunning': false};
+    this.importerService = app.service('importer');
 
     this.fileInput = React.createRef();
     this.messagePanel = React.createRef();
@@ -38,8 +39,6 @@ export default class ImportLayout extends Component {
     this.orgsModule = React.createRef();
     this.hoodsModule = React.createRef();
     this.tagsModule = React.createRef();
-
-    this.importerService = app.service('importer');
 
     this.resumeModuleListening = this.resumeModuleListening.bind(this);
     this.stopModuleListening = this.stopModuleListening.bind(this);
@@ -51,7 +50,10 @@ export default class ImportLayout extends Component {
   }
 
   /**
-   * Runs after the component mounts. Registers data service listeners.
+   * Runs once the component is mounted.
+   *
+   * During `componentDidMount`, the component registers data service listeners.
+   *
    * @override
    */
   componentDidMount() {
@@ -60,29 +62,39 @@ export default class ImportLayout extends Component {
         if (message.status === 'success') {
           this.updateMessagePanel({status: 'notice', details: message.message});
           this.resumeModuleListening();
+          this.setState({importRunning: false});
         } else if (message.status === 'fail') {
           this.updateMessagePanel({status: 'error', details: message.message});
           this.resumeModuleListening();
+          this.setState({importRunning: false});
         } else if (message.status === 'error') {
-          console.debug('[COE] Error occurred while importing');
-          console.error(message.rawError || 'No raw error');
+          printToConsole(message, 'error');
           this.updateMessagePanel({status: 'error', details: message.message});
-        } else if (message.status === 'status') {
+        } else if (message.status === 'step_success') {
           this.updateMessagePanel({status: 'success', details: message.message})
+        } else if (message.status === 'step_start') {
+          this.updateMessagePanel({status: 'info', details: message.message});
         }
       });
   }
 
   /**
-   * Runs before the component unmounts. Unregisters data service listeners.
+   * Runs before the component is unmounted.
+   *
+   * During `componentWillUnmount`, the component unregisters data service
+   * listeners.
+   *
    * @override
    */
   componentWillUnmount() {
     this.importerService.removeAllListeners('status');
   }
 
+  /**
+   * `resumeModuleListening` resumes data service listening for modules.
+   */
   resumeModuleListening() {
-    console.info('START module listening');
+    // TODO: Find way to do this that doesn't use refs.
     this.eventsModule.current.startListening();
     this.venuesModule.current.startListening();
     this.orgsModule.current.startListening();
@@ -90,8 +102,11 @@ export default class ImportLayout extends Component {
     this.tagsModule.current.startListening();
   }
 
+  /**
+   * `stopModuleListening` stops service listening for modules.
+   */
   stopModuleListening() {
-    console.debug('STOP module listening');
+    // TODO: Find way to do this that doesn't use refs.
     this.eventsModule.current.stopListening();
     this.venuesModule.current.stopListening();
     this.orgsModule.current.stopListening();
@@ -100,8 +115,7 @@ export default class ImportLayout extends Component {
   }
 
   /**
-   * Handles the importing of a single CSV file containing listings of a given schema. Parameters are
-   * retrieved from from DOM.
+   * `importData` handles the XML form submit action by triggering data import.
    *
    * @param {Event} e
    */
@@ -117,7 +131,7 @@ export default class ImportLayout extends Component {
       .then(token => {
         this.setState({importRunning: true});
         this.stopModuleListening();
-        return fetch(this.API_URI, {
+        return fetch(this.IMPORT_URI, {
           method: 'POST',
           body: importData,
           headers: {'Authorization': token}
@@ -127,26 +141,28 @@ export default class ImportLayout extends Component {
         return response.json(); // Convert raw response body to JSON
       })
       .then(body => {
-        this.setState({importRunning: false});
         if (body.code >= 400) {
           this.updateMessagePanel({status: 'error', details: body.message});
-          console.error(body.message);
+          printToConsole(body);
+          this.setState({importRunning: false});
         } else {
           this.updateMessagePanel({status: 'notice', details: 'Importer is running. This may take several minutes.'});
         }
+      })
+      .catch(err => {
+        printToConsole(err);
+        displayErrorMessages('data file', 'import', err, this.updateMessagePanel);
+        this.setState({importRunning: false});
       });
   }
 
   /**
-   * Triggers the publishing of all listings on the import page.
-   *
-   * @note Unlike when publishing listings manually, publishListings publishes them in the correct order to prevent
-   * missing linked schema. It also stops on the first error encountered. It may be preferred over manually publishing
-   * large datasets.
+   * `publishListings` triggers the publishing of all pending listings, regardless of schema.
    */
   publishListings() {
     this.updateMessagePanel({status: 'info', details: 'Publish started. This make take several minutes.'});
     this.stopModuleListening();
+    this.setState({publishRunning: true});
 
     Promise
       .all([
@@ -166,22 +182,22 @@ export default class ImportLayout extends Component {
         return this.eventsModule.current.handlePublishAllClick();
       })
       .then(() => {
-        console.log('~ all done!');
         this.updateMessagePanel({status: 'notice', details: 'Publish complete.'});
       })
-      .catch(error => {
-        console.log('~ very top level error', error);
-        this.updateMessagePanel({status: 'error', details: JSON.stringify(error)});
+      .catch(err => {
+        printToConsole(err);
+        displayErrorMessages('publish', 'pending listings', err, this.updateMessagePanel);
       })
       .finally(() => {
+        this.setState({publishRunning: false});
         this.resumeModuleListening();
       });
   }
 
   /**
-   * Adds a message to the message panel.
+   * `updateMessagePanel` adds a message to the message panel.
    *
-   * @param {object} newMsg
+   * @param {Object|Array} newMsg
    */
   updateMessagePanel(newMsg) {
     this.messagePanel.current.addMessage(newMsg);
@@ -189,14 +205,18 @@ export default class ImportLayout extends Component {
 
   /**
    * Renders the component.
+   *
    * @render
+   * @override
    * @returns {*}
    */
   render() {
-    // TODO: All/Selected depending on selections
+    // TODO: Change label to 'Publish All Listings' or 'Publish Selected Listings' depending on selections
+    const spinnerClass = this.state.publishRunning ? ' button-with-spinner' : '';
     const publishButton = this.user.is_su ?
-      <button type={'button'} className={'button-primary button-publish'} onClick={this.publishListings}>
+      <button type={'button'} className={`button-primary button-publish${spinnerClass}`} onClick={this.publishListings}>
         Publish Pending Listings
+        <BeatLoader size={8} sizeUnit={"px"} color={'#c2edfa'} loading={this.state.publishRunning} />
       </button> : '';
 
     return (
@@ -204,7 +224,7 @@ export default class ImportLayout extends Component {
         <Header />
         <MessagePanel ref={this.messagePanel} />
         <h2>Import Data From BeDynamic</h2>
-        <ImportXMLForm fileInputRef={this.fileInput} importRunning={this.state.importRunning} handleImportClick={this.importData} />
+        <ImportXMLForm fileInputRef={this.fileInput} importRunning={this.state.importRunning} handleSubmit={this.importData} />
         <h2>Review Unpublished Data</h2>
         <PendingEventsModule
           ref={this.eventsModule} defaultPageSize={this.defaultPageSize} defaultSortOrder={this.defaultSortOrder}

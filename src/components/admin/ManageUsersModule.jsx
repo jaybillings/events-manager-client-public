@@ -1,13 +1,20 @@
 import React, {Component} from 'react';
 import app from '../../services/socketio';
-import {buildColumnSort, buildSortQuery, renderTableHeader} from '../../utilities';
+import {
+  buildColumnSort,
+  buildSortQuery,
+  displayErrorMessages,
+  printToConsole,
+  renderTableHeader
+} from '../../utilities';
 
 import PaginationLayout from "../common/PaginationLayout";
 import UserRow from "./UserRow";
 import AddUserForm from "./AddUserForm";
 
 /**
- * ManageUsersModule is a component that displays and allows the admin to manage the console's users.
+ * `ManageUsersModule` displays a module for adding and editing users.
+ *
  * @class
  * @parent
  */
@@ -39,7 +46,10 @@ export default class ManageUsersModule extends Component {
   }
 
   /**
-   * Runs after the component mounts. Fetches data.
+   * Runs once the component is mounted.
+   *
+   * During `componentDidMount`, the component fetches all data and registers data service listeners.
+   *
    * @override
    */
   componentDidMount() {
@@ -64,6 +74,14 @@ export default class ManageUsersModule extends Component {
       })
   }
 
+  /**
+   * Runs before the component is unmounted.
+   *
+   * During `componentWillUnmount`, the component unregisters data service
+   * listeners.
+   *
+   * @override
+   */
   componentWillUnmount() {
     this.usersService
       .removeAllListeners('created')
@@ -73,7 +91,7 @@ export default class ManageUsersModule extends Component {
   }
 
   /**
-   * Fetches all data required for the module.
+   * `fetchAllData` fetches data required by the module.
    */
   fetchAllData() {
     const query = {
@@ -82,61 +100,67 @@ export default class ManageUsersModule extends Component {
       $skip: this.state.pageSize * (this.state.currentPage - 1)
     };
 
-    this.usersService
-      .find({query})
+    this.usersService.find({query})
       .then(message => {
         this.setState({users: message.data, usersTotal: message.total, usersLoaded: true});
       })
       .catch(err => {
-        this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+        printToConsole(err);
+        displayErrorMessages('fetch', 'user data', err, this.props.updateMessagePanel, 'reload');
         this.setState({usersLoaded: false});
-        console.error(err);
-      });
-  }
-
-  createUser(userData) {
-    return this.usersService
-      .create(userData)
-      .catch(err => {
-        this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
       });
   }
 
   /**
-   * Saves changes to a given user.
+   * `createUser` runs on button click and creates a new user.
+   *
+   * @async
+   * @param userData
+   * @returns {Promise<*>}
+   */
+  createUser(userData) {
+    return this.usersService.create(userData);
+  }
+
+  /**
+   * `saveUser` saves changes to a given user.
+   *
    * @param {int} id
    * @param {object} newData
    */
   saveUser(id, newData) {
-    this.usersService
-      .patch(id, newData)
+    this.usersService.patch(id, newData)
       .catch(err => {
-        this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+        printToConsole(err);
+        displayErrorMessages('create', 'new user', err, this.props.updateMessagePanel, 'retry');
       });
   }
 
   /**
-   * Permanently removes a given user from the database.
+   * `deleteUser` permanently removes a given user from the database.
+   *
    * @param {int} userId
    */
   deleteUser(userId) {
-    this.usersService
-      .remove(userId)
+    this.usersService.remove(userId)
       .catch(err => {
-        this.props.updateMessagePanel({status: 'error', details: JSON.stringify(err)});
+        printToConsole(err);
+        displayErrorMessages('delete', `user with id ${userId}`, err, this.props.updateMessagePanel, 'retry');
       });
   }
 
   /**
-   * Updates the component's page size and respective data.
-   * @param {Event} e
+   * `updatePageSize` updates the component's page size, then fetches new listings.
+   *
+   * @param pageSize
    */
   updatePageSize(pageSize) {
     this.setState({pageSize: parseInt(pageSize, 10), currentPage: 1}, () => this.fetchAllData());
   }
 
   /**
-   * Updates the component's current page and respective data.
+   * `updateCurrentPage` updates the data table's current page, then fetches new listings.
+   *
    * @param {string} page
    */
   updateCurrentPage(page) {
@@ -144,7 +168,8 @@ export default class ManageUsersModule extends Component {
   }
 
   /**
-   * Updates the component's column sorting and respective data.
+   * `updateColumnSort` updates the data table's column sorting, then fetches new listings.
+   *
    * @param {Event} e
    */
   updateColumnSort(e) {
@@ -154,10 +179,11 @@ export default class ManageUsersModule extends Component {
 
   /**
    * Renders the module's table.
-   * @returns {[*]}
+   *
+   * @returns {*[]|*}
    */
   renderTable() {
-    if (!this.state.usersLoaded) return <p>Data is loading... Please be patient...</p>;
+    if (!this.state.usersLoaded) return <div className={'message-compact single-message info'}>Data is loading... Please be patient...</div>;
 
     const titleMap = new Map([
       ['actions_NOSORT', 'Actions'],
@@ -187,6 +213,11 @@ export default class ManageUsersModule extends Component {
     ]);
   }
 
+  /**
+   * `renderAddForm` renders the form for adding a new user.
+   *
+   * @returns {*[]}
+   */
   renderAddForm() {
     return ([
       <h4 key={'add-form-header'}>Add New User</h4>,
@@ -196,6 +227,7 @@ export default class ManageUsersModule extends Component {
 
   /**
    * Renders the component.
+   *
    * @override
    * @render
    * @returns {*}

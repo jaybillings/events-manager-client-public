@@ -1,40 +1,48 @@
 import React, {Component} from "react";
 import Moment from "moment";
 import {Link} from "react-router-dom";
+import {printToConsole} from "../utilities";
 import app from '../services/socketio';
 
 import "../styles/schema-row.css";
 
 /**
- * ListingRow is a generic component which displays a single row from a live listings table.
+ * `ListingRow` displays a single row from a live listings table.
+ *
  * @class
  * @parent
  */
 export default class ListingRow extends Component {
   /**
    * The component's constructor.
-   * @constructor
    *
-   * @param {{schema: String, listing: Object, updateListing: Function, deleteListing: Function, createPendingListing: Function, checkForPending: Function}} props
+   * @constructor
+   * @param {{schema: String, listing: Object, updateListing: Function, deleteListing: Function, createPendingListing: Function, queryForMatching: Function}} props
    */
   constructor(props) {
     super(props);
 
-    this.state = {editable: false, listingName: this.props.listing.name, pendingID: ''};
+    this.state = {editable: false, listingName: this.props.listing.name, pendingListing: {}};
 
     this.user = app.get('user');
 
     this.listingHasPending = this.listingHasPending.bind(this);
-    this.startEdit = this.startEdit.bind(this);
-    this.cancelEdit = this.cancelEdit.bind(this);
+
     this.handleInputChange = this.handleInputChange.bind(this);
     this.handleSaveClick = this.handleSaveClick.bind(this);
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
     this.handleCopyClick = this.handleCopyClick.bind(this);
+
+    this.startEdit = this.startEdit.bind(this);
+    this.cancelEdit = this.cancelEdit.bind(this);
   }
 
   /**
-   * Runs when the component mounts. Fetches data necessary for view.
+   * Runs once the component is mounted.
+   *
+   * During`componentDidMount`, the component restores the table state,
+   * fetches all data, and registers data service listeners.
+   *
    * @override
    */
   componentDidMount() {
@@ -42,18 +50,21 @@ export default class ListingRow extends Component {
   }
 
   /**
-   * Checks for the presence pending listings that duplicate the listing (have the same UUID).
+   * `listingHasPending` queries for a pending listing that duplicates the live listing (matching UUID).
    */
   listingHasPending() {
-    this.props.checkForPending(this.props.listing.uuid).then(message => {
-      if (message.total) this.setState({pendingID: message.data[0].id});
-    }, err => {
-      console.log("Error fetching pending listings: ", JSON.stringify(err));
-    });
+    this.props.queryForMatching(this.props.listing.uuid)
+      .then(message => {
+        if (message.total) this.setState({matchingPendingListing: message.data[0]});
+      })
+      .catch(err => {
+        printToConsole(err);
+      });
   }
 
   /**
-   * Marks the row as editable to trigger a UI change.
+   * `startEdit` marks the row as editable.
+   *
    * @param {Event} e
    */
   startEdit(e) {
@@ -62,7 +73,8 @@ export default class ListingRow extends Component {
   }
 
   /**
-   * Marks the row as not editable to trigger a UI change.
+   * `cancelEdit` marks the row as not editable.
+   *
    * @param {Event} e
    */
   cancelEdit(e) {
@@ -71,31 +83,35 @@ export default class ListingRow extends Component {
   }
 
   /**
-   * Handles input changes by saving the data to the component's state.
+   * `handleInputChange` handles input changes by saving the data to the component's state.
+   *
    * @param {Event} e
    */
   handleInputChange(e) {
-    if (!e.target.name) return;
-
+    if (!e.target.name || !e.target.value) return;
     this.setState({[e.target.name]: e.target.value});
   }
 
   /**
-   * Handles the save button click by parsing new data and triggering a function to update the listing.
+   * `handleSaveClick` runs when the save button is clicked. It initiates the saving of the row's data.
+   *
    * @param {Event} e
    */
   handleSaveClick(e) {
     e.stopPropagation();
 
-    const newData = {uuid: this.props.listing.uuid, name: this.state.listingName};
+    const newData = {name: this.state.listingName};
 
-    this.props.updateListing(this.props.listing.id, newData).then(() => {
+    this.props.updateListing(this.props.listing, newData).then(() => {
       this.setState({editable: false});
     });
   }
 
   /**
-   * Handles the copy button click by triggering a function to create a pending listing that duplicates the listing.
+   * `handleCopyClick` runs whn the copy button is clicked. It initiates the creation of a pending
+   * listing from the published listing's data.
+   *
+   * @param {Event} e
    */
   handleCopyClick(e) {
     e.stopPropagation();
@@ -106,13 +122,16 @@ export default class ListingRow extends Component {
     listingData.created_at = Moment(listingData.created_at).valueOf();
     listingData.updated_at = Moment(listingData.updated_at).valueOf();
 
-    this.props.createPendingListing(listingData).then(() => {
-      this.listingHasPending();
+    this.props.createPendingListing(listingData).then(result => {
+      this.setState({matchingPendingListing: result});
     });
   }
 
   /**
-   * Handles the delete button click by triggering a function to delete the listing.
+   * `handleDeleteClick` runs when the delete button is clicked. It initiates the deletion of the
+   * pending listing.
+   *
+   * @param {Event} e
    */
   handleDeleteClick(e) {
     e.stopPropagation();
@@ -120,26 +139,27 @@ export default class ListingRow extends Component {
   }
 
   /**
-   * Renders the edit button. Can also be a copy button or a link to a pending listing that duplicates the listing.
+   * `renderEditButton` renders the edit button.
+   *
+   * Depending on the user state, this either allows for editing the row or initiates the creation of a new, matching
+   * pending listing that can be edited.
+   *
    * @returns {*}
    */
   renderEditButton() {
-    if (this.user.is_su) {
-      return <button type={'button'} className={'emphasize'} onClick={this.startEdit}>Edit</button>;
-    } else if (this.state.pendingID) {
-      return <Link to={`/pending${this.props.schema}/${this.state.pendingID}`} className={'button emphasize'}>Edit Pending
-        Copy</Link>;
-    } else {
-      return <button type={'button'} className={'emphasize'} onClick={this.handleCopyClick}>Copy For Editing</button>
-    }
+    if (this.user.is_su) return <button type={'button'} className={'emphasize'} onClick={this.startEdit}>Edit</button>;
+
+    if (this.state.matchingPendingListing) return <Link to={`/pending${this.props.schema}/${this.state.pendingID}`}
+                                                        className={'button emphasize'}>Edit Pending Copy</Link>;
+
+    return <button type={'button'} className={'emphasize'} onClick={this.handleCopyClick}>Copy For Editing</button>
   }
 
   /**
    * Renders the component.
-   * @note The render has two different paths depending on whether the row can be edited.
+   *
    * @override
    * @render
-   *
    * @returns {*}
    */
   render() {
@@ -161,8 +181,8 @@ export default class ListingRow extends Component {
       );
     }
 
-    const deleteButton = this.user.is_admin
-      ? <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete</button> : '';
+    const deleteButton = this.user.is_su
+      ? <button type={'button'} className={'warn'} onClick={this.handleDeleteClick}>Delete forever</button> : '';
 
     return (
       <tr className={'schema-row'}>

@@ -1,14 +1,20 @@
 import React from 'react';
-import {Redirect} from "react-router";
-import {Link} from "react-router-dom";
-import {displayErrorMessages} from "../utilities";
+import {Link, Redirect} from "react-router-dom";
 import {MdChevronLeft} from "react-icons/md";
+import {printToConsole} from "../utilities";
 
 import SingleListingLayout from "./SingleListingLayout";
 import ListingRecordUniversal from "./ListingRecordUniversal";
 import Header from "./common/Header";
 import MessagePanel from "./common/MessagePanel";
 
+/**
+ * `SinglePendingListingLayout` is a generic component which lays out the single pending listing view.
+ *
+ * @class
+ * @child
+ * @parent
+ */
 export default class SinglePendingListingLayout extends SingleListingLayout {
   constructor(props, schema) {
     super(props, schema);
@@ -18,64 +24,101 @@ export default class SinglePendingListingLayout extends SingleListingLayout {
     this.fetchMatchingLiveListing = this.fetchMatchingLiveListing.bind(this);
   }
 
+  /**
+   * Fetches all data required for the view.
+   *
+   * @override
+   */
   fetchAllData() {
     this.fetchListing();
   }
 
+  /**
+   * `fetchListing` fetches data for the single listing and saves it to the state.
+   *
+   * For pending listings, once the listing is returned `fetchListing` also fetches
+   * the matching published listing.
+   *
+   * @override
+   */
   fetchListing() {
-    this.pendingListingsService
-      .get(this.listingID)
+    this.pendingListingsService.get(this.listingID)
       .then(result => {
         this.setState({listing: result, listingLoaded: true});
         this.fetchMatchingLiveListing(result.uuid);
       })
-      .catch(errors => {
-        console.error(errors);
+      .catch(err => {
+        printToConsole(err);
         this.setState({notFound: true});
-        displayErrorMessages('fetch', `${this.schema} #${this.listingID}`, errors, this.updateMessagePanel);
       });
   }
 
   /**
-   * Fetches a live listing with the current listing's UUID.
+   * `fetchMatchingLiveListing` queries the database for a published listing with
+   * the same UUID as the pending listing and saves the result to the state.
+   *
+   * @override
+   * @param {String|int} uuid
    */
   fetchMatchingLiveListing(uuid) {
-    console.debug(uuid);
-    this.listingsService
-      .find({query: {uuid: uuid}})
+    this.listingsService.find({query: {uuid}})
       .then(result => {
-        console.debug(result);
-        if (result.total !== 0) this.setState({matchingLiveListing: result.data[0]});
+        if (result.total) this.setState({matchingLiveListing: result.data[0]});
+        this.setState({matchingListingLoaded: true});
       })
-      .catch(errors => {
-        console.error(errors);
-      });
+      .catch(err => printToConsole(err));
   }
 
+  /**
+   * `renderRecord` renders the listing's record.
+   *
+   * @override
+   * @returns {*}
+   */
   renderRecord() {
-    if (!this.state.listingLoaded) return <p>Data is loading... Please be patient...</p>;
+    if (!(this.state.listingLoaded && this.state.matchingListingLoaded)) return <div
+      className={'message-compact single-message info'}>Data is loading...
+      Please be patient...</div>;
 
     return <ListingRecordUniversal
       schema={this.schema} listing={this.state.listing} matchingLiveListing={this.state.matchingLiveListing}
-      updateListing={this.updateListing} deleteListing={this.deleteListing}
-      queryForExisting={this.queryForExisting}
+      updateListing={this.updateListing} deleteListing={this.deleteListing} queryForDuplicate={this.queryForDuplicate}
     />
   }
 
+  /**
+   * `renderHeading` renders the view's heading.
+   *
+   * @returns {string|*}
+   */
+  renderHeading() {
+    if (!this.state.listing.name) return '';
+
+    return <div className={'block-warning'}><h2
+      title={'Caution: This event is pending. It must be pushed live before it is visible on the site.'}>{this.state.listing.name}</h2>
+    </div>
+  }
+
+  /**
+   * Renders the component.
+   *
+   * @override
+   * @render
+   * @returns {*}
+   */
   render() {
     if (this.state.notFound) return <Redirect to={'/404'} />;
 
     const returnTarget = 'import';
-    const headerTitle = 'Caution: This event is pending. It must be pushed live before it is visible on the site.';
 
     if (this.state.hasDeleted) return <Redirect to={`/${returnTarget}`} />;
 
     return (
       <div className={'container'}>
         <Header />
-        <p className={'message-atom'}><Link to={`/${returnTarget}`}><MdChevronLeft/>Return to {returnTarget}</Link></p>
+        <p className={'message-atom'}><Link to={`/${returnTarget}`}><MdChevronLeft />Return to {returnTarget}</Link></p>
         <MessagePanel ref={this.messagePanel} />
-        <div className={'block-warning'}><h2 title={headerTitle}>{this.state.listing.name}</h2></div>
+        {this.renderHeading()}
         {this.renderRecord()}
       </div>
     );

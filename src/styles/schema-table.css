@@ -10,6 +10,8 @@
 
 .schema-table td {
   min-width: min-content;
+  padding: 2rem;
+  text-align: center;
 }
 
 .schema-table select {
@@ -18,6 +20,7 @@
 
 .schema-table td:first-child, .schema-table th:first-child {
   padding-left: 1rem;
+  text-align: left;
 }
 
 .schema-table td:last-child, .schema-table th:last-child {

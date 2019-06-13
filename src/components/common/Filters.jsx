@@ -3,35 +3,32 @@ import React, {Component} from 'react';
 import "../../styles/filters.css";
 
 /**
- * The Filters component displays filtering for event tables.
+ * `Filters` renders filter buttons for event tables.
  *
  * @class
+ * @param {{filterType: String, updateFilter: Function}} props
  */
 export default class Filters extends Component {
-  /**
-   * The class's constructor.
-   * @constructor
-   *
-   * @param {{updateFilter: Function}} props
-   */
   constructor(props) {
-    // TODO: Get initial state from props
     super(props);
 
     this.handleButtonClick = this.handleButtonClick.bind(this);
   }
 
+  /**
+   * `handleButtonClick` handles the click action by triggering a function to update
+   * the active filter.
+   *
+   * @param {Event} e
+   */
   handleButtonClick(e) {
-    console.debug(e);
-
     const filterLabel = e.target.dataset.filterType || null;
     if (!filterLabel) return;
-
     this.props.updateFilter((filterLabel === this.props.filterType) ? 'none' : filterLabel);
   }
 
   /**
-   * Renders a filter button.
+   * `renderButton` renders an individual filter button.
    *
    * @param {string} type
    * @param {string} text
@@ -47,15 +44,14 @@ export default class Filters extends Component {
 
   /**
    * Renders the component.
+   *
    * @override
    * @render
-   *
    * @returns {*}
    */
   render() {
     const currentFilter = this.props.filterType;
     let buttons = [];
-
 
     if (currentFilter === 'live') {
       buttons.push(this.renderButton('live', 'Show All', true));
