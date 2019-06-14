@@ -65,12 +65,12 @@ export default class LoginLayout extends Component {
    * Runs when the login button is clicked. Logs in an existing user using the credentials supplied in the login form.
    * Verifies user data and sets the app's user parameter.
    */
-  logInUser() {
+  logInUser(email, password) {
     app
       .authenticate({
         strategy: 'local',
-        email: this.state.email,
-        password: this.state.password
+        email: email,
+        password: password
       })
       .then(message => {
         printToConsole('authenticated', 'log');
@@ -95,19 +95,19 @@ export default class LoginLayout extends Component {
    * @async
    * @note For security reasons, user is required to log in manually after account creation.
    */
-  createUser() {
-    if (!this.state.email || !this.state.password) {
+  createUser(email, password) {
+    if (!email || !password) {
       return Promise.reject({message: 'A valid email address and password is required to create an account. Please try again.'});
     }
 
-    const pwRulesRes = pwRules(this.state.password);
+    const pwRulesRes = pwRules(password);
     if (pwRulesRes) {
       return Promise.reject({message: pwRulesRes.sentence.slice(0, -1)});
     }
 
     return this.usersService.create({
-      email: this.state.email,
-      password: this.state.password,
+      email: email,
+      password: password,
       permissions: 'user:*'
     });
   }
@@ -191,12 +191,9 @@ export default class LoginLayout extends Component {
       return [
         <div key={'create-password-msg'} className={'message single-message'}>Passwords must be at least 8 letters long,
           contain a capital letter, and contain a number.</div>,
-        <CreateAccountForm
-          key={'create-account-form'} email={this.state.email} password={this.state.password}
-          createUser={this.createUser} resendVerifyEmail={this.resendVerifyEmail}
-          handleInputChange={this.handleInputChange} toggleLoginState={this.toggleLoginState}
-          updateMessagePanel={this.updateMessagePanel}
-        />
+        <CreateAccountForm key={'create-account-form'} createUser={this.createUser}
+                           resendVerifyEmail={this.resendVerifyEmail} toggleLoginState={this.toggleLoginState}
+                           updateMessagePanel={this.updateMessagePanel} />
       ];
     }
 
@@ -204,12 +201,7 @@ export default class LoginLayout extends Component {
     return [
       <p key={'login-warning'} className={'message single-message warning-message' + hideWarningClass}>You must log in
         to continue.</p>,
-      <LoginForm
-        key={'login-form'}
-        email={this.state.email} password={this.state.password}
-        logInUser={this.logInUser} handleInputChange={this.handleInputChange}
-        toggleLoginState={this.toggleLoginState}
-      />
+      <LoginForm key={'login-form'} logInUser={this.logInUser} toggleLoginState={this.toggleLoginState} />
     ];
   }
 

@@ -80,8 +80,8 @@ export default class EventRow extends ListingRow {
     const newData = {
       uuid: this.props.listing.uuid,
       name: this.state.listingName,
-      start_date: Moment(this.state.eventStart).valueOf(),
-      end_date: Moment(this.state.eventEnd).valueOf(),
+      start_date: this.state.eventStart,
+      end_date: this.state.eventEnd,
       venue_uuid: this.state.linkedVenueUUID,
       org_uuid: this.state.linkedOrgUUID
     };
@@ -106,8 +106,6 @@ export default class EventRow extends ListingRow {
 
     eventData.org_uuid = this.props.org.uuid;
     eventData.venue_uuid = this.props.venue.uuid;
-    eventData.created_at = Moment(eventData.created_at).valueOf();
-    eventData.updated_at = Moment(eventData.updated_at).valueOf();
 
     this.props.createPendingListing({eventID: id, eventObj: eventData, tagsToSave: null})
       .then(result => {
