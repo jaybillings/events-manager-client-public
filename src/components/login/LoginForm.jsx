@@ -7,9 +7,6 @@ export default class LoginForm extends Component {
   constructor(props) {
     super(props);
 
-    this.emailRef = React.createRef();
-    this.passwordRef = React.createRef();
-
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
@@ -19,11 +16,7 @@ export default class LoginForm extends Component {
    */
   handleSubmit(e) {
     e.preventDefault();
-
-    const email = this.emailRef.current.value;
-    const password = this.passwordRef.current.value;
-
-    this.props.logInUser(email, password);
+    this.props.logInUser();
   }
 
   /**
@@ -38,9 +31,11 @@ export default class LoginForm extends Component {
       <form onSubmit={this.handleSubmit}>
         <div className={'input-container'}>
           <label htmlFor={'emailInput'}>Email Address</label>
-          <input ref={this.emailRef} id={'emailInput'} type={'text'} required />
+          <input id={'emailInput'} type={'text'} name={'email'} value={this.props.email}
+                 onChange={this.props.handleInputChange} required />
           <label htmlFor={'passInput'}>Password</label>
-          <input ref={this.passwordRef} id={'passInput'} type={'password'} required />
+          <input id={'passInput'} type={'password'} name={'password'} value={this.props.password}
+                 onChange={this.props.handleInputChange} required />
         </div>
         <div className={'button-container'}>
           <button type={'button'} className={'fakeLink'} onClick={this.props.toggleLoginState}><span>create new account</span></button>

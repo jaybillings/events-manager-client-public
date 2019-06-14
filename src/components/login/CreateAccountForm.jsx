@@ -12,9 +12,6 @@ export default class CreateAccountForm extends Component {
 
     this.state = {newUser: null};
 
-    this.emailRef = React.createRef();
-    this.passwordRef = React.createRef();
-
     this.handleResendEmailClick = this.handleResendEmailClick.bind(this);
     this.handleCreateAccountClick = this.handleCreateAccountClick.bind(this);
   }
@@ -33,22 +30,17 @@ export default class CreateAccountForm extends Component {
    */
   handleCreateAccountClick(e) {
     e.preventDefault();
-
-    const email = this.emailRef.current.value;
-    const password = this.passwordRef.current.value;
-
-    this.props.createUser(email, password)
+    this.props.createUser()
       .then(result => {
         this.props.updateMessagePanel({
           status: 'info',
           details: 'Account created. A verification email has been sent to your address.'
             + ' Follow the emailed instructions to finish account creation.'
         });
-        console.debug(result);
         this.setState({newUser: result});
       })
       .catch(err => {
-        this.setState({newUser: null});
+        this.setState({newUser: {}});
         displayErrorMessages('create', 'new user', err, this.props.updateMessagePanel);
         printToConsole(err, 'error');
       });
@@ -70,9 +62,11 @@ export default class CreateAccountForm extends Component {
       <form>
         <div className={'input-container'}>
           <label htmlFor={'emailInput'}>Email Address</label>
-          <input ref={this.emailRef} id={'emailInput'} type={'text'} required />
+          <input id={'emailInput'} type={'text'} name={'email'} value={this.props.email}
+                 onChange={this.props.handleInputChange} required />
           <label htmlFor={'passInput'}>Password</label>
-          <input ref={this.passwordRef} id={'passInput'} type={'password'} required />
+          <input id={'passInput'} type={'password'} name={'password'} value={this.props.password}
+                 onChange={this.props.handleInputChange} required />
         </div>
         <div className={'button-container'}>
           <button type={'button'} className={'fakeLink'} onClick={this.props.toggleLoginState}>

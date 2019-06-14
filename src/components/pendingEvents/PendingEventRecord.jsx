@@ -63,8 +63,8 @@ export default class PendingEventRecord extends ListingRecordUniversal {
 
     const newData = {
       name: this.nameInput.current.value,
-      start_date: this.startInput.current.value,
-      end_date: this.endInput.current.value,
+      start_date: Moment(this.startInput.current.value).valueOf(),
+      end_date: Moment(this.endInput.current.value).valueOf(),
       venue_uuid: this.venueInput.current.value,
       org_uuid: this.orgInput.current.value,
       description: this.descInput.current.value,

@@ -40,8 +40,8 @@ export default class EventAddForm extends ListingAddForm {
   buildNewListing() {
     const eventObj = {
       name: this.nameInput.current.value,
-      start_date: this.startInput.current.value,
-      end_date: this.endInput.current.value,
+      start_date: Moment(this.startInput.current.value).valueOf(),
+      end_date: Moment(this.endInput.current.value).valueOf(),
       venue_uuid: this.venueList.current.value || this.props.venues[0].uuid,
       org_uuid: this.orgList.current.value|| this.props.orgs[0].uuid,
       description: this.descInput.current.value,

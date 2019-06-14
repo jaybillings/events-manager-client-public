@@ -34,8 +34,8 @@ export default class PendingEventRow extends PendingListingRow {
 
     const newData = {
       name: this.nameRef.current.value,
-      start_date: this.startRef.current.value,
-      end_date: this.endRef.current.value,
+      start_date: Moment(this.startRef.current.value).valueOf(),
+      end_date: Moment(this.endRef.current.value).valueOf(),
       venue_uuid: this.venueRef.current.value,
       org_uuid: this.orgRef.current.value
     };
