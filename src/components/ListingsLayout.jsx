@@ -87,6 +87,8 @@ export default class ListingsLayout extends Component {
   componentDidMount() {
     const queryState = this.loadQueryState();
 
+    if (!queryState.sort) queryState.sort = this.defaultTableSort;
+
     this.setState(queryState, () => {
       this.fetchAllData();
     });
@@ -163,7 +165,11 @@ export default class ListingsLayout extends Component {
     if (err) {
       printToConsole(err);
       return {};
-    } else return queryState;
+    }
+
+    if (!queryState) return this.defaultTableSort;
+
+    return queryState;
   }
 
   /**
@@ -338,6 +344,7 @@ export default class ListingsLayout extends Component {
    */
   updateColSort(e) {
     const colSortState = buildColumnSort(e.target, this.state.sort);
+    console.debug(colSortState);
     this.setState({sort: colSortState}, () => this.fetchListings());
   }
 

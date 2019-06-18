@@ -119,8 +119,8 @@ export default class ListingRow extends Component {
     // noinspection JSUnusedLocalSymbols
     let {id, ...listingData} = this.props.listing;
 
-    listingData.created_at = Moment(listingData.created_at).valueOf();
-    listingData.updated_at = Moment(listingData.updated_at).valueOf();
+    listingData.created_at = Moment(listingData.created_at);
+    listingData.updated_at = Moment(listingData.updated_at);
 
     this.props.createPendingListing(listingData).then(result => {
       this.setState({matchingPendingListing: result});

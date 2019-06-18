@@ -25,10 +25,6 @@
   overflow: auto;
 }
 
-.schema-module div > button + button {
-  margin-left: 1rem;
-}
-
 .schema-module .visibility-toggle {
   position: absolute;
   top: 0;
@@ -44,7 +40,16 @@
 }
 
 .schema-module .publish-buttons {
+  margin-top: 1rem;
+}
+
+.schema-module .publish-buttons button {
   float: right;
+  margin: 1rem;
+}
+
+.schema-module .selection-control {
+  margin-right: 1rem;
 }
 
 .schema-module[data-visibility='hidden'] > div {

@@ -385,7 +385,7 @@ export default class EventsLayout extends ListingsLayout {
     this.liveEventsService.create({event_id: id})
       .catch(err => {
         printToConsole(JSON.stringify(err));
-        if (err.code === 'SQLITE_CONSTRAINT') return; // Benign error -- hide from user
+        if (err.message.includes('ER_DUP_ENTRY')) return; // Benign error -- hide from user
         displayErrorMessages('add to live list', 'event', err, this.updateMessagePanel);
       });
   }
@@ -419,7 +419,7 @@ export default class EventsLayout extends ListingsLayout {
     ])
       .catch(err => {
         printToConsole(err);
-        if (err.code === 'SQLITE_CONSTRAINT') return; // Benign error -- hide from user
+        if (err.message.includes('ER_DUP_ENTRY')) return; // Benign error -- hide from user
         displayErrorMessages('add', 'event to deleted list', err, this.updateMessagePanel);
       });
   }
@@ -451,8 +451,8 @@ export default class EventsLayout extends ListingsLayout {
     if (acceptedFilters.includes(filterType)) {
       const liveIDs = this.state.liveIDs;
       if (filterType === 'dropped') return {'events.id': {$nin: liveIDs}};
-      if (filterType === 'stale') return {'events.id': {$in: liveIDs}, end_date: {$lt: new Date().valueOf()}};
-      if (filterType === 'live') return {'events.id': {$in: liveIDs}, end_date: {$gte: new Date().valueOf()}};
+      if (filterType === 'stale') return {'events.id': {$in: liveIDs}, end_date: {$lt: new Date()}};
+      if (filterType === 'live') return {'events.id': {$in: liveIDs}, end_date: {$gte: new Date()}};
     }
 
     return {};

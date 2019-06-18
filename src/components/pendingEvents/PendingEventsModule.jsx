@@ -1,5 +1,6 @@
 import React from "react";
 import {BeatLoader} from "react-spinners";
+import Moment from "moment";
 import {displayErrorMessages, printToConsole, renderTableHeader, uniqueListingsOnly} from "../../utilities";
 import app from '../../services/socketio';
 
@@ -125,8 +126,8 @@ export default class PendingEventsModule extends PendingListingsModule {
     return this.listingsService.find({
       query: {
         name: pendingListing.name,
-        start_date: pendingListing.start_date,
-        end_date: pendingListing.end_date,
+        start_date: Moment(pendingListing.start_date).format('YYYY-MM-DD hh:mm:ss'),
+        end_date: Moment(pendingListing.end_date).format('YYYY-MM-DD hh:mm:ss'),
         $select: ['uuid']
       }
     });
@@ -260,16 +261,16 @@ export default class PendingEventsModule extends PendingListingsModule {
   createLiveListing(pendingListing) {
     let {id, ...eventData} = pendingListing;
 
+    eventData.start_date = Moment(eventData.start_date).format('YYYY-MM-DD hh:mm:ss');
+    eventData.end_date = Moment(eventData.end_date).format('YYYY-MM-DD hh:mm:ss');
+    eventData.created_at = null;
+
     return this.listingsService.create(eventData)
       .then(result => {
         return Promise.all([
           this.registerLiveListing(result.id, result.name),
           this.copyPendingTagAssociations(result.uuid)
         ]);
-      })
-      .catch(err => {
-        printToConsole(err);
-        displayErrorMessages('publish', `pending event "${pendingListing.name}"`, err, this.props.updateMessagePanel);
       });
   }
 
@@ -283,15 +284,15 @@ export default class PendingEventsModule extends PendingListingsModule {
    * @returns {Promise<{}>}
    */
   updateLiveListing(pendingListing, target) {
-    let {id, ...listingData} = pendingListing;
+    let {id, ...eventData} = pendingListing;
 
-    return this.listingsService.update(target.id, listingData)
+    eventData.start_date = Moment(eventData.start_date).format('YYYY-MM-DD hh:mm:ss');
+    eventData.end_date = Moment(eventData.end_date).format('YYYY-MM-DD hh:mm:ss');
+    eventData.created_at = null;
+
+    return this.listingsService.update(target.id, eventData)
       .then(result => {
         return this.copyPendingTagAssociations(result.uuid);
-      })
-      .catch(err => {
-        printToConsole(err);
-        displayErrorMessages('publish', `pending ${this.schema} "${pendingListing.name}"`, err, this.props.updateMessagePanel);
       });
   }
 
@@ -372,7 +373,7 @@ export default class PendingEventsModule extends PendingListingsModule {
       })
       .catch(err => {
         printToConsole(JSON.stringify(err));
-        if (err.code === 'SQLITE_CONSTRAINT') return; // Benign error -- hide from user
+        if (err.message.includes('ER_DUP_ENTRY')) return; // Benign error -- hide from user
         displayErrorMessages('copy', 'event-tag links', err, this.props.updateMessagePanel);
       });
   }
@@ -432,19 +433,19 @@ export default class PendingEventsModule extends PendingListingsModule {
 
     return [
       <ShowHideToggle
-        key={'events-module-showhide'} isVisible={this.state.moduleVisible}
+        key={'pending-events-showhide'} isVisible={this.state.moduleVisible}
         changeVisibility={this.toggleModuleVisibility}
       />,
-      <div key={'events-module-body'}>
-        <SelectionControl
-          numSelected={selectedEvents.length} total={this.state.pendingListingsTotal} schema={this.schema}
-          selectPage={this.selectPageOfListings} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
-        />
-        <PaginationLayout
-          key={'pending-events-pagination'} schema={'pending-events'} includeAll={false}
-          total={this.state.pendingListingsTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
-          updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
-        />
+      <SelectionControl
+        key={'pending-events-selection'} numSelected={selectedEvents.length} total={this.state.pendingListingsTotal} schema={this.schema}
+        selectPage={this.selectPageOfListings} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
+      />,
+      <PaginationLayout
+        key={'pending-events-pagination'} schema={'pending-events'} includeAll={false}
+        total={this.state.pendingListingsTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
+        updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
+      />,
+      <div key={'pending-events-table'}>
         <table className={'schema-table'} key={'pending-events-table'}>
           <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColSort)}</thead>
           <tbody>
@@ -466,13 +467,13 @@ export default class PendingEventsModule extends PendingListingsModule {
           }
           </tbody>
         </table>
-        <div className={'publish-buttons'}>
-          {publishButton}
-          <button type={'button'} className={'publish'} onClick={this.discardListings}
-                  disabled={selectedEvents.length === 0}>
-            Discard {selectedEvents.length || ''} {schemaLabel}
-          </button>
-        </div>
+      </div>,
+      <div key={'pending-events-buttons'} className={'publish-buttons'}>
+        {publishButton}
+        <button type={'button'} className={'publish'} onClick={this.discardListings}
+                disabled={selectedEvents.length === 0}>
+          Discard {selectedEvents.length || ''} {schemaLabel}
+        </button>
       </div>
     ]
   }

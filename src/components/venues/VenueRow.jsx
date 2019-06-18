@@ -20,7 +20,7 @@ export default class VenueRow extends ListingRow {
   constructor(props) {
     super(props);
 
-    const linkedHoodUUID = this.props.hood ? this.props.hood.uuid : (this.props.hoods[0] ? this.props.hoods[0].uuid : null);
+    const linkedHoodUUID = this.props.hood ? this.props.hood.uuid : null;
 
     this.state = {...this.state, linkedHoodUUID};
   }
@@ -54,8 +54,6 @@ export default class VenueRow extends ListingRow {
     let {id, hood_id, ...venueData} = this.props.listing;
 
     venueData.hood_uuid = this.props.hood.uuid;
-    venueData.created_at = Moment(venueData.created_at).valueOf();
-    venueData.updated_at = Moment(venueData.updated_at).valueOf();
 
     this.props.createPendingListing(venueData).then(result => {
       this.setState({matchingPendingListing: result});

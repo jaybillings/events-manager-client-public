@@ -319,8 +319,8 @@ export default class SinglePendingEventLayout extends SinglePendingListingLayout
     return this.listingsService.find({
       query: {
         name: this.state.listing.name,
-        start_date: this.state.listing.start_date,
-        end_date: this.state.listing.end_date,
+        start_date: new Date(this.state.listing.start_date),
+        end_date: new Date(this.state.listing.end_date),
         $select: ['uuid']
       }
     });
