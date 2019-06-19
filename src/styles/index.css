@@ -276,7 +276,7 @@ td.highlight-diff > :first-child {
 
 .message-compact {
   display: block;
-  width: fit-content;
+  width: max-content;
   padding: 1rem 4rem;
 }
 
@@ -284,7 +284,7 @@ td.highlight-diff > :first-child {
 
 .block-warning {
   color: var(--true-white);
-  width: fit-content;
+  width: max-content;
   padding: 1em;
   margin-bottom: 2em;
   background: repeating-linear-gradient(

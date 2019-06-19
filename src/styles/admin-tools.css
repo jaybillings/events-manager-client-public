@@ -3,7 +3,7 @@
 }
 
 .admin-module h3 {
-  width: fit-content;
+  width: max-content;
 }
 
 .admin-module h4 {
