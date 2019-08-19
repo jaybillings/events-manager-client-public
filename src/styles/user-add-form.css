@@ -40,3 +40,7 @@
   color: var(--true-white);
   background: var(--strong-emphasis-color);
 }
+
+.user-add-form .buttons button {
+  margin-right: 1rem;
+}

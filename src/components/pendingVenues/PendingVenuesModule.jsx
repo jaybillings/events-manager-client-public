@@ -144,7 +144,8 @@ export default class PendingVenuesModule extends PendingListingsModule {
 
     if (!(this.state.listingsLoaded && this.state.hoodsLoaded)) return <div
       className={'single-message info message-compact'}>Data is loading... Please be patient...</div>;
-    if (pendingVenuesTotal === 0) return <div className={'message-compact single-message no-content'}>No pending venues to list.</div>;
+    if (pendingVenuesTotal === 0) return <div className={'message-compact single-message no-content'}>No pending venues
+      to list.</div>;
 
     const pendingVenues = this.state.pendingListings;
     const titleMap = new Map([
@@ -168,19 +169,20 @@ export default class PendingVenuesModule extends PendingListingsModule {
 
     return ([
       <ShowHideToggle
-        key={'venues-module-showhide'} isVisible={this.state.moduleVisible}
+        key={'pending-venues-showhide'} isVisible={this.state.moduleVisible}
         changeVisibility={this.toggleModuleVisibility}
       />,
-      <div key={'venues-module-body'}>
-        <SelectionControl
-          numSelected={selectedVenues.length} total={this.state.pendingListingsTotal} schema={this.schema}
-          selectPage={this.selectPageOfListings} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
-        />
-        <PaginationLayout
-          key={'pending-venues-pagination'} schema={'pending-venues'} includeAll={false}
-          total={pendingVenuesTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
-          updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
-        />
+      <SelectionControl
+        key={'pending-venues-selection'} numSelected={selectedVenues.length} total={this.state.pendingListingsTotal}
+        schema={this.schema}
+        selectPage={this.selectPageOfListings} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
+      />,
+      <PaginationLayout
+        key={'pending-venues-pagination'} schema={'pending-venues'} includeAll={false}
+        total={pendingVenuesTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
+        updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
+      />,
+      <div key={'pending-venues-table'}>
         <table className={'schema-table'} key={'pending-venues-table'}>
           <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColSort)}</thead>
           <tbody>
@@ -199,13 +201,13 @@ export default class PendingVenuesModule extends PendingListingsModule {
           }
           </tbody>
         </table>
-        <div className={'publish-buttons'}>
-          {publishButton}
-          <button type={'button'} className={'default'} onClick={this.discardListings}
-                  disabled={selectedVenues.length === 0}>
-            Discard {selectedVenues.length || ''} {schemaLabel}
-          </button>
-        </div>
+      </div>,
+      <div key={'pending-venues-button'} className={'publish-buttons'}>
+        {publishButton}
+        <button type={'button'} className={'default'} onClick={this.discardListings}
+                disabled={selectedVenues.length === 0}>
+          Discard {selectedVenues.length || ''} {schemaLabel}
+        </button>
       </div>
     ])
   }

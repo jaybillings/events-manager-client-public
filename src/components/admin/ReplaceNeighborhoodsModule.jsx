@@ -404,7 +404,7 @@ export default class ReplaceNeighborhoodsModule extends Component {
         });
       })
       .catch(err => {
-        if (err.code === 'SQLITE_CONSTRAINT') return;
+        if (err.message.includes('ER_DUP_ENTRY')) return; // Benign error -- hide from user
         displayErrorMessages('run', 'neighborhood replacement', err, this.props.updateMessagePanel);
         printToConsole(err);
       })

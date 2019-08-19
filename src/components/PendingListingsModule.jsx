@@ -418,6 +418,8 @@ export default class PendingListingsModule extends Component {
   createLiveListing(pendingListing) {
     let {id, ...listingData} = pendingListing;
 
+    listingData.created_at = null;
+
     return this.listingsService.create(listingData)
       .catch(err => {
         printToConsole(err);
@@ -436,6 +438,8 @@ export default class PendingListingsModule extends Component {
    */
   updateLiveListing(pendingListing, target) {
     let {id, ...listingData} = pendingListing;
+
+    listingData.created_at = null;
 
     return this.listingsService.update(target.id, listingData)
       .catch(err => {
@@ -479,7 +483,6 @@ export default class PendingListingsModule extends Component {
 
     return this.publishPageOfListings(selectedIDs, liveListingData)
       .then(result => {
-
         const idsToRemove = result.map(listing => {
           return listing.id;
         });
@@ -615,6 +618,9 @@ export default class PendingListingsModule extends Component {
    */
   handlePublishAllClick() {
     const allIDs = [...this.state.allIDs];
+
+    this.stopListening();
+
     return this.publishListings(allIDs)
       .then(() => {
         this.setState({selectedListings: []});
@@ -743,19 +749,19 @@ export default class PendingListingsModule extends Component {
 
     return ([
       <ShowHideToggle
-        key={`${schema}-module-showhide`} isVisible={this.state.moduleVisible}
+        key={`pending-${schema}-showhide`} isVisible={this.state.moduleVisible}
         changeVisibility={this.toggleModuleVisibility}
       />,
-      <div key={`${schema}-module-body`}>
-        <SelectionControl
-          numSelected={selectedListings.length} total={this.state.listingsTotal} schema={this.schema}
-          selectPage={this.selectPageOfListings} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
-        />
-        <PaginationLayout
-          key={`pending-${schema}-pagination`} schema={`pending-${schema}`} includeAll={false}
-          total={this.state.pendingListingsTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
-          updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
-        />
+      <SelectionControl
+        key={`pending-${schema}-selection`} numSelected={selectedListings.length} total={this.state.listingsTotal} schema={this.schema}
+        selectPage={this.selectPageOfListings} selectAll={this.selectAllListings} selectNone={this.selectNoListings}
+      />,
+      <PaginationLayout
+        key={`pending-${schema}-pagination`} schema={`pending-${schema}`} includeAll={false}
+        total={this.state.pendingListingsTotal} pageSize={this.state.pageSize} activePage={this.state.currentPage}
+        updatePageSize={this.updatePageSize} updateCurrentPage={this.updateCurrentPage}
+      />,
+      <div key={`pending-${schema}-table`}>
         <table className={'schema-table'} key={`pending-${schema}-table`}>
           <thead>{renderTableHeader(titleMap, this.state.sort, this.updateColSort)}</thead>
           <tbody>
@@ -771,13 +777,13 @@ export default class PendingListingsModule extends Component {
           }
           </tbody>
         </table>
-        <div className={'publish-buttons'}>
-          {publishButton}
-          <button type={'button'} className={'default'} onClick={this.discardListings}
-                  disabled={selectedListings.length === 0}>
-            Discard {selectedListings.length || ''} {schemaLabel}
-          </button>
-        </div>
+      </div>,
+      <div key={`pending-${schema}-buttons`} className={'publish-buttons'}>
+        {publishButton}
+        <button type={'button'} className={'default'} onClick={this.discardListings}
+                disabled={selectedListings.length === 0}>
+          Discard {selectedListings.length || ''} {schemaLabel}
+        </button>
       </div>
     ]);
   }

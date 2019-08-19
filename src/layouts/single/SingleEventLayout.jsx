@@ -271,7 +271,7 @@ export default class SingleEventLayout extends SingleListingLayout {
     this.eventsTagsLookupService.create(newTagData)
       .catch(err => {
         printToConsole(err);
-        if (err.code === 'SQLITE_CONSTRAINT') return; // Benign error -- hide from user
+        if (err.message.includes('ER_DUP_ENTRY')) return; // Benign error -- hide from user
         displayErrorMessages('associate', 'tags with event', err, this.updateMessagePanel, 'retry');
       });
   }
@@ -297,7 +297,7 @@ export default class SingleEventLayout extends SingleListingLayout {
     ])
       .catch(err => {
         printToConsole(err);
-        if (err.code === 'SQLITE_CONSTRAINT') return; // Benign error -- hide from user
+        if (err.message.includes('ER_DUP_ENTRY')) return; // Benign error -- hide from user
         displayErrorMessages('register', 'event as live', err, this.updateMessagePanel);
       });
   }
@@ -324,7 +324,7 @@ export default class SingleEventLayout extends SingleListingLayout {
     ])
       .catch(err => {
         printToConsole(err);
-        if (err.code === 'SQLITE_CONSTRAINT') return; // Benign error -- hide from user
+        if (err.message.includes('ER_DUP_ENTRY')) return; // Benign error -- hide from user
         displayErrorMessages('register', 'event as deleted', err, this.updateMessagePanel);
       });
   }

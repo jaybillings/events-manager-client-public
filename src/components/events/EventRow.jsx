@@ -26,8 +26,8 @@ export default class EventRow extends ListingRow {
   constructor(props) {
     super(props);
 
-    const linkedVenueUUID = this.props.venue ? this.props.venue.uuid : (this.props.venues[0] ? this.props.venues[0].uuid : null);
-    const linkedOrgUUID = this.props.org ? this.props.org.uuid : (this.props.orgs[0] ? this.props.orgs[0].uuid : null);
+    const linkedVenueUUID = this.props.venue ? this.props.venue.uuid : null;
+    const linkedOrgUUID = this.props.org ? this.props.org.uuid : null;
 
     this.state = {
       ...this.state, is_published: this.props.listingIsLive,
@@ -80,8 +80,8 @@ export default class EventRow extends ListingRow {
     const newData = {
       uuid: this.props.listing.uuid,
       name: this.state.listingName,
-      start_date: Moment(this.state.eventStart).valueOf(),
-      end_date: Moment(this.state.eventEnd).valueOf(),
+      start_date: Moment(this.state.eventStart).format('YYYY-MM-DD hh:mm:ss'),
+      end_date: Moment(this.state.eventEnd).format('YYYY-MM-DD hh:mm:ss'),
       venue_uuid: this.state.linkedVenueUUID,
       org_uuid: this.state.linkedOrgUUID
     };
@@ -106,8 +106,6 @@ export default class EventRow extends ListingRow {
 
     eventData.org_uuid = this.props.org.uuid;
     eventData.venue_uuid = this.props.venue.uuid;
-    eventData.created_at = Moment(eventData.created_at).valueOf();
-    eventData.updated_at = Moment(eventData.updated_at).valueOf();
 
     this.props.createPendingListing({eventID: id, eventObj: eventData, tagsToSave: null})
       .then(result => {
